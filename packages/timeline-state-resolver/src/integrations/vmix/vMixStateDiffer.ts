@@ -24,6 +24,9 @@ export interface VMixStateExtended {
 	 */
 	reportedState: VMixState
 	outputs: VMixOutputsState
+	/**
+	 * Maps layer names to inputs added on them by us
+	 */
 	inputLayers: { [key: string]: string }
 	runningScripts: string[]
 }
@@ -68,6 +71,7 @@ export interface VMixMix {
 	program: string | number | undefined
 	preview: string | number | undefined
 	transition: VMixTransition
+	/** whether `program` is a name of a layer that we're expecting an input added by us */
 	layerToProgram?: boolean
 }
 
@@ -321,11 +325,14 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		})
 		// Only set fader bar position if no other transitions are happening
 		if (oldVMixState?.reportedState.mixes[0]?.program === newVMixState.reportedState.mixes[0]?.program) {
-			if (newVMixState.reportedState.faderPosition !== oldVMixState?.reportedState.faderPosition) {
+			if (
+				newVMixState.reportedState.faderPosition !== undefined &&
+				newVMixState.reportedState.faderPosition !== oldVMixState?.reportedState.faderPosition
+			) {
 				commands.push({
 					command: {
 						command: VMixCommand.FADER,
-						value: newVMixState.reportedState.faderPosition || 0,
+						value: newVMixState.reportedState.faderPosition,
 					},
 					context: CommandContext.None,
 					timelineObjId: '',
@@ -1089,13 +1096,11 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 	 */
 	private _isInUse(state: VMixStateExtended, input: VMixInput): boolean {
 		for (const mix of state.reportedState.mixes) {
-			if (mix == null) continue
+			if (mix?.program == null) continue
 			if (mix.program === input.number || mix.program === input.name) {
 				// The input is in program in some mix, so stop the search and return true.
 				return true
 			}
-
-			if (typeof mix.program === 'undefined') continue
 
 			const pgmInput =
 				state.reportedState.existingInputs[mix.program] ??
@@ -1113,7 +1118,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		}
 
 		for (const overlay of state.reportedState.overlays) {
-			if (overlay == null) continue
+			if (overlay?.input == null) continue
 			if (overlay.input === input.name || overlay.input === input.number) {
 				// Input is in program as an overlay (DSK),
 				// so stop the search and return true.
@@ -1122,7 +1127,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		}
 
 		for (const output of Object.values<VMixOutput | undefined>({ ...state.outputs })) {
-			if (output == null) continue
+			if (output?.input == null) continue
 			if (output.input === input.name || output.input === input.number) {
 				// Input might not technically be in PGM, but it's being used by an output,
 				// so stop the search and return true.

@@ -29,7 +29,7 @@ export class VMixInputHandler extends EventEmitter {
 	constructor(
 		private _vmix: {
 			getCurrentTime: () => number
-			addToQueue: (commandsToAchieveState: Array<VMixStateCommandWithContext>, time: number) => void
+			addToQueue: (commandsToAchieveState: Array<VMixStateCommandWithContext>) => void
 		}
 	) {
 		super()
@@ -123,7 +123,7 @@ export class VMixInputHandler extends EventEmitter {
 			}
 		}
 
-		this._vmix.addToQueue(commands, now)
+		this._vmix.addToQueue(commands)
 
 		const timeToNextTimeout = nextTimeout - now
 		if (timeToNextTimeout > 0 && timeToNextTimeout !== Infinity) {
