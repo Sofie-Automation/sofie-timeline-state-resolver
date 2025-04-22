@@ -174,6 +174,7 @@ export function makeMockReportedState(): VMixState {
 				volume: 100,
 			},
 		},
+		replay: undefined,
 	}
 }
 
@@ -190,6 +191,7 @@ export function makeMockFullState(): VMixStateExtended {
 		},
 		runningScripts: [],
 		reportedState: makeMockReportedState(),
+		recordedEventName: undefined,
 	}
 }
 

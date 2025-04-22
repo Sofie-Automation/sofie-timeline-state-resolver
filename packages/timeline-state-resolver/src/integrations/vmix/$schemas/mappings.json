@@ -11,6 +11,10 @@
 					"ui:summaryTitle": "Index",
 					"description": "Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)",
 					"enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+				},
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
 				}
 			},
 			"required": [],
@@ -25,6 +29,10 @@
 					"ui:summaryTitle": "Index",
 					"description": "Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)",
 					"enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+				},
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
 				}
 			},
 			"required": [],
@@ -40,6 +48,10 @@
 					"ui:summaryTitle": "Index",
 					"description": "Input number or name. Omit if you plan to use the `filePath` property in `TimelineContentVMixInput`.",
 					"TODO": "string | number. this could be done with 'anyOf' or something, but adds complexity for little benefit"
+				},
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
 				}
 			},
 			"required": [],
@@ -60,6 +72,10 @@
 					"type": "string",
 					"ui:title": "Input Layer",
 					"description": "Input layer name"
+				},
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
 				}
 			},
 			"required": [],
@@ -74,6 +90,10 @@
 					"ui:summaryTitle": "Index",
 					"description": "Name (letter) of the bus",
 					"enum": ["M", "A", "B", "C", "D", "E", "F", "G"]
+				},
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
 				}
 			},
 			"required": ["index"],
@@ -88,6 +108,10 @@
 					"ui:summaryTitle": "Index",
 					"description": "Output",
 					"enum": ["2", "3", "4", "External2", "Fullscreen", "Fullscreen2"]
+				},
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
 				}
 			},
 			"required": ["index"],
@@ -102,6 +126,10 @@
 					"ui:summaryTitle": "Index",
 					"description": "Overlay number",
 					"enum": [1, 2, 3, 4]
+				},
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
 				}
 			},
 			"required": ["index"],
@@ -109,37 +137,89 @@
 		},
 		"recording": {
 			"type": "object",
-			"properties": {},
+			"properties": {
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
+				}
+			},
 			"required": [],
 			"additionalProperties": false
 		},
 		"streaming": {
 			"type": "object",
-			"properties": {},
+			"properties": {
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
+				}
+			},
 			"required": [],
 			"additionalProperties": false
 		},
 		"external": {
 			"type": "object",
-			"properties": {},
+			"properties": {
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
+				}
+			},
 			"required": [],
 			"additionalProperties": false
 		},
 		"fadeToBlack": {
 			"type": "object",
-			"properties": {},
+			"properties": {
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
+				}
+			},
 			"required": [],
 			"additionalProperties": false
 		},
 		"fader": {
 			"type": "object",
-			"properties": {},
+			"properties": {
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
+				}
+			},
 			"required": [],
 			"additionalProperties": false
 		},
 		"script": {
 			"type": "object",
-			"properties": {},
+			"properties": {
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
+				}
+			},
+			"required": [],
+			"additionalProperties": false
+		},
+		"replay": {
+			"type": "object",
+			"properties": {
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
+				}
+			},
+			"required": [],
+			"additionalProperties": false
+		},
+		"replayEvent": {
+			"type": "object",
+			"properties": {
+				"disableDefaults": {
+					"type": "boolean",
+					"ui:title": "Do not apply default state for this layer"
+				}
+			},
 			"required": [],
 			"additionalProperties": false
 		}

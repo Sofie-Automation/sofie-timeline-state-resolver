@@ -36,7 +36,9 @@ const mappingPriority: { [k in MappingVmixType]: number } = {
 	[MappingVmixType.FadeToBlack]: 9,
 	[MappingVmixType.Fader]: 10,
 	[MappingVmixType.Script]: 11,
-	[MappingVmixType.AudioBus]: 11,
+	[MappingVmixType.AudioBus]: 12,
+	[MappingVmixType.Replay]: 13,
+	[MappingVmixType.ReplayEvent]: 15,
 }
 
 export type MappingsVmix = Mappings<SomeMappingVmix>
@@ -186,6 +188,20 @@ export class VMixTimelineStateConverter {
 						existingBus.muted = content.muted ?? existingBus.muted
 						existingBus.volume = content.volume ?? existingBus.volume
 					}
+					break
+				case MappingVmixType.Replay:
+					if (content.type === TimelineContentTypeVMix.REPLAY) {
+						deviceState.reportedState.replay = {
+							...deviceState.reportedState.replay,
+							recording: content.recording,
+						}
+					}
+					break
+				case MappingVmixType.ReplayEvent:
+					if (content.type === TimelineContentTypeVMix.REPLAY_EVENT) {
+						deviceState.recordedEventName = content.name
+					}
+					break
 			}
 		})
 		return deviceState
@@ -265,6 +281,7 @@ export class VMixTimelineStateConverter {
 
 	private _fillStateWithMappingsDefaults(state: VMixStateExtended, mappings: MappingsVmix) {
 		for (const mapping of Object.values<Mapping<SomeMappingVmix>>(mappings)) {
+			if (mapping.options.disableDefaults) continue
 			switch (mapping.options.mappingType) {
 				case MappingVmixType.Program:
 				case MappingVmixType.Preview: {
@@ -310,6 +327,14 @@ export class VMixTimelineStateConverter {
 					break
 				case MappingVmixType.AudioBus:
 					state.reportedState.audioBuses[mapping.options.index] = this.defaultStateFactory.getDefaultAudioBusState()
+					break
+				case MappingVmixType.Replay:
+					state.reportedState.replay = {
+						recording: false,
+					}
+					break
+				case MappingVmixType.ReplayEvent:
+					state.recordedEventName = undefined
 					break
 			}
 		}

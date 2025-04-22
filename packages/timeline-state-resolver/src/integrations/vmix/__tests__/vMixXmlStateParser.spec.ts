@@ -142,6 +142,7 @@ describe('VMixXmlStateParser', () => {
 					solo: false,
 				},
 			} as VMixAudioBusesState, // we're parsing a little more, might be useful down the road
+			replay: undefined,
 		})
 	})
 
@@ -334,6 +335,29 @@ describe('VMixXmlStateParser', () => {
 					},
 				},
 			},
+		})
+	})
+
+	it('parses replay', () => {
+		const parser = new VMixXmlStateParser()
+
+		const parsedState = parser.parseVMixState(
+			makeMockVMixXmlState([
+				'<input key="a97b8de1-807a-4c14-8eb9-3de0129b41e3" number="1" type="Capture" title="Cam 0" state="Running" position="0" duration="0" loop="False" muted="False" volume="100" balance="0" solo="False" audiobusses="M" meterF1="0.03034842" meterF2="0.03034842"></input>',
+				`<input key="ca9bc59f-f698-41fe-b17d-1e1743cfee88" number="2" type="Replay" title="Cam 0" state="Running" position="0" duration="0" loop="False" muted="False" volume="100" balance="0" solo="False" audiobusses="M" meterF1="0.03034842" meterF2="0.03034842">
+	gfx.gtzip
+	<replay live="True" recording="True" channelMode="A" events="2" eventsA="2" eventsB="1" cameraA="1" cameraB="1" speed="1" speedA="1" speedB="1">
+		<timecode>2025-04-22T10:14:02.761</timecode>
+		<timecodeA>2025-04-22T10:14:02.761</timecodeA>
+		<timecodeB>2025-04-22T09:54:56.243</timecodeB>
+	</replay>
+</input>`,
+				'<input key="1d70bc59-6517-4571-a0c5-932e30311f01" number="3" type="Capture" title="Cam 2" state="Running" position="0" duration="0" loop="False" muted="False" volume="100" balance="0" solo="False" audiobusses="M" meterF1="0.03034842" meterF2="0.03034842"></input>',
+			])
+		)
+
+		expect(parsedState).toMatchObject<Partial<VMixState>>({
+			replay: { recording: true },
 		})
 	})
 })

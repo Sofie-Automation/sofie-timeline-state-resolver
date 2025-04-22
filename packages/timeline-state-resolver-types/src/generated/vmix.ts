@@ -24,6 +24,7 @@ export interface MappingVmixProgram {
 	 * Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)
 	 */
 	index?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Program
 }
 
@@ -32,6 +33,7 @@ export interface MappingVmixPreview {
 	 * Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)
 	 */
 	index?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Preview
 }
 
@@ -40,6 +42,7 @@ export interface MappingVmixInput {
 	 * Input number or name. Omit if you plan to use the `filePath` property in `TimelineContentVMixInput`.
 	 */
 	index?: string
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Input
 }
 
@@ -52,6 +55,7 @@ export interface MappingVmixAudioChannel {
 	 * Input layer name
 	 */
 	inputLayer?: string
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.AudioChannel
 }
 
@@ -60,6 +64,7 @@ export interface MappingVmixAudioBus {
 	 * Name (letter) of the bus
 	 */
 	index: 'M' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.AudioBus
 }
 
@@ -68,6 +73,7 @@ export interface MappingVmixOutput {
 	 * Output
 	 */
 	index: '2' | '3' | '4' | 'External2' | 'Fullscreen' | 'Fullscreen2'
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Output
 }
 
@@ -76,31 +82,48 @@ export interface MappingVmixOverlay {
 	 * Overlay number
 	 */
 	index: 1 | 2 | 3 | 4
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Overlay
 }
 
 export interface MappingVmixRecording {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Recording
 }
 
 export interface MappingVmixStreaming {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Streaming
 }
 
 export interface MappingVmixExternal {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.External
 }
 
 export interface MappingVmixFadeToBlack {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.FadeToBlack
 }
 
 export interface MappingVmixFader {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Fader
 }
 
 export interface MappingVmixScript {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Script
+}
+
+export interface MappingVmixReplay {
+	disableDefaults?: boolean
+	mappingType: MappingVmixType.Replay
+}
+
+export interface MappingVmixReplayEvent {
+	disableDefaults?: boolean
+	mappingType: MappingVmixType.ReplayEvent
 }
 
 export enum MappingVmixType {
@@ -117,9 +140,11 @@ export enum MappingVmixType {
 	FadeToBlack = 'fadeToBlack',
 	Fader = 'fader',
 	Script = 'script',
+	Replay = 'replay',
+	ReplayEvent = 'replayEvent',
 }
 
-export type SomeMappingVmix = MappingVmixProgram | MappingVmixPreview | MappingVmixInput | MappingVmixAudioChannel | MappingVmixAudioBus | MappingVmixOutput | MappingVmixOverlay | MappingVmixRecording | MappingVmixStreaming | MappingVmixExternal | MappingVmixFadeToBlack | MappingVmixFader | MappingVmixScript
+export type SomeMappingVmix = MappingVmixProgram | MappingVmixPreview | MappingVmixInput | MappingVmixAudioChannel | MappingVmixAudioBus | MappingVmixOutput | MappingVmixOverlay | MappingVmixRecording | MappingVmixStreaming | MappingVmixExternal | MappingVmixFadeToBlack | MappingVmixFader | MappingVmixScript | MappingVmixReplay | MappingVmixReplayEvent
 
 export interface OpenPresetPayload {
 	/**
