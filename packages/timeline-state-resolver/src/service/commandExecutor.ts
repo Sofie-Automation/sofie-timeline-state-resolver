@@ -3,8 +3,6 @@ import { BaseDeviceAPI, CommandWithContext } from './device'
 import { Measurement } from './measure'
 import { StateHandlerContext } from './stateHandler'
 
-const wait = async (t: number) => new Promise<void>((r) => setTimeout(() => r(), t))
-
 export class CommandExecutor<DeviceState, Command extends CommandWithContext<any, any>> {
 	constructor(
 		private logger: StateHandlerContext['logger'],
@@ -15,7 +13,9 @@ export class CommandExecutor<DeviceState, Command extends CommandWithContext<any
 	async executeCommands(commands: Command[], measurement?: Measurement): Promise<void> {
 		if (commands.length === 0) return
 
+		// Sort the commands, so that the ones with the highest preliminary time are executed first.
 		commands.sort((a, b) => (b.preliminary ?? 0) - (a.preliminary ?? 0))
+
 		const totalTime = commands[0].preliminary ?? 0
 
 		if (this.mode === 'salvo') {
@@ -30,16 +30,27 @@ export class CommandExecutor<DeviceState, Command extends CommandWithContext<any
 		commands: Command[],
 		measurement?: Measurement
 	): Promise<void> {
+		const start = Date.now() // note - would be better to use monotonic time here but BigInt's are annoying
+
 		await Promise.allSettled(
 			commands.map(async (command) => {
-				const timeToWait = totalTime - (command.preliminary ?? 0)
-				if (timeToWait > 0) await wait(totalTime)
+				const targetTime = start + totalTime - (command.preliminary ?? 0)
+
+				const timeToWait = targetTime - Date.now()
+				if (timeToWait > 0) {
+					await sleep(timeToWait)
+				}
 
 				measurement?.executeCommand(command)
-				return this.sendCommand(command).then(() => {
+				let result: unknown
+				try {
+					result = await this.sendCommand(command)
+				} catch (e) {
+					this.logger.error('Error while executing command', e as any)
+				} finally {
 					measurement?.finishedCommandExecution(command)
-					return command
-				})
+				}
+				return result
 			})
 		)
 	}
@@ -55,17 +66,31 @@ export class CommandExecutor<DeviceState, Command extends CommandWithContext<any
 
 		await Promise.allSettled(
 			Object.values<Command[]>(commandQueues).map(async (commandsInQueue): Promise<void> => {
-				for (const command of commandsInQueue) {
-					const timeToWait = totalTime - (Date.now() - start)
-					if (timeToWait > 0) await wait(timeToWait)
+				try {
+					for (const command of commandsInQueue) {
+						const targetTime = start + totalTime - (command.preliminary ?? 0)
 
-					measurement?.executeCommand(command)
-					await this.sendCommand(command).catch((e) => {
-						this.logger.error('Error while executing command', e)
-					})
-					measurement?.finishedCommandExecution(command)
+						const timeToWait = targetTime - Date.now()
+						if (timeToWait > 0) {
+							await sleep(timeToWait)
+						}
+
+						measurement?.executeCommand(command)
+						try {
+							await this.sendCommand(command)
+						} catch (e) {
+							this.logger.error('Error while executing command', e as any)
+						} finally {
+							measurement?.finishedCommandExecution(command)
+						}
+					}
+				} catch (e) {
+					this.logger.error('CommandExecutor', new Error('Error in _executeCommandsSequential'))
 				}
 			})
 		)
 	}
+}
+async function sleep(duration: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, duration))
 }
