@@ -21,6 +21,7 @@ import { CommandWithContext } from '../../..'
 import { getResolvedState, resolveTimeline } from 'superfly-timeline'
 import { DevicesDict } from '../../../service/devices'
 import { setSoftJumpWaitTime } from '../connection'
+import { waitUntil } from '../../../__tests__/lib'
 
 async function getInitialisedQuantelDevice(clearMock?: jest.Mock) {
 	const dev = new QuantelDevice(getDeviceContext())
@@ -1722,7 +1723,7 @@ describe('Quantel Device', () => {
 			// give it some time to finish the init
 			await sleep(100)
 
-			const now = Date.now()
+			const now = Date.now() + 100 // A little bit into the future, so that we're not adding states in the past
 
 			const stateHandler = getNewStateHandler(dev)
 
@@ -1790,28 +1791,26 @@ describe('Quantel Device', () => {
 			// Handle state at time 0 (nothing is playing)
 			{
 				const state = getResolvedState(resolved, now)
-
 				await stateHandler.handleState(state, mappings)
 
 				// Give QuantelManager some time to process the commands
+				await waitUntil(() => {
+					expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(3)
+				}, 500)
 
-				await sleep(200)
-
-				expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(3)
 				expect(MOCK_SEND_COMMAND).toHaveBeenNthCalledWith(
 					1,
-					expect.objectContaining({
-						command: expect.objectContaining({ type: QuantelCommandType.CANCELWAITING, portId: 'my_port' }),
-					})
-				)
-				expect(MOCK_SEND_COMMAND).toHaveBeenNthCalledWith(
-					2,
 					expect.objectContaining({
 						command: expect.objectContaining({ type: QuantelCommandType.SETUPPORT, portId: 'my_port', channel: 1 }),
 					})
 				)
-				expect(MOCK_SEND_COMMAND).toHaveBeenNthCalledWith(
-					3,
+				// The exact order of these is not guaranteed (they _should_ be called after the SETUPPORT command though):
+				expect(MOCK_SEND_COMMAND).toHaveBeenCalledWith(
+					expect.objectContaining({
+						command: expect.objectContaining({ type: QuantelCommandType.CANCELWAITING, portId: 'my_port' }),
+					})
+				)
+				expect(MOCK_SEND_COMMAND).toHaveBeenCalledWith(
 					expect.objectContaining({
 						command: expect.objectContaining({ type: QuantelCommandType.CLEARCLIP, portId: 'my_port' }),
 					})
@@ -1833,9 +1832,9 @@ describe('Quantel Device', () => {
 				const state = getResolvedState(resolved, now + 100)
 				await stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
-				await sleep(200)
-
-				expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(3)
+				await waitUntil(() => {
+					expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(3)
+				}, 500)
 				expect(MOCK_SEND_COMMAND).toHaveBeenNthCalledWith(
 					1,
 					expect.objectContaining({
@@ -1882,9 +1881,10 @@ describe('Quantel Device', () => {
 				const state = getResolvedState(resolved, now + 200)
 				await stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
-				await sleep(100)
+				await waitUntil(() => {
+					expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(2)
+				}, 500)
 
-				expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(2)
 				expect(MOCK_SEND_COMMAND).toHaveBeenNthCalledWith(
 					1,
 					expect.objectContaining({
@@ -1920,9 +1920,10 @@ describe('Quantel Device', () => {
 				await stateHandler.handleState(state, mappings)
 
 				// Wait enough time to ensure that the outTransition from previous clip would have finished (had it not been cancelled)
-				await sleep(200)
+				await waitUntil(() => {
+					expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(3)
+				}, 500)
 
-				expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(3)
 				expect(MOCK_SEND_COMMAND).toHaveBeenNthCalledWith(
 					1,
 					expect.objectContaining({
