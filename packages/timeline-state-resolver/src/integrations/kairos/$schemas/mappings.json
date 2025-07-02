@@ -1,0 +1,65 @@
+{
+	"$schema": "../../../$schemas/mapping-schema.json",
+	"default": "scene-layer",
+	"mappings": {
+		"scene": {
+			"type": "object",
+			"properties": {
+				"sceneName": {
+					"type": "array",
+					"items": { "type": "string" },
+					"ui:title": "Scene",
+					"ui:description": "The Scene to use",
+					"ui:summaryTitle": "Scene",
+					"ui:displayType": "breadcrumbs",
+					"default": ["Main"]
+				}
+			},
+			"required": ["sceneName"],
+			"additionalProperties": false
+		},
+		"scene-layer": {
+			"type": "object",
+			"properties": {
+				"sceneName": {
+					"type": "array",
+					"items": { "type": "string" },
+					"ui:title": "Scene",
+					"ui:description": "The Scene to use",
+					"ui:summaryTitle": "Scene",
+					"ui:displayType": "breadcrumbs",
+					"default": ["Main"]
+				},
+				"layerName": {
+					"type": "array",
+					"items": { "type": "string" },
+					"ui:title": "Layer",
+					"ui:description": "The layer in a scene to use",
+					"ui:summaryTitle": "Layer",
+					"ui:displayType": "breadcrumbs",
+					"default": ["Background"]
+				}
+			},
+			"required": ["sceneName", "layerName"],
+			"additionalProperties": false
+		},
+		"aux": {
+			"type": "object",
+			"properties": {
+				"auxName": {
+					"type": "array",
+					"items": { "type": "string" },
+					"ui:title": "AUX",
+					"ui:description": "The AUX to use",
+					"ui:summaryTitle": "AUX",
+					"ui:displayType": "breadcrumbs",
+					"default": ["IP1"]
+				}
+			},
+			"required": [
+				"auxName"
+			],
+			"additionalProperties": false
+		}
+	}
+}

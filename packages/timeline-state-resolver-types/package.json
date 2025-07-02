@@ -83,6 +83,7 @@
 		"production"
 	],
 	"dependencies": {
+		"kairos-connection": "../../../sofie-kairos-connection/packages/kairos-connection",
 		"tslib": "^2.6.3"
 	},
 	"publishConfig": {

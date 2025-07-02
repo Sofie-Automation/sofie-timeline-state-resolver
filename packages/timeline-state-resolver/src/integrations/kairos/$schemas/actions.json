@@ -1,0 +1,60 @@
+{
+	"$schema": "../../../$schemas/action-schema.json",
+	"actions": [
+		{
+			"id": "listMedia",
+			"name": "List items in media folder",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"subDirectory": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"clip": {
+							"type": "string"
+						},
+						"type": {
+							"type": "string",
+							"enum": [
+								"CLIP",
+								"RAMREC",
+								"STILL",
+								"SOUND"
+							]
+						},
+						"size": {
+							"type": "number"
+						},
+						"datetime": {
+							"type": "number"
+						},
+						"frames": {
+							"type": "number"
+						},
+						"framerate": {
+							"type": "number"
+						}
+					},
+					"required": [
+						"clip",
+						"type",
+						"size",
+						"dateTime",
+						"frames",
+						"framerate"
+					],
+					"additionalProperties": false
+				}
+			}
+		}
+	]
+}
