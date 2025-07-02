@@ -2,14 +2,17 @@
 	"$schema": "../../../$schemas/action-schema.json",
 	"actions": [
 		{
-			"id": "listMedia",
-			"name": "List items in media folder",
+			"id": "listClips",
+			"name": "List clips in media folder",
 			"destructive": false,
 			"payload": {
 				"type": "object",
 				"properties": {
 					"subDirectory": {
-						"type": "string"
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
 					}
 				},
 				"additionalProperties": false
@@ -19,17 +22,11 @@
 				"items": {
 					"type": "object",
 					"properties": {
-						"clip": {
-							"type": "string"
-						},
-						"type": {
-							"type": "string",
-							"enum": [
-								"CLIP",
-								"RAMREC",
-								"STILL",
-								"SOUND"
-							]
+						"name": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
 						},
 						"size": {
 							"type": "number"
@@ -45,8 +42,7 @@
 						}
 					},
 					"required": [
-						"clip",
-						"type",
+						"name",
 						"size",
 						"dateTime",
 						"frames",
@@ -54,6 +50,65 @@
 					],
 					"additionalProperties": false
 				}
+			}
+		},
+		{
+			"id": "listStills",
+			"name": "List stills in media folder",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"subDirectory": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"name": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"size": {
+							"type": "number"
+						},
+						"datetime": {
+							"type": "number"
+						}
+					},
+					"required": [
+						"name",
+						"size",
+					],
+					"additionalProperties": false
+				}
+			}
+		},
+		{
+			"id": "playMacro",
+			"name": "Play a macro",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"ref": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"additionalProperties": false
 			}
 		}
 	]
