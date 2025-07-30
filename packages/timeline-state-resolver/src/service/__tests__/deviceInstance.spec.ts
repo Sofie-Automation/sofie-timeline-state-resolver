@@ -95,6 +95,7 @@ function getDeviceInstanceWithTracker(getTime = async () => Date.now(), disable 
 	return new DeviceInstanceWrapper(
 		'wrapper0',
 		Date.now(),
+		null,
 		{ type: DeviceType.ATEM, disableSharedHardwareControl: disable },
 		getTime
 	)
