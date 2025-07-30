@@ -27,8 +27,7 @@
 				},
 				"required": ["panSpeed", "tiltSpeed"],
 				"additionalProperties": false
-			},
-			"generic": true
+			}
 		},
 		{
 			"id": "getPanTiltPosition",
@@ -54,8 +53,7 @@
 				"required": ["panPosition", "tiltPosition"],
 				"additionalProperties": false
 			},
-			"destructive": false,
-			"generic": true
+			"destructive": false
 		},
 		{
 			"id": "setZoomSpeed",
@@ -75,8 +73,7 @@
 				},
 				"required": ["zoomSpeed"],
 				"additionalProperties": false
-			},
-			"generic": true
+			}
 		},
 		{
 			"id": "getZoomPosition",
@@ -95,8 +92,7 @@
 				"required": ["zoomPosition"],
 				"additionalProperties": false
 			},
-			"destructive": false,
-			"generic": true
+			"destructive": false
 		},
 		{
 			"id": "storePreset",
@@ -114,8 +110,7 @@
 				},
 				"required": ["presetNumber"],
 				"additionalProperties": false
-			},
-			"generic": true
+			}
 		},
 		{
 			"id": "recallPreset",
@@ -133,8 +128,7 @@
 				},
 				"required": ["presetNumber"],
 				"additionalProperties": false
-			},
-			"generic": true
+			}
 		},
 		{
 			"id": "resetPreset",
@@ -152,8 +146,7 @@
 				},
 				"required": ["presetNumber"],
 				"additionalProperties": false
-			},
-			"generic": true
+			}
 		},
 		{
 			"id": "setFocusSpeed",
@@ -173,8 +166,7 @@
 				},
 				"required": ["focusSpeed"],
 				"additionalProperties": false
-			},
-			"generic": true
+			}
 		},
 		{
 			"id": "setFocusMode",
@@ -195,14 +187,12 @@
 				},
 				"required": ["mode"],
 				"additionalProperties": false
-			},
-			"generic": true
+			}
 		},
 		{
 			"id": "triggerOnePushFocus",
 			"name": "Trigger One Push AF",
-			"destructive": false,
-			"generic": true
+			"destructive": false
 		},
 		{
 			"id": "getFocusPosition",
@@ -210,19 +200,18 @@
 			"result": {
 				"type": "object",
 				"properties": {
-					"zoomPosition": {
+					"focusPosition": {
 						"type": "number",
 						"ui:title": "Focus Position",
 						"min": 0,
 						"max": 1,
-						"description": "Zoom Position; Range: [0.0, 1.0]; 0.0 = furthest NEAR, 1.0 = furthest FAR (each protocol might internally support a different range, which the value will be mapped from)"
+						"description": "Focus Position; Range: [0.0, 1.0]; 0.0 = furthest NEAR, 1.0 = furthest FAR (each protocol might internally support a different range, which the value will be mapped from)"
 					}
 				},
-				"required": ["zoomPosition"],
+				"required": ["focusPosition"],
 				"additionalProperties": false
 			},
-			"destructive": false,
-			"generic": true
+			"destructive": false
 		},
 		{
 			"id": "getFocusMode",
@@ -244,8 +233,7 @@
 				"required": ["mode"],
 				"additionalProperties": false
 			},
-			"destructive": false,
-			"generic": true
+			"destructive": false
 		}
 	]
 }

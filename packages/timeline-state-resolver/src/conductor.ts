@@ -53,7 +53,7 @@ import { AsyncResolver } from './AsyncResolver'
 import { endTrace, startTrace } from './lib'
 import type { FinishedTrace } from 'timeline-state-resolver-api'
 
-import { CommandWithContext } from './devices/device'
+import { CommandWithContext } from './service/device'
 import { DeviceContainer } from './devices/deviceContainer'
 
 import { DeviceOptionsCasparCGInternal } from './integrations/casparCG'

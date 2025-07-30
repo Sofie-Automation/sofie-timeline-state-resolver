@@ -1,30 +1,36 @@
-import { startTrace, endTrace } from '../lib'
+import { startTrace, endTrace, cloneDeep } from '../lib'
 import type { FinishedTrace } from 'timeline-state-resolver-api'
 import { Mappings, Timeline, TSRTimelineContent } from 'timeline-state-resolver-types'
 import { BaseDeviceAPI, CommandWithContext } from './device'
 import { Measurement, StateChangeReport } from './measure'
 import { CommandExecutor } from './commandExecutor'
+import { StateTracker } from './stateTracker'
 
-interface StateChange<DeviceState, Command extends CommandWithContext> {
+interface StateChange<DeviceState, Command extends CommandWithContext<any, any>, AddressState> {
 	commands?: Command[]
 	preliminary?: number
 
 	state: Timeline.TimelineState<TSRTimelineContent>
 	deviceState: DeviceState
+	addressStates?: Record<string, AddressState>
 	mappings: Mappings
 
 	measurement?: Measurement
 }
-interface ExecutedStateChange<DeviceState, Command extends CommandWithContext>
-	extends StateChange<DeviceState | undefined, Command> {
+interface ExecutedStateChange<DeviceState, Command extends CommandWithContext<any, any>, AddressState>
+	extends StateChange<DeviceState | undefined, Command, AddressState> {
 	commands: Command[]
 }
 
 const CLOCK_INTERVAL = 20
 
-export class StateHandler<DeviceState, Command extends CommandWithContext> {
-	private stateQueue: StateChange<DeviceState, Command>[] = []
-	private currentState: ExecutedStateChange<DeviceState, Command> | undefined
+export class StateHandler<
+	DeviceState extends Object,
+	Command extends CommandWithContext<any, any>,
+	AddressState = any
+> {
+	private stateQueue: StateChange<DeviceState, Command, AddressState>[] = []
+	private currentState: ExecutedStateChange<DeviceState, Command, AddressState> | undefined
 	/** Semaphore, to ensure that .executeNextStateChange() is only executed one at a time */
 	private _executingStateChange = false
 	private _commandExecutor: CommandExecutor<DeviceState, Command>
@@ -36,7 +42,8 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 	constructor(
 		private context: StateHandlerContext,
 		private config: StateHandlerConfig,
-		private device: BaseDeviceAPI<DeviceState, Command>
+		private device: BaseDeviceAPI<DeviceState, any, Command>,
+		private _stateTracker?: StateTracker<any>
 	) {
 		this.logger = context.logger
 
@@ -45,7 +52,7 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 		})
 
 		this._commandExecutor = new CommandExecutor(context.logger, this.config.executionType, async (c) =>
-			device.sendCommand(c)
+			this.device.sendCommand(c)
 		)
 
 		this.clock = setInterval(() => {
@@ -78,6 +85,8 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 	}
 
 	async handleState(state: Timeline.TimelineState<TSRTimelineContent>, mappings: Mappings) {
+		if (this.currentState?.state && this.currentState.state.time > state.time) return // the incoming state is stale, we ignore it
+
 		const nextState = this.stateQueue[0]
 
 		const trace = startTrace('device:convertTimelineStateToDeviceState', { deviceId: this.context.deviceId })
@@ -89,7 +98,8 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 		this.stateQueue = [
 			...this.stateQueue.filter((s) => s.state.time < state.time), // TODO - can we smuggle a little and execute something for the next frame?
 			{
-				deviceState,
+				deviceState: 'deviceState' in deviceState ? deviceState.deviceState : deviceState,
+				addressStates: 'addressStates' in deviceState ? deviceState.addressStates : undefined,
 				state,
 				mappings,
 
@@ -113,8 +123,8 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 		this.currentState = {
 			commands: [],
 			deviceState: state,
-			state: this.currentState?.state || { time: this.context.getCurrentTime(), layers: {}, nextEvents: [] },
-			mappings: this.currentState?.mappings || {},
+			state: this.currentState?.state ?? { time: this.context.getCurrentTime(), layers: {}, nextEvents: [] },
+			mappings: this.currentState?.mappings ?? {},
 		}
 		await this.calculateNextStateChange()
 	}
@@ -123,6 +133,7 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 	 * This takes in a DeviceState and then updates the commands such that the device
 	 * will be put back into its intended state as designated by the timeline
 	 * @todo: this may need to be tied into _executingStateChange variable
+	 * @todo: add address states?
 	 */
 	async updateStateFromDeviceState(state: DeviceState | undefined) {
 		// update the current state to the state we received
@@ -147,7 +158,8 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 
 		// push a new state
 		this.stateQueue.unshift({
-			deviceState: deviceState,
+			deviceState: 'deviceState' in deviceState ? deviceState.deviceState : deviceState,
+			addressStates: 'addressStates' in deviceState ? deviceState.addressStates : undefined,
 			state: this.currentState?.state || { time: this.context.getCurrentTime(), layers: {}, nextEvents: [] },
 			mappings: this.currentState?.mappings || {},
 		})
@@ -160,20 +172,58 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 		this.stateQueue = this.stateQueue.filter((s) => s.state.time <= t)
 	}
 
+	recalcDiff() {
+		this.calculateNextStateChange().catch((e) => {
+			this.logger.warn('Failed to calculate state change ' + e)
+		})
+	}
+
 	private async calculateNextStateChange() {
 		if (!this.currentState) return // a change is currently being executed, we'll be called again once it's done
 
 		const nextState = this.stateQueue[0]
 		if (!nextState) return
 
+		let oldState = this.currentState?.deviceState
+		let newState = nextState.deviceState
+
+		if (
+			this.device.applyAddressState &&
+			this.device.addressStateReassertsControl &&
+			this.device.diffAddressStates &&
+			this._stateTracker
+		) {
+			oldState = cloneDeep(oldState)
+			newState = cloneDeep(newState)
+			const addresses = this._stateTracker.getAllAddresses()
+
+			for (const addr of addresses) {
+				const isAhead = this._stateTracker.isDeviceAhead(addr)
+
+				if (isAhead) {
+					const currentState = this._stateTracker.getCurrentState(addr)
+					if (!currentState) continue // nothing to take from here
+
+					if (oldState) this.device.applyAddressState(oldState, addr, currentState)
+
+					const addrState = nextState.addressStates?.[addr]
+					const curExpectedState = this._stateTracker.getExpectedState(addr)
+					if (
+						addrState &&
+						!(
+							this.device.addressStateReassertsControl(curExpectedState, addrState) ||
+							this.device.diffAddressStates(curExpectedState, addrState)
+						)
+					) {
+						this.device.applyAddressState(newState, addr, currentState)
+					}
+				}
+			}
+		}
+
 		try {
 			const trace = startTrace('device:diffDeviceStates', { deviceId: this.context.deviceId })
-			nextState.commands = this.device.diffStates(
-				this.currentState?.deviceState,
-				nextState.deviceState,
-				nextState.mappings,
-				this.context.getCurrentTime()
-			)
+			nextState.commands = this.device.diffStates(oldState, newState, nextState.mappings, this.context.getCurrentTime())
 			nextState.preliminary = Math.max(0, ...nextState.commands.map((c) => c.preliminary ?? 0))
 			this.context.emitTimeTrace(endTrace(trace))
 		} catch (e) {
@@ -183,7 +233,11 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 			nextState.commands = []
 		}
 
-		if (nextState.state.time - (nextState.preliminary ?? 0) <= this.context.getCurrentTime() && this.currentState) {
+		if (
+			!this._executingStateChange &&
+			nextState === this.stateQueue[0] &&
+			nextState.state.time - (nextState.preliminary ?? 0) <= this.context.getCurrentTime()
+		) {
 			await this.executeNextStateChange()
 		}
 	}
@@ -219,7 +273,18 @@ export class StateHandler<DeviceState, Command extends CommandWithContext> {
 				this.logger.error('Error while executing next state change', e)
 			})
 
-		this.currentState = newState as ExecutedStateChange<DeviceState, Command>
+		if (this._stateTracker && newState.addressStates && this.device.diffAddressStates) {
+			for (const [a, s] of Object.entries<AddressState>(newState.addressStates)) {
+				const currentAddrState = this._stateTracker.getExpectedState(a)
+				const reassertsControl = this.device.addressStateReassertsControl
+					? this.device.addressStateReassertsControl(currentAddrState, s)
+					: this.device.diffAddressStates(currentAddrState, s)
+
+				this._stateTracker.updateExpectedState(a, s, reassertsControl)
+			}
+		}
+
+		this.currentState = newState as ExecutedStateChange<DeviceState, Command, AddressState>
 		this._executingStateChange = false
 
 		this.calculateNextStateChange().catch((e) => {

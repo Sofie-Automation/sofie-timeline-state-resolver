@@ -46,6 +46,8 @@ try {
 	hadError = true
 }
 
+const genericActionTypes = [] // nocommit - how can these be used by the other devices?
+
 // convert generic PTZ actions
 try {
 	const actionsDescr = JSON.parse(await fs.readFile('./src/$schemas/generic-ptz-actions.json'))
@@ -62,6 +64,7 @@ try {
 		// Payload:
 		if (action.payload) {
 			actionDefinition.payloadId = action.payload.id || capitalise(action.id + 'Payload')
+			genericActionTypes.push(actionDefinition.payloadId)
 			actionTypes.push(
 				await compile(action.payload, actionDefinition.payloadId, {
 					additionalProperties: false,
@@ -74,6 +77,7 @@ try {
 		// Return Data:
 		if (action.result) {
 			actionDefinition.resultId = action.result.id || capitalise(action.id + 'Result')
+			genericActionTypes.push(actionDefinition.payloadId)
 			actionTypes.push(
 				await compile(action.result, actionDefinition.resultId, {
 					additionalProperties: false,

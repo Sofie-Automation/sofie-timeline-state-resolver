@@ -98,7 +98,9 @@ for (const dir of dirs) {
 	try {
 		const filePath = path.join(dirPath, 'options.json')
 		if (await fsExists(filePath)) {
-			const options = await compileFromFile(filePath, {
+			const optionsDescr = JSON.parse(await fs.readFile(filePath))
+			delete optionsDescr.title // remove the title, so the generation uses the forced one
+			const options = await compile(optionsDescr, dirId + 'Options', {
 				additionalProperties: false,
 				style: PrettierConf,
 				bannerComment: '',
@@ -165,6 +167,8 @@ for (const dir of dirs) {
 
 	// compile actions from file
 	const actionDefinitions = []
+	const importGenericTypes = new Set()
+	const genericActionTypes = [] // nocommit - how can this be populated by devices?
 
 	try {
 		const filePath = path.join(dirPath, 'actions.json')
@@ -183,26 +187,34 @@ for (const dir of dirs) {
 				// Payload:
 				if (action.payload) {
 					actionDefinition.payloadId = action.payload.id || capitalise(action.id + 'Payload')
-					actionTypes.push(
-						await compile(action.payload, actionDefinition.payloadId, {
-							additionalProperties: false,
-							style: PrettierConf,
-							bannerComment: '',
-							enableConstEnums: false,
-						})
-					)
+					if (genericActionTypes.includes(actionDefinition.payloadId)) {
+						importGenericTypes.add(actionDefinition.payloadId)
+					} else {
+						actionTypes.push(
+							await compile(action.payload, actionDefinition.payloadId, {
+								additionalProperties: false,
+								style: PrettierConf,
+								bannerComment: '',
+								enableConstEnums: false,
+							})
+						)
+					}
 				}
 				// Return Data:
 				if (action.result) {
 					actionDefinition.resultId = action.result.id || capitalise(action.id + 'Result')
-					actionTypes.push(
-						await compile(action.result, actionDefinition.resultId, {
-							additionalProperties: false,
-							style: PrettierConf,
-							bannerComment: '',
-							enableConstEnums: false,
-						})
-					)
+					if (genericActionTypes.includes(actionDefinition.resultId)) {
+						importGenericTypes.add(actionDefinition.resultId)
+					} else {
+						actionTypes.push(
+							await compile(action.result, actionDefinition.resultId, {
+								additionalProperties: false,
+								style: PrettierConf,
+								bannerComment: '',
+								enableConstEnums: false,
+							})
+						)
+					}
 				}
 
 				if (actionTypes.length) {
@@ -216,6 +228,10 @@ for (const dir of dirs) {
 		hadError = true
 	}
 
+	if (importGenericTypes.size > 0) {
+		output = `import { ${Array.from(importGenericTypes).join(', ')} } from './generic-ptz-actions'\n\n` + output
+	}
+
 	if (actionDefinitions.length > 0) {
 		// An enum for all action ids:
 
@@ -227,32 +243,29 @@ ${actionDefinitions
 }`
 		// An interface for all the action methods:
 		output += `
-export interface ${dirId}ActionExecutionResults {
+export interface ${dirId}ActionMethods {
 ${actionDefinitions
 	.map(
 		(actionDefinition) =>
-			`\t${actionDefinition.id}: (${actionDefinition.payloadId ? `payload: ${actionDefinition.payloadId}` : ''}) => ${
-				actionDefinition.resultId || 'void'
-			}`
+			`\t[${dirId}Actions.${capitalise(actionDefinition.id)}]: (payload: ${
+				actionDefinition.payloadId ? actionDefinition.payloadId : 'Record<string, never>'
+			}) => Promise<ActionExecutionResult<${actionDefinition.resultId || 'void'}>>`
 	)
 	.join(',\n')}
-}`
+}
+`
 		// Prepend import:
 		output =
 			`import { ActionExecutionResult } from "${isMainRepository ? '..' : 'timeline-state-resolver-types'}"\n` + output
-
-		// A helper type used to access the action methods payload:
-		output += `
-export type ${dirId}ActionExecutionPayload<A extends keyof ${dirId}ActionExecutionResults> = Parameters<
-	${dirId}ActionExecutionResults[A]
->[0]
-`
-		// A helper type used to access the action methods return Data:
-		output += `
-export type ${dirId}ActionExecutionResult<A extends keyof ${dirId}ActionExecutionResults> =
-	ActionExecutionResult<ReturnType<${dirId}ActionExecutionResults[A]>>
-`
 	}
+
+	output += `
+export interface ${dirId}DeviceTypes {
+	Options: ${dirId}Options
+	Mappings: SomeMapping${dirId}
+	Actions: ${actionDefinitions.length > 0 ? `${dirId}ActionMethods` : 'null'}
+}
+`
 
 	// Output to tsr types package
 	const outputFilePath = path.join(resolvedOutputPath, dir + '.ts')

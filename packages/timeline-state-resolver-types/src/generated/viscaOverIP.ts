@@ -13,6 +13,92 @@ export interface ViscaOverIPOptions {
 
 export type SomeMappingViscaOverIP = Record<string, never>
 
+export interface SetPanTiltSpeedPayload {
+	/**
+	 * Pan Speed; Range: [-1.0, 1.0]; -1.0 = fastest LEFT, 0.0 = STOP, 1.0 = fastest RIGHT (each protocol might internally support a different range, which the value will be mapped into)
+	 */
+	panSpeed: number
+	/**
+	 * Tilt Speed; Range: [-1.0, 1.0]; -1.0 = fastest DOWN, 0.0 = STOP, 1.0 = fastest UP (each protocol might internally support a different range, which the value will be mapped into)
+	 */
+	tiltSpeed: number
+}
+
+export interface GetPanTiltPositionResult {
+	/**
+	 * Pan Position; Range: [-1.0, 1.0]; -1.0 = furthest LEFT, 0.0 = CENTER, 1.0 = furthest RIGHT (each protocol might internally support a different range, which the value will be mapped from)
+	 */
+	panPosition: number
+	/**
+	 * Tilt Position; Range: [-1.0, 1.0]; -1.0 = furthest DOWN, 0.0 = CENTER, 1.0 = furthest UP (each protocol might internally support a different range, which the value will be mapped from)
+	 */
+	tiltPosition: number
+}
+
+export interface SetZoomSpeedPayload {
+	/**
+	 * Zoom Speed; Range: [-1.0, 1.0]; -1.0 = fastest WIDE, 0.0 = STOP, 1.0 = fastest TELE (each protocol might internally support a different range, which the value will be mapped into)
+	 */
+	zoomSpeed: number
+}
+
+export interface GetZoomPositionResult {
+	/**
+	 * Zoom Position; Range: [0.0, 1.0]; 0.0 = furthest WIDE, 1.0 = furthest TELE (each protocol might internally support a different range, which the value will be mapped from)
+	 */
+	zoomPosition: number
+}
+
+export interface StorePresetPayload {
+	/**
+	 * Preset number, within the range supported by the camera
+	 */
+	presetNumber: number
+}
+
+export interface RecallPresetPayload {
+	/**
+	 * Preset number, within the range supported by the camera
+	 */
+	presetNumber: number
+}
+
+export interface ResetPresetPayload {
+	/**
+	 * Preset number, within the range supported by the camera
+	 */
+	presetNumber: number
+}
+
+export interface SetFocusSpeedPayload {
+	/**
+	 * Focus Speed; Range: [-1.0, 1.0]; -1.0 = fastest NEAR, 0.0 = STOP, 1.0 = fastest FAR (each protocol might internally support a different range, which the value will be mapped into)
+	 */
+	focusSpeed: number
+}
+
+export interface SetFocusModePayload {
+	mode: FocusMode
+}
+
+export enum FocusMode {
+	AUTO = 'auto',
+	MANUAL = 'manual'
+}
+
+export interface GetFocusPositionResult {
+	/**
+	 * Focus Position; Range: [0.0, 1.0]; 0.0 = furthest NEAR, 1.0 = furthest FAR (each protocol might internally support a different range, which the value will be mapped from)
+	 */
+	focusPosition: number
+}
+
+export type FocusModeResult = FocusMode
+
+export interface GetFocusModeResult {
+	mode: FocusModeResult
+}
+
 export enum ViscaOverIPActions {
 	SetPanTiltSpeed = 'setPanTiltSpeed',
 	GetPanTiltPosition = 'getPanTiltPosition',
@@ -27,23 +113,23 @@ export enum ViscaOverIPActions {
 	GetFocusPosition = 'getFocusPosition',
 	GetFocusMode = 'getFocusMode'
 }
-export interface ViscaOverIPActionExecutionResults {
-	setPanTiltSpeed: () => void,
-	getPanTiltPosition: () => void,
-	setZoomSpeed: () => void,
-	getZoomPosition: () => void,
-	storePreset: () => void,
-	recallPreset: () => void,
-	resetPreset: () => void,
-	setFocusSpeed: () => void,
-	setFocusMode: () => void,
-	triggerOnePushFocus: () => void,
-	getFocusPosition: () => void,
-	getFocusMode: () => void
+export interface ViscaOverIPActionMethods {
+	[ViscaOverIPActions.SetPanTiltSpeed]: (payload: SetPanTiltSpeedPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.GetPanTiltPosition]: (payload: Record<string, never>) => Promise<ActionExecutionResult<GetPanTiltPositionResult>>,
+	[ViscaOverIPActions.SetZoomSpeed]: (payload: SetZoomSpeedPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.GetZoomPosition]: (payload: Record<string, never>) => Promise<ActionExecutionResult<GetZoomPositionResult>>,
+	[ViscaOverIPActions.StorePreset]: (payload: StorePresetPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.RecallPreset]: (payload: RecallPresetPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.ResetPreset]: (payload: ResetPresetPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.SetFocusSpeed]: (payload: SetFocusSpeedPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.SetFocusMode]: (payload: SetFocusModePayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.TriggerOnePushFocus]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.GetFocusPosition]: (payload: Record<string, never>) => Promise<ActionExecutionResult<GetFocusPositionResult>>,
+	[ViscaOverIPActions.GetFocusMode]: (payload: Record<string, never>) => Promise<ActionExecutionResult<GetFocusModeResult>>
 }
-export type ViscaOverIPActionExecutionPayload<A extends keyof ViscaOverIPActionExecutionResults> = Parameters<
-	ViscaOverIPActionExecutionResults[A]
->[0]
 
-export type ViscaOverIPActionExecutionResult<A extends keyof ViscaOverIPActionExecutionResults> =
-	ActionExecutionResult<ReturnType<ViscaOverIPActionExecutionResults[A]>>
+export interface ViscaOverIPDeviceTypes {
+	Options: ViscaOverIPOptions
+	Mappings: SomeMappingViscaOverIP
+	Actions: ViscaOverIPActionMethods
+}

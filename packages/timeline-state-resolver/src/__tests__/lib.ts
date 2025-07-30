@@ -86,11 +86,9 @@ declare global {
 		}
 	}
 }
-/** setTimeout (not affected by jest.fakeTimers) */
-const setTimeoutOrg = setTimeout
 /** Sleep for a  */
 export async function waitTime(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeoutOrg(resolve, ms))
+	return new Promise((resolve) => jest.requireActual('timers').setTimeout(resolve, ms))
 }
 
 /** The current time, not affected by jest.fakeTimers */

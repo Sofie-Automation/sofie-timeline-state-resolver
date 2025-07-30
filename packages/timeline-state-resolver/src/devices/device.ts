@@ -9,14 +9,13 @@ import {
 	Timeline,
 	TSRTimelineContent,
 	ActionExecutionResult,
-	ActionExecutionResultCode,
 } from 'timeline-state-resolver-types'
 import { EventEmitter } from 'eventemitter3'
 import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo } from './doOnTime'
 import { ExpectedPlayoutItem } from '../expectedPlayoutItems'
-import { t } from '../lib'
+import { actionNotFoundMessage } from '../lib'
 import type { FinishedTrace } from 'timeline-state-resolver-api'
-import { DeviceEvents, CommandWithContext as ServiceCommandWithContext } from '../service/device'
+import { CommandWithContext, DeviceEvents } from '../service/device'
 
 // =================================================================================================
 // =================================================================================================
@@ -40,8 +39,6 @@ export interface DeviceCommandContainer {
 	deviceId: string
 	commands: Array<DeviceCommand>
 }
-
-export type CommandWithContext = ServiceCommandWithContext
 
 export { DeviceStatus, StatusCode }
 
@@ -68,7 +65,7 @@ export type DeviceEventsOLD = {
 	slowFulfilledCommand: [info: SlowFulfilledCommandInfo]
 
 	/** Something went wrong when executing a command  */
-	commandError: [error: Error, context: CommandWithContext]
+	commandError: [error: Error, context: CommandWithContext<any, any>]
 	/** Update a MediaObject  */
 	updateMediaObject: [collectionId: string, docId: string, doc: MediaObject | null]
 	/** Clear a MediaObjects collection */
@@ -105,7 +102,10 @@ export interface IDevice<TOptions extends DeviceOptionsBase<any>> {
  * Base class for all Devices to inherit from. Defines the API that the conductor
  * class will use.
  */
-export abstract class Device<TOptions extends DeviceOptionsBase<any>>
+export abstract class Device<
+		DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> }, // TODO: This type is not used as much as it should be, but as this class is deprecated it is not worth the effort to fix it
+		TOptions extends DeviceOptionsBase<DeviceTypes['Options']>
+	>
 	extends EventEmitter<DeviceEvents>
 	implements IDevice<TOptions>
 {
@@ -256,11 +256,16 @@ export abstract class Device<TOptions extends DeviceOptionsBase<any>>
 		return this._isActive
 	}
 
-	async executeAction(_actionId: string, _payload?: Record<string, any>): Promise<ActionExecutionResult<any>> {
-		return {
-			result: ActionExecutionResultCode.Error,
-			response: t('Device does not implement an action handler'),
+	abstract readonly actions: DeviceTypes['Actions']
+
+	async executeAction(id: string, payload: Record<string, any>): Promise<ActionExecutionResult<any>> {
+		const action = this.actions[id]
+
+		if (!action) {
+			return actionNotFoundMessage(id as never)
 		}
+
+		return action(payload)
 	}
 
 	private _updateCurrentTime() {
@@ -336,7 +341,11 @@ export abstract class Device<TOptions extends DeviceOptionsBase<any>>
  * extra convenience methods for tracking state while inheriting all other methods
  * from the Device class.
  */
-export abstract class DeviceWithState<TState, TOptions extends DeviceOptionsBase<any>> extends Device<TOptions> {
+export abstract class DeviceWithState<
+	TState,
+	DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> },
+	TOptions extends DeviceOptionsBase<DeviceTypes['Options']>
+> extends Device<DeviceTypes, TOptions> {
 	private _states: { [time: string]: TState } = {}
 	private _setStateCount = 0
 

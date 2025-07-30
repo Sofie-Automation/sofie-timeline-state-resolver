@@ -21,12 +21,18 @@ export {
 
 /**
  * API for use by the DeviceInstance to be able to use a device
- */
-/** @deprecated use the interface directly */
-export abstract class Device<DeviceOptions, DeviceState, Command extends CommandWithContext>
-	implements BaseDeviceAPI<DeviceState, Command>, DeviceInterface<DeviceOptions, DeviceState, Command>
+ * @deprecated use the interface directly
+ * */
+export abstract class Device<
+	DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> | null },
+	DeviceState,
+	Command extends CommandWithContext<any, any>,
+	AddressState = void
+> implements BaseDeviceAPI<DeviceState, AddressState, Command>, DeviceInterface<DeviceOptions, DeviceState, Command>
 {
-	constructor(protected context: DeviceContextAPI<DeviceState>) {
+	abstract actions: DeviceTypes['Actions']
+
+	constructor(protected context: DeviceContextAPI<DeviceState, AddressState>) {
 		// Nothing
 	}
 
@@ -34,7 +40,7 @@ export abstract class Device<DeviceOptions, DeviceState, Command extends Command
 	 * Initiates the device connection, after this has resolved the device
 	 * is ready to be controlled
 	 */
-	abstract init(options: DeviceOptions): Promise<boolean>
+	abstract init(options: DeviceTypes['Options']): Promise<boolean>
 	/**
 	 * Ready this class for garbage collection
 	 */
@@ -52,21 +58,23 @@ export abstract class Device<DeviceOptions, DeviceState, Command extends Command
 	abstract get connected(): boolean
 	abstract getStatus(): Omit<DeviceStatus, 'active'>
 
-	abstract actions: Record<string, (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>>
-
 	// todo - add media objects
 
 	// From BaseDeviceAPI: -----------------------------------------------
 	abstract convertTimelineStateToDeviceState(
 		state: Timeline.TimelineState<TSRTimelineContent>,
-		newMappings: Mappings
-	): DeviceState
+		newMappings: Record<string, Mapping<DeviceTypes['Mappings']>>
+	): DeviceState | { deviceState: DeviceState; addressStates: Record<string, AddressState> }
 	abstract diffStates(
 		oldState: DeviceState | undefined,
 		newState: DeviceState,
-		mappings: Mappings,
+		mappings: Record<string, Mapping<DeviceTypes['Mappings']>>,
 		time: number
 	): Array<Command>
 	abstract sendCommand(command: Command): Promise<void>
+
+	applyAddressState?(state: DeviceState, address: string, addressState: AddressState): void
+	diffAddressStates?(state1: AddressState, state2: AddressState): boolean
+	addressStateReassertsControl?(oldState: AddressState | undefined, newState: AddressState): boolean
 	// -------------------------------------------------------------------
 }

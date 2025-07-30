@@ -14,8 +14,9 @@ import {
 	Datastore,
 	DeviceStatus,
 	DeviceType,
-	CasparCGActions,
 	ActionExecutionResultCode,
+	ListMediaResult,
+	ActionExecutionResult,
 } from 'timeline-state-resolver-types'
 import { ThreadedClass } from 'threadedclass'
 
@@ -139,7 +140,7 @@ export class TSRHandler {
 
 				console.log(`Fetching media list for ${device.deviceId}...`)
 
-				const list = await device.executeAction(CasparCGActions.ListMedia, undefined)
+				const list: ActionExecutionResult<ListMediaResult> = await device.executeAction('listMedia', {})
 
 				if (list.result === ActionExecutionResultCode.Error) {
 					console.log(`Error fetching media list: ${list.response?.key}`)

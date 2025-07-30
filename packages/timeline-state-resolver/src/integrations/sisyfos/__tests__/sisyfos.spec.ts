@@ -262,6 +262,7 @@ describe('Sisyfos', () => {
 			channel: 0,
 			value: false,
 		})
+		await myConductor.destroy()
 	})
 	test('Sisyfos: set ch1: pgm & ch2: lookahead and then ch1: vo, ch2: pgm', async () => {
 		const commandReceiver0: any = jest.fn(async () => {
@@ -489,6 +490,7 @@ describe('Sisyfos', () => {
 			channel: 0,
 			value: false,
 		})
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: set lookahead and take to pgm, with lookahead still on', async () => {
@@ -633,6 +635,7 @@ describe('Sisyfos', () => {
 			channel: 1,
 			values: [0],
 		})
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using CHANNELS', async () => {
@@ -853,6 +856,8 @@ describe('Sisyfos', () => {
 		})
 
 		commandReceiver0.mockClear()
+
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using global triggerValue', async () => {
@@ -1061,6 +1066,8 @@ describe('Sisyfos', () => {
 		})
 
 		commandReceiver0.mockClear()
+
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using per-channel triggerValue - initially defined', async () => {
@@ -1213,6 +1220,8 @@ describe('Sisyfos', () => {
 		})
 
 		commandReceiver0.mockClear()
+
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using per-channel triggerValue - initially undefined', async () => {
@@ -1351,6 +1360,8 @@ describe('Sisyfos', () => {
 		expect(commandReceiver0.mock.calls.length).toEqual(0)
 
 		commandReceiver0.mockClear()
+
+		await myConductor.destroy()
 	})
 
 	test('Connection status', async () => {
@@ -1417,6 +1428,7 @@ describe('Sisyfos', () => {
 
 		expect(await device.connected).toEqual(true)
 		expect(onConnectionChanged.mock.calls.length).toBeGreaterThanOrEqual(1)
+		await myConductor.destroy()
 	})
 
 	describe('convertTimelineStateToDeviceState', () => {

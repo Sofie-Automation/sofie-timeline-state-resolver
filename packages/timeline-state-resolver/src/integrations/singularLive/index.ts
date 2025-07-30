@@ -11,7 +11,7 @@ import {
 	Mapping,
 	DeviceStatus,
 	StatusCode,
-	ActionExecutionResult,
+	SingularLiveDeviceTypes,
 } from 'timeline-state-resolver-types'
 import got from 'got'
 import { literal } from '../../lib'
@@ -26,9 +26,7 @@ export interface SingularLiveCommandContent {
 	subCompositionName: string
 }
 
-export interface SingularLiveCommandContext extends CommandWithContext {
-	command: Command
-}
+export type SingularLiveCommandContext = CommandWithContext<Command, string>
 
 interface Command {
 	commandName: 'added' | 'changed' | 'removed'
@@ -52,10 +50,8 @@ const SINGULAR_LIVE_API = 'https://app.singular.live/apiv2/controlapps/'
 /**
  * This is a Singular.Live device, it talks to a Singular.Live App Instance using an Access Token
  */
-export class SingularLiveDevice extends Device<SingularLiveOptions, SingularLiveState, SingularLiveCommandContext> {
-	readonly actions: {
-		[id: string]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {}
+export class SingularLiveDevice extends Device<SingularLiveDeviceTypes, SingularLiveState, SingularLiveCommandContext> {
+	readonly actions = null
 
 	private _accessToken: string | undefined
 
@@ -202,13 +198,9 @@ export class SingularLiveDevice extends Device<SingularLiveOptions, SingularLive
 			.sort((a, b) => a.command.layer.localeCompare(b.command.layer))
 	}
 
-	async sendCommand({ command, context, timelineObjId }: SingularLiveCommandContext): Promise<any> {
-		const cwc: CommandWithContext = {
-			context,
-			command,
-			timelineObjId,
-		}
+	async sendCommand(cwc: SingularLiveCommandContext): Promise<any> {
 		this.context.logger.debug(cwc)
+		const { command, context } = cwc
 
 		const url = SINGULAR_LIVE_API + this._accessToken + '/control'
 

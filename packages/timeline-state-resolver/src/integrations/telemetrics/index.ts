@@ -1,8 +1,8 @@
 import {
-	ActionExecutionResult,
 	DeviceStatus,
 	Mappings,
 	StatusCode,
+	TelemetricsDeviceTypes,
 	TelemetricsOptions,
 	Timeline,
 	TimelineContentTelemetrics,
@@ -19,18 +19,14 @@ interface TelemetricsState {
 	presetShotIdentifiers: number[]
 }
 
-interface TelemetricsCommandWithContext extends CommandWithContext {
-	command: { presetShotIdentifier: number }
-}
+type TelemetricsCommandWithContext = CommandWithContext<{ presetShotIdentifier: number }, string>
 
 /**
  * Connects to a Telemetrics Device on port 5000 using a TCP socket.
  * This class uses a fire and forget approach.
  */
-export class TelemetricsDevice extends Device<TelemetricsOptions, TelemetricsState, TelemetricsCommandWithContext> {
-	readonly actions: {
-		[id: string]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {}
+export class TelemetricsDevice extends Device<TelemetricsDeviceTypes, TelemetricsState, TelemetricsCommandWithContext> {
+	readonly actions = null
 
 	private socket: Socket | undefined
 	private statusCode: StatusCode = StatusCode.UNKNOWN
@@ -102,18 +98,13 @@ export class TelemetricsDevice extends Device<TelemetricsOptions, TelemetricsSta
 		return newTelemetricsState
 	}
 
-	async sendCommand({ command, context, timelineObjId }: TelemetricsCommandWithContext): Promise<void> {
-		const cwc: CommandWithContext = {
-			context,
-			command,
-			timelineObjId,
-		}
+	async sendCommand(cwc: TelemetricsCommandWithContext): Promise<void> {
 		this.context.logger.debug(cwc)
 
 		// Skip attempting send if not connected
 		if (!this.socket) return
 
-		const commandStr = `${TELEMETRICS_COMMAND_PREFIX}${command.presetShotIdentifier}\r`
+		const commandStr = `${TELEMETRICS_COMMAND_PREFIX}${cwc.command.presetShotIdentifier}\r`
 		this.socket.write(commandStr)
 	}
 

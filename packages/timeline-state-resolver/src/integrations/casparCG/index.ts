@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceWithState, CommandWithContext, DeviceStatus, StatusCode } from '../../devices/device'
+import { DeviceWithState, DeviceStatus, StatusCode } from '../../devices/device'
 import {
 	AMCPCommand,
 	BasicCasparCGAPI,
@@ -25,14 +25,14 @@ import {
 	Timeline,
 	TSRTimelineContent,
 	ActionExecutionResult,
-	CasparCGActionExecutionResult,
 	ActionExecutionResultCode,
-	CasparCGActions,
+	CasparCGActionMethods,
 	MappingCasparCGLayer,
 	Mapping,
-	CasparCGActionExecutionPayload,
 	ListMediaResult,
 	interpolateTemplateStringIfNeeded,
+	CasparCGDeviceTypes,
+	CasparCGActions,
 } from 'timeline-state-resolver-types'
 
 import {
@@ -58,8 +58,9 @@ import { DoOnTime, SendMode } from '../../devices/doOnTime'
 import got from 'got'
 import { InternalTransitionHandler } from '../../devices/transitions/transitionHandler'
 import Debug from 'debug'
-import { actionNotFoundMessage, deepMerge, endTrace, literal, startTrace, t } from '../../lib'
+import { deepMerge, endTrace, literal, startTrace, t } from '../../lib'
 import { ClsParameters } from 'casparcg-connection/dist/parameters'
+import { CommandWithContext } from '../../service/device'
 const debug = Debug('timeline-state-resolver:casparcg')
 
 const MEDIA_RETRY_INTERVAL = 10 * 1000 // default time in ms between checking whether a file needs to be retried loading
@@ -76,7 +77,7 @@ export type CommandReceiver = (time: number, cmd: AMCPCommand, context: string, 
  * commands. It depends on the DoOnTime class to execute the commands timely or,
  * optionally, uses the CasparCG command scheduling features.
  */
-export class CasparCGDevice extends DeviceWithState<State, DeviceOptionsCasparCGInternal> {
+export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, DeviceOptionsCasparCGInternal> {
 	/** Setup in init */
 	private _ccg!: BasicCasparCGAPI
 	private _commandReceiver: CommandReceiver = this._defaultCommandReceiver.bind(this)
@@ -674,20 +675,17 @@ export class CasparCGDevice extends DeviceWithState<State, DeviceOptionsCasparCG
 			result: ActionExecutionResultCode.Ok,
 		}
 	}
-	async executeAction<A extends CasparCGActions>(
-		actionId: A,
-		payload: CasparCGActionExecutionPayload<A>
-	): Promise<CasparCGActionExecutionResult<A>> {
-		switch (actionId) {
-			case CasparCGActions.ClearAllChannels:
-				return this.clearAllChannels() as Promise<CasparCGActionExecutionResult<A>>
-			case CasparCGActions.RestartServer:
-				return this.restartCasparCG() as Promise<CasparCGActionExecutionResult<A>>
-			case CasparCGActions.ListMedia:
-				return this.listMedia(payload) as Promise<CasparCGActionExecutionResult<A>>
-			default:
-				return actionNotFoundMessage(actionId)
-		}
+
+	readonly actions: CasparCGActionMethods = {
+		[CasparCGActions.ClearAllChannels]: async () => {
+			return this.clearAllChannels()
+		},
+		[CasparCGActions.RestartServer]: async () => {
+			return this.restartCasparCG()
+		},
+		[CasparCGActions.ListMedia]: async (query: ClsParameters) => {
+			return this.listMedia(query)
+		},
 	}
 
 	/**
@@ -823,7 +821,7 @@ export class CasparCGDevice extends DeviceWithState<State, DeviceOptionsCasparCG
 			if (this._retryTime) this._retryTimeout = setTimeout(() => this._assertIntendedState(), this._retryTime)
 		}
 
-		const cwc: CommandWithContext = {
+		const cwc: CommandWithContext<string, string> = {
 			context,
 			timelineObjId,
 			command: JSON.stringify(cmd),

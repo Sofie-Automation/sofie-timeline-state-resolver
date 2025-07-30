@@ -23,6 +23,10 @@ export enum AtemMediaPoolType {
 	Audio = 'audio'
 }
 
+export interface MappingAtemControlValue {
+	mappingType: MappingAtemType.ControlValue
+}
+
 export interface MappingAtemMixEffect {
 	index: number
 	mappingType: MappingAtemType.MixEffect
@@ -73,6 +77,7 @@ export interface MappingAtemColorGenerator {
 }
 
 export enum MappingAtemType {
+	ControlValue = 'controlValue',
 	MixEffect = 'mixEffect',
 	DownStreamKeyer = 'downStreamKeyer',
 	SuperSourceBox = 'superSourceBox',
@@ -85,17 +90,17 @@ export enum MappingAtemType {
 	ColorGenerator = 'colorGenerator',
 }
 
-export type SomeMappingAtem = MappingAtemMixEffect | MappingAtemDownStreamKeyer | MappingAtemSuperSourceBox | MappingAtemAuxilliary | MappingAtemMediaPlayer | MappingAtemSuperSourceProperties | MappingAtemAudioChannel | MappingAtemMacroPlayer | MappingAtemAudioRouting | MappingAtemColorGenerator
+export type SomeMappingAtem = MappingAtemControlValue | MappingAtemMixEffect | MappingAtemDownStreamKeyer | MappingAtemSuperSourceBox | MappingAtemAuxilliary | MappingAtemMediaPlayer | MappingAtemSuperSourceProperties | MappingAtemAudioChannel | MappingAtemMacroPlayer | MappingAtemAudioRouting | MappingAtemColorGenerator
 
 export enum AtemActions {
 	Resync = 'resync'
 }
-export interface AtemActionExecutionResults {
-	resync: () => void
+export interface AtemActionMethods {
+	[AtemActions.Resync]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
 }
-export type AtemActionExecutionPayload<A extends keyof AtemActionExecutionResults> = Parameters<
-	AtemActionExecutionResults[A]
->[0]
 
-export type AtemActionExecutionResult<A extends keyof AtemActionExecutionResults> =
-	ActionExecutionResult<ReturnType<AtemActionExecutionResults[A]>>
+export interface AtemDeviceTypes {
+	Options: AtemOptions
+	Mappings: SomeMappingAtem
+	Actions: AtemActionMethods
+}

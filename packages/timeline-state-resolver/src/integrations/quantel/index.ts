@@ -1,10 +1,11 @@
 import {
-	ActionExecutionResult,
 	ActionExecutionResultCode,
 	DeviceStatus,
 	Mappings,
 	OSCMessageCommandContent,
+	QuantelActionMethods,
 	QuantelActions,
+	QuantelDeviceTypes,
 	QuantelOptions,
 	SomeMappingQuantel,
 	StatusCode,
@@ -28,12 +29,9 @@ interface OSCDeviceStateContent extends OSCMessageCommandContent {
 	fromTlObject: string
 }
 
-export interface QuantelCommandWithContext extends CommandWithContext {
-	command: QuantelCommand
-	context: string
-}
+export type QuantelCommandWithContext = CommandWithContext<QuantelCommand, string>
 
-export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelCommandWithContext> {
+export class QuantelDevice extends Device<QuantelDeviceTypes, QuantelState, QuantelCommandWithContext> {
 	/** Setup in init */
 	private _quantel!: QuantelGateway
 	/** Setup in init */
@@ -127,13 +125,9 @@ export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelC
 
 		return diffStates(oldState, newState, currentTime)
 	}
-	async sendCommand({ command, context, timelineObjId }: QuantelCommandWithContext): Promise<any> {
-		const cwc: CommandWithContext = {
-			context: context,
-			command: command,
-			timelineObjId: timelineObjId,
-		}
+	async sendCommand(cwc: QuantelCommandWithContext): Promise<any> {
 		this.context.logger.debug(cwc)
+		const { command } = cwc
 		debug(command)
 
 		try {
@@ -150,6 +144,8 @@ export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelC
 				await this._quantelManager.pauseClip(command)
 			} else if (command.type === QuantelCommandType.CLEARCLIP) {
 				await this._quantelManager.clearClip(command)
+			} else if (command.type === QuantelCommandType.CANCELWAITING) {
+				this._quantelManager.clearAllWaitWithPort(command.portId)
 			} else {
 				throw new Error(`Unsupported command type "${cmdType}"`)
 			}
@@ -192,9 +188,7 @@ export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelC
 		}
 	}
 
-	readonly actions: {
-		[id in QuantelActions]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {
+	readonly actions: QuantelActionMethods = {
 		[QuantelActions.ClearStates]: async () => {
 			this.context.resetResolver()
 			return {
