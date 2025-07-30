@@ -5,6 +5,8 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 import { ActionExecutionResult } from ".."
+import { SetPanTiltSpeedPayload, GetPanTiltPositionResult, SetZoomSpeedPayload, GetZoomPositionResult, StorePresetPayload, RecallPresetPayload, ResetPresetPayload, SetFocusSpeedPayload, SetFocusModePayload, GetFocusPositionResult, GetFocusModeResult } from './generic-ptz-actions'
+
 
 export interface PanasonicPTZOptions {
 	host: string
@@ -36,92 +38,6 @@ export enum MappingPanasonicPTZType {
 }
 
 export type SomeMappingPanasonicPTZ = MappingPanasonicPTZPresetMem | MappingPanasonicPTZPresetSpeed | MappingPanasonicPTZZoomSpeed | MappingPanasonicPTZZoom
-
-export interface SetPanTiltSpeedPayload {
-	/**
-	 * Pan Speed; Range: [-1.0, 1.0]; -1.0 = fastest LEFT, 0.0 = STOP, 1.0 = fastest RIGHT (each protocol might internally support a different range, which the value will be mapped into)
-	 */
-	panSpeed: number
-	/**
-	 * Tilt Speed; Range: [-1.0, 1.0]; -1.0 = fastest DOWN, 0.0 = STOP, 1.0 = fastest UP (each protocol might internally support a different range, which the value will be mapped into)
-	 */
-	tiltSpeed: number
-}
-
-export interface GetPanTiltPositionResult {
-	/**
-	 * Pan Position; Range: [-1.0, 1.0]; -1.0 = furthest LEFT, 0.0 = CENTER, 1.0 = furthest RIGHT (each protocol might internally support a different range, which the value will be mapped from)
-	 */
-	panPosition: number
-	/**
-	 * Tilt Position; Range: [-1.0, 1.0]; -1.0 = furthest DOWN, 0.0 = CENTER, 1.0 = furthest UP (each protocol might internally support a different range, which the value will be mapped from)
-	 */
-	tiltPosition: number
-}
-
-export interface SetZoomSpeedPayload {
-	/**
-	 * Zoom Speed; Range: [-1.0, 1.0]; -1.0 = fastest WIDE, 0.0 = STOP, 1.0 = fastest TELE (each protocol might internally support a different range, which the value will be mapped into)
-	 */
-	zoomSpeed: number
-}
-
-export interface GetZoomPositionResult {
-	/**
-	 * Zoom Position; Range: [0.0, 1.0]; 0.0 = furthest WIDE, 1.0 = furthest TELE (each protocol might internally support a different range, which the value will be mapped from)
-	 */
-	zoomPosition: number
-}
-
-export interface StorePresetPayload {
-	/**
-	 * Preset number, within the range supported by the camera
-	 */
-	presetNumber: number
-}
-
-export interface RecallPresetPayload {
-	/**
-	 * Preset number, within the range supported by the camera
-	 */
-	presetNumber: number
-}
-
-export interface ResetPresetPayload {
-	/**
-	 * Preset number, within the range supported by the camera
-	 */
-	presetNumber: number
-}
-
-export interface SetFocusSpeedPayload {
-	/**
-	 * Focus Speed; Range: [-1.0, 1.0]; -1.0 = fastest NEAR, 0.0 = STOP, 1.0 = fastest FAR (each protocol might internally support a different range, which the value will be mapped into)
-	 */
-	focusSpeed: number
-}
-
-export interface SetFocusModePayload {
-	mode: FocusMode
-}
-
-export enum FocusMode {
-	AUTO = 'auto',
-	MANUAL = 'manual'
-}
-
-export interface GetFocusPositionResult {
-	/**
-	 * Focus Position; Range: [0.0, 1.0]; 0.0 = furthest NEAR, 1.0 = furthest FAR (each protocol might internally support a different range, which the value will be mapped from)
-	 */
-	focusPosition: number
-}
-
-export type FocusModeResult = FocusMode
-
-export interface GetFocusModeResult {
-	mode: FocusModeResult
-}
 
 export enum PanasonicPTZActions {
 	SetPanTiltSpeed = 'setPanTiltSpeed',

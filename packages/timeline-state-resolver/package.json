@@ -63,7 +63,7 @@
 		"cov-open": "run -T open-cli coverage/lcov-report/index.html",
 		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
 		"validate:dev-dependencies": "yarn npm audit --environment development",
-		"generate-schema-types": "run schema:deref && node scripts/schema-common-types.mjs && run schema:types",
+		"generate-schema-types": "run schema:deref && run schema:types",
 		"translations:extract": "run tsr-extract-translations timeline-state-resolver ./src/index.ts",
 		"translations:bundle": "run tsr-bundle-translations timeline-state-resolver ./src/translations.json",
 		"schema:deref": "tsr-schema-deref ./src/integrations ./src/\\$schemas/generated",

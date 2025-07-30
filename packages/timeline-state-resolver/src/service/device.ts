@@ -4,13 +4,7 @@ import {
 	DeviceContextAPI,
 	Device as DeviceInterface,
 } from 'timeline-state-resolver-api'
-import {
-	ActionExecutionResult,
-	DeviceStatus,
-	Mappings,
-	Timeline,
-	TSRTimelineContent,
-} from 'timeline-state-resolver-types'
+import { DeviceStatus, Mapping, Timeline, TSRTimelineContent } from 'timeline-state-resolver-types'
 
 export {
 	CommandWithContext,
@@ -28,7 +22,9 @@ export abstract class Device<
 	DeviceState,
 	Command extends CommandWithContext<any, any>,
 	AddressState = void
-> implements BaseDeviceAPI<DeviceState, AddressState, Command>, DeviceInterface<DeviceOptions, DeviceState, Command>
+> implements
+		BaseDeviceAPI<DeviceState, AddressState, Command>,
+		DeviceInterface<DeviceTypes, DeviceState, Command, AddressState>
 {
 	abstract actions: DeviceTypes['Actions']
 

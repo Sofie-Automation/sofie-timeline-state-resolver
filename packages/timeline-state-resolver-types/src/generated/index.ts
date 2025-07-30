@@ -5,6 +5,8 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 
+export * from './action-schema'
+export * from './generic-ptz-actions'
 
 export * from './abstract'
 import { SomeMappingAbstract } from './abstract'
@@ -103,6 +105,3 @@ export type TSRMappingOptions =
 	| SomeMappingVizMSE
 	| SomeMappingVmix
 	| SomeMappingWebsocketClient
-
-export * from './action-schema'
-export * from './generic-ptz-actions'

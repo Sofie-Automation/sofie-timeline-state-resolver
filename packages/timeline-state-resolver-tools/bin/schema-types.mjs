@@ -83,6 +83,101 @@ await fs.mkdir(resolvedOutputPath, { recursive: true })
 let indexFile = BANNER + `\n`
 let baseMappingsTypes = []
 
+const genericActionTypes = [] // TODO - should this be usable for plugins?
+if (isMainRepository) {
+	// Perform some special handling for the main repository. Ideally this would be a dedicated script, but that gets complicated due to needing to share the `genericActionTypes` array with the latter parts of this script
+
+	// convert action-schema
+	try {
+		const actionSchemaDescr = JSON.parse(
+			await fs.readFile('../timeline-state-resolver-api/$schemas/action-schema.json')
+		)
+		const actionSchema = await compile(actionSchemaDescr.properties.actions.items, 'TSRActionSchema', {
+			enableConstEnums: false,
+			additionalProperties: false,
+			style: PrettierConf,
+			bannerComment: '',
+		})
+
+		await fs.writeFile('../timeline-state-resolver-types/src/generated/action-schema.ts', BANNER + '\n' + actionSchema)
+	} catch (e) {
+		console.error('Error while generating action-schema.json, continuing...')
+		console.error(e)
+		hadError = true
+	}
+
+	// convert generic PTZ actions
+	try {
+		const actionsDescr = JSON.parse(await fs.readFile('./src/$schemas/generic-ptz-actions.json'))
+		const actionDefinitions = []
+		let output = ''
+		for (const action of actionsDescr.actions) {
+			let actionTypes = []
+			const actionDefinition = {
+				id: action.id,
+				payloadId: undefined,
+				resultId: undefined,
+			}
+			actionDefinitions.push(actionDefinition)
+			// Payload:
+			if (action.payload) {
+				actionDefinition.payloadId = action.payload.id || capitalise(action.id + 'Payload')
+				genericActionTypes.push(actionDefinition.payloadId)
+				actionTypes.push(
+					await compile(action.payload, actionDefinition.payloadId, {
+						additionalProperties: false,
+						style: PrettierConf,
+						bannerComment: '',
+						enableConstEnums: false,
+					})
+				)
+			}
+			// Return Data:
+			if (action.result) {
+				actionDefinition.resultId = action.result.id || capitalise(action.id + 'Result')
+				genericActionTypes.push(actionDefinition.resultId)
+				actionTypes.push(
+					await compile(action.result, actionDefinition.resultId, {
+						additionalProperties: false,
+						style: PrettierConf,
+						bannerComment: '',
+						enableConstEnums: false,
+					})
+				)
+			}
+			output += '\n' + actionTypes.join('\n')
+		}
+
+		await fs.writeFile('../timeline-state-resolver-types/src/generated/generic-ptz-actions.ts', BANNER + '\n' + output)
+	} catch (e) {
+		console.error('Error while generating common-options.json, continuing...')
+		console.error(e)
+	}
+
+	// convert common-options
+	try {
+		const commonOptionsDescr = JSON.parse(await fs.readFile('./src/$schemas/common-options.json'))
+		const commonOptionsSchema = await compile(commonOptionsDescr, 'DeviceCommonOptions', {
+			additionalProperties: false,
+			style: PrettierConf,
+			bannerComment: '',
+			enableConstEnums: false,
+		})
+
+		await fs.writeFile(
+			'../timeline-state-resolver-types/src/generated/common-options.ts',
+			BANNER + '\n' + commonOptionsSchema
+		)
+	} catch (e) {
+		console.error('Error while generating common-options.json, continuing...')
+		console.error(e)
+		hadError = true
+	}
+
+	// Inject the generated types into the index.ts file
+	indexFile += `export * from './action-schema'\nexport * from './generic-ptz-actions'\n`
+}
+
 // iterate over integrations
 for (const dir of dirs) {
 	const dirPath = path.join(basePath, dir)
@@ -168,7 +263,6 @@ for (const dir of dirs) {
 	// compile actions from file
 	const actionDefinitions = []
 	const importGenericTypes = new Set()
-	const genericActionTypes = [] // nocommit - how can this be populated by devices?
 
 	try {
 		const filePath = path.join(dirPath, 'actions.json')
