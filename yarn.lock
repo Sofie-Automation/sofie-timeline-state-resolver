@@ -7333,12 +7333,12 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"kairos-connection@file:../../../sofie-kairos-connection/packages/kairos-connection::locator=timeline-state-resolver-types%40workspace%3Apackages%2Ftimeline-state-resolver-types":
-  version: 0.0.1
-  resolution: "kairos-connection@file:../../../sofie-kairos-connection/packages/kairos-connection#../../../sofie-kairos-connection/packages/kairos-connection::hash=40a827&locator=timeline-state-resolver-types%40workspace%3Apackages%2Ftimeline-state-resolver-types"
+"kairos-connection@npm:0.0.2-nightly-main-20250811-152350-9f4452f.0":
+  version: 0.0.2-nightly-main-20250811-152350-9f4452f.0
+  resolution: "kairos-connection@npm:0.0.2-nightly-main-20250811-152350-9f4452f.0"
   dependencies:
     tslib: ^2.8.1
-  checksum: dbb9f969d6e54ab471c1592747e4ef91b723d9c19f0e3cd2a9ba3de4d2ea95320b8d4b8eb472702c76975b087fd3b09eab2e139f1e3593e26694659950275622
+  checksum: ba524853a33eb852a2c6f91e606cc97201e029ad74823d2a9c096d9fc8942f56fb2cf2dd4aeddd70ec38e81fdddfea011f2e2d5bcda492111f2083446db2ba0f
   languageName: node
   linkType: hard
 
@@ -11336,7 +11336,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "timeline-state-resolver-types@workspace:packages/timeline-state-resolver-types"
   dependencies:
-    kairos-connection: ../../../sofie-kairos-connection/packages/kairos-connection
+    kairos-connection: 0.0.2-nightly-main-20250811-152350-9f4452f.0
     tslib: ^2.6.3
   languageName: unknown
   linkType: soft
