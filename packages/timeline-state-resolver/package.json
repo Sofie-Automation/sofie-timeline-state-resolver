@@ -70,7 +70,7 @@
 		"schema:types": "tsr-schema-types ./src/\\$schemas/generated ../timeline-state-resolver-types/src/generated --isMainRepository"
 	},
 	"engines": {
-		"node": "^14.18 || ^16.14 || 18"
+		"node": ">= 20.5"
 	},
 	"files": [
 		"/dist",
