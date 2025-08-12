@@ -453,6 +453,7 @@ function createContainer(
 		case DeviceType.TRICASTER:
 		case DeviceType.VISCA_OVER_IP:
 		case DeviceType.WEBSOCKET_CLIENT:
+		case DeviceType.KAIROS:
 		case DeviceType.QUANTEL: {
 			ensureIsImplementedAsService(deviceOptions.type)
 
