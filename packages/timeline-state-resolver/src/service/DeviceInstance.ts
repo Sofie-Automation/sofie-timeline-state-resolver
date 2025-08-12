@@ -12,11 +12,11 @@ import {
 import type { CommandWithContext, DeviceContextAPI, DeviceEvents } from './device'
 import { StateHandler } from './stateHandler'
 import { DevicesDict } from './devices'
-import type { DeviceOptionsAnyInternal, ExpectedPlayoutItem } from '..'
+import type { DeviceOptionsAny, ExpectedPlayoutItem } from '..'
 import type { StateChangeReport } from './measure'
 import { StateTracker } from './stateTracker'
 
-type Config = DeviceOptionsAnyInternal
+type Config = DeviceOptionsAny
 type DeviceState = any
 type AddressState = any
 

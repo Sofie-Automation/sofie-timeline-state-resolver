@@ -3,7 +3,6 @@ import {
 	AbstractOptions,
 	Timeline,
 	TSRTimelineContent,
-	DeviceOptionsAbstract,
 	AbstractActionMethods,
 	ActionExecutionResultCode,
 	AbstractDeviceTypes,
@@ -12,8 +11,6 @@ import {
 import { Device, CommandWithContext } from '../../service/device'
 
 export type AbstractCommandWithContext = CommandWithContext<string, string>
-
-export type DeviceOptionsAbstractInternal = DeviceOptionsAbstract
 
 export type AbstractDeviceState = Timeline.TimelineState<TSRTimelineContent>
 
