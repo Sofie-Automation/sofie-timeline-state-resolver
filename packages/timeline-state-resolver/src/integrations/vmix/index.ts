@@ -5,7 +5,7 @@ import { DoOnTime, SendMode } from '../../devices/doOnTime'
 import { VMixCommandSender, VMixConnection } from './connection'
 import {
 	DeviceType,
-	DeviceOptionsVMix,
+	DeviceOptionsVmix,
 	VmixOptions,
 	Mappings,
 	Timeline,
@@ -38,7 +38,7 @@ const DEFAULT_VMIX_POLL_INTERVAL = 10 * 1000
  */
 const BACKOFF_VMIX_POLL_INTERVAL = 5 * 1000
 
-export interface DeviceOptionsVMixInternal extends DeviceOptionsVMix {
+export interface DeviceOptionsVMixInternal extends DeviceOptionsVmix {
 	commandReceiver?: CommandReceiver
 }
 export type CommandReceiver = (

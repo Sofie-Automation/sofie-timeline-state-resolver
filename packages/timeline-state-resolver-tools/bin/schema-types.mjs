@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable */
 
-import { compile, compileFromFile } from 'json-schema-to-typescript'
+import { compile } from 'json-schema-to-typescript'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import meow from 'meow'
@@ -55,10 +55,38 @@ const capitalise = (s) => {
 	if (!s) return s
 	const base = s.slice(0, 1).toUpperCase() + s.slice(1)
 
-	// replace `_a` with `A`
-	return base.replace(/_[a-z]/gi, (v) => {
+	// replace `_a` and `-a` with `A`
+	return base.replace(/[_|-][a-z]/gi, (v) => {
 		return v.slice(1).toUpperCase()
 	})
+}
+const toConstantCase = (s) => {
+	if (!s) return s
+
+	return (
+		s
+			// Insert underscore before uppercase letters (for camelCase)
+			.replace(/([a-z])([A-Z])/g, '$1_$2')
+			// Replace hyphens with underscores
+			.replace(/-/g, '_')
+			// Convert to uppercase
+			.toUpperCase()
+	)
+}
+const toTitleCase = (s) => {
+	if (!s) return s
+
+	return (
+		s
+			// First handle underscores and hyphens by replacing them with spaces
+			.replace(/[_-]/g, ' ')
+			// Insert space before uppercase letters that follow lowercase letters (camelCase)
+			.replace(/([a-z])([A-Z])/g, '$1 $2')
+			// Insert space before uppercase letters that are followed by lowercase letters (acronyms like PTZ)
+			.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+			// Capitalize first letter of each word
+			.replace(/\b\w/g, (char) => char.toUpperCase())
+	)
 }
 
 let PrettierConf = undefined
@@ -83,9 +111,18 @@ await fs.mkdir(resolvedOutputPath, { recursive: true })
 let indexFile = BANNER + `\n`
 let baseMappingsTypes = []
 
+let deviceOptionsFile = BANNER + `\n`
+let deviceOptionsTypes = []
+let deviceTypeEnum = []
+
+let manifestFileSubdevices = ''
+let manifestFileImports = ''
+
 const genericActionTypes = [] // TODO - should this be usable for plugins?
 if (isMainRepository) {
 	// Perform some special handling for the main repository. Ideally this would be a dedicated script, but that gets complicated due to needing to share the `genericActionTypes` array with the latter parts of this script
+
+	deviceOptionsFile += `import type { DeviceOptionsBase } from '../device'\n`
 
 	// convert action-schema
 	try {
@@ -175,7 +212,10 @@ if (isMainRepository) {
 	}
 
 	// Inject the generated types into the index.ts file
-	indexFile += `export * from './action-schema'\nexport * from './generic-ptz-actions'\n`
+	indexFile += `export * from './action-schema'
+export * from './generic-ptz-actions'
+export * from './device-options'
+`
 }
 
 // iterate over integrations
@@ -209,11 +249,14 @@ for (const dir of dirs) {
 		hadError = true
 	}
 
+	let hasMappingsSchema = false
+
 	// compile mappings from file
 	const mappingIds = []
 	try {
 		const filePath = path.join(dirPath, 'mappings.json')
-		if (await fsExists(filePath)) {
+		hasMappingsSchema = await fsExists(filePath)
+		if (hasMappingsSchema) {
 			const mappingDescr = JSON.parse(await fs.readFile(filePath))
 			for (const [id, mapping] of Object.entries(mappingDescr.mappings)) {
 				mappingIds.push(id)
@@ -264,9 +307,12 @@ for (const dir of dirs) {
 	const actionDefinitions = []
 	const importGenericTypes = new Set()
 
+	let hasActionsSchema = false
+
 	try {
 		const filePath = path.join(dirPath, 'actions.json')
-		if (await fsExists(filePath)) {
+		hasActionsSchema = await fsExists(filePath)
+		if (hasActionsSchema) {
 			const actionsDescr = JSON.parse(await fs.readFile(filePath))
 			for (const action of actionsDescr.actions) {
 				const actionDefinition = {
@@ -323,7 +369,7 @@ for (const dir of dirs) {
 	}
 
 	if (importGenericTypes.size > 0) {
-		output = `import { ${Array.from(importGenericTypes).join(', ')} } from './generic-ptz-actions'\n\n` + output
+		output = `import type { ${Array.from(importGenericTypes).join(', ')} } from './generic-ptz-actions'\n\n` + output
 	}
 
 	if (actionDefinitions.length > 0) {
@@ -350,7 +396,9 @@ ${actionDefinitions
 `
 		// Prepend import:
 		output =
-			`import { ActionExecutionResult } from "${isMainRepository ? '..' : 'timeline-state-resolver-types'}"\n` + output
+			`import type { ActionExecutionResult } from "${
+				isMainRepository ? '../actions' : 'timeline-state-resolver-types'
+			}"\n` + output
 	}
 
 	output += `
@@ -361,6 +409,44 @@ export interface ${dirId}DeviceTypes {
 }
 `
 
+	let deviceTypeId = toConstantCase(dir)
+	// Special case handling for some devices, for backwards compatibility
+	if (
+		deviceTypeId === 'CASPAR_CG' ||
+		deviceTypeId === 'HTTP_SEND' ||
+		deviceTypeId === 'HTTP_WATCHER' ||
+		deviceTypeId === 'TCP_SEND' ||
+		deviceTypeId === 'VIZ_MSE'
+	) {
+		deviceTypeId = dir.toUpperCase()
+	}
+	deviceTypeEnum.push(deviceTypeId)
+
+	deviceOptionsFile += `import type { ${dirId}Options } from './${dir}'
+export interface DeviceOptions${dirId} extends DeviceOptionsBase<${dirId}Options> {
+	type: DeviceType.${deviceTypeId}
+}\n\n`
+	deviceOptionsTypes.push(`DeviceOptions${dirId}`)
+
+	manifestFileSubdevices += `\t\t[DeviceType.${deviceTypeId}]: {
+			displayName: generateTranslation('${toTitleCase(dirId)}'),\n`
+
+	if (hasActionsSchema) {
+		manifestFileImports += `import ${dirId}Actions = require('./$schemas/generated/${dir}/actions.json')\n`
+		manifestFileSubdevices += `\t\t\tactions: ${dirId}Actions.actions.map(stringifyActionSchema),\n`
+	}
+	manifestFileImports += `import ${dirId}Options = require('./$schemas/generated/${dir}/options.json')\n`
+	manifestFileSubdevices += `\t\t\tconfigSchema: JSON.stringify(${dirId}Options),\n`
+
+	if (hasMappingsSchema) {
+		manifestFileImports += `import ${dirId}Mappings = require('./$schemas/generated/${dir}/mappings.json')\n`
+		manifestFileSubdevices += `\t\t\tmappingsSchemas: stringifyMappingSchema(${dirId}Mappings),\n`
+	} else {
+		manifestFileSubdevices += `\t\t\tmappingsSchemas: {},\n`
+	}
+
+	manifestFileSubdevices += `\t\t},\n`
+
 	// Output to tsr types package
 	const outputFilePath = path.join(resolvedOutputPath, dir + '.ts')
 	if (output) {
@@ -369,7 +455,7 @@ export interface ${dirId}DeviceTypes {
 		await fs.writeFile(outputFilePath, output)
 
 		indexFile += `\nexport * from './${dir}'`
-		indexFile += `\nimport { ${someMappingName} } from './${dir}'`
+		indexFile += `\nimport type { ${someMappingName} } from './${dir}'`
 		indexFile += '\n'
 	} else {
 		if (await fsUnlink(outputFilePath)) console.log('Removed ' + outputFilePath)
@@ -382,6 +468,37 @@ if (baseMappingsTypes.length) {
 
 // Output the tsr-types index file
 await fs.writeFile(path.join(resolvedOutputPath, 'index.ts'), indexFile + '\n')
+
+if (isMainRepository) {
+	deviceOptionsFile += `export type DeviceOptionsAny =\n\t| ${deviceOptionsTypes.join('\n\t| ')}\n\n`
+
+	deviceOptionsFile += `/**
+ * An identifier of a particular device class
+ *
+ * @export
+ * @enum {string}
+ */
+export enum DeviceType {\n\t${deviceTypeEnum.map((type) => `${type} = '${toConstantCase(type)}'`).join(',\n\t')}\n}\n`
+
+	await fs.writeFile(path.join(resolvedOutputPath, 'device-options.ts'), deviceOptionsFile + '\n')
+
+	let manifestFile =
+		BANNER +
+		`
+import { DeviceType } from 'timeline-state-resolver-types'
+import CommonOptions = require('./$schemas/common-options.json')
+import { generateTranslation } from './lib'
+import { stringifyActionSchema, stringifyMappingSchema, TSRManifest } from './manifestLib'
+`
+	manifestFile += manifestFileImports + '\n'
+	manifestFile += `export const builtinDeviceManifest: TSRManifest = {
+	commonOptions: JSON.stringify(CommonOptions),
+	subdevices: {
+${manifestFileSubdevices}
+	},
+}`
+	await fs.writeFile('../timeline-state-resolver/src/manifest.ts', manifestFile + '\n')
+}
 
 // Finally
 process.exit(hadError ? 1 : 0)
