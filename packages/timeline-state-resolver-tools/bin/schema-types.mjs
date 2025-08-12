@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable */
 
-import { compile, compileFromFile } from 'json-schema-to-typescript'
+import { compile } from 'json-schema-to-typescript'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import meow from 'meow'
@@ -73,6 +73,21 @@ const toConstantCase = (s) => {
 			.toUpperCase()
 	)
 }
+const toTitleCase = (s) => {
+	if (!s) return s
+
+	return (
+		s
+			// First handle underscores and hyphens by replacing them with spaces
+			.replace(/[_-]/g, ' ')
+			// Insert space before uppercase letters that follow lowercase letters (camelCase)
+			.replace(/([a-z])([A-Z])/g, '$1 $2')
+			// Insert space before uppercase letters that are followed by lowercase letters (acronyms like PTZ)
+			.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+			// Capitalize first letter of each word
+			.replace(/\b\w/g, (char) => char.toUpperCase())
+	)
+}
 
 let PrettierConf = undefined
 try {
@@ -99,6 +114,9 @@ let baseMappingsTypes = []
 let deviceOptionsFile = BANNER + `\n`
 let deviceOptionsTypes = []
 let deviceTypeEnum = []
+
+let manifestFileSubdevices = ''
+let manifestFileImports = ''
 
 const genericActionTypes = [] // TODO - should this be usable for plugins?
 if (isMainRepository) {
@@ -231,11 +249,14 @@ for (const dir of dirs) {
 		hadError = true
 	}
 
+	let hasMappingsSchema = false
+
 	// compile mappings from file
 	const mappingIds = []
 	try {
 		const filePath = path.join(dirPath, 'mappings.json')
-		if (await fsExists(filePath)) {
+		hasMappingsSchema = await fsExists(filePath)
+		if (hasMappingsSchema) {
 			const mappingDescr = JSON.parse(await fs.readFile(filePath))
 			for (const [id, mapping] of Object.entries(mappingDescr.mappings)) {
 				mappingIds.push(id)
@@ -286,9 +307,12 @@ for (const dir of dirs) {
 	const actionDefinitions = []
 	const importGenericTypes = new Set()
 
+	let hasActionsSchema = false
+
 	try {
 		const filePath = path.join(dirPath, 'actions.json')
-		if (await fsExists(filePath)) {
+		hasActionsSchema = await fsExists(filePath)
+		if (hasActionsSchema) {
 			const actionsDescr = JSON.parse(await fs.readFile(filePath))
 			for (const action of actionsDescr.actions) {
 				const actionDefinition = {
@@ -404,6 +428,25 @@ export interface DeviceOptions${dirId} extends DeviceOptionsBase<${dirId}Options
 }\n\n`
 	deviceOptionsTypes.push(`DeviceOptions${dirId}`)
 
+	manifestFileSubdevices += `\t\t[DeviceType.${deviceTypeId}]: {
+			displayName: generateTranslation('${toTitleCase(dirId)}'),\n`
+
+	if (hasActionsSchema) {
+		manifestFileImports += `import ${dirId}Actions = require('./$schemas/generated/${dir}/actions.json')\n`
+		manifestFileSubdevices += `\t\t\tactions: ${dirId}Actions.actions.map(stringifyActionSchema),\n`
+	}
+	manifestFileImports += `import ${dirId}Options = require('./$schemas/generated/${dir}/options.json')\n`
+	manifestFileSubdevices += `\t\t\tconfigSchema: JSON.stringify(${dirId}Options),\n`
+
+	if (hasMappingsSchema) {
+		manifestFileImports += `import ${dirId}Mappings = require('./$schemas/generated/${dir}/mappings.json')\n`
+		manifestFileSubdevices += `\t\t\tmappingsSchemas: stringifyMappingSchema(${dirId}Mappings),\n`
+	} else {
+		manifestFileSubdevices += `\t\t\tmappingsSchemas: {},\n`
+	}
+
+	manifestFileSubdevices += `\t\t},\n`
+
 	// Output to tsr types package
 	const outputFilePath = path.join(resolvedOutputPath, dir + '.ts')
 	if (output) {
@@ -438,6 +481,23 @@ if (isMainRepository) {
 export enum DeviceType {\n\t${deviceTypeEnum.map((type) => `${type} = '${toConstantCase(type)}'`).join(',\n\t')}\n}\n`
 
 	await fs.writeFile(path.join(resolvedOutputPath, 'device-options.ts'), deviceOptionsFile + '\n')
+
+	let manifestFile =
+		BANNER +
+		`
+import { DeviceType } from 'timeline-state-resolver-types'
+import CommonOptions = require('./$schemas/common-options.json')
+import { generateTranslation } from './lib'
+import { stringifyActionSchema, stringifyMappingSchema, TSRManifest } from './manifestLib'
+`
+	manifestFile += manifestFileImports + '\n'
+	manifestFile += `export const builtinDeviceManifest: TSRManifest = {
+	commonOptions: JSON.stringify(CommonOptions),
+	subdevices: {
+${manifestFileSubdevices}
+	},
+}`
+	await fs.writeFile('../timeline-state-resolver/src/manifest.ts', manifestFile + '\n')
 }
 
 // Finally

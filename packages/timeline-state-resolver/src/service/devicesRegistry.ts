@@ -1,4 +1,5 @@
-import { builtinDeviceManifest, TSRManifest } from '../manifest'
+import { builtinDeviceManifest } from '../manifest'
+import type { TSRManifest } from '../manifestLib'
 import type { TranslationsBundle } from 'timeline-state-resolver-types'
 import type { TSRDevicesManifestEntry } from 'timeline-state-resolver-api'
 import { readFile } from 'fs/promises'
