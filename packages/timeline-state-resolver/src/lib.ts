@@ -1,6 +1,6 @@
 import { klona } from 'klona'
 import { ITranslatableMessage, ActionExecutionResultCode, ActionExecutionResult } from 'timeline-state-resolver-types'
-import * as _ from 'underscore'
+import _ from 'underscore'
 import { PartialDeep } from 'type-fest'
 import deepmerge = require('deepmerge')
 import type { FinishedTrace, Trace } from 'timeline-state-resolver-api'
