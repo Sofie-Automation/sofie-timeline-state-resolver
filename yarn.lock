@@ -11361,6 +11361,7 @@ asn1@evs-broadcast/node-asn1:
     hyperdeck-connection: 2.0.1
     jest-mock-extended: ^3.0.7
     json-schema-to-typescript: ^10.1.5
+    kairos-connection: 0.0.2-nightly-main-20250811-152350-9f4452f.0
     klona: ^2.0.6
     obs-websocket-js: ^5.0.6
     osc: ^2.4.5
