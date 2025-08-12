@@ -1,4 +1,4 @@
-import {
+import type {
 	RefPath,
 	MediaClipRef,
 	UpdateSceneObject,
@@ -9,7 +9,8 @@ import {
 	MediaStillRef,
 	UpdateSceneSnapshotObject,
 	UpdateAuxObject,
-} from 'kairos-connection/dist/main'
+	// eslint-disable-next-line node/no-missing-import
+} from 'kairos-connection' // TODO - this needs to be a types package, not the connection package
 
 export enum TimelineContentTypeKairos {
 	SCENE = 'scene',

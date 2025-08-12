@@ -11,6 +11,8 @@
 		},
 		"types": ["node"],
 
+		"moduleResolution": "node16",
+
 		// Temporary overrides, to allow for gradual migration project
 		"noImplicitAny": false,
 		"resolveJsonModule": true,
