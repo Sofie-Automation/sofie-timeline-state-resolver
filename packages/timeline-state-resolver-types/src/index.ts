@@ -23,6 +23,7 @@ import { TimelineContentVMixAny } from './integrations/vmix'
 import { TimelineContentOBSAny } from './integrations/obs'
 import { TimelineContentTriCasterAny } from './integrations/tricaster'
 import { TimelineContentWebSocketClientAny } from './integrations/websocketClient'
+import { TimelineContentKairosAny } from './integrations/kairos'
 
 export * from './integrations/abstract'
 export * from './integrations/atem'
@@ -91,6 +92,7 @@ export enum DeviceType {
 	MULTI_OSC = 'MULTI_OSC',
 	VISCA_OVER_IP = 'VISCA_OVER_IP',
 	WEBSOCKET_CLIENT = 'WEBSOCKET_CLIENT',
+	KAIROS = 'KAIROS',
 }
 
 export interface TSRTimelineKeyframe<TContent> extends Omit<Timeline.TimelineKeyframe, 'content'> {
@@ -153,6 +155,7 @@ export type TSRTimelineContent =
 	| TimelineContentTelemetricsAny
 	| TimelineContentTriCasterAny
 	| TimelineContentWebSocketClientAny
+	| TimelineContentKairosAny
 
 /**
  * A simple key value store that can be referred to from the timeline objects

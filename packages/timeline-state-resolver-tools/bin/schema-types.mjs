@@ -55,8 +55,8 @@ const capitalise = (s) => {
 	if (!s) return s
 	const base = s.slice(0, 1).toUpperCase() + s.slice(1)
 
-	// replace `_a` with `A`
-	return base.replace(/_[a-z]/gi, (v) => {
+	// replace `_a` and `-a` with `A`
+	return base.replace(/[_|-][a-z]/gi, (v) => {
 		return v.slice(1).toUpperCase()
 	})
 }

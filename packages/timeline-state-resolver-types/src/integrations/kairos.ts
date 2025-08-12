@@ -1,3 +1,4 @@
+import type { DeviceType } from '..'
 import type {
 	RefPath,
 	MediaClipRef,
@@ -46,6 +47,7 @@ export type TimelineContentKairosAny =
 	| TimelineContentKairosSoundPlayer
 
 export interface TimelineContentKairosScene extends Partial<UpdateSceneObject> {
+	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.SCENE
 
 	recallSnapshots: {
@@ -60,14 +62,17 @@ export interface TimelineContentKairosScene extends Partial<UpdateSceneObject> {
 }
 
 export interface TimelineContentKairosSceneLayer extends Partial<UpdateSceneLayerObject> {
+	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.SCENE_LAYER
 }
 
 export interface TimelineContentKairosAux extends Partial<UpdateAuxObject> {
+	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.AUX
 }
 
 export interface TimelineContentKairosMacros {
+	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.MACROS
 
 	macros: {
@@ -88,21 +93,25 @@ export enum MacroActiveState {
 }
 
 export interface TimelineContentKairosClipPlayer extends TimelineContentKairosPlayerBase {
+	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.CLIP_PLAYER
 	/** Reference to the file to be played */
 	clip: MediaClipRef
 }
 export interface TimelineContentKairosRamRecPlayer extends TimelineContentKairosPlayerBase {
+	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.RAMREC_PLAYER
 	/** Reference to the file to be played */
 	clip: MediaRamRecRef
 }
 export interface TimelineContentKairosStillPlayer {
+	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.STILL_PLAYER
 	/** Reference to the file to be played */
 	clip: MediaStillRef // and MediaImageRef?
 }
 export interface TimelineContentKairosSoundPlayer extends TimelineContentKairosPlayerBase {
+	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.SOUND_PLAYER
 	/** Reference to the file to be played */
 	clip: MediaSoundRef

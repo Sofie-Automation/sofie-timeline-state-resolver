@@ -26,6 +26,9 @@ import { SomeMappingHttpWatcher } from './httpWatcher'
 export * from './hyperdeck'
 import { SomeMappingHyperdeck } from './hyperdeck'
 
+export * from './kairos'
+import { SomeMappingKairos } from './kairos'
+
 export * from './lawo'
 import { SomeMappingLawo } from './lawo'
 
@@ -87,6 +90,7 @@ export type TSRMappingOptions =
 	| SomeMappingHttpSend
 	| SomeMappingHttpWatcher
 	| SomeMappingHyperdeck
+	| SomeMappingKairos
 	| SomeMappingLawo
 	| SomeMappingMultiOsc
 	| SomeMappingObs
