@@ -1,4 +1,4 @@
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
@@ -26,11 +26,15 @@ export type TcpSendDeviceCommand = CommandWithContext<
 	},
 	string
 >
-export class TcpSendDevice extends Device<TcpSendDeviceTypes, TcpSendDeviceState, TcpSendDeviceCommand> {
+export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceState, TcpSendDeviceCommand> {
 	private activeLayers = new Map<string, string>()
 	private _terminated = false
 
 	private tcpConnection = new TcpConnection()
+
+	constructor(protected context: DeviceContextAPI<TcpSendDeviceState>) {
+		// Nothing
+	}
 
 	async init(options: TcpSendOptions): Promise<boolean> {
 		this.tcpConnection.once('connectionChanged', (connected) => {

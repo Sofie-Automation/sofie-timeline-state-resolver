@@ -1,4 +1,4 @@
-import { CommandWithContext } from '../../service/device'
+import type { CommandWithContext } from 'timeline-state-resolver-api'
 
 /**
  * Values in this enum correspond to actual shortcut names or their suffixes

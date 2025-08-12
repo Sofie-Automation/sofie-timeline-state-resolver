@@ -12,11 +12,10 @@ import {
 	StatusCode,
 	MultiOscDeviceTypes,
 } from 'timeline-state-resolver-types'
-import { Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import { OSCConnection } from './deviceConnection'
 import { ResolvedTimelineObjectInstance } from 'superfly-timeline'
 import * as osc from 'osc'
-import { CommandWithContext } from '../..'
 
 export interface MultiOscInitTestOptions {
 	oscSenders?: Record<string, (msg: osc.OscMessage, address?: string | undefined, port?: number | undefined) => void>
@@ -39,11 +38,9 @@ export type MultiOscCommandWithContext = CommandWithContext<OSCDeviceStateConten
 /**
  * This is a generic wrapper for any osc-enabled device.
  */
-export class MultiOSCMessageDevice extends Device<
-	MultiOscDeviceTypes,
-	MultiOSCDeviceState,
-	MultiOscCommandWithContext
-> {
+export class MultiOSCMessageDevice
+	implements Device<MultiOscDeviceTypes, MultiOSCDeviceState, MultiOscCommandWithContext>
+{
 	readonly actions = null
 
 	private _connections: Record<string, OSCConnection> = {}
@@ -51,6 +48,10 @@ export class MultiOSCMessageDevice extends Device<
 	private _commandQueueTimer: NodeJS.Timeout | undefined
 
 	private _timeBetweenCommands: number | undefined
+
+	constructor(protected context: DeviceContextAPI<MultiOSCDeviceState>) {
+		// Nothing
+	}
 
 	async init(initOptions: MultiOscOptions, testOptions?: MultiOscInitTestOptions): Promise<boolean> {
 		this._timeBetweenCommands = initOptions.timeBetweenCommands

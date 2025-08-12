@@ -1,6 +1,13 @@
 import EventEmitter = require('eventemitter3')
 import { actionNotFoundMessage } from '../lib'
-import type { FinishedTrace, DeviceEntry, Device } from 'timeline-state-resolver-api'
+import type {
+	FinishedTrace,
+	DeviceEntry,
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceEvents,
+} from 'timeline-state-resolver-api'
 import {
 	type DeviceStatus,
 	type DeviceType,
@@ -9,7 +16,6 @@ import {
 	type Timeline,
 	type TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import type { CommandWithContext, DeviceContextAPI, DeviceEvents } from './device'
 import { StateHandler } from './stateHandler'
 import { DevicesDict } from './devices'
 import type { DeviceOptionsAnyInternal, ExpectedPlayoutItem } from '..'

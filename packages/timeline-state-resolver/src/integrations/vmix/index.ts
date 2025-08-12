@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceWithState, DeviceStatus, StatusCode } from './../../devices/device'
+import { DeviceWithState } from './../../devices/device'
 import { DoOnTime, SendMode } from '../../devices/doOnTime'
 
 import { VMixCommandSender, VMixConnection } from './connection'
@@ -17,6 +17,8 @@ import {
 	VmixActionMethods,
 	VmixDeviceTypes,
 	VmixActions,
+	DeviceStatus,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 import { VMixState, VMixStateDiffer, VMixStateExtended } from './vMixStateDiffer'
 import { CommandContext, VMixStateCommandWithContext } from './vMixCommands'
@@ -26,7 +28,7 @@ import { VMixPollingTimer } from './vMixPollingTimer'
 import { VMixStateSynchronizer } from './vMixStateSynchronizer'
 import { Response } from './vMixResponseStreamReader'
 import { t } from '../../lib'
-import { CommandWithContext } from '../../service/device'
+import type { CommandWithContext } from 'timeline-state-resolver-api'
 
 /**
  * Default time, in milliseconds, for when we should poll vMix to query its actual state.
