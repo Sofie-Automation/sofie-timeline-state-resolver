@@ -8,8 +8,6 @@ import type {
 	AuxRef,
 	MacroRef,
 	SceneSnapshotRef,
-	RamRecorderRef,
-	ClipPlayerRef,
 	KairosConnection,
 	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
@@ -70,7 +68,7 @@ export interface KairosMacroCommand {
 export interface KairosClipPlayerCommand {
 	type: 'clip-player'
 
-	ref: ClipPlayerRef
+	playerId: number
 
 	values: Partial<UpdateClipPlayerObject>
 }
@@ -78,7 +76,7 @@ export interface KairosClipPlayerCommand {
 export interface KairosRamRecPlayerCommand {
 	type: 'ram-rec-player'
 
-	ref: RamRecorderRef
+	playerId: number
 
 	values: Partial<UpdateClipPlayerObject>
 }
@@ -86,15 +84,15 @@ export interface KairosRamRecPlayerCommand {
 export interface KairosStillPlayerCommand {
 	type: 'still-player'
 
-	ref: string // TODO - what should this be?
+	playerId: number
 
-	clip: string // TODO - check
+	values: null // TODO
 }
 
 export interface KairosSoundPlayerCommand {
 	type: 'sound-player'
 
-	ref: string // TODO - what should this be?
+	playerId: number
 
 	values: Partial<UpdateClipPlayerObject>
 }
@@ -126,16 +124,17 @@ export async function sendCommand(kairos: KairosConnection, command: KairosComma
 			}
 			break
 		case 'clip-player':
-			await kairos.updateClipPlayer(command.ref, command.values)
+			await kairos.updateClipPlayer(command.playerId, command.values)
 			break
 		case 'ram-rec-player':
-			await kairos.updateRamRecorder(command.ref, command.values)
+			await kairos.updateRamRecorder(command.playerId, command.values)
 			break
 		case 'still-player':
-			await kairos.playStill(command.ref, command.clip)
+			// TODO - not implemented
+			// await kairos.(command.ref, command.clip)
 			break
 		case 'sound-player':
-			await kairos.playSound(command.ref, command.values)
+			await kairos.updateAudioPlayer(command.playerId, command.values)
 			break
 		default:
 			assertNever(command)

@@ -37,7 +37,7 @@ export interface MappingKairosSceneLayer {
 }
 
 export interface MappingKairosAux {
-	auxName: string[]
+	auxName: string
 	mappingType: MappingKairosType.Aux
 }
 
@@ -45,14 +45,38 @@ export interface MappingKairosMacro {
 	mappingType: MappingKairosType.Macro
 }
 
+export interface MappingKairosClipPlayer {
+	playerId: number
+	mappingType: MappingKairosType.ClipPlayer
+}
+
+export interface MappingKairosRamRecPlayer {
+	playerId: number
+	mappingType: MappingKairosType.RamRecPlayer
+}
+
+export interface MappingKairosStillPlayer {
+	playerId: number
+	mappingType: MappingKairosType.StillPlayer
+}
+
+export interface MappingKairosSoundPlayer {
+	playerId: number
+	mappingType: MappingKairosType.SoundPlayer
+}
+
 export enum MappingKairosType {
 	Scene = 'scene',
 	SceneLayer = 'scene-layer',
 	Aux = 'aux',
 	Macro = 'macro',
+	ClipPlayer = 'clip-player',
+	RamRecPlayer = 'ram-rec-player',
+	StillPlayer = 'still-player',
+	SoundPlayer = 'sound-player',
 }
 
-export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux | MappingKairosMacro
+export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux | MappingKairosMacro | MappingKairosClipPlayer | MappingKairosRamRecPlayer | MappingKairosStillPlayer | MappingKairosSoundPlayer
 
 export interface ListClipsPayload {
 	subDirectory?: string[]

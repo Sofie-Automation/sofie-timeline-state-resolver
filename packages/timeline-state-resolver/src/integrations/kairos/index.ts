@@ -13,7 +13,7 @@ import {
 // eslint-disable-next-line node/no-missing-import
 import { KairosConnection } from 'kairos-connection'
 import type { Device, DeviceContextAPI, CommandWithContext } from 'timeline-state-resolver-api'
-import { KairosStateBuilder } from './stateBuilder'
+import { KairosDeviceState, KairosStateBuilder } from './stateBuilder'
 import { createDiffOptions } from './diffState'
 import { sendCommand, type KairosCommandAny } from './commands'
 
@@ -144,7 +144,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		if (!this.connected) return []
 
 		// Make sure there is something to diff against
-		oldKairosState = oldKairosState ?? this._kairos.state ?? KairosStateUtil.Create()
+		oldKairosState = oldKairosState ?? KairosStateBuilder.fromTimeline({}, mappings)
 
 		const diffOptions = createDiffOptions(mappings as Mappings<SomeMappingKairos>)
 		const commands = KairosState.diffStates(oldKairosState, newKairosState, diffOptions)

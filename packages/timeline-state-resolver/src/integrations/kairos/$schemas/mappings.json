@@ -1,5 +1,5 @@
 {
-	"$schema": "../../../$schemas/mapping-schema.json",
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/mapping-schema.json",
 	"default": "scene-layer",
 	"mappings": {
 		"scene": {
@@ -47,13 +47,12 @@
 			"type": "object",
 			"properties": {
 				"auxName": {
-					"type": "array",
-					"items": { "type": "string" },
+					"type": "string",
 					"ui:title": "AUX",
-					"ui:description": "The AUX to use",
+					"ui:description": "The AUX name to use",
 					"ui:summaryTitle": "AUX",
 					"ui:displayType": "breadcrumbs",
-					"default": ["IP1"]
+					"default": "IP-AUX1"
 				}
 			},
 			"required": ["auxName"],
@@ -63,6 +62,70 @@
 			"type": "object",
 			"properties": {},
 			"required": [],
+			"additionalProperties": false
+		},
+		"clip-player": {
+			"type": "object",
+			"properties": {
+				"playerId": {
+					"type": "number",
+					"ui:title": "Player ID",
+					"ui:description": "The player",
+					"ui:summaryTitle": "ID",
+					"ui:displayType": "breadcrumbs",
+					"default": 1,
+					"min": 1
+				}
+			},
+			"required": ["playerId"],
+			"additionalProperties": false
+		},
+		"ram-rec-player": {
+			"type": "object",
+			"properties": {
+				"playerId": {
+					"type": "number",
+					"ui:title": "Player ID",
+					"ui:description": "The player",
+					"ui:summaryTitle": "ID",
+					"ui:displayType": "breadcrumbs",
+					"default": 1,
+					"min": 1
+				}
+			},
+			"required": ["playerId"],
+			"additionalProperties": false
+		},
+		"still-player": {
+			"type": "object",
+			"properties": {
+				"playerId": {
+					"type": "number",
+					"ui:title": "Player ID",
+					"ui:description": "The player",
+					"ui:summaryTitle": "ID",
+					"ui:displayType": "breadcrumbs",
+					"default": 1,
+					"min": 1
+				}
+			},
+			"required": ["playerId"],
+			"additionalProperties": false
+		},
+		"sound-player": {
+			"type": "object",
+			"properties": {
+				"playerId": {
+					"type": "number",
+					"ui:title": "Player ID",
+					"ui:description": "The player",
+					"ui:summaryTitle": "ID",
+					"ui:displayType": "breadcrumbs",
+					"default": 1,
+					"min": 1
+				}
+			},
+			"required": ["playerId"],
 			"additionalProperties": false
 		}
 	}
