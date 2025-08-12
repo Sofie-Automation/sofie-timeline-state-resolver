@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [9.3.1](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/compare/9.3.0...9.3.1) (2025-08-12)
+
+### Bug Fixes
+
+- Bug in commandExecutor: `.preliminary` does not work (SOFIE-4069) ([#381](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/issues/381)) ([5b9bb39](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/commit/5b9bb391fc8e134ab2b81cc96a979d3735e79ca3))
+
 ## [9.3.0](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/compare/9.2.2...9.3.0) (2025-06-30)
 
 ### Bug Fixes

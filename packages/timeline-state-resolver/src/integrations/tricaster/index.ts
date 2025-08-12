@@ -1,7 +1,6 @@
 import {
 	DeviceType,
 	TriCasterOptions,
-	DeviceOptionsTriCaster,
 	SomeMappingTricaster,
 	Timeline,
 	TSRTimelineContent,
@@ -16,8 +15,6 @@ import { TriCasterConnection } from './triCasterConnection'
 import { Device } from '../../service/device'
 
 const DEFAULT_PORT = 5951
-
-export type DeviceOptionsTriCasterInternal = DeviceOptionsTriCaster
 
 export class TriCasterDevice extends Device<
 	TricasterDeviceTypes,

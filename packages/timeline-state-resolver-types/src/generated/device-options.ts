@@ -131,7 +131,7 @@ export interface DeviceOptionsWebsocketClient extends DeviceOptionsBase<Websocke
 	type: DeviceType.WEBSOCKET_CLIENT
 }
 
-export type DeviceOptions =
+export type DeviceOptionsAny =
 	| DeviceOptionsAbstract
 	| DeviceOptionsAtem
 	| DeviceOptionsCasparCG

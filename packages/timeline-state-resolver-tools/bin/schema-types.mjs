@@ -372,8 +372,9 @@ ${actionDefinitions
 `
 		// Prepend import:
 		output =
-			`import type { ActionExecutionResult } from "${isMainRepository ? '..' : 'timeline-state-resolver-types'}"\n` +
-			output
+			`import type { ActionExecutionResult } from "${
+				isMainRepository ? '../actions' : 'timeline-state-resolver-types'
+			}"\n` + output
 	}
 
 	output += `
@@ -426,7 +427,7 @@ if (baseMappingsTypes.length) {
 await fs.writeFile(path.join(resolvedOutputPath, 'index.ts'), indexFile + '\n')
 
 if (isMainRepository) {
-	deviceOptionsFile += `export type DeviceOptions =\n\t| ${deviceOptionsTypes.join('\n\t| ')}\n\n`
+	deviceOptionsFile += `export type DeviceOptionsAny =\n\t| ${deviceOptionsTypes.join('\n\t| ')}\n\n`
 
 	deviceOptionsFile += `/**
  * An identifier of a particular device class
