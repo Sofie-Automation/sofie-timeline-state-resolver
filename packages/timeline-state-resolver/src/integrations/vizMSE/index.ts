@@ -505,40 +505,6 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 		return undefined
 	}
 
-	/**
-	 * Prepares the physical device for playout.
-	 * @param okToDestroyStuff Whether it is OK to do things that affects playout visibly
-	 */
-	async makeReady(okToDestroyStuff?: boolean, activeRundownPlaylistId?: string): Promise<void> {
-		const previousPlaylistId = this._vizmseManager?.activeRundownPlaylistId
-		if (this._vizmseManager) {
-			await this._vizmseManager.cleanupAllShows()
-			await this._vizmseManager.activate(activeRundownPlaylistId)
-		} else throw new Error(`Unable to activate vizMSE, not initialized yet!`)
-
-		if (okToDestroyStuff) {
-			// reset our own state(s):
-			this.clearStates()
-
-			if (this._vizmseManager) {
-				if (this._initOptions && activeRundownPlaylistId !== previousPlaylistId) {
-					if (
-						this._initOptions.clearAllOnMakeReady &&
-						this._initOptions.clearAllCommands &&
-						this._initOptions.clearAllCommands.length
-					) {
-						await this._vizmseManager.clearEngines({
-							type: VizMSECommandType.CLEAR_ALL_ENGINES,
-							time: this.getCurrentTime(),
-							timelineObjId: 'makeReady',
-							channels: 'all',
-							commands: this._initOptions.clearAllCommands,
-						})
-					}
-				}
-			} else throw new Error(`Unable to activate vizMSE, not initialized yet!`)
-		}
-	}
 	async executeStandDown(): Promise<ActionExecutionResult> {
 		if (this._vizmseManager) {
 			if (!this._initOptions || !this._initOptions.dontDeactivateOnStandDown) {
@@ -550,15 +516,6 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 
 		return {
 			result: ActionExecutionResultCode.Ok,
-		}
-	}
-	/**
-	 * The standDown event could be triggered at a time after broadcast
-	 * @param okToDestroyStuff If true, the device may do things that might affect the visible output
-	 */
-	async standDown(okToDestroyStuff?: boolean): Promise<void> {
-		if (okToDestroyStuff) {
-			return this.executeStandDown().then(() => undefined)
 		}
 	}
 	getStatus(): DeviceStatus {
@@ -935,7 +892,7 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 	 * @param time deprecated
 	 * @param cmd Command to execute
 	 */
-	private async _defaultCommandReceiver(
+	public async _defaultCommandReceiver(
 		_time: number,
 		cmd: VizMSECommand,
 		context: string,

@@ -54,11 +54,6 @@ export interface Device<
 	 */
 	terminate(): Promise<void>
 
-	/** @deprecated */
-	makeReady?: (_okToDestroyStuff?: boolean) => Promise<void>
-	/** @deprecated */
-	standDown?: () => Promise<void>
-
 	get connected(): boolean
 	getStatus(): Omit<DeviceStatus, 'active'>
 

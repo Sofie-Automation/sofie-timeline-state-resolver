@@ -53,10 +53,6 @@ export interface VizMSEOptions {
 	 */
 	clearAllTemplateName?: string
 	/**
-	 * Whether to trigger a clear all templates upon makeReady
-	 */
-	clearAllOnMakeReady?: boolean
-	/**
 	 * If true, the rundown won't be deactivated on standdown
 	 */
 	dontDeactivateOnStandDown?: boolean

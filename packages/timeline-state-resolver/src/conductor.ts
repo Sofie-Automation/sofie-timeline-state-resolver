@@ -10,7 +10,6 @@ import { EventEmitter } from 'eventemitter3'
 import { MemUsageReport, threadedClass, ThreadedClass, ThreadedClassManager } from 'threadedclass'
 import PQueue from 'p-queue'
 import * as PAll from 'p-all'
-import PTimeout from 'p-timeout'
 
 import {
 	Mappings,
@@ -381,59 +380,6 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			})
 
 		this._triggerResolveTimeline()
-	}
-
-	/**
-	 * Send a makeReady-trigger to all devices
-	 *
-	 * @deprecated replace by TSR actions
-	 */
-	public async devicesMakeReady(okToDestroyStuff?: boolean, activationId?: string): Promise<void> {
-		this.activationId = activationId
-		this.emit(
-			'debug',
-			`devicesMakeReady, ${okToDestroyStuff ? 'okToDestroyStuff' : 'undefined'}, ${
-				activationId ? activationId : 'undefined'
-			}`
-		)
-		await this._actionQueue.add(async () => {
-			await this._mapAllConnections(false, async (d) =>
-				PTimeout(
-					(async () => {
-						const trace = startTrace('conductor:makeReady:' + d.deviceId)
-						await d.device.makeReady(okToDestroyStuff, activationId)
-						this.emit('timeTrace', endTrace(trace))
-					})(),
-					10000,
-					`makeReady for "${d.deviceId}" timed out`
-				)
-			)
-
-			this._triggerResolveTimeline()
-		})
-	}
-
-	/**
-	 * Send a standDown-trigger to all devices
-	 *
-	 * @deprecated replaced by TSR actions
-	 */
-	public async devicesStandDown(okToDestroyStuff?: boolean): Promise<void> {
-		this.activationId = undefined
-		this.emit('debug', `devicesStandDown, ${okToDestroyStuff ? 'okToDestroyStuff' : 'undefined'}`)
-		await this._actionQueue.add(async () => {
-			await this._mapAllConnections(false, async (d) =>
-				PTimeout(
-					(async () => {
-						const trace = startTrace('conductor:standDown:' + d.deviceId)
-						await d.device.standDown(okToDestroyStuff)
-						this.emit('timeTrace', endTrace(trace))
-					})(),
-					10000,
-					`standDown for "${d.deviceId}" timed out`
-				)
-			)
-		})
 	}
 
 	public async getThreadsMemoryUsage(): Promise<{ [childId: string]: MemUsageReport }> {

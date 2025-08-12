@@ -203,13 +203,6 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		return action(payload)
 	}
 
-	async makeReady(okToDestroyStuff?: boolean): Promise<void> {
-		return this._device.makeReady?.(okToDestroyStuff)
-	}
-	async standDown(): Promise<void> {
-		return this._device.standDown?.()
-	}
-
 	/** @deprecated - just here for API compatiblity with the old class */
 	prepareForHandleState() {
 		//

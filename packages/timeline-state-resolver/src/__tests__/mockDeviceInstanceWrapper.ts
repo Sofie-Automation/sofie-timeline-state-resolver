@@ -72,12 +72,6 @@ export class MockDeviceInstanceWrapper
 			throw new Error('Method not implemented.')
 		}
 	)
-	makeReady = jest.fn(async (_okToDestroyStuff?: boolean | undefined): Promise<void> => {
-		throw new Error('Method not implemented.')
-	})
-	standDown = jest.fn(async (): Promise<void> => {
-		throw new Error('Method not implemented.')
-	})
 
 	/** @deprecated - just here for API compatiblity with the old class */
 	prepareForHandleState(): void {
