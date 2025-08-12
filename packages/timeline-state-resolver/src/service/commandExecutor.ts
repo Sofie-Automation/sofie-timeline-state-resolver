@@ -42,15 +42,13 @@ export class CommandExecutor<DeviceState, Command extends CommandWithContext> {
 				}
 
 				measurement?.executeCommand(command)
-				let result: unknown
 				try {
-					result = await this.sendCommand(command)
+					await this.sendCommand(command)
 				} catch (e) {
 					this.logger.error('Error while executing command', e as any)
 				} finally {
 					measurement?.finishedCommandExecution(command)
 				}
-				return result
 			})
 		)
 	}
