@@ -280,12 +280,6 @@ export class VMixDevice extends DeviceWithState<VMixStateExtended, VmixDeviceTyp
 		}
 	}
 
-	async makeReady(okToDestroyStuff?: boolean): Promise<void> {
-		if (okToDestroyStuff) {
-			// do something?
-		}
-	}
-
 	readonly actions: VmixActionMethods = {
 		[VmixActions.LastPreset]: async () => this._lastPreset(),
 		[VmixActions.OpenPreset]: async (payload) => this._openPreset(payload),

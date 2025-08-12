@@ -42,15 +42,6 @@ export abstract class Device<
 	 */
 	abstract terminate(): Promise<void>
 
-	/** @deprecated */
-	async makeReady(_okToDestroyStuff?: boolean): Promise<void> {
-		// Do nothing by default
-	}
-	/** @deprecated */
-	async standDown(): Promise<void> {
-		// Do nothing by default
-	}
-
 	abstract get connected(): boolean
 	abstract getStatus(): Omit<DeviceStatus, 'active'>
 

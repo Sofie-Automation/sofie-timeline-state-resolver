@@ -177,9 +177,6 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			active: this.isActive,
 		}
 	}
-	async makeReady(okToDestroyStuff?: boolean): Promise<void> {
-		if (okToDestroyStuff) return this._makeReadyInner(okToDestroyStuff)
-	}
 
 	private async _makeReadyInner(resync?: boolean): Promise<void> {
 		if (resync) {

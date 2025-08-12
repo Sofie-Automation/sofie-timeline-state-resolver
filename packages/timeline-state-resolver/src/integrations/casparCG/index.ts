@@ -120,9 +120,6 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		let firstConnect = true
 
 		this._ccg.on('connect', () => {
-			this.makeReady(false) // always make sure timecode is correct, setting it can never do bad
-				.catch((e) => this.emit('error', 'casparCG.makeReady', e))
-
 			Promise.resolve()
 				.then(async () => {
 					// a "virgin server" was just restarted (so it is cleared & black).
@@ -610,19 +607,6 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		})
 
 		return caspar
-	}
-
-	/**
-	 * Prepares the physical device for playout. If amcp scheduling is used this
-	 * tries to sync the timecode. If {@code okToDestroyStuff === true} this clears
-	 * all channels and resets our states.
-	 * @param okToDestroyStuff Whether it is OK to restart the device
-	 */
-	async makeReady(okToDestroyStuff?: boolean): Promise<void> {
-		// reset our own state(s):
-		if (okToDestroyStuff) {
-			await this.clearAllChannels()
-		}
 	}
 
 	private async clearAllChannels(): Promise<ActionExecutionResult> {
