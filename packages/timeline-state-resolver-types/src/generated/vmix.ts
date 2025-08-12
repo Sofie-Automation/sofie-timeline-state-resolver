@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import { ActionExecutionResult } from ".."
+import type { ActionExecutionResult } from "../actions"
 
 export interface VmixOptions {
 	host: string

@@ -7,78 +7,79 @@
 
 export * from './action-schema'
 export * from './generic-ptz-actions'
+export * from './device-options'
 
 export * from './abstract'
-import { SomeMappingAbstract } from './abstract'
+import type { SomeMappingAbstract } from './abstract'
 
 export * from './atem'
-import { SomeMappingAtem } from './atem'
+import type { SomeMappingAtem } from './atem'
 
 export * from './casparCG'
-import { SomeMappingCasparCG } from './casparCG'
+import type { SomeMappingCasparCG } from './casparCG'
 
 export * from './httpSend'
-import { SomeMappingHttpSend } from './httpSend'
+import type { SomeMappingHttpSend } from './httpSend'
 
 export * from './httpWatcher'
-import { SomeMappingHttpWatcher } from './httpWatcher'
+import type { SomeMappingHttpWatcher } from './httpWatcher'
 
 export * from './hyperdeck'
-import { SomeMappingHyperdeck } from './hyperdeck'
+import type { SomeMappingHyperdeck } from './hyperdeck'
 
 export * from './lawo'
-import { SomeMappingLawo } from './lawo'
+import type { SomeMappingLawo } from './lawo'
 
 export * from './multiOsc'
-import { SomeMappingMultiOsc } from './multiOsc'
+import type { SomeMappingMultiOsc } from './multiOsc'
 
 export * from './obs'
-import { SomeMappingObs } from './obs'
+import type { SomeMappingObs } from './obs'
 
 export * from './osc'
-import { SomeMappingOsc } from './osc'
+import type { SomeMappingOsc } from './osc'
 
 export * from './panasonicPTZ'
-import { SomeMappingPanasonicPTZ } from './panasonicPTZ'
+import type { SomeMappingPanasonicPTZ } from './panasonicPTZ'
 
 export * from './pharos'
-import { SomeMappingPharos } from './pharos'
+import type { SomeMappingPharos } from './pharos'
 
 export * from './quantel'
-import { SomeMappingQuantel } from './quantel'
+import type { SomeMappingQuantel } from './quantel'
 
 export * from './shotoku'
-import { SomeMappingShotoku } from './shotoku'
+import type { SomeMappingShotoku } from './shotoku'
 
 export * from './singularLive'
-import { SomeMappingSingularLive } from './singularLive'
+import type { SomeMappingSingularLive } from './singularLive'
 
 export * from './sisyfos'
-import { SomeMappingSisyfos } from './sisyfos'
+import type { SomeMappingSisyfos } from './sisyfos'
 
 export * from './sofieChef'
-import { SomeMappingSofieChef } from './sofieChef'
+import type { SomeMappingSofieChef } from './sofieChef'
 
 export * from './tcpSend'
-import { SomeMappingTcpSend } from './tcpSend'
+import type { SomeMappingTcpSend } from './tcpSend'
 
 export * from './telemetrics'
-import { SomeMappingTelemetrics } from './telemetrics'
+import type { SomeMappingTelemetrics } from './telemetrics'
 
 export * from './tricaster'
-import { SomeMappingTricaster } from './tricaster'
+import type { SomeMappingTricaster } from './tricaster'
 
 export * from './viscaOverIP'
-import { SomeMappingViscaOverIP } from './viscaOverIP'
+import type { SomeMappingViscaOverIP } from './viscaOverIP'
 
 export * from './vizMSE'
-import { SomeMappingVizMSE } from './vizMSE'
+import type { SomeMappingVizMSE } from './vizMSE'
 
 export * from './vmix'
-import { SomeMappingVmix } from './vmix'
+import type { SomeMappingVmix } from './vmix'
 
 export * from './websocketClient'
-import { SomeMappingWebsocketClient } from './websocketClient'
+import type { SomeMappingWebsocketClient } from './websocketClient'
 
 export type TSRMappingOptions =
 	| SomeMappingAbstract

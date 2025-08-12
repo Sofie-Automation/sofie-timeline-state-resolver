@@ -23,6 +23,7 @@ import { TimelineContentVMixAny } from './integrations/vmix'
 import { TimelineContentOBSAny } from './integrations/obs'
 import { TimelineContentTriCasterAny } from './integrations/tricaster'
 import { TimelineContentWebSocketClientAny } from './integrations/websocketClient'
+import { DeviceType } from './generated'
 
 export * from './integrations/abstract'
 export * from './integrations/atem'
@@ -59,39 +60,6 @@ export * from './translations'
 
 export * from './generated'
 export { Timeline }
-
-/**
- * An identifier of a particular device class
- *
- * @export
- * @enum {string}
- */
-export enum DeviceType {
-	ABSTRACT = 'ABSTRACT',
-	CASPARCG = 'CASPARCG',
-	ATEM = 'ATEM',
-	LAWO = 'LAWO',
-	HTTPSEND = 'HTTPSEND',
-	PANASONIC_PTZ = 'PANASONIC_PTZ',
-	TCPSEND = 'TCPSEND',
-	HYPERDECK = 'HYPERDECK',
-	PHAROS = 'PHAROS',
-	OSC = 'OSC',
-	HTTPWATCHER = 'HTTPWATCHER',
-	SISYFOS = 'SISYFOS',
-	QUANTEL = 'QUANTEL',
-	VIZMSE = 'VIZMSE',
-	SINGULAR_LIVE = 'SINGULAR_LIVE',
-	SHOTOKU = 'SHOTOKU',
-	VMIX = 'VMIX',
-	OBS = 'OBS',
-	SOFIE_CHEF = 'SOFIE_CHEF',
-	TELEMETRICS = 'TELEMETRICS',
-	TRICASTER = 'TRICASTER',
-	MULTI_OSC = 'MULTI_OSC',
-	VISCA_OVER_IP = 'VISCA_OVER_IP',
-	WEBSOCKET_CLIENT = 'WEBSOCKET_CLIENT',
-}
 
 export interface TSRTimelineKeyframe<TContent> extends Omit<Timeline.TimelineKeyframe, 'content'> {
 	content: TContent

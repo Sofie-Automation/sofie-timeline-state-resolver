@@ -25,16 +25,16 @@ import {
 	Timeline,
 	TSRTimelineContent,
 	TimelineDatastoreReferencesContent,
-	DeviceOptionsMultiOSC,
+	DeviceOptionsMultiOsc,
 	TimelineDatastoreReferences,
-	DeviceOptionsOBS,
-	DeviceOptionsOSC,
+	DeviceOptionsObs,
+	DeviceOptionsOsc,
 	DeviceOptionsShotoku,
-	DeviceOptionsHTTPSend,
-	DeviceOptionsHTTPWatcher,
+	DeviceOptionsHttpSend,
+	DeviceOptionsHttpWatcher,
 	DeviceOptionsAbstract,
 	DeviceOptionsAtem,
-	DeviceOptionsTCPSend,
+	DeviceOptionsTcpSend,
 	DeviceOptionsQuantel,
 	DeviceOptionsHyperdeck,
 	DeviceOptionsPanasonicPTZ,
@@ -42,10 +42,10 @@ import {
 	DeviceOptionsSofieChef,
 	DeviceOptionsPharos,
 	DeviceOptionsViscaOverIP,
-	DeviceOptionsTriCaster,
+	DeviceOptionsTricaster,
 	DeviceOptionsSingularLive,
 	fillStateFromDatastore,
-	DeviceOptionsWebSocketClient,
+	DeviceOptionsWebsocketClient,
 } from 'timeline-state-resolver-types'
 
 import { DoOnTime } from './devices/doOnTime'
@@ -1207,15 +1207,15 @@ export type DeviceOptionsAnyInternal =
 	| DeviceOptionsCasparCGInternal
 	| DeviceOptionsAtem
 	| DeviceOptionsLawo
-	| DeviceOptionsHTTPSend
-	| DeviceOptionsHTTPWatcher
+	| DeviceOptionsHttpSend
+	| DeviceOptionsHttpWatcher
 	| DeviceOptionsPanasonicPTZ
-	| DeviceOptionsTCPSend
+	| DeviceOptionsTcpSend
 	| DeviceOptionsHyperdeck
 	| DeviceOptionsPharos
-	| DeviceOptionsOBS
-	| DeviceOptionsOSC
-	| DeviceOptionsMultiOSC
+	| DeviceOptionsObs
+	| DeviceOptionsOsc
+	| DeviceOptionsMultiOsc
 	| DeviceOptionsSisyfosInternal
 	| DeviceOptionsSofieChef
 	| DeviceOptionsQuantel
@@ -1224,9 +1224,9 @@ export type DeviceOptionsAnyInternal =
 	| DeviceOptionsShotoku
 	| DeviceOptionsVizMSEInternal
 	| DeviceOptionsTelemetrics
-	| DeviceOptionsTriCaster
+	| DeviceOptionsTricaster
 	| DeviceOptionsViscaOverIP
-	| DeviceOptionsWebSocketClient
+	| DeviceOptionsWebsocketClient
 
 function removeParentFromState(
 	o: Timeline.TimelineState<TSRTimelineContent>

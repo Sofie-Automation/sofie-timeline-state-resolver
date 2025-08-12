@@ -55,10 +55,23 @@ const capitalise = (s) => {
 	if (!s) return s
 	const base = s.slice(0, 1).toUpperCase() + s.slice(1)
 
-	// replace `_a` with `A`
-	return base.replace(/_[a-z]/gi, (v) => {
+	// replace `_a` and `-a` with `A`
+	return base.replace(/[_|-][a-z]/gi, (v) => {
 		return v.slice(1).toUpperCase()
 	})
+}
+const toConstantCase = (s) => {
+	if (!s) return s
+
+	return (
+		s
+			// Insert underscore before uppercase letters (for camelCase)
+			.replace(/([a-z])([A-Z])/g, '$1_$2')
+			// Replace hyphens with underscores
+			.replace(/-/g, '_')
+			// Convert to uppercase
+			.toUpperCase()
+	)
 }
 
 let PrettierConf = undefined
@@ -83,9 +96,15 @@ await fs.mkdir(resolvedOutputPath, { recursive: true })
 let indexFile = BANNER + `\n`
 let baseMappingsTypes = []
 
+let deviceOptionsFile = BANNER + `\n`
+let deviceOptionsTypes = []
+let deviceTypeEnum = []
+
 const genericActionTypes = [] // TODO - should this be usable for plugins?
 if (isMainRepository) {
 	// Perform some special handling for the main repository. Ideally this would be a dedicated script, but that gets complicated due to needing to share the `genericActionTypes` array with the latter parts of this script
+
+	deviceOptionsFile += `import type { DeviceOptionsBase } from '../device'\n`
 
 	// convert action-schema
 	try {
@@ -175,7 +194,10 @@ if (isMainRepository) {
 	}
 
 	// Inject the generated types into the index.ts file
-	indexFile += `export * from './action-schema'\nexport * from './generic-ptz-actions'\n`
+	indexFile += `export * from './action-schema'
+export * from './generic-ptz-actions'
+export * from './device-options'
+`
 }
 
 // iterate over integrations
@@ -323,7 +345,7 @@ for (const dir of dirs) {
 	}
 
 	if (importGenericTypes.size > 0) {
-		output = `import { ${Array.from(importGenericTypes).join(', ')} } from './generic-ptz-actions'\n\n` + output
+		output = `import type { ${Array.from(importGenericTypes).join(', ')} } from './generic-ptz-actions'\n\n` + output
 	}
 
 	if (actionDefinitions.length > 0) {
@@ -350,7 +372,9 @@ ${actionDefinitions
 `
 		// Prepend import:
 		output =
-			`import { ActionExecutionResult } from "${isMainRepository ? '..' : 'timeline-state-resolver-types'}"\n` + output
+			`import type { ActionExecutionResult } from "${
+				isMainRepository ? '../actions' : 'timeline-state-resolver-types'
+			}"\n` + output
 	}
 
 	output += `
@@ -361,6 +385,25 @@ export interface ${dirId}DeviceTypes {
 }
 `
 
+	let deviceTypeId = toConstantCase(dir)
+	// Special case handling for some devices, for backwards compatibility
+	if (
+		deviceTypeId === 'CASPAR_CG' ||
+		deviceTypeId === 'HTTP_SEND' ||
+		deviceTypeId === 'HTTP_WATCHER' ||
+		deviceTypeId === 'TCP_SEND' ||
+		deviceTypeId === 'VIZ_MSE'
+	) {
+		deviceTypeId = dir.toUpperCase()
+	}
+	deviceTypeEnum.push(deviceTypeId)
+
+	deviceOptionsFile += `import type { ${dirId}Options } from './${dir}'
+export interface DeviceOptions${dirId} extends DeviceOptionsBase<${dirId}Options> {
+	type: DeviceType.${deviceTypeId}
+}\n\n`
+	deviceOptionsTypes.push(`DeviceOptions${dirId}`)
+
 	// Output to tsr types package
 	const outputFilePath = path.join(resolvedOutputPath, dir + '.ts')
 	if (output) {
@@ -369,7 +412,7 @@ export interface ${dirId}DeviceTypes {
 		await fs.writeFile(outputFilePath, output)
 
 		indexFile += `\nexport * from './${dir}'`
-		indexFile += `\nimport { ${someMappingName} } from './${dir}'`
+		indexFile += `\nimport type { ${someMappingName} } from './${dir}'`
 		indexFile += '\n'
 	} else {
 		if (await fsUnlink(outputFilePath)) console.log('Removed ' + outputFilePath)
@@ -382,6 +425,20 @@ if (baseMappingsTypes.length) {
 
 // Output the tsr-types index file
 await fs.writeFile(path.join(resolvedOutputPath, 'index.ts'), indexFile + '\n')
+
+if (isMainRepository) {
+	deviceOptionsFile += `export type DeviceOptionsAny =\n\t| ${deviceOptionsTypes.join('\n\t| ')}\n\n`
+
+	deviceOptionsFile += `/**
+ * An identifier of a particular device class
+ *
+ * @export
+ * @enum {string}
+ */
+export enum DeviceType {\n\t${deviceTypeEnum.map((type) => `${type} = '${toConstantCase(type)}'`).join(',\n\t')}\n}\n`
+
+	await fs.writeFile(path.join(resolvedOutputPath, 'device-options.ts'), deviceOptionsFile + '\n')
+}
 
 // Finally
 process.exit(hadError ? 1 : 0)
