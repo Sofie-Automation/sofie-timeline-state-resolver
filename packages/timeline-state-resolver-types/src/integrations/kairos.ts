@@ -7,7 +7,6 @@ import type {
 	UpdateClipPlayerObject,
 	MediaRamRecRef,
 	MediaSoundRef,
-	MediaStillRef,
 	UpdateSceneSnapshotObject,
 	UpdateAuxObject,
 	// eslint-disable-next-line node/no-missing-import
@@ -46,29 +45,39 @@ export type TimelineContentKairosAny =
 	| TimelineContentKairosStillPlayer
 	| TimelineContentKairosSoundPlayer
 
-export interface TimelineContentKairosScene extends Partial<UpdateSceneObject> {
+export interface TimelineContentKairosScene {
 	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.SCENE
 
+	scene: Partial<UpdateSceneObject>
+
 	recallSnapshots: {
 		// The snapshotName MUST be based on the ref (it's not really used in TSR, but should be unique)
-		[snapshotName: string]: {
-			/** Reference to the Snapshot */
-			ref: RefPath
-			/** When this is true, the Snapshot will be recalled */
-			active: boolean
-		} & Partial<UpdateSceneSnapshotObject>
+		[snapshotName: string]: TimelineContentKairosSceneSnapshotInfo
 	}
 }
 
-export interface TimelineContentKairosSceneLayer extends Partial<UpdateSceneLayerObject> {
-	deviceType: DeviceType.KAIROS
-	type: TimelineContentTypeKairos.SCENE_LAYER
+export interface TimelineContentKairosSceneSnapshotInfo {
+	/** Reference to the Snapshot */
+	ref: RefPath
+	/** When this is true, the Snapshot will be recalled */
+	active: boolean
+
+	properties: Partial<UpdateSceneSnapshotObject>
 }
 
-export interface TimelineContentKairosAux extends Partial<UpdateAuxObject> {
+export interface TimelineContentKairosSceneLayer {
+	deviceType: DeviceType.KAIROS
+	type: TimelineContentTypeKairos.SCENE_LAYER
+
+	sceneLayer: Partial<UpdateSceneLayerObject>
+}
+
+export interface TimelineContentKairosAux {
 	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.AUX
+
+	aux: Partial<UpdateAuxObject>
 }
 
 export interface TimelineContentKairosMacros {
@@ -77,11 +86,12 @@ export interface TimelineContentKairosMacros {
 
 	macros: {
 		// The macroName MUST be based on the ref (it's not really used in TSR, but should be unique)
-		[macroName: string]: {
-			ref: RefPath
-			active: MacroActiveState
-		}
+		[macroName: string]: TimelineContentKairosMacroInfo
 	}
+}
+export interface TimelineContentKairosMacroInfo {
+	ref: RefPath
+	active: MacroActiveState
 }
 export enum MacroActiveState {
 	/** The Macro will be played */
@@ -92,34 +102,38 @@ export enum MacroActiveState {
 	UNCHANGED = 'unchanged',
 }
 
-export interface TimelineContentKairosClipPlayer extends TimelineContentKairosPlayerBase {
+export interface TimelineContentKairosClipPlayer {
 	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.CLIP_PLAYER
-	/** Reference to the file to be played */
-	clip: MediaClipRef
+
+	clipPlayer: TimelineContentKairosPlayerState<MediaClipRef>
 }
-export interface TimelineContentKairosRamRecPlayer extends TimelineContentKairosPlayerBase {
+export interface TimelineContentKairosRamRecPlayer {
 	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.RAMREC_PLAYER
-	/** Reference to the file to be played */
-	clip: MediaRamRecRef
+
+	ramRecPlayer: TimelineContentKairosPlayerState<MediaRamRecRef>
 }
 export interface TimelineContentKairosStillPlayer {
 	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.STILL_PLAYER
-	/** Reference to the file to be played */
-	clip: MediaStillRef // and MediaImageRef?
+
+	// stillPlayer: TimelineContentKairosPlayerState<MediaStillRef>
 }
-export interface TimelineContentKairosSoundPlayer extends TimelineContentKairosPlayerBase {
+export interface TimelineContentKairosSoundPlayer {
 	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.SOUND_PLAYER
-	/** Reference to the file to be played */
-	clip: MediaSoundRef
+
+	soundPlayer: TimelineContentKairosPlayerState<MediaSoundRef>
 }
+
 // Note: This is quite inspired from the CasparCG Media type:
-export interface TimelineContentKairosPlayerBase
+export interface TimelineContentKairosPlayerState<TClip>
 	extends Partial<Pick<UpdateClipPlayerObject, 'colorOverwrite' | 'color'>> {
 	// clip player / ramrec player
+
+	/** Reference to the file to be played */
+	clip?: TClip
 
 	/**
 	 * Whether the media file should be looping or not.

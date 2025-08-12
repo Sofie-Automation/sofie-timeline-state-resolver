@@ -1,103 +1,151 @@
-import { Diff } from 'kairos-state'
-import { DeepComplete } from 'kairos-state/dist/util'
-import { Mapping, SomeMappingKairos, MappingKairosType, Mappings } from 'timeline-state-resolver-types'
+import type { SomeMappingKairos, Mappings } from 'timeline-state-resolver-types'
+import { KairosStateBuilder, type KairosDeviceState } from './stateBuilder'
+import type { KairosCommandWithContext } from '.'
+// eslint-disable-next-line node/no-missing-import
+import { UpdateSceneLayerObject, UpdateSceneObject } from 'kairos-connection'
+import { isEqual } from 'underscore'
 
-/**
-  Returns an option object to be passed into KairosState.diffStates().
-  Based on the mappings, these options enables/disables certain areas-of-interest in the diff kairos state.
-*/
-export function createDiffOptions(mappings: Mappings<SomeMappingKairos>): DeepComplete<Diff.SectionsToDiff> {
-	const auxMappings: number[] = []
-	const audioOutputs: number[] = []
-	const colorGenerators: number[] = []
+export function diffKairosStates(
+	oldKairosState: KairosDeviceState | undefined,
+	newKairosState: KairosDeviceState,
+	mappings: Mappings<SomeMappingKairos>
+): KairosCommandWithContext[] {
+	// Make sure there is something to diff against
+	oldKairosState = oldKairosState ?? KairosStateBuilder.fromTimeline({}, mappings)
 
-	for (const mapping of Object.values<Mapping<SomeMappingKairos>>(mappings)) {
-		if (mapping.options.mappingType === MappingKairosType.Auxilliary) {
-			auxMappings.push(mapping.options.index)
-		} else if (mapping.options.mappingType === MappingKairosType.AudioChannel) {
-			audioOutputs.push(mapping.options.index)
-		} else if (mapping.options.mappingType === MappingKairosType.ColorGenerator) {
-			colorGenerators.push(mapping.options.index)
+	const commands: KairosCommandWithContext[] = []
+
+	// TODO - any concerns with temporal order (ie, cutting to/from a clip player before it has started/stopped playing?)
+
+	// TODO - should this act more like atem-state where anything unset gets restored to a hardcoded 'default', or should it only set properties which are explicitly set/diff on the timeline?
+	// I almost did the latter, but then I realized that it would be hard to do anything. You would need to have a 'defaults' baseline object to set the default state, otherwise it wouldnt be
+	// repected when going between two timed objects. eg baseline: { a: 1, b: 2 }, object A: { a: 3, b: 3 } and object B: { a: 4 }.
+	// when going A -> B, it wouldnt know to set b to 2, because that wouldnt be present in the timeline. Depending what the property is, that may be fine or not.
+
+	// commands.push(...diffSceneSnapshots(oldKairosState.sceneSnapshots, newKairosState.sceneSnapshots))
+	commands.push(...diffScenes(oldKairosState.scenes, newKairosState.scenes))
+	commands.push(...diffSceneLayers(oldKairosState.sceneLayers, newKairosState.sceneLayers))
+
+	// commands.push(...diffAuxes(oldKairosState.aux, newKairosState.aux))
+
+	// commands.push(...diffMacros(oldKairosState.macros, newKairosState.macros))
+
+	// commands.push(...diffClipPlayers(oldKairosState.clipPlayers, newKairosState.clipPlayers))
+	// commands.push(...diffRamRecPlayers(oldKairosState.ramRecPlayers, newKairosState.ramRecPlayers))
+	// commands.push(...diffStillPlayers(oldKairosState.stillPlayers, newKairosState.stillPlayers))
+	// commands.push(...diffSoundPlayers(oldKairosState.soundPlayers, newKairosState.soundPlayers))
+
+	return commands
+}
+
+// const SceneDefaults: UpdateSceneObject = {
+// 	advancedResolutionControl: false,
+// }
+
+function diffScenes(
+	oldScenes: KairosDeviceState['scenes'],
+	newScenes: KairosDeviceState['scenes']
+): KairosCommandWithContext[] {
+	const commands: KairosCommandWithContext[] = []
+
+	const sceneKeys = getAllKeysString(oldScenes, newScenes)
+	for (const sceneKey of sceneKeys) {
+		const newScene = newScenes[sceneKey]
+		const oldScene = oldScenes[sceneKey]
+
+		const sceneRef = newScene?.ref || oldScene?.ref
+		if (!sceneRef) continue // No scene to diff
+
+		// const oldSceneState: UpdateSceneObject = { ...SceneDefaults, ...oldScene?.state }
+		// const newSceneState: UpdateSceneObject = { ...SceneDefaults, ...newScene?.state }
+
+		const diff = diffObject<UpdateSceneObject>(oldScene?.state, newScene?.state)
+		if (diff) {
+			commands.push({
+				timelineObjId: newScene?.timelineObjIds.join(' & ') ?? '',
+				context: `sceneKey=${sceneKey} newScene=${!!newScene} oldScene=${!!oldScene}`,
+				command: {
+					type: 'scene',
+					ref: sceneRef,
+					values: diff,
+				},
+			})
 		}
 	}
 
-	const audioOutputsObj: DeepComplete<Record<number | 'default', Diff.DiffFairlightAudioRoutingOutput | undefined>> = {
-		default: undefined,
-	}
-	for (const audioOutput of audioOutputs) {
-		audioOutputsObj[audioOutput] = {
-			name: false,
-			sourceId: true,
+	return commands
+}
+function diffSceneLayers(
+	oldSceneLayers: KairosDeviceState['sceneLayers'],
+	newSceneLayers: KairosDeviceState['sceneLayers']
+): KairosCommandWithContext[] {
+	const commands: KairosCommandWithContext[] = []
+
+	const sceneLayerKeys = getAllKeysString(oldSceneLayers, newSceneLayers)
+	for (const sceneLayerKey of sceneLayerKeys) {
+		const newSceneLayer = newSceneLayers[sceneLayerKey]
+		const oldSceneLayer = oldSceneLayers[sceneLayerKey]
+
+		const sceneLayerRef = newSceneLayer?.ref || oldSceneLayer?.ref
+		if (!sceneLayerRef) continue // No scene to diff
+
+		// const oldSceneState: UpdateSceneObject = { ...SceneDefaults, ...oldScene?.state }
+		// const newSceneState: UpdateSceneObject = { ...SceneDefaults, ...newScene?.state }
+
+		const diff = diffObject<UpdateSceneLayerObject>(oldSceneLayer?.state, newSceneLayer?.state)
+		if (diff) {
+			commands.push({
+				timelineObjId: newSceneLayer?.timelineObjIds.join(' & ') ?? '',
+				context: `sceneLayerKey=${sceneLayerKey} newSceneLayer=${!!newSceneLayer} oldSceneLayer=${!!oldSceneLayer}`,
+				command: {
+					type: 'scene-layer',
+					ref: sceneLayerRef,
+					values: diff,
+				},
+			})
 		}
 	}
 
-	// Manually construct the tree of what to diff, to match the previous version of kairos-state.
-	// Future: this should be computed from the mappings
-	return {
-		colorGenerators: colorGenerators,
-		settings: {
-			multiviewer: undefined,
-		},
-		macros: {
-			player: { player: true },
-		},
-		media: {
-			players: {
-				source: true,
-				status: true,
-			},
-		},
-		video: {
-			auxiliaries: auxMappings,
-			downstreamKeyers: {
-				sources: true,
-				onAir: true,
-				properties: true,
-				mask: true,
-			},
-			mixEffects: {
-				programPreview: true,
-				transitionStatus: true,
-				transitionProperties: true,
-				transitionSettings: {
-					dip: false,
-					DVE: false,
-					mix: true,
-					stinger: true,
-					wipe: true,
-				},
-				upstreamKeyers: {
-					sources: true,
-					onAir: true,
-					type: true,
-					mask: true,
-					flyKeyframes: 'all',
-					flyProperties: true,
-					dveSettings: true,
-					chromaSettings: false,
-					advancedChromaSettings: false,
-					lumaSettings: true,
-					patternSettings: true,
-				},
-			},
-			superSources: {
-				boxes: 'all',
-				border: true,
-				properties: true,
-			},
-		},
-		audio: {
-			classic: undefined,
-			fairlight: {
-				inputs: undefined,
-				masterOutput: undefined,
-				monitorOutput: undefined,
-				crossfade: undefined,
-				audioRouting: {
-					sources: undefined,
-					outputs: audioOutputsObj,
-				},
-			},
-		},
+	return commands
+}
+
+function diffObject<T>(oldObj: Partial<T> | undefined, newObj: Partial<T> | undefined): Partial<T> | undefined {
+	if (!newObj) return undefined
+
+	const diff: Partial<T> = {}
+	let hasChange = false
+
+	for (const key in newObj) {
+		const typedKey = key as keyof T
+		if (newObj[typedKey] !== undefined && !isEqual(newObj[typedKey], oldObj?.[typedKey])) {
+			hasChange = true
+			diff[typedKey] = newObj[typedKey]
+		}
 	}
+
+	return hasChange ? diff : undefined
+}
+
+function keyIsValid(key: string, oldObj: any, newObj: any) {
+	const oldVal = oldObj[key]
+	const newVal = newObj[key]
+	return (oldVal !== undefined && oldVal !== null) || (newVal !== undefined && newVal !== null)
+}
+function getAllKeysString<V>(
+	oldObj0: { [key: string]: V } | undefined,
+	newObj0: { [key: string]: V } | undefined
+): string[] {
+	const oldObj = oldObj0 ?? {}
+	const newObj = newObj0 ?? {}
+	const rawKeys = Object.keys(oldObj).concat(Object.keys(newObj))
+	return rawKeys.filter((v, i) => keyIsValid(v, oldObj, newObj) && rawKeys.indexOf(v) === i)
+}
+function getAllKeysNumber<V>(
+	oldObj0: { [key: number]: V } | Array<V> | undefined,
+	newObj0: { [key: number]: V } | Array<V> | undefined
+): number[] {
+	const oldObj = oldObj0 ?? []
+	const newObj = newObj0 ?? []
+	const rawKeys = Object.keys(oldObj).concat(Object.keys(newObj))
+	return rawKeys.filter((v, i) => keyIsValid(v, oldObj, newObj) && rawKeys.indexOf(v) === i).map((v) => parseInt(v, 10))
 }

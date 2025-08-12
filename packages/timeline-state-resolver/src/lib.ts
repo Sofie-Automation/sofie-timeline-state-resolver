@@ -10,6 +10,14 @@ export function literal<T>(o: T) {
 }
 
 /**
+ * Make all optional properties be required and `| undefined`
+ * This is useful to ensure that no property is missed, when manually converting between types, but allowing fields to be undefined
+ */
+export type Complete<T> = {
+	[P in keyof Required<T>]: Pick<T, P> extends Required<Pick<T, P>> ? T[P] : T[P] | undefined
+}
+
+/**
  * getDiff is the reverse of underscore:s _.isEqual(): It compares two values and if they differ it returns an explanation of the difference
  * If the values are equal: return null
  * @param a

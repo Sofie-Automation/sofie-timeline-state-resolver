@@ -14,7 +14,7 @@ import {
 import { KairosConnection } from 'kairos-connection'
 import type { Device, DeviceContextAPI, CommandWithContext } from 'timeline-state-resolver-api'
 import { KairosDeviceState, KairosStateBuilder } from './stateBuilder'
-import { createDiffOptions } from './diffState'
+import { diffKairosStates } from './diffState'
 import { sendCommand, type KairosCommandAny } from './commands'
 
 export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, string>
@@ -138,45 +138,24 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 	diffStates(
 		oldKairosState: KairosDeviceState | undefined,
 		newKairosState: KairosDeviceState,
-		mappings: Mappings
+		mappings: Mappings<SomeMappingKairos>
 	): Array<KairosCommandWithContext> {
 		// Skip diffing if not connected, a resolverReset will be fired upon reconnection
 		if (!this.connected) return []
 
-		// Make sure there is something to diff against
-		oldKairosState = oldKairosState ?? KairosStateBuilder.fromTimeline({}, mappings)
-
-		const diffOptions = createDiffOptions(mappings as Mappings<SomeMappingKairos>)
-		const commands = KairosState.diffStates(oldKairosState, newKairosState, diffOptions)
-
-		if (commands.length > 0) {
-			return [
-				{
-					command: commands,
-					context: '',
-					timelineObjId: '',
-				},
-			]
-		} else {
-			return []
-		}
+		return diffKairosStates(oldKairosState, newKairosState, mappings)
 	}
 
-	async sendCommand({ command, context, timelineObjId }: KairosCommandWithContext): Promise<void> {
-		const cwc: KairosCommandWithContext = {
-			context,
-			command,
-			timelineObjId,
-		}
-		this.context.logger.debug(cwc)
+	async sendCommand(command: KairosCommandWithContext): Promise<void> {
+		this.context.logger.debug(command)
 
 		// Skip attempting send if not connected
 		if (!this.connected) return
 
 		try {
-			await sendCommand(this._kairos, command)
+			await sendCommand(this._kairos, command.command)
 		} catch (error: any) {
-			this.context.commandError(error, cwc)
+			this.context.commandError(error, command)
 		}
 	}
 
