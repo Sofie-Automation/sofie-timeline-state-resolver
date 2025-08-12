@@ -1,6 +1,5 @@
-import { HttpMethod, HttpWatcherOptions } from 'timeline-state-resolver-types'
+import { HttpMethod, HttpWatcherOptions, StatusCode } from 'timeline-state-resolver-types'
 import { MockTime } from '../../../__tests__/mockTime'
-import { StatusCode } from '../../../devices/device'
 
 const MOCKED_SOCKET_GET = jest.fn()
 const MOCKED_SOCKET_POST = jest.fn()

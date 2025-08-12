@@ -1,7 +1,12 @@
 /* eslint-disable jest/expect-expect */
-import { TSRTimelineContent, TimelineContentAbstractAny, Timeline, DeviceType } from 'timeline-state-resolver-types'
+import {
+	TSRTimelineContent,
+	TimelineContentAbstractAny,
+	Timeline,
+	DeviceType,
+	StatusCode,
+} from 'timeline-state-resolver-types'
 import { AbstractCommandWithContext, AbstractDevice, AbstractDeviceState } from '..'
-import { StatusCode } from '../../../devices/device'
 import { MockTime } from '../../../__tests__/mockTime'
 import { ResolvedTimelineObjectInstance } from 'timeline-state-resolver-types/dist/superfly-timeline'
 import { makeTimelineObjectResolved } from '../../../__mocks__/objects'

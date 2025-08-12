@@ -1,4 +1,4 @@
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
@@ -30,12 +30,16 @@ export type ViscaDeviceState = Timeline.TimelineState<TSRTimelineContent>
 
 export type ViscaDeviceCommand = CommandWithContext<{}, string>
 
-export class ViscaOverIpDevice extends Device<ViscaOverIPDeviceTypes, ViscaDeviceState, ViscaDeviceCommand> {
+export class ViscaOverIpDevice implements Device<ViscaOverIPDeviceTypes, ViscaDeviceState, ViscaDeviceCommand> {
 	protected _terminated = false
 
 	protected connection: ViscaDevice | undefined
 
 	protected converter = new ViscaValueConverter()
+
+	constructor(protected context: DeviceContextAPI<ViscaDeviceState>) {
+		// Nothing
+	}
 
 	async init(options: ViscaOverIPOptions): Promise<boolean> {
 		this.connection = new ViscaDevice(options.host, options.port, true, (...args) =>

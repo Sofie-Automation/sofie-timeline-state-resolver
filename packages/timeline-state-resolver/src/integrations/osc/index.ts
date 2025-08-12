@@ -11,7 +11,7 @@ import {
 	Timeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import * as osc from 'osc'
 
 import Debug from 'debug'
@@ -29,7 +29,7 @@ interface OSCDeviceStateContent extends OSCMessageCommandContent {
 
 export type OscCommandWithContext = CommandWithContext<OSCDeviceStateContent, string>
 
-export class OscDevice extends Device<OscDeviceTypes, OscDeviceState, OscCommandWithContext> {
+export class OscDevice implements Device<OscDeviceTypes, OscDeviceState, OscCommandWithContext> {
 	/** Setup in init */
 	private _oscClient!: osc.UDPPort | osc.TCPSocketPort
 	private _oscClientStatus: 'connected' | 'disconnected' = 'disconnected'
@@ -40,6 +40,10 @@ export class OscDevice extends Device<OscDeviceTypes, OscDeviceState, OscCommand
 	} = {}
 	private transitionInterval: NodeJS.Timeout | undefined
 	private options: OscOptions | undefined
+
+	constructor(protected context: DeviceContextAPI<OscDeviceState>) {
+		// Nothing
+	}
 
 	async init(options: OscOptions): Promise<boolean> {
 		this.options = options

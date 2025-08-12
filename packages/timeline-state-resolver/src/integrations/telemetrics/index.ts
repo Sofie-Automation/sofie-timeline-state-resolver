@@ -9,7 +9,7 @@ import {
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
 import { Socket } from 'net'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 const TELEMETRICS_COMMAND_PREFIX = 'P0C'
 const DEFAULT_SOCKET_PORT = 5000
@@ -25,7 +25,9 @@ type TelemetricsCommandWithContext = CommandWithContext<{ presetShotIdentifier: 
  * Connects to a Telemetrics Device on port 5000 using a TCP socket.
  * This class uses a fire and forget approach.
  */
-export class TelemetricsDevice extends Device<TelemetricsDeviceTypes, TelemetricsState, TelemetricsCommandWithContext> {
+export class TelemetricsDevice
+	implements Device<TelemetricsDeviceTypes, TelemetricsState, TelemetricsCommandWithContext>
+{
 	readonly actions = null
 
 	private socket: Socket | undefined
@@ -33,6 +35,10 @@ export class TelemetricsDevice extends Device<TelemetricsDeviceTypes, Telemetric
 	private errorMessage: string | undefined
 
 	private retryConnectionTimer: NodeJS.Timeout | undefined
+
+	constructor(protected context: DeviceContextAPI<TelemetricsState>) {
+		// Nothing
+	}
 
 	get connected(): boolean {
 		return this.statusCode === StatusCode.GOOD

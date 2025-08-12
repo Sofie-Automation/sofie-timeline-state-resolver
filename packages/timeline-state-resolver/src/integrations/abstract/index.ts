@@ -1,4 +1,3 @@
-import { DeviceStatus, StatusCode } from './../../devices/device'
 import {
 	AbstractOptions,
 	Timeline,
@@ -8,8 +7,10 @@ import {
 	ActionExecutionResultCode,
 	AbstractDeviceTypes,
 	AbstractActions,
+	StatusCode,
+	DeviceStatus,
 } from 'timeline-state-resolver-types'
-import { Device, CommandWithContext } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 export type AbstractCommandWithContext = CommandWithContext<string, string>
 
@@ -23,7 +24,7 @@ export type AbstractDeviceState = Timeline.TimelineState<TSRTimelineContent>
 	An abstract device is just a test-device that doesn't really do anything, but can be used
 	as a preliminary mock
 */
-export class AbstractDevice extends Device<AbstractDeviceTypes, AbstractDeviceState, AbstractCommandWithContext> {
+export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDeviceState, AbstractCommandWithContext> {
 	readonly actions: AbstractActionMethods = {
 		[AbstractActions.TestAction]: async () => {
 			// noop
@@ -32,6 +33,10 @@ export class AbstractDevice extends Device<AbstractDeviceTypes, AbstractDeviceSt
 	}
 
 	public readonly connected = false
+
+	constructor(protected context: DeviceContextAPI<AbstractDeviceState>) {
+		// Nothing
+	}
 
 	/**
 	 * Initiates the connection with CasparCG through the ccg-connection lib.

@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceWithState, DeviceStatus, StatusCode } from '../../devices/device'
+import { DeviceWithState } from '../../devices/device'
 import {
 	AMCPCommand,
 	BasicCasparCGAPI,
@@ -33,6 +33,7 @@ import {
 	interpolateTemplateStringIfNeeded,
 	CasparCGDeviceTypes,
 	CasparCGActions,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 
 import {
@@ -60,7 +61,8 @@ import { InternalTransitionHandler } from '../../devices/transitions/transitionH
 import Debug from 'debug'
 import { deepMerge, endTrace, literal, startTrace, t } from '../../lib'
 import { ClsParameters } from 'casparcg-connection/dist/parameters'
-import { CommandWithContext } from '../../service/device'
+import type { DeviceStatus, CommandWithContext } from 'timeline-state-resolver-api'
+
 const debug = Debug('timeline-state-resolver:casparcg')
 
 const MEDIA_RETRY_INTERVAL = 10 * 1000 // default time in ms between checking whether a file needs to be retried loading

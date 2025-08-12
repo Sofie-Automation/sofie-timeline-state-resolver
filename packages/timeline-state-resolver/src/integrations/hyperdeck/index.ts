@@ -1,4 +1,3 @@
-import { DeviceStatus, StatusCode } from '../../devices/device'
 import {
 	HyperdeckOptions,
 	Mappings,
@@ -9,6 +8,8 @@ import {
 	ActionExecutionResultCode,
 	HyperdeckDeviceTypes,
 	HyperdeckActions,
+	DeviceStatus,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 import {
 	Hyperdeck,
@@ -20,12 +21,14 @@ import {
 import { deferAsync } from '../../lib'
 import { HyperdeckCommandWithContext, diffHyperdeckStates } from './diffState'
 import { HyperdeckDeviceState, convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from './stateBuilder'
-import { Device } from '../../service/device'
+import type { Device, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 /**
  * This is a wrapper for the Hyperdeck Device. Commands to any and all hyperdeck devices will be sent through here.
  */
-export class HyperdeckDevice extends Device<HyperdeckDeviceTypes, HyperdeckDeviceState, HyperdeckCommandWithContext> {
+export class HyperdeckDevice
+	implements Device<HyperdeckDeviceTypes, HyperdeckDeviceState, HyperdeckCommandWithContext>
+{
 	readonly actions: HyperdeckActionMethods = {
 		[HyperdeckActions.FormatDisks]: this.formatDisks.bind(this),
 		[HyperdeckActions.Resync]: this.resyncState.bind(this),
@@ -42,6 +45,10 @@ export class HyperdeckDevice extends Device<HyperdeckDeviceTypes, HyperdeckDevic
 	private _transportStatus: TransportStatus | undefined
 	private _expectedTransportStatus: TransportStatus | undefined
 	private _suppressEmptySlotWarnings = false
+
+	constructor(protected context: DeviceContextAPI<HyperdeckDeviceState>) {
+		// Nothing
+	}
 
 	/**
 	 * Initiates the connection with the Hyperdeck through the hyperdeck-connection lib.

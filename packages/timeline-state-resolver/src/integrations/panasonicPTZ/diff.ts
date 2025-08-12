@@ -1,6 +1,6 @@
 import { TimelineContentTypePanasonicPtz } from 'timeline-state-resolver-types'
 import _ = require('underscore')
-import { CommandWithContext } from '../..'
+import type { CommandWithContext } from 'timeline-state-resolver-api'
 import { PanasonicPtzState } from './state'
 
 const COMMAND_PRIORITY: Record<PanasonicPtzCommand['type'], number> = {

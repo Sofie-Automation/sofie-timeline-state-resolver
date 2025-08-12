@@ -2,7 +2,7 @@ import { EmberValue } from 'timeline-state-resolver-types'
 import { LawoState } from './state'
 import { Model as EmberModel } from 'emberplus-connection'
 import { literal } from '../../lib'
-import { CommandWithContext } from '../..'
+import type { CommandWithContext } from 'timeline-state-resolver-api'
 
 export type LawoCommandWithContext = CommandWithContext<LawoCommand, string>
 

@@ -6,7 +6,7 @@ import {
 	Mappings,
 	DeviceStatus,
 } from 'timeline-state-resolver-types'
-import type { DeviceEvents } from '../service/device'
+import type { DeviceEvents } from 'timeline-state-resolver-api'
 import type { DeviceInstanceWrapper, DeviceDetails } from '../service/DeviceInstance'
 import type { DeviceOptionsAnyInternal } from '../conductor'
 import type { ExpectedPlayoutItem } from '../expectedPlayoutItems'

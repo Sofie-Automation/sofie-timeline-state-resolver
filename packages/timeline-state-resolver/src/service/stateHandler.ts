@@ -1,7 +1,6 @@
 import { startTrace, endTrace, cloneDeep } from '../lib'
-import type { FinishedTrace } from 'timeline-state-resolver-api'
+import type { FinishedTrace, BaseDeviceAPI, CommandWithContext } from 'timeline-state-resolver-api'
 import { Mappings, Timeline, TSRTimelineContent } from 'timeline-state-resolver-types'
-import { BaseDeviceAPI, CommandWithContext } from './device'
 import { Measurement, StateChangeReport } from './measure'
 import { CommandExecutor } from './commandExecutor'
 import { StateTracker } from './stateTracker'

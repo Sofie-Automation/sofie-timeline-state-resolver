@@ -12,15 +12,13 @@ import {
 import { WithContext, MappingsTriCaster, TriCasterState, TriCasterStateDiffer } from './triCasterStateDiffer'
 import { TriCasterCommandWithContext } from './triCasterCommands'
 import { TriCasterConnection } from './triCasterConnection'
-import { Device } from '../../service/device'
+import type { Device, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 const DEFAULT_PORT = 5951
 
-export class TriCasterDevice extends Device<
-	TricasterDeviceTypes,
-	WithContext<TriCasterState>,
-	TriCasterCommandWithContext
-> {
+export class TriCasterDevice
+	implements Device<TricasterDeviceTypes, WithContext<TriCasterState>, TriCasterCommandWithContext>
+{
 	readonly actions = null
 
 	private _connected = false
@@ -28,6 +26,10 @@ export class TriCasterDevice extends Device<
 	private _isTerminating = false
 	private _connection?: TriCasterConnection
 	private _stateDiffer?: TriCasterStateDiffer
+
+	constructor(protected context: DeviceContextAPI<WithContext<TriCasterState>>) {
+		// Nothing
+	}
 
 	async init(options: TriCasterOptions): Promise<boolean> {
 		this._connection = new TriCasterConnection(options.host, options.port ?? DEFAULT_PORT)

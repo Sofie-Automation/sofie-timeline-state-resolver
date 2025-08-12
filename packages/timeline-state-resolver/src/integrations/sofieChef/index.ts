@@ -23,7 +23,7 @@ import {
 	ReceiveWSMessageResponse,
 } from './api'
 import { t } from '../../lib'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates'
 import { buildSofieChefState } from './stateBuilder'
 
@@ -45,7 +45,7 @@ const RECONNECT_WAIT_TIME = 5000
  * This is a wrapper for a SofieChef-devices,
  * https://github.com/Sofie-Automation/sofie-chef
  */
-export class SofieChefDevice extends Device<SofieChefDeviceTypes, SofieChefState, SofieChefCommandWithContext> {
+export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefState, SofieChefCommandWithContext> {
 	readonly actions: SofieChefActionMethods = {
 		[SofieChefActions.RestartAllWindows]: async () =>
 			this.restartAllWindows()
@@ -77,6 +77,10 @@ export class SofieChefDevice extends Device<SofieChefDeviceTypes, SofieChefState
 	}
 	private initOptions?: SofieChefOptions
 	private msgId = 0
+
+	constructor(protected context: DeviceContextAPI<SofieChefState>) {
+		// Nothing
+	}
 
 	/**
 	 * Initiates the connection with SofieChed through a websocket connection.

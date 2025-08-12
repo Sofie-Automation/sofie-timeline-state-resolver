@@ -5,7 +5,6 @@ import {
 	MediaObject,
 	DeviceOptionsBase,
 	DeviceStatus,
-	StatusCode,
 	Timeline,
 	TSRTimelineContent,
 	ActionExecutionResult,
@@ -15,7 +14,7 @@ import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo 
 import { ExpectedPlayoutItem } from '../expectedPlayoutItems'
 import { actionNotFoundMessage } from '../lib'
 import type { FinishedTrace } from 'timeline-state-resolver-api'
-import { CommandWithContext, DeviceEvents } from '../service/device'
+import type { CommandWithContext, DeviceEvents } from 'timeline-state-resolver-api'
 
 // =================================================================================================
 // =================================================================================================
@@ -39,8 +38,6 @@ export interface DeviceCommandContainer {
 	deviceId: string
 	commands: Array<DeviceCommand>
 }
-
-export { DeviceStatus, StatusCode }
 
 /**
  * These are the old Device events, emitted by the devices and listened to by conductor.

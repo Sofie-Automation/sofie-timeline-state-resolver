@@ -8,7 +8,7 @@ import {
 	Timeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { Device } from '../../service/device'
+import type { Device, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 import Debug from 'debug'
 import { convertTimelineStateToLawoState, LawoState } from './state'
@@ -16,8 +16,12 @@ import { LawoCommandWithContext, diffLawoStates, LawoCommandType } from './diff'
 import { LawoConnection } from './connection'
 const debug = Debug('timeline-state-resolver:lawo')
 
-export class LawoDevice extends Device<LawoDeviceTypes, LawoState, LawoCommandWithContext> {
+export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoCommandWithContext> {
 	private _lawo: LawoConnection | undefined
+
+	constructor(protected context: DeviceContextAPI<LawoState>) {
+		// Nothing
+	}
 
 	async init(options: LawoOptions): Promise<boolean> {
 		this._lawo = new LawoConnection(options, this.context.getCurrentTime)

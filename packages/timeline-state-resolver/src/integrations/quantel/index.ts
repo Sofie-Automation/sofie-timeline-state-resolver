@@ -12,7 +12,7 @@ import {
 	Timeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 import Debug from 'debug'
 import { QuantelCommand, QuantelCommandType, QuantelState } from './types'
@@ -31,7 +31,7 @@ interface OSCDeviceStateContent extends OSCMessageCommandContent {
 
 export type QuantelCommandWithContext = CommandWithContext<QuantelCommand, string>
 
-export class QuantelDevice extends Device<QuantelDeviceTypes, QuantelState, QuantelCommandWithContext> {
+export class QuantelDevice implements Device<QuantelDeviceTypes, QuantelState, QuantelCommandWithContext> {
 	/** Setup in init */
 	private _quantel!: QuantelGateway
 	/** Setup in init */
@@ -40,6 +40,10 @@ export class QuantelDevice extends Device<QuantelDeviceTypes, QuantelState, Quan
 	private options!: QuantelOptions
 
 	private _disconnectedSince: number | undefined = undefined
+
+	constructor(protected context: DeviceContextAPI<QuantelState>) {
+		// Nothing
+	}
 
 	async init(options: QuantelOptions): Promise<boolean> {
 		this.options = options

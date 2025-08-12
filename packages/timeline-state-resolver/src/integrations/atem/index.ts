@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { DeviceStatus, StatusCode } from './../../devices/device'
 import {
 	AtemOptions,
 	Mappings,
@@ -11,6 +10,7 @@ import {
 	AtemDeviceTypes,
 	AtemActionMethods,
 	AtemActions,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 import { AtemState, State as DeviceState } from 'atem-state'
 import {
@@ -20,7 +20,7 @@ import {
 	AtemStateUtil,
 	Enums as ConnectionEnums,
 } from 'atem-connection'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, DeviceStatus, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import { AtemStateBuilder } from './stateBuilder'
 import { createDiffOptions } from './diffState'
 import {
@@ -37,7 +37,7 @@ export type AtemCommandWithContext = CommandWithContext<AtemCommands.ISerializab
 /**
  * This is a wrapper for the Atem Device. Commands to any and all atem devices will be sent through here.
  */
-export class AtemDevice extends Device<AtemDeviceTypes, AtemDeviceState, AtemCommandWithContext, AnyAddressState> {
+export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, AtemCommandWithContext, AnyAddressState> {
 	readonly actions: AtemActionMethods = {
 		[AtemActions.Resync]: this.resyncState.bind(this),
 	}
@@ -50,6 +50,10 @@ export class AtemDevice extends Device<AtemDeviceTypes, AtemDeviceState, AtemCom
 		psus: Array<boolean>
 	} = {
 		psus: [],
+	}
+
+	constructor(protected context: DeviceContextAPI<AtemDeviceState, AnyAddressState>) {
+		// Nothing
 	}
 
 	/**

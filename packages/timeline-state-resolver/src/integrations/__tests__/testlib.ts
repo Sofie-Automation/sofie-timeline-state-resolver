@@ -1,4 +1,4 @@
-import { DeviceContextAPI } from '../../service/device'
+import { DeviceContextAPI } from 'timeline-state-resolver-api'
 
 /** A default context for devices used in unit tests */
 

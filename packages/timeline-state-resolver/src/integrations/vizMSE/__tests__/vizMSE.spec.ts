@@ -10,6 +10,7 @@ import {
 	VizMSEOptions,
 	VizMSEActions,
 	ActivatePayload,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 import { MockTime } from '../../../__tests__/mockTime'
 import { ThreadedClass } from 'threadedclass'
@@ -22,7 +23,6 @@ const getMockMSEs = vConnection.getMockMSEs
 type MSEMock = vConnection.MSEMock
 type VRundownMocked = vConnection.VRundownMocked
 import _ = require('underscore')
-import { StatusCode } from '../../../devices/device'
 import { MOCK_SHOWS } from '../../../__mocks__/v-connection'
 import { literal } from '../../../lib'
 import { ExpectedPlayoutItem } from '../../../expectedPlayoutItems'

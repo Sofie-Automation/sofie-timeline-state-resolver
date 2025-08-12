@@ -11,7 +11,7 @@ import {
 	ShotokuOptions,
 	ShotokuDeviceTypes,
 } from 'timeline-state-resolver-types'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 import _ = require('underscore')
 import { ShotokuAPI, ShotokuCommand, ShotokuCommandType } from './connection'
@@ -27,8 +27,12 @@ interface ShotokuSequence {
 
 export type ShotokuCommandWithContext = CommandWithContext<ShotokuCommand, string>
 
-export class ShotokuDevice extends Device<ShotokuDeviceTypes, ShotokuDeviceState, ShotokuCommandWithContext> {
+export class ShotokuDevice implements Device<ShotokuDeviceTypes, ShotokuDeviceState, ShotokuCommandWithContext> {
 	private readonly _shotoku = new ShotokuAPI()
+
+	constructor(protected context: DeviceContextAPI<ShotokuDeviceState>) {
+		// Nothing
+	}
 
 	async init(options: ShotokuOptions): Promise<boolean> {
 		this._shotoku.on('error', (info, error) => this.context.logger.error(info, error))
