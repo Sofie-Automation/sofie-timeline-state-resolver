@@ -7,25 +7,28 @@ import {
 	TSRTimelineContent,
 	Timeline,
 } from 'timeline-state-resolver-types'
-import { Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import { OBSDeviceState, convertStateToOBS, getDefaultState } from './state'
 import { OBSRequestTypes } from 'obs-websocket-js'
 import { diffStates } from './diff'
 import { OBSConnection, OBSConnectionEvents } from './connection'
 
 export type OBSCommandWithContext = OBSCommandWithContextTyped<keyof OBSRequestTypes>
-export interface OBSCommandWithContextTyped<Type extends keyof OBSRequestTypes> {
-	command: {
+export type OBSCommandWithContextTyped<Type extends keyof OBSRequestTypes> = CommandWithContext<
+	{
 		requestName: Type
 		args?: OBSRequestTypes[Type]
-	}
-	context: string
-	timelineObjId: string
-}
+	},
+	string
+>
 
-export class OBSDevice extends Device<ObsDeviceTypes, OBSDeviceState, OBSCommandWithContext> {
+export class OBSDevice implements Device<ObsDeviceTypes, OBSDeviceState, OBSCommandWithContext> {
 	private _options: ObsOptions | undefined = undefined
 	private _obs: OBSConnection | undefined = undefined
+
+	constructor(protected context: DeviceContextAPI<OBSDeviceState>) {
+		// Nothing
+	}
 
 	async init(options: ObsOptions): Promise<boolean> {
 		this._options = options

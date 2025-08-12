@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceStatus, DeviceWithState, StatusCode } from './../../devices/device'
+import { DeviceWithState } from './../../devices/device'
 
 import {
 	ActionExecutionResult,
@@ -23,6 +23,8 @@ import {
 	VizResetPayload,
 	VizMSEDeviceTypes,
 	VizMSEActions,
+	DeviceStatus,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 
 import { createMSE, MSE } from '@tv2media/v-connection'
@@ -59,7 +61,7 @@ import {
 	VizMSECommandClearAllElements,
 	VizMSECommandClearAllEngines,
 } from './types'
-import { CommandWithContext } from '../../service/device'
+import type { CommandWithContext } from 'timeline-state-resolver-api'
 
 /** The ideal time to prepare elements before going on air */
 const IDEAL_PREPARE_TIME = 1000

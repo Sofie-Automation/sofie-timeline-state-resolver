@@ -8,7 +8,7 @@ import {
 	PharosDeviceTypes,
 } from 'timeline-state-resolver-types'
 import { Pharos } from './connection'
-import { Device, CommandWithContext, DeviceContextAPI } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates'
 
 export type PharosCommandWithContext = CommandWithContext<CommandContent, string>
@@ -22,14 +22,12 @@ interface CommandContent {
  * This is a wrapper for a Pharos-devices,
  * https://www.pharoscontrols.com/downloads/documentation/application-notes/
  */
-export class PharosDevice extends Device<PharosDeviceTypes, PharosState, PharosCommandWithContext> {
+export class PharosDevice implements Device<PharosDeviceTypes, PharosState, PharosCommandWithContext> {
 	readonly actions = null
 
 	private _pharos: Pharos
 
-	constructor(context: DeviceContextAPI<PharosState>) {
-		super(context)
-
+	constructor(protected context: DeviceContextAPI<PharosState>) {
 		this._pharos = new Pharos()
 		this._pharos.on('error', (e) => this.context.logger.error('Pharos', e))
 		this._pharos.on('connected', () => {

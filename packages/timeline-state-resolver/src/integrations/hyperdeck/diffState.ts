@@ -1,5 +1,5 @@
 import { Commands as HyperdeckCommands, TransportStatus } from 'hyperdeck-connection'
-import { CommandWithContext } from '../..'
+import type { CommandWithContext } from 'timeline-state-resolver-api'
 import type { HyperdeckDeviceState } from './stateBuilder'
 
 export interface HyperdeckCommandContext {
