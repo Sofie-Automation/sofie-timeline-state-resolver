@@ -19,33 +19,13 @@ import {
 	ResolvedTimelineObjectInstanceExtended,
 	DeviceOptionsBase,
 	Datastore,
-	DeviceOptionsTelemetrics,
 	TSRTimelineObj,
 	TSRTimeline,
 	Timeline,
 	TSRTimelineContent,
 	TimelineDatastoreReferencesContent,
-	DeviceOptionsMultiOSC,
 	TimelineDatastoreReferences,
-	DeviceOptionsOBS,
-	DeviceOptionsOSC,
-	DeviceOptionsShotoku,
-	DeviceOptionsHTTPSend,
-	DeviceOptionsHTTPWatcher,
-	DeviceOptionsAbstract,
-	DeviceOptionsAtem,
-	DeviceOptionsTCPSend,
-	DeviceOptionsQuantel,
-	DeviceOptionsHyperdeck,
-	DeviceOptionsPanasonicPTZ,
-	DeviceOptionsLawo,
-	DeviceOptionsSofieChef,
-	DeviceOptionsPharos,
-	DeviceOptionsViscaOverIP,
-	DeviceOptionsTriCaster,
-	DeviceOptionsSingularLive,
 	fillStateFromDatastore,
-	DeviceOptionsWebSocketClient,
 } from 'timeline-state-resolver-types'
 
 import { DoOnTime } from './devices/doOnTime'
@@ -56,10 +36,6 @@ import type { FinishedTrace } from 'timeline-state-resolver-api'
 import { CommandWithContext } from './service/device'
 import { DeviceContainer } from './devices/deviceContainer'
 
-import { DeviceOptionsCasparCGInternal } from './integrations/casparCG'
-import { DeviceOptionsSisyfosInternal } from './integrations/sisyfos'
-import { DeviceOptionsVMixInternal } from './integrations/vmix'
-import { DeviceOptionsVizMSEInternal } from './integrations/vizMSE'
 import { BaseRemoteDeviceIntegration } from './service/remoteDeviceInstance'
 import { ConnectionManager } from './service/ConnectionManager'
 import { DevicesRegistry } from './service/devicesRegistry'
@@ -1202,31 +1178,6 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		}
 	}
 }
-export type DeviceOptionsAnyInternal =
-	| DeviceOptionsAbstract
-	| DeviceOptionsCasparCGInternal
-	| DeviceOptionsAtem
-	| DeviceOptionsLawo
-	| DeviceOptionsHTTPSend
-	| DeviceOptionsHTTPWatcher
-	| DeviceOptionsPanasonicPTZ
-	| DeviceOptionsTCPSend
-	| DeviceOptionsHyperdeck
-	| DeviceOptionsPharos
-	| DeviceOptionsOBS
-	| DeviceOptionsOSC
-	| DeviceOptionsMultiOSC
-	| DeviceOptionsSisyfosInternal
-	| DeviceOptionsSofieChef
-	| DeviceOptionsQuantel
-	| DeviceOptionsSingularLive
-	| DeviceOptionsVMixInternal
-	| DeviceOptionsShotoku
-	| DeviceOptionsVizMSEInternal
-	| DeviceOptionsTelemetrics
-	| DeviceOptionsTriCaster
-	| DeviceOptionsViscaOverIP
-	| DeviceOptionsWebSocketClient
 
 function removeParentFromState(
 	o: Timeline.TimelineState<TSRTimelineContent>

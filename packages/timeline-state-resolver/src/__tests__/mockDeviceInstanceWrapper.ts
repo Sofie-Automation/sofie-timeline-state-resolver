@@ -5,10 +5,10 @@ import {
 	TSRTimelineContent,
 	Mappings,
 	DeviceStatus,
+	DeviceOptionsAny,
 } from 'timeline-state-resolver-types'
 import type { DeviceEvents } from '../service/device'
 import type { DeviceInstanceWrapper, DeviceDetails } from '../service/DeviceInstance'
-import type { DeviceOptionsAnyInternal } from '../conductor'
 import type { ExpectedPlayoutItem } from '../expectedPlayoutItems'
 
 export const ConstructedMockDevices: Record<string, MockDeviceInstanceWrapper> = {}
@@ -41,7 +41,7 @@ export class MockDeviceInstanceWrapper
 		public readonly deviceId: string,
 		_startTime: string,
 		public readonly pluginPath,
-		public readonly config: DeviceOptionsAnyInternal
+		public readonly config: DeviceOptionsAny
 	) {
 		super()
 

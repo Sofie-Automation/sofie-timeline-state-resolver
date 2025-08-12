@@ -1,8 +1,7 @@
-import { DeviceOptionsBase, DeviceType } from 'timeline-state-resolver-types'
+import { DeviceOptionsAny, DeviceOptionsBase, DeviceType } from 'timeline-state-resolver-types'
 import { BaseRemoteDeviceIntegration, RemoteDeviceInstance } from './remoteDeviceInstance'
 import _ = require('underscore')
 import { ThreadedClassConfig } from 'threadedclass'
-import { DeviceOptionsAnyInternal } from '../conductor'
 import { DeviceContainer } from '..//devices/deviceContainer'
 import { assertNever } from 'atem-connection/dist/lib/atemUtil'
 import { CasparCGDevice, DeviceOptionsCasparCGInternal } from '../integrations/casparCG'
@@ -40,8 +39,8 @@ export type MappedDeviceEvents = {
 export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 	private _devicesRegistry: DevicesRegistry
 
-	private _config: Map<string, DeviceOptionsAnyInternal> = new Map()
-	private _connections: Map<string, BaseRemoteDeviceIntegration<DeviceOptionsAnyInternal>> = new Map()
+	private _config: Map<string, DeviceOptionsAny> = new Map()
+	private _connections: Map<string, BaseRemoteDeviceIntegration<DeviceOptionsAny>> = new Map()
 	private _updating = false
 
 	private _connectionAttempts = new Map<string, { last: number; next: number }>()
@@ -56,7 +55,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 	/**
 	 * Set the config options for all connections
 	 */
-	public setConnections(connectionsConfig: Record<string, DeviceOptionsAnyInternal>) {
+	public setConnections(connectionsConfig: Record<string, DeviceOptionsAny>) {
 		// run through and see if we need to reset any of the counters
 		this._config.forEach((conf, id) => {
 			const newConf = connectionsConfig[id]
@@ -66,7 +65,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 			}
 		})
 
-		this._config = new Map(Object.entries<DeviceOptionsAnyInternal>(connectionsConfig))
+		this._config = new Map(Object.entries<DeviceOptionsAny>(connectionsConfig))
 		this._updateConnections()
 	}
 
@@ -326,10 +325,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 		}
 	}
 
-	private async _handleConnectionInitialisation(
-		id: string,
-		container: BaseRemoteDeviceIntegration<DeviceOptionsAnyInternal>
-	) {
+	private async _handleConnectionInitialisation(id: string, container: BaseRemoteDeviceIntegration<DeviceOptionsAny>) {
 		const deviceOptions = this._config.get(id)
 		if (!deviceOptions) return // if the config has been removed, the connection should be removed as well so no need to init
 
@@ -344,7 +340,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 
 	private async _setupDeviceListeners(
 		id: string,
-		container: BaseRemoteDeviceIntegration<DeviceOptionsAnyInternal>
+		container: BaseRemoteDeviceIntegration<DeviceOptionsAny>
 	): Promise<void> {
 		const passEvent = <T extends keyof DeviceInstanceEvents>(ev: T) => {
 			const evHandler: any = (...args: DeviceInstanceEvents[T]) =>
@@ -392,7 +388,7 @@ function configHasChanged(oldConfig: DeviceOptionsBase<any>, config: DeviceOptio
 
 function createContainer(
 	pluginPath: string | null,
-	deviceOptions: DeviceOptionsAnyInternal,
+	deviceOptions: DeviceOptionsAny,
 	deviceId: string,
 	getCurrentTime: () => number,
 	threadedClassOptions: ThreadedClassConfig
