@@ -15,27 +15,14 @@ import { KairosConnection } from 'kairos-connection'
 import type { Device, DeviceContextAPI, CommandWithContext } from 'timeline-state-resolver-api'
 import { KairosStateBuilder } from './stateBuilder'
 import { createDiffOptions } from './diffState'
-import {
-	AnyAddressState,
-	applyAddressStateToKairosState,
-	KairosDeviceState,
-	kairosStateToAddressStates,
-	diffAddressStates,
-} from './state'
+import { sendCommand, type KairosCommandAny } from './commands'
 
-export interface KairosSetCommand {
-	path: string
-	value: any
-}
-
-export type KairosCommandWithContext = CommandWithContext<KairosSetCommand, string>
+export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, string>
 
 /**
  * This is a wrapper for the Kairos Device. Commands to any and all kairos devices will be sent through here.
  */
-export class KairosDevice
-	implements Device<KairosDeviceTypes, KairosDeviceState, KairosCommandWithContext, AnyAddressState>
-{
+export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState, KairosCommandWithContext> {
 	readonly actions: KairosActionMethods = {
 		[KairosActions.ListClips]: async () => {
 			throw new Error('Not implemented')
@@ -50,7 +37,7 @@ export class KairosDevice
 
 	private readonly _kairos = new KairosConnection()
 
-	constructor(protected context: DeviceContextAPI<KairosDeviceState, AnyAddressState>) {
+	constructor(protected context: DeviceContextAPI<KairosDeviceState>) {
 		// Nothing
 	}
 
@@ -120,11 +107,10 @@ export class KairosDevice
 	convertTimelineStateToDeviceState(
 		timelineState: Timeline.TimelineState<TSRTimelineContent>,
 		mappings: Mappings
-	): { deviceState: KairosDeviceState; addressStates: Record<string, AnyAddressState> } {
-		const deviceState = KairosStateBuilder.fromTimeline(timelineState.layers, mappings) as KairosDeviceState
-		const addressStates = kairosStateToAddressStates(deviceState)
+	): KairosDeviceState {
+		const deviceState = KairosStateBuilder.fromTimeline(timelineState.layers, mappings)
 
-		return { deviceState, addressStates }
+		return deviceState
 	}
 
 	/**
@@ -161,7 +147,7 @@ export class KairosDevice
 		oldKairosState = oldKairosState ?? this._kairos.state ?? KairosStateUtil.Create()
 
 		const diffOptions = createDiffOptions(mappings as Mappings<SomeMappingKairos>)
-		const commands = KairosState.diffStates(this._protocolVersion, oldKairosState, newKairosState, diffOptions)
+		const commands = KairosState.diffStates(oldKairosState, newKairosState, diffOptions)
 
 		if (commands.length > 0) {
 			return [
@@ -188,21 +174,21 @@ export class KairosDevice
 		if (!this.connected) return
 
 		try {
-			await this._kairos.sendCommands(command)
+			await sendCommand(this._kairos, command)
 		} catch (error: any) {
 			this.context.commandError(error, cwc)
 		}
 	}
 
-	applyAddressState(state: DeviceState, _address: string, addressState: AnyAddressState): void {
-		applyAddressStateToKairosState(state, addressState)
-	}
-	diffAddressStates(state1: AnyAddressState, state2: AnyAddressState): boolean {
-		return diffAddressStates(state1, state2)
-	}
-	addressStateReassertsControl(oldState: AnyAddressState | undefined, newState: AnyAddressState): boolean {
-		return oldState?.controlValue !== newState.controlValue
-	}
+	// applyAddressState(state: DeviceState, _address: string, addressState: AnyAddressState): void {
+	// 	applyAddressStateToKairosState(state, addressState)
+	// }
+	// diffAddressStates(state1: AnyAddressState, state2: AnyAddressState): boolean {
+	// 	return diffAddressStates(state1, state2)
+	// }
+	// addressStateReassertsControl(oldState: AnyAddressState | undefined, newState: AnyAddressState): boolean {
+	// 	return oldState?.controlValue !== newState.controlValue
+	// }
 
 	private _connectionChanged() {
 		this.context.connectionChanged(this.getStatus())

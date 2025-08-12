@@ -41,13 +41,18 @@ export interface MappingKairosAux {
 	mappingType: MappingKairosType.Aux
 }
 
+export interface MappingKairosMacro {
+	mappingType: MappingKairosType.Macro
+}
+
 export enum MappingKairosType {
 	Scene = 'scene',
 	SceneLayer = 'scene-layer',
 	Aux = 'aux',
+	Macro = 'macro',
 }
 
-export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux
+export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux | MappingKairosMacro
 
 export interface ListClipsPayload {
 	subDirectory?: string[]

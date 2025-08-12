@@ -56,9 +56,13 @@
 					"default": ["IP1"]
 				}
 			},
-			"required": [
-				"auxName"
-			],
+			"required": ["auxName"],
+			"additionalProperties": false
+		},
+		"macro": {
+			"type": "object",
+			"properties": {},
+			"required": [],
 			"additionalProperties": false
 		}
 	}

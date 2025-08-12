@@ -46,6 +46,7 @@ import {
 	DeviceOptionsSingularLive,
 	fillStateFromDatastore,
 	DeviceOptionsWebsocketClient,
+	DeviceOptionsKairos,
 } from 'timeline-state-resolver-types'
 
 import { DoOnTime } from './devices/doOnTime'
@@ -1227,6 +1228,7 @@ export type DeviceOptionsAnyInternal =
 	| DeviceOptionsTricaster
 	| DeviceOptionsViscaOverIP
 	| DeviceOptionsWebsocketClient
+	| DeviceOptionsKairos
 
 function removeParentFromState(
 	o: Timeline.TimelineState<TSRTimelineContent>
