@@ -15,14 +15,6 @@ export interface KairosOptions {
 	 * Port of KAIROS server
 	 */
 	port?: number
-	/**
-	 * System frequency
-	 */
-	fps?: number
-	/**
-	 * Interval (ms) for retrying to load media that previously failed. (-1 disables, 0 uses the default interval)
-	 */
-	retryInterval?: number
 }
 
 export interface MappingKairosScene {

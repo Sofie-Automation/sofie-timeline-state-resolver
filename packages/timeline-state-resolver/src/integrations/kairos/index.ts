@@ -50,6 +50,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 			this._connectionChanged()
 		})
 		this._kairos.on('error', (e) => this.context.logger.error('Kairos', e))
+		this._kairos.on('warn', (e) => this.context.logger.warning(`Kairos: ${e?.message ?? e}`))
 		// this._kairos.on('stateChanged', (state) => {
 		// 	// the external device is communicating something changed, the tracker should be updated (and may fire a "blocked" event if the change is caused by someone else)
 		// 	updateFromKairosState((addr, addrState) => this.context.setAddressState(addr, addrState), state) // note - improvement can be to update depending on the actual paths that changed
@@ -57,6 +58,11 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		// 	// old stuff for connection statuses/events:
 		// 	this._onKairosStateChanged(state)
 		// })
+
+		this._kairos.on('reset', () => {
+			this.context.resetResolver()
+			this._connectionChanged()
+		})
 
 		this._kairos.on('connect', () => {
 			this._connectionChanged()
