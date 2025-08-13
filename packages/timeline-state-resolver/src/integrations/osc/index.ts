@@ -38,7 +38,7 @@ export class OscDevice extends Device<OscDeviceTypes, OscDeviceState, OscCommand
 			started: number
 		} & OSCMessageCommandContent
 	} = {}
-	private transitionInterval: NodeJS.Timer | undefined
+	private transitionInterval: NodeJS.Timeout | undefined
 	private options: OscOptions | undefined
 
 	async init(options: OscOptions): Promise<boolean> {

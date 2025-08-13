@@ -31,7 +31,7 @@ export class HTTPWatcherDevice extends Device<
 	private keyword: string | undefined
 	/** Setup in init */
 	private intervalTime!: number
-	private interval: NodeJS.Timer | undefined
+	private interval: NodeJS.Timeout | undefined
 	private status: StatusCode = StatusCode.UNKNOWN
 	private statusReason: string | undefined
 

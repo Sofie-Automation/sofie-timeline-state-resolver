@@ -220,7 +220,7 @@ export class Pharos extends EventEmitter {
 	private _options!: Options
 	private _connected = false
 
-	private _webSocketKeepAliveTimeout: NodeJS.Timer | null = null
+	private _webSocketKeepAliveTimeout: NodeJS.Timeout | null = null
 
 	// constructor () {}
 	async connect(options: Options): Promise<void> {

@@ -38,7 +38,7 @@
     "@sofie-automation/code-standard-preset": "~2.5.2",
     "@types/debug": "^4.1.12",
     "@types/jest": "^29.5.12",
-    "@types/node": "^16.18.105",
+    "@types/node": "^20.19.10",
     "@types/sprintf-js": "^1.1.4",
     "@types/underscore": "^1.11.15",
     "@types/ws": "^8.5.12",

@@ -36,7 +36,7 @@ export class HyperdeckDevice extends Device<HyperdeckDeviceTypes, HyperdeckDevic
 
 	private _recordingTime = 0
 	private _minRecordingTime = 0 // 15 minutes
-	private _recTimePollTimer: NodeJS.Timer | undefined
+	private _recTimePollTimer: NodeJS.Timeout | undefined
 	private _slotCount = 0
 	private _slotStatus: Record<number, HyperdeckCommands.SlotInfoCommandResponse> = {}
 	private _transportStatus: TransportStatus | undefined

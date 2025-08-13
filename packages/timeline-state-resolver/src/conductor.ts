@@ -195,7 +195,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		resolveTime: 0,
 		validTo: 0,
 	}
-	private _resolveTimelineTrigger: NodeJS.Timer | undefined
+	private _resolveTimelineTrigger: NodeJS.Timeout | undefined
 	private _isInitialized = false
 	private _doOnTime: DoOnTime
 	private _multiThreadedResolver = false
@@ -203,7 +203,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	private _estimateResolveTimeMultiplier = 1
 
 	private _callbackInstances = new Map<string, CallbackInstance>() // key = instanceId
-	private _triggerSendStartStopCallbacksTimeout: NodeJS.Timer | null = null
+	private _triggerSendStartStopCallbacksTimeout: NodeJS.Timeout | null = null
 	private _sentCallbacks: TimelineCallbacks = {}
 
 	private _actionQueue: PQueue = new PQueue({
@@ -216,7 +216,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 	private _resolver!: ThreadedClass<AsyncResolver>
 
-	private _interval: NodeJS.Timer
+	private _interval: NodeJS.Timeout
 	private _timelineHash: string | undefined
 	private activationId: string | undefined
 

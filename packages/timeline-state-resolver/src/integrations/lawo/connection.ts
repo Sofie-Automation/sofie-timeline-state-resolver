@@ -28,7 +28,7 @@ export class LawoConnection extends EventEmitter {
 			timelineObjId: string
 		} & LawoFaderRampCommand
 	} = {}
-	private transitionInterval: NodeJS.Timer | undefined
+	private transitionInterval: NodeJS.Timeout | undefined
 
 	constructor(options: LawoOptions, private getCurrentTime: () => number) {
 		super()
