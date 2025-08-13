@@ -55,7 +55,7 @@
 		"tsr-schema-types": "bin/schema-types.mjs"
 	},
 	"engines": {
-		"node": ">=14.18"
+		"node": ">= 20.5"
 	},
 	"files": [
 		"/lib",
