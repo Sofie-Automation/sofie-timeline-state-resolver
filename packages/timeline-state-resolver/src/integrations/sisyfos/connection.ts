@@ -19,9 +19,9 @@ export class SisyfosApi extends EventEmitter<SisyfosApiEvents> {
 	private _state?: SisyfosState
 	private _labelToChannel: Map<string, number> = new Map()
 
-	private _connectivityCheckInterval: NodeJS.Timer | undefined
+	private _connectivityCheckInterval: NodeJS.Timeout | undefined
 	private _pingCounter: number = Math.round(Math.random() * 10000)
-	private _connectivityTimeout: NodeJS.Timer | null = null
+	private _connectivityTimeout: NodeJS.Timeout | null = null
 	private _connected = false
 	private _mixerOnline = true
 

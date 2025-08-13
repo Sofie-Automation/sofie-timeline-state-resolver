@@ -84,8 +84,8 @@ export class VMixConnection extends EventEmitter<ConnectionEvents> {
 		return this._sendCommand(command)
 	}
 
-	private async _sendCommand(cmd: string): Promise<Error | undefined> {
-		return new Promise<Error | undefined>((resolve) => {
+	private async _sendCommand(cmd: string): Promise<Error | null | undefined> {
+		return new Promise<Error | null | undefined>((resolve) => {
 			this._socket?.write(cmd + '\r\n', (err) => resolve(err))
 		})
 	}

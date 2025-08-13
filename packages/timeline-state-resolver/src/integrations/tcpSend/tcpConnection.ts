@@ -19,7 +19,7 @@ export class TcpConnection extends EventEmitter<TcpConnectionEvents> {
 	private _tcpClient: Socket | null = null
 
 	private _connected = false
-	private _retryConnectTimeout: NodeJS.Timer | undefined
+	private _retryConnectTimeout: NodeJS.Timeout | undefined
 
 	get connected(): boolean {
 		return this._connected

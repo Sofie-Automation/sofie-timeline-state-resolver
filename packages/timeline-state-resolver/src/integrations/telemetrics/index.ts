@@ -32,7 +32,7 @@ export class TelemetricsDevice extends Device<TelemetricsDeviceTypes, Telemetric
 	private statusCode: StatusCode = StatusCode.UNKNOWN
 	private errorMessage: string | undefined
 
-	private retryConnectionTimer: NodeJS.Timer | undefined
+	private retryConnectionTimer: NodeJS.Timeout | undefined
 
 	get connected(): boolean {
 		return this.statusCode === StatusCode.GOOD

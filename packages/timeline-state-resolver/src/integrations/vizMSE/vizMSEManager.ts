@@ -75,8 +75,8 @@ export class VizMSEManager extends EventEmitter {
 	private _rundown: VRundown | undefined
 	private _elementCache: { [hash: string]: CachedVElement } = {}
 	private _expectedPlayoutItems: Array<ExpectedPlayoutItem> = []
-	private _monitorAndLoadElementsTimeout?: NodeJS.Timer
-	private _monitorMSEConnectionTimeout?: NodeJS.Timer
+	private _monitorAndLoadElementsTimeout?: NodeJS.Timeout
+	private _monitorMSEConnectionTimeout?: NodeJS.Timeout
 	private _lastTimeCommandSent = 0
 	private _hasActiveRundown = false
 	private _getRundownPromise?: Promise<VRundown>

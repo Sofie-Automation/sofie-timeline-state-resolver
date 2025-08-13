@@ -129,7 +129,7 @@ export class SofieChefDevice extends Device<SofieChefDeviceTypes, SofieChefState
 		})
 	}
 
-	private reconnectTimeout?: NodeJS.Timer
+	private reconnectTimeout?: NodeJS.Timeout
 	private tryReconnect() {
 		if (this.reconnectTimeout) return
 		this.reconnectTimeout = setTimeout(() => {
