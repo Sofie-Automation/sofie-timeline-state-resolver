@@ -1,8 +1,6 @@
-import { CommandWithContext, Device } from '../../service/device'
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
-	DeviceStatus,
 	HTTPSendCommandContent,
 	HTTPSendCommandContentExt,
 	HttpSendOptions,
@@ -16,7 +14,9 @@ import {
 	HttpSendDeviceTypes,
 	HttpSendActionMethods,
 	HttpSendActions,
+	DeviceStatus,
 } from 'timeline-state-resolver-types'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import _ = require('underscore')
 import got, { OptionsOfTextResponseBody, RequestError } from 'got'
 import { t } from '../../lib'
@@ -34,13 +34,17 @@ export type HttpSendDeviceCommand = CommandWithContext<
 	string
 >
 
-export class HTTPSendDevice extends Device<HttpSendDeviceTypes, HttpSendDeviceState, HttpSendDeviceCommand> {
+export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDeviceState, HttpSendDeviceCommand> {
 	/** Setup in init */
 	protected options!: HttpSendOptions
 	/** Maps layers -> sent command-hashes */
 	protected trackedState = new Map<string, string>()
 	protected readonly cacheable = new CacheableLookup()
 	protected _terminated = false
+
+	constructor(protected context: DeviceContextAPI<HttpSendDeviceState>) {
+		// Nothing
+	}
 
 	async init(options: HttpSendOptions): Promise<boolean> {
 		this.options = options

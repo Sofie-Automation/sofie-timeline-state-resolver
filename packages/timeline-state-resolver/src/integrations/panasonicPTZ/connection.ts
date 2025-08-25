@@ -20,7 +20,7 @@ export class PanasonicPtzCamera extends EventEmitter {
 	private _url: string
 	private _commandDelay: number
 	private _commandQueue: Array<CommandQueueItem> = []
-	private _executeQueueTimeout: Array<NodeJS.Timer> = []
+	private _executeQueueTimeout: Array<NodeJS.Timeout> = []
 
 	constructor(url: string, commandDelay = 130) {
 		super()
@@ -111,7 +111,7 @@ export class PanasonicPtzHttpInterface extends EventEmitter {
 	private _device: PanasonicPtzCamera
 
 	private _connected = false
-	private _pingInterval: NodeJS.Timer | undefined
+	private _pingInterval: NodeJS.Timeout | undefined
 
 	constructor(host: string, port?: number, https?: boolean) {
 		super()

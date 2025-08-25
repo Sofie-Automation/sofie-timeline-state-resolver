@@ -16,7 +16,7 @@ import {
 	GetZoomPositionResult,
 	PanasonicPTZActions,
 } from 'timeline-state-resolver-types'
-import { Device } from '../../service/device'
+import type { Device, DeviceContextAPI } from 'timeline-state-resolver-api'
 import { PanasonicPtzState, convertStateToPtz, getDefaultState } from './state'
 import { PanasonicPtzCommandWithContext, diffStates } from './diff'
 import { PanasonicFocusMode, PanasonicPtzHttpInterface } from './connection'
@@ -43,12 +43,14 @@ const FOCUS_MODE_MAP = {
 	[FocusMode.MANUAL]: PanasonicFocusMode.MANUAL,
 }
 
-export class PanasonicPtzDevice extends Device<
-	PanasonicPTZDeviceTypes,
-	PanasonicPtzState,
-	PanasonicPtzCommandWithContext
-> {
+export class PanasonicPtzDevice
+	implements Device<PanasonicPTZDeviceTypes, PanasonicPtzState, PanasonicPtzCommandWithContext>
+{
 	_device: PanasonicPtzHttpInterface | undefined = undefined
+
+	constructor(protected context: DeviceContextAPI<PanasonicPtzState>) {
+		// Nothing
+	}
 
 	async init(options: PanasonicPTZOptions): Promise<boolean> {
 		this._device = new PanasonicPtzHttpInterface(options.host, options.port, options.https)

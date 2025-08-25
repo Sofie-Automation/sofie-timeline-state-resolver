@@ -21,19 +21,6 @@ export interface TcpSendOptions {
 		| 'latin1'
 		| 'binary'
 		| 'hex'
-	/**
-	 * Whether a makeReady should be treated as a reset of the device. It should be assumed clean, with the queue discarded, and state reapplied from empty
-	 */
-	makeReadyDoesReset?: boolean
-	makeReadyCommands?: TcpSendCommandContent[]
-}
-export interface TcpSendCommandContent {
-	message: string
-	temporalPriority?: number
-	/**
-	 * Commands in the same queue will be sent in order (will wait for the previous to finish before sending next
-	 */
-	queueId?: string
 }
 
 export type SomeMappingTcpSend = Record<string, never>

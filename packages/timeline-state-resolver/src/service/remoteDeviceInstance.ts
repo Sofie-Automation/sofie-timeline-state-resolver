@@ -1,8 +1,8 @@
 import { ThreadedClass, threadedClass, ThreadedClassConfig, ThreadedClassManager } from 'threadedclass'
-import { DeviceType, DeviceOptionsBase } from 'timeline-state-resolver-types'
+import { DeviceType, DeviceOptionsBase, DeviceOptionsAny } from 'timeline-state-resolver-types'
 import { EventEmitter } from 'eventemitter3'
 import { DeviceDetails, DeviceInstanceWrapper } from './DeviceInstance'
-import type { Device, DeviceOptionsAnyInternal } from '../conductor'
+import type { Device } from '../conductor'
 
 export type DeviceContainerEvents = {
 	error: [context: string, err: Error]
@@ -126,7 +126,7 @@ export class RemoteDeviceInstance<
 		container._device = await threadedClass<DeviceInstanceWrapper, typeof DeviceInstanceWrapper>(
 			'../../dist/service/DeviceInstance.js',
 			'DeviceInstanceWrapper',
-			[deviceId, getCurrentTime(), pluginPath, deviceOptions as DeviceOptionsAnyInternal, getCurrentTime as any], // any because callbacks can't be casted
+			[deviceId, getCurrentTime(), pluginPath, deviceOptions as DeviceOptionsAny, getCurrentTime as any], // any because callbacks can't be casted
 			threadConfig
 		)
 

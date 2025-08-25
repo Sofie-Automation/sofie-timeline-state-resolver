@@ -15,7 +15,7 @@ import {
 } from 'timeline-state-resolver-types'
 import got from 'got'
 import { literal } from '../../lib'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 export interface SingularLiveControlNodeCommandContent extends SingularLiveCommandContent {
 	state?: string
@@ -50,10 +50,16 @@ const SINGULAR_LIVE_API = 'https://app.singular.live/apiv2/controlapps/'
 /**
  * This is a Singular.Live device, it talks to a Singular.Live App Instance using an Access Token
  */
-export class SingularLiveDevice extends Device<SingularLiveDeviceTypes, SingularLiveState, SingularLiveCommandContext> {
+export class SingularLiveDevice
+	implements Device<SingularLiveDeviceTypes, SingularLiveState, SingularLiveCommandContext>
+{
 	readonly actions = null
 
 	private _accessToken: string | undefined
+
+	constructor(protected context: DeviceContextAPI<SingularLiveState>) {
+		// Nothing
+	}
 
 	async init(initOptions: SingularLiveOptions): Promise<boolean> {
 		this._accessToken = initOptions.accessToken || ''

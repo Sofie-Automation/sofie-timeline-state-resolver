@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { BaseDeviceAPI, CommandWithContext } from './device'
+import type { BaseDeviceAPI, CommandWithContext } from 'timeline-state-resolver-api'
 import { Measurement } from './measure'
 import { StateHandlerContext } from './stateHandler'
 

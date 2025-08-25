@@ -5,7 +5,6 @@ import {
 	MediaObject,
 	DeviceOptionsBase,
 	DeviceStatus,
-	StatusCode,
 	Timeline,
 	TSRTimelineContent,
 	ActionExecutionResult,
@@ -15,7 +14,7 @@ import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo 
 import { ExpectedPlayoutItem } from '../expectedPlayoutItems'
 import { actionNotFoundMessage } from '../lib'
 import type { FinishedTrace } from 'timeline-state-resolver-api'
-import { CommandWithContext, DeviceEvents } from '../service/device'
+import type { CommandWithContext, DeviceEvents } from 'timeline-state-resolver-api'
 
 // =================================================================================================
 // =================================================================================================
@@ -39,8 +38,6 @@ export interface DeviceCommandContainer {
 	deviceId: string
 	commands: Array<DeviceCommand>
 }
-
-export { DeviceStatus, StatusCode }
 
 /**
  * These are the old Device events, emitted by the devices and listened to by conductor.
@@ -86,8 +83,6 @@ export interface IDevice<TOptions extends DeviceOptionsBase<any>> {
 	canConnect: boolean
 	connected: boolean
 
-	makeReady: (_okToDestroyStuff?: boolean, activeRundownId?: string) => Promise<void>
-	standDown: (_okToDestroyStuff?: boolean) => Promise<void>
 	getStatus: () => DeviceStatus
 
 	deviceId: string
@@ -193,25 +188,6 @@ export abstract class Device<
 	abstract get canConnect(): boolean
 	abstract get connected(): boolean
 
-	/**
-	 * The makeReady method could be triggered at a time before broadcast
-	 * Whenever we know that the user want's to make sure things are ready for broadcast
-	 * The exact implementation differ between different devices
-	 * @param okToDestroyStuff If true, the device may do things that might affect the output (temporarily)
-	 */
-	async makeReady(_okToDestroyStuff?: boolean, _activeRundownId?: string): Promise<void> {
-		// This method should be overwritten by child
-		return Promise.resolve()
-	}
-	/**
-	 * The standDown event could be triggered at a time after broadcast
-	 * The exact implementation differ between different devices
-	 * @param okToDestroyStuff If true, the device may do things that might affect the output (temporarily)
-	 */
-	async standDown(_okToDestroyStuff?: boolean): Promise<void> {
-		// This method should be overwritten by child
-		return Promise.resolve()
-	}
 	abstract getStatus(): DeviceStatus
 
 	setDebugLogging(debug: boolean) {

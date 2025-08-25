@@ -1,4 +1,4 @@
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResultCode,
 	DeviceStatus,
@@ -24,13 +24,15 @@ export type WebSocketCommand = CommandWithContext<
 >
 export type WebSocketClientDeviceState = Timeline.TimelineState<TSRTimelineContent>
 
-export class WebSocketClientDevice extends Device<
-	WebsocketClientDeviceTypes,
-	WebSocketClientDeviceState,
-	WebSocketCommand
-> {
+export class WebSocketClientDevice
+	implements Device<WebsocketClientDeviceTypes, WebSocketClientDeviceState, WebSocketCommand>
+{
 	// Use ! as the connection will be initialized in init:
 	private connection: WebSocketConnection | undefined
+
+	constructor(protected context: DeviceContextAPI<WebSocketClientDeviceState>) {
+		// Nothing
+	}
 
 	public async init(options: WebsocketClientOptions): Promise<boolean> {
 		this.connection = new WebSocketConnection(options)

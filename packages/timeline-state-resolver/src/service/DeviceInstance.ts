@@ -1,6 +1,13 @@
 import EventEmitter = require('eventemitter3')
 import { actionNotFoundMessage } from '../lib'
-import type { FinishedTrace, DeviceEntry, Device } from 'timeline-state-resolver-api'
+import type {
+	FinishedTrace,
+	DeviceEntry,
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceEvents,
+} from 'timeline-state-resolver-api'
 import {
 	type DeviceStatus,
 	type DeviceType,
@@ -9,14 +16,13 @@ import {
 	type Timeline,
 	type TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import type { CommandWithContext, DeviceContextAPI, DeviceEvents } from './device'
 import { StateHandler } from './stateHandler'
 import { DevicesDict } from './devices'
-import type { DeviceOptionsAnyInternal, ExpectedPlayoutItem } from '..'
+import type { DeviceOptionsAny, ExpectedPlayoutItem } from '..'
 import type { StateChangeReport } from './measure'
 import { StateTracker } from './stateTracker'
 
-type Config = DeviceOptionsAnyInternal
+type Config = DeviceOptionsAny
 type DeviceState = any
 type AddressState = any
 
@@ -201,13 +207,6 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		}
 
 		return action(payload)
-	}
-
-	async makeReady(okToDestroyStuff?: boolean): Promise<void> {
-		return this._device.makeReady?.(okToDestroyStuff)
-	}
-	async standDown(): Promise<void> {
-		return this._device.standDown?.()
 	}
 
 	/** @deprecated - just here for API compatiblity with the old class */

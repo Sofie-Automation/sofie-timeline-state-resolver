@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceWithState, DeviceStatus, StatusCode } from '../../devices/device'
+import { DeviceWithState } from '../../devices/device'
 import {
 	AMCPCommand,
 	BasicCasparCGAPI,
@@ -33,6 +33,7 @@ import {
 	interpolateTemplateStringIfNeeded,
 	CasparCGDeviceTypes,
 	CasparCGActions,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 
 import {
@@ -60,7 +61,8 @@ import { InternalTransitionHandler } from '../../devices/transitions/transitionH
 import Debug from 'debug'
 import { deepMerge, endTrace, literal, startTrace, t } from '../../lib'
 import { ClsParameters } from 'casparcg-connection/dist/parameters'
-import { CommandWithContext } from '../../service/device'
+import type { DeviceStatus, CommandWithContext } from 'timeline-state-resolver-api'
+
 const debug = Debug('timeline-state-resolver:casparcg')
 
 const MEDIA_RETRY_INTERVAL = 10 * 1000 // default time in ms between checking whether a file needs to be retried loading
@@ -120,9 +122,6 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		let firstConnect = true
 
 		this._ccg.on('connect', () => {
-			this.makeReady(false) // always make sure timecode is correct, setting it can never do bad
-				.catch((e) => this.emit('error', 'casparCG.makeReady', e))
-
 			Promise.resolve()
 				.then(async () => {
 					// a "virgin server" was just restarted (so it is cleared & black).
@@ -610,19 +609,6 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		})
 
 		return caspar
-	}
-
-	/**
-	 * Prepares the physical device for playout. If amcp scheduling is used this
-	 * tries to sync the timecode. If {@code okToDestroyStuff === true} this clears
-	 * all channels and resets our states.
-	 * @param okToDestroyStuff Whether it is OK to restart the device
-	 */
-	async makeReady(okToDestroyStuff?: boolean): Promise<void> {
-		// reset our own state(s):
-		if (okToDestroyStuff) {
-			await this.clearAllChannels()
-		}
 	}
 
 	private async clearAllChannels(): Promise<ActionExecutionResult> {

@@ -16,8 +16,8 @@ interface QueuedCommand {
 
 export class ViscaUdpSocket extends EventEmitter {
 	private _debug = false
-	private _reconnectTimer: NodeJS.Timer | undefined
-	private _retransmitTimer: NodeJS.Timer | undefined
+	private _reconnectTimer: NodeJS.Timeout | undefined
+	private _retransmitTimer: NodeJS.Timeout | undefined
 	private _connectionState!: ConnectionState
 
 	private _localPacketId = 0
@@ -79,8 +79,8 @@ export class ViscaUdpSocket extends EventEmitter {
 		return new Promise<void>((resolve) => {
 			if (this._connectionState === ConnectionState.Connected) {
 				this._socket.close(() => {
-					clearInterval(this._retransmitTimer as NodeJS.Timer)
-					clearInterval(this._reconnectTimer as NodeJS.Timer)
+					clearInterval(this._retransmitTimer as NodeJS.Timeout)
+					clearInterval(this._reconnectTimer as NodeJS.Timeout)
 					this._retransmitTimer = undefined
 					this._reconnectTimer = undefined
 

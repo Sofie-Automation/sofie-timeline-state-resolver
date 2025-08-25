@@ -394,48 +394,6 @@ describe('Conductor', () => {
 		}
 	})
 
-	test('devicesMakeReady', async () => {
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
-
-		try {
-			await conductor.init()
-			await addConnections(conductor.connectionManager, {
-				device0: {
-					type: DeviceType.ABSTRACT,
-					options: {},
-				},
-				device1: {
-					type: DeviceType.ABSTRACT,
-					options: {},
-				},
-			})
-
-			const device0 = await getMockDeviceWrapper(conductor, 'device0')
-			device0.makeReady.mockImplementationOnce(async () => {
-				// Allow it
-			})
-			const device1 = await getMockDeviceWrapper(conductor, 'device1')
-			device1.makeReady.mockImplementationOnce(async () => {
-				// Allow it
-			})
-
-			expect(device0.makeReady).toHaveBeenCalledTimes(0)
-			expect(device1.makeReady).toHaveBeenCalledTimes(0)
-
-			await mockTime.advanceTimeTicks(10) // to allow casparcg to fake "connect"
-
-			await conductor.devicesMakeReady(true)
-
-			expect(device0.makeReady).toHaveBeenCalledTimes(1)
-			expect(device1.makeReady).toHaveBeenCalledTimes(1)
-		} finally {
-			await conductor.destroy()
-		}
-	})
-
 	test('Construction of multithreaded device', async () => {
 		const myLayerMapping0: Mapping<SomeMappingAbstract> = {
 			device: DeviceType.ABSTRACT,

@@ -6,7 +6,7 @@ import {
 	HttpWatcherDeviceTypes,
 } from 'timeline-state-resolver-types'
 import got, { Headers, Response } from 'got'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 type HTTPWatcherDeviceState = Record<string, never>
 
@@ -16,11 +16,9 @@ type HTTPWatcherCommandWithContext = CommandWithContext<never, never>
  * This is a HTTPWatcherDevice, requests a uri on a regular interval and watches
  * it's response.
  */
-export class HTTPWatcherDevice extends Device<
-	HttpWatcherDeviceTypes,
-	HTTPWatcherDeviceState,
-	HTTPWatcherCommandWithContext
-> {
+export class HTTPWatcherDevice
+	implements Device<HttpWatcherDeviceTypes, HTTPWatcherDeviceState, HTTPWatcherCommandWithContext>
+{
 	readonly actions = null
 
 	private uri?: string
@@ -31,9 +29,13 @@ export class HTTPWatcherDevice extends Device<
 	private keyword: string | undefined
 	/** Setup in init */
 	private intervalTime!: number
-	private interval: NodeJS.Timer | undefined
+	private interval: NodeJS.Timeout | undefined
 	private status: StatusCode = StatusCode.UNKNOWN
 	private statusReason: string | undefined
+
+	constructor(protected context: DeviceContextAPI<HTTPWatcherDeviceState>) {
+		// Nothing
+	}
 
 	private onInterval() {
 		if (!this.uri) {
