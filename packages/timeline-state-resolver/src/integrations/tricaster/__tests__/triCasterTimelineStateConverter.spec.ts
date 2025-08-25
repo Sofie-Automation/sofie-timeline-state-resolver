@@ -8,6 +8,7 @@ import {
 	TimelineContentTriCasterMatrixOutput,
 	Mapping,
 	SomeMappingTricaster,
+	TriCasterMixEffect,
 } from 'timeline-state-resolver-types'
 import { TriCasterTimelineStateConverter } from '../triCasterTimelineStateConverter'
 import {
@@ -111,7 +112,12 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 						content: {
 							deviceType: DeviceType.TRICASTER,
 							type: TimelineContentTypeTriCaster.ME,
-							me: { programInput: 'input2', previewInput: 'input3', transitionEffect: 5, transitionDuration: 20 },
+							me: {
+								programInput: 'input2',
+								previewInput: 'input3',
+								transitionEffect: 5,
+								transitionDuration: 20,
+							} as TriCasterMixEffect,
 						},
 					}),
 					tc_me0_1: wrapIntoResolvedInstance<TimelineContentTriCasterME>({
@@ -339,7 +345,12 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 						content: {
 							deviceType: DeviceType.TRICASTER,
 							type: TimelineContentTypeTriCaster.ME,
-							me: { programInput: 'input2', previewInput: 'input3', transitionEffect: 5, transitionDuration: 20 },
+							me: {
+								programInput: 'input2',
+								previewInput: 'input3',
+								transitionEffect: 5,
+								transitionDuration: 20,
+							} as TriCasterMixEffect,
 						},
 					}),
 					tc_me0_1: wrapIntoResolvedInstance<TimelineContentTriCasterME>({
