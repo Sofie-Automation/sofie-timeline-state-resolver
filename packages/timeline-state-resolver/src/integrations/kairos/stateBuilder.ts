@@ -24,7 +24,7 @@ import {
 	MappingKairosSoundPlayer,
 	TimelineContentKairosPlayerState,
 	TimelineContentKairosSceneSnapshotInfo,
-	MacroActiveState,
+	KairosMacroActiveState,
 	TimelineContentKairosMacroInfo,
 } from 'timeline-state-resolver-types'
 import { assertNever } from '../../lib'
@@ -65,7 +65,10 @@ export interface KairosDeviceState {
 		{ ref: SceneLayerRef; state: Partial<UpdateSceneLayerObject>; timelineObjIds: string[] } | undefined
 	>
 	aux: Record<string, { ref: AuxRef; state: TimelineContentKairosAux; timelineObjIds: string[] } | undefined>
-	macros: Record<string, { ref: MacroRef; state: { active: MacroActiveState }; timelineObjIds: string[] } | undefined>
+	macros: Record<
+		string,
+		{ ref: MacroRef; state: { active: KairosMacroActiveState }; timelineObjIds: string[] } | undefined
+	>
 	clipPlayers: Record<
 		number,
 		{ ref: number; state: TimelineContentKairosPlayerState<MediaClipRef>; timelineObjIds: string[] } | undefined

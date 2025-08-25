@@ -1,5 +1,5 @@
 import type { SomeMappingKairos, Mappings } from 'timeline-state-resolver-types'
-import { MacroActiveState } from 'timeline-state-resolver-types'
+import { KairosMacroActiveState } from 'timeline-state-resolver-types'
 import { KairosStateBuilder, type KairosDeviceState } from './stateBuilder'
 import type { KairosCommandWithContext } from '.'
 // eslint-disable-next-line node/no-missing-import
@@ -191,7 +191,7 @@ function diffMacros(
 		const oldActive = oldMacro?.state.active
 		const newActive = newMacro?.state.active
 
-		if (oldActive !== newActive && newActive !== undefined && newActive !== MacroActiveState.UNCHANGED) {
+		if (oldActive !== newActive && newActive !== undefined && newActive !== KairosMacroActiveState.UNCHANGED) {
 			commands.push({
 				timelineObjId: newMacro?.timelineObjIds.join(' & ') ?? '',
 				context: `macroKey=${macroKey} newMacro=${!!newMacro} oldMacro=${!!oldMacro}`,
@@ -199,7 +199,7 @@ function diffMacros(
 					type: 'macro',
 					macroName: macroKey,
 					macroRef: macroRef,
-					active: newActive === MacroActiveState.PLAYING,
+					active: newActive === KairosMacroActiveState.PLAYING,
 				},
 			})
 		}

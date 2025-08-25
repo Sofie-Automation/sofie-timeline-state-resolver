@@ -91,9 +91,9 @@ export interface TimelineContentKairosMacros {
 }
 export interface TimelineContentKairosMacroInfo {
 	ref: RefPath
-	active: MacroActiveState
+	active: KairosMacroActiveState
 }
-export enum MacroActiveState {
+export enum KairosMacroActiveState {
 	/** The Macro will be played */
 	PLAYING = 'playing',
 	/** The Macro will be stopped */
