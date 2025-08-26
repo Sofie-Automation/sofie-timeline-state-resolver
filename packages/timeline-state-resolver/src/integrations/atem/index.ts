@@ -9,6 +9,7 @@ import {
 	ActionExecutionResultCode,
 	AtemActions,
 	SomeMappingAtem,
+	RunMacroPayload,
 } from 'timeline-state-resolver-types'
 import { AtemState, State as DeviceState } from 'atem-state'
 import {
@@ -21,6 +22,7 @@ import {
 import { CommandWithContext, Device } from '../../service/device'
 import { AtemStateBuilder } from './stateBuilder'
 import { createDiffOptions } from './diffState'
+import { t } from '../../lib'
 
 export interface AtemCommandWithContext extends CommandWithContext {
 	command: AtemCommands.ISerializableCommand[]
@@ -36,7 +38,8 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 	readonly actions: {
 		[id in AtemActions]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
 	} = {
-		[AtemActions.Resync]: this.resyncState.bind(this),
+		[AtemActions.Resync]: async (_id) => this.resyncState(),
+		[AtemActions.RunMacro]: async (_id, payload) => this.runMacro(payload as RunMacroPayload | undefined),
 	}
 
 	private readonly _atem = new BasicAtem()
@@ -95,6 +98,20 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 
 	private async resyncState(): Promise<ActionExecutionResult> {
 		this.context.resetResolver()
+
+		return {
+			result: ActionExecutionResultCode.Ok,
+		}
+	}
+	private async runMacro(payload?: RunMacroPayload): Promise<ActionExecutionResult> {
+		if (!payload)
+			return {
+				result: ActionExecutionResultCode.Error,
+				response: t('Failed to trigger macro: Missing payload'),
+			}
+		await this._atem.sendCommand(
+			new AtemCommands.MacroActionCommand(payload.macroIndex, ConnectionEnums.MacroAction.Run)
+		)
 
 		return {
 			result: ActionExecutionResultCode.Ok,
