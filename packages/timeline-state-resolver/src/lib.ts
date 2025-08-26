@@ -8,6 +8,14 @@ export function literal<T>(o: T) {
 	return o
 }
 
+/**
+ * Make all optional properties be required and `| undefined`
+ * This is useful to ensure that no property is missed, when manually converting between types, but allowing fields to be undefined
+ */
+export type Complete<T> = {
+	[P in keyof Required<T>]: Pick<T, P> extends Required<Pick<T, P>> ? T[P] : T[P] | undefined
+}
+
 /** Deeply extend an object with some partial objects */
 export function deepMerge<T extends object>(destination: T, source: PartialDeep<T>): T {
 	return deepmerge<T>(destination, source)
