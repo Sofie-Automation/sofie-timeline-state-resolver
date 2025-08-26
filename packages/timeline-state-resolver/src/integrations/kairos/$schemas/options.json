@@ -13,7 +13,7 @@
 			"type": "integer",
 			"description": "Port of KAIROS server",
 			"ui:title": "Port",
-			"default": 3000
+			"default": 3005
 		}
 	},
 	"required": ["host"],
