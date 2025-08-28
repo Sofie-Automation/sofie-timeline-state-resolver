@@ -87,11 +87,17 @@ export enum MappingAtemType {
 
 export type SomeMappingAtem = MappingAtemMixEffect | MappingAtemDownStreamKeyer | MappingAtemSuperSourceBox | MappingAtemAuxilliary | MappingAtemMediaPlayer | MappingAtemSuperSourceProperties | MappingAtemAudioChannel | MappingAtemMacroPlayer | MappingAtemAudioRouting | MappingAtemColorGenerator
 
+export interface RunMacroPayload {
+	macroIndex: number
+}
+
 export enum AtemActions {
-	Resync = 'resync'
+	Resync = 'resync',
+	RunMacro = 'runMacro'
 }
 export interface AtemActionExecutionResults {
-	resync: () => void
+	resync: () => void,
+	runMacro: (payload: RunMacroPayload) => void
 }
 export type AtemActionExecutionPayload<A extends keyof AtemActionExecutionResults> = Parameters<
 	AtemActionExecutionResults[A]
