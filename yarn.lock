@@ -11028,12 +11028,12 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"superfly-timeline@npm:^9.1.2":
-  version: 9.1.2
-  resolution: "superfly-timeline@npm:9.1.2"
+"superfly-timeline@npm:^9.2.0":
+  version: 9.2.0
+  resolution: "superfly-timeline@npm:9.2.0"
   dependencies:
     tslib: ^2.6.0
-  checksum: c195d3e65fd3d63223dd2a008facb32850b71da0355b258c0a08e1417bd447b144e01088f28e8e71fe8c240885c2bc5f73e8df7c84f131e963521510edf8bde2
+  checksum: fff2f19622fb2aaa60132acb309f24d249cf01eead0645fbced6965b59c14cf7c4b4f289e6313193b007c76a9315f85ee2fab546046a01cd98bb4b0b4d645dc2
   languageName: node
   linkType: hard
 
@@ -11333,7 +11333,7 @@ asn1@evs-broadcast/node-asn1:
     p-timeout: ^3.2.0
     simple-oauth2: ^5.1.0
     sprintf-js: ^1.1.3
-    superfly-timeline: ^9.1.2
+    superfly-timeline: ^9.2.0
     threadedclass: ^1.2.2
     timeline-state-resolver-types: 9.3.1
     tslib: ^2.6.3
