@@ -92,11 +92,17 @@ export enum MappingAtemType {
 
 export type SomeMappingAtem = MappingAtemControlValue | MappingAtemMixEffect | MappingAtemDownStreamKeyer | MappingAtemSuperSourceBox | MappingAtemAuxilliary | MappingAtemMediaPlayer | MappingAtemSuperSourceProperties | MappingAtemAudioChannel | MappingAtemMacroPlayer | MappingAtemAudioRouting | MappingAtemColorGenerator
 
+export interface RunMacroPayload {
+	macroIndex: number
+}
+
 export enum AtemActions {
-	Resync = 'resync'
+	Resync = 'resync',
+	RunMacro = 'runMacro'
 }
 export interface AtemActionMethods {
-	[AtemActions.Resync]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[AtemActions.Resync]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
+	[AtemActions.RunMacro]: (payload: RunMacroPayload) => Promise<ActionExecutionResult<void>>
 }
 
 export interface AtemDeviceTypes {
