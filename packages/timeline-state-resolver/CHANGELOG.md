@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [9.3.2](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/compare/9.3.1...9.3.2) (2025-09-02)
+
+### Bug Fixes
+
+- update timeline dependency to latest ([d21240b](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/commit/d21240bfbe2082a9de42c65311d7d9a114f2e51a))
+
 ### [9.3.1](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/compare/9.3.0...9.3.1) (2025-08-12)
 
 ### Bug Fixes
