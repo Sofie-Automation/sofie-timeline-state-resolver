@@ -1,6 +1,6 @@
 {
 	"name": "timeline-state-resolver-api",
-	"version": "9.4.0-release53",
+	"version": "10.0.0-release53",
 	"description": "Have timeline, control stuff",
 	"main": "dist/tsr-api.js",
 	"typings": "dist/tsr-api.d.ts",
@@ -83,7 +83,7 @@
 		"tslib": "^2.6.3"
 	},
 	"peerDependencies": {
-		"timeline-state-resolver-types": "9.4.0-release53"
+		"timeline-state-resolver-types": "10.0.0-release53"
 	},
 	"publishConfig": {
 		"access": "public"

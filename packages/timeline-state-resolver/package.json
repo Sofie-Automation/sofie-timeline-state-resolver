@@ -1,6 +1,6 @@
 {
 	"name": "timeline-state-resolver",
-	"version": "9.4.0-release53",
+	"version": "10.0.0-release53",
 	"description": "Have timeline, control stuff",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -112,8 +112,8 @@
 		"sprintf-js": "^1.1.3",
 		"superfly-timeline": "^9.1.2",
 		"threadedclass": "^1.2.2",
-		"timeline-state-resolver-api": "9.4.0-release53",
-		"timeline-state-resolver-types": "9.4.0-release53",
+		"timeline-state-resolver-api": "10.0.0-release53",
+		"timeline-state-resolver-types": "10.0.0-release53",
 		"tslib": "^2.6.3",
 		"tv-automation-quantel-gateway-client": "^3.1.7",
 		"type-fest": "^3.13.1",
@@ -137,6 +137,6 @@
 		"@types/simple-oauth2": "^5.0.7",
 		"jest-mock-extended": "^3.0.7",
 		"json-schema-to-typescript": "^10.1.5",
-		"timeline-state-resolver-tools": "9.4.0-release53"
+		"timeline-state-resolver-tools": "10.0.0-release53"
 	}
 }

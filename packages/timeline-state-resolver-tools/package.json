@@ -1,6 +1,6 @@
 {
 	"name": "timeline-state-resolver-tools",
-	"version": "9.4.0-release53",
+	"version": "10.0.0-release53",
 	"description": "Utilities for building timeline-state-resolver device integrations",
 	"main": "lib/main.js",
 	"license": "MIT",
