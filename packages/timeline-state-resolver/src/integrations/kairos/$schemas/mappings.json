@@ -1,0 +1,132 @@
+{
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/mapping-schema.json",
+	"default": "scene-layer",
+	"mappings": {
+		"scene": {
+			"type": "object",
+			"properties": {
+				"sceneName": {
+					"type": "array",
+					"items": { "type": "string" },
+					"ui:title": "Scene",
+					"ui:description": "The Scene to use",
+					"ui:summaryTitle": "Scene",
+					"ui:displayType": "breadcrumbs",
+					"default": ["Main"]
+				}
+			},
+			"required": ["sceneName"],
+			"additionalProperties": false
+		},
+		"scene-layer": {
+			"type": "object",
+			"properties": {
+				"sceneName": {
+					"type": "array",
+					"items": { "type": "string" },
+					"ui:title": "Scene",
+					"ui:description": "The Scene to use",
+					"ui:summaryTitle": "Scene",
+					"ui:displayType": "breadcrumbs",
+					"default": ["Main"]
+				},
+				"layerName": {
+					"type": "array",
+					"items": { "type": "string" },
+					"ui:title": "Layer",
+					"ui:description": "The layer in a scene to use",
+					"ui:summaryTitle": "Layer",
+					"ui:displayType": "breadcrumbs",
+					"default": ["Background"]
+				}
+			},
+			"required": ["sceneName", "layerName"],
+			"additionalProperties": false
+		},
+		"aux": {
+			"type": "object",
+			"properties": {
+				"auxName": {
+					"type": "string",
+					"ui:title": "AUX",
+					"ui:description": "The AUX name to use",
+					"ui:summaryTitle": "AUX",
+					"ui:displayType": "breadcrumbs",
+					"default": "IP-AUX1"
+				}
+			},
+			"required": ["auxName"],
+			"additionalProperties": false
+		},
+		"macro": {
+			"type": "object",
+			"properties": {},
+			"required": [],
+			"additionalProperties": false
+		},
+		"clip-player": {
+			"type": "object",
+			"properties": {
+				"playerId": {
+					"type": "number",
+					"ui:title": "Player ID",
+					"ui:description": "The player",
+					"ui:summaryTitle": "ID",
+					"ui:displayType": "breadcrumbs",
+					"default": 1,
+					"min": 1
+				}
+			},
+			"required": ["playerId"],
+			"additionalProperties": false
+		},
+		"ram-rec-player": {
+			"type": "object",
+			"properties": {
+				"playerId": {
+					"type": "number",
+					"ui:title": "Player ID",
+					"ui:description": "The player",
+					"ui:summaryTitle": "ID",
+					"ui:displayType": "breadcrumbs",
+					"default": 1,
+					"min": 1
+				}
+			},
+			"required": ["playerId"],
+			"additionalProperties": false
+		},
+		"still-player": {
+			"type": "object",
+			"properties": {
+				"playerId": {
+					"type": "number",
+					"ui:title": "Player ID",
+					"ui:description": "The player",
+					"ui:summaryTitle": "ID",
+					"ui:displayType": "breadcrumbs",
+					"default": 1,
+					"min": 1
+				}
+			},
+			"required": ["playerId"],
+			"additionalProperties": false
+		},
+		"sound-player": {
+			"type": "object",
+			"properties": {
+				"playerId": {
+					"type": "number",
+					"ui:title": "Player ID",
+					"ui:description": "The player",
+					"ui:summaryTitle": "ID",
+					"ui:displayType": "breadcrumbs",
+					"default": 1,
+					"min": 1
+				}
+			},
+			"required": ["playerId"],
+			"additionalProperties": false
+		}
+	}
+}
