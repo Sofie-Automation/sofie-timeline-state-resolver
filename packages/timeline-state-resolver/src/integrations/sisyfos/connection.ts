@@ -209,14 +209,14 @@ export class SisyfosApi extends EventEmitter<SisyfosApiEvents> {
 			throw new Error(`Can't set channel, OSC client not initialised`)
 		}
 		const oscApiState: SisyfosChannelOSCAPI = {
-			pgmOn: apiState.pgmOn === 1,
-			voOn: apiState.pgmOn === 2,
-			pstOn: apiState.pstOn === 1,
-			label: apiState.label ?? '',
-			faderLevel: apiState.faderLevel ?? 0.75,
-			muteOn: apiState.muteOn ?? false,
-			inputGain: apiState.inputGain ?? 0.75,
-			inputSelector: apiState.inputSelector ?? 1,
+			pgmOn: typeof apiState.pgmOn === 'number' ? apiState.pgmOn === 1 : undefined,
+			voOn: typeof apiState.pgmOn === 'number' ? apiState.pgmOn === 2 : undefined,
+			pstOn: typeof apiState.pstOn === 'number' ? apiState.pstOn === 1 : undefined,
+			label: apiState.label,
+			faderLevel: apiState.faderLevel,
+			muteOn: apiState.muteOn,
+			inputGain: apiState.inputGain,
+			inputSelector: apiState.inputSelector,
 			fadeTime: apiState.fadeTime,
 			showChannel: apiState.visible,
 		}
@@ -489,17 +489,16 @@ export interface SisyfosState {
 
 // ------------------------------------------------------
 // Interfaces for the data that comes over OSC:
-
 export interface SisyfosChannelAPI {
-	faderLevel: number
-	pgmOn: number
-	pstOn: number
+	faderLevel: number | undefined
+	pgmOn: number | undefined
+	pstOn: number | undefined
 	label: string
-	visible: boolean
+	visible: boolean | undefined
 	fadeTime?: number
-	muteOn: boolean
-	inputGain: number
-	inputSelector: number
+	muteOn: boolean | undefined
+	inputGain: number | undefined
+	inputSelector: number | undefined
 }
 
 // ------------------------------------------------------
