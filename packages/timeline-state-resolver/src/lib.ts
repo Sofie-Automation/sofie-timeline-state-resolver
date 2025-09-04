@@ -247,9 +247,19 @@ export function deferAsync(fn: () => Promise<void>, catcher: (e: unknown) => voi
  * @param path Path of the value to set
  * @param val The value to set
  */
-const set = (obj: Record<string, any>, path: string, val: any) => {
-	const p = path.split('.')
-	p.slice(0, -1).reduce((a, b) => (a[b] ? a[b] : (a[b] = {})), obj)[p.slice(-1)[0]] = val
+export function set(obj: Record<string, any>, path: string, val: any) {
+	try {
+		const p = path.split('.')
+		p.slice(0, -1).reduce((a, b) => (a[b] ? a[b] : (a[b] = {})), obj)[p.slice(-1)[0]] = val
+	} catch (e) {
+		// Add context:
+		if (e instanceof Error) {
+			e.message = `Unable to set property "${path}" of object ${JSON.stringify(obj)} to value ${JSON.stringify(
+				val
+			)}. Original error: ${e.message}`
+		}
+		throw e
+	}
 }
 export function fillStateFromDatastore(state: Timeline.TimelineState<TSRTimelineContent>, datastore: Datastore) {
 	// clone the state so we can freely manipulate it
@@ -263,15 +273,23 @@ export function fillStateFromDatastore(state: Timeline.TimelineState<TSRTimeline
 				).forEach(([path, ref]) => {
 					const datastoreVal = datastore[ref.datastoreKey]
 
-					if (datastoreVal !== undefined) {
-						if (ref.overwrite) {
-							// only use the datastore value if it was changed after the tl obj started
-							if ((instance.originalStart || instance.start || 0) <= datastoreVal.modified) {
+					try {
+						if (datastoreVal !== undefined) {
+							if (ref.overwrite) {
+								// only use the datastore value if it was changed after the tl obj started
+								if ((instance.originalStart || instance.start || 0) <= datastoreVal.modified) {
+									set(content, path, datastoreVal.value)
+								}
+							} else {
 								set(content, path, datastoreVal.value)
 							}
-						} else {
-							set(content, path, datastoreVal.value)
 						}
+					} catch (e) {
+						if (e instanceof Error) {
+							// Add context:
+							e.message = `${e.message} (Context: instance.id="${instance.id}")`
+						}
+						throw e
 					}
 				})
 			}
