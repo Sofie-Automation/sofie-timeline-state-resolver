@@ -9,7 +9,7 @@ const CONNECTIVITY_TIMEOUT = 1000 // ms
 interface SisyfosApiEvents {
 	error: [Error]
 	initialized: []
-	mixerOnline: [boolean]
+	mixerOnlineChanged: []
 	connected: []
 	disconnected: []
 }
@@ -238,10 +238,6 @@ export class SisyfosApi extends EventEmitter<SisyfosApiEvents> {
 		return this._mixerOnline
 	}
 
-	setMixerOnline(state: boolean) {
-		this._mixerOnline = state
-	}
-
 	private _monitorConnectivity() {
 		const pingSisyfos = () => {
 			if (this._oscClient) this._oscClient.send({ address: `/ping/${this._pingCounter}`, args: [] })
@@ -296,12 +292,20 @@ export class SisyfosApi extends EventEmitter<SisyfosApiEvents> {
 				this._clearPingTimer()
 				this.updateIsConnected(true)
 				this._pingCounter++
-				this.emit('mixerOnline', true)
+
+				if (!this._mixerOnline) {
+					this._mixerOnline = true
+					this.emit('mixerOnlineChanged')
+				}
 			} else if (message.args[0].value === 'offline') {
 				this._clearPingTimer()
 				this.updateIsConnected(true)
 				this._pingCounter++
-				this.emit('mixerOnline', false)
+
+				if (this._mixerOnline) {
+					this._mixerOnline = false
+					this.emit('mixerOnlineChanged')
+				}
 			}
 		}
 	}
