@@ -63,8 +63,7 @@ export class SisyfosMessageDevice extends DeviceWithState<SisyfosState, DeviceOp
 		this._sisyfos.on('disconnected', () => {
 			this._connectionChanged()
 		})
-		this._sisyfos.on('mixerOnline', (onlineStatus) => {
-			this._sisyfos.setMixerOnline(onlineStatus)
+		this._sisyfos.on('mixerOnlineChanged', () => {
 			this._connectionChanged()
 		})
 
