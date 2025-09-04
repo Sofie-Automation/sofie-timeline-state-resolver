@@ -82,7 +82,7 @@ export function convertTimelineStateToLawoState(
 function pushFaders(state: LawoState, timelineObjId: string, layer: TimelineContentLawoSources, mappings: Mappings) {
 	for (const source of layer.sources) {
 		const mapping = mappings[source.mappingName]
-		if (mapping.device !== DeviceType.LAWO) continue
+		if (!mapping || mapping.device !== DeviceType.LAWO) continue
 
 		pushFader(
 			state,
