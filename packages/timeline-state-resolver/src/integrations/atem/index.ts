@@ -7,6 +7,7 @@ import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
 	SomeMappingAtem,
+	RunMacroPayload,
 	AtemDeviceTypes,
 	AtemActionMethods,
 	AtemActions,
@@ -40,6 +41,7 @@ export type AtemCommandWithContext = CommandWithContext<AtemCommands.ISerializab
 export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, AtemCommandWithContext, AnyAddressState> {
 	readonly actions: AtemActionMethods = {
 		[AtemActions.Resync]: this.resyncState.bind(this),
+		[AtemActions.RunMacro]: this.runMacro.bind(this),
 	}
 
 	private readonly _atem = new BasicAtem()
@@ -108,6 +110,15 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 
 	private async resyncState(): Promise<ActionExecutionResult> {
 		this.context.resetResolver()
+
+		return {
+			result: ActionExecutionResultCode.Ok,
+		}
+	}
+	private async runMacro(payload: RunMacroPayload): Promise<ActionExecutionResult> {
+		await this._atem.sendCommand(
+			new AtemCommands.MacroActionCommand(payload.macroIndex, ConnectionEnums.MacroAction.Run)
+		)
 
 		return {
 			result: ActionExecutionResultCode.Ok,
