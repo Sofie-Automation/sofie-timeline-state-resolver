@@ -24,7 +24,6 @@ import {
 import type { Device, DeviceStatus, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import { AtemStateBuilder } from './stateBuilder'
 import { createDiffOptions } from './diffState'
-import { t } from '../../lib'
 import {
 	AnyAddressState,
 	applyAddressStateToAtemState,
