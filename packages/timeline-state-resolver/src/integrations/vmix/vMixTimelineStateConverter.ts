@@ -58,9 +58,12 @@ export class VMixTimelineStateConverter {
 			_.map(state.layers, (tlObject, layerName) => ({
 				layerName,
 				tlObject,
-				mapping: mappings[layerName],
+				mapping: mappings[layerName] as Mapping<SomeMappingVmix, DeviceType> | undefined,
 			})).sort((a, b) => a.layerName.localeCompare(b.layerName)),
-			(o) => mappingPriority[o.mapping.options.mappingType] ?? Number.POSITIVE_INFINITY
+			(o) =>
+				o.mapping
+					? mappingPriority[o.mapping?.options.mappingType] ?? Number.POSITIVE_INFINITY
+					: Number.POSITIVE_INFINITY
 		)
 
 		_.each(sortedLayers, ({ tlObject, layerName, mapping }) => {
