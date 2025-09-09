@@ -161,6 +161,8 @@ export class VMixCommandSender {
 		switch (command.command) {
 			case VMixCommand.PREVIEW_INPUT:
 				return this.setPreviewInput(command.input, command.mix)
+			case VMixCommand.ACTIVE_INPUT:
+				return this.setActiveInput(command.input, command.mix)
 			case VMixCommand.TRANSITION:
 				return this.transition(command.input, command.effect, command.duration, command.mix)
 			case VMixCommand.AUDIO_VOLUME:
@@ -275,6 +277,10 @@ export class VMixCommandSender {
 
 	public async setPreviewInput(input: number | string, mix: number): Promise<any> {
 		return this.sendCommandFunction('PreviewInput', { input, mix })
+	}
+
+	public async setActiveInput(input: number | string, mix: number): Promise<any> {
+		return this.sendCommandFunction('ActiveInput', { input, mix })
 	}
 
 	public async transition(input: number | string, effect: string, duration: number, mix: number): Promise<any> {

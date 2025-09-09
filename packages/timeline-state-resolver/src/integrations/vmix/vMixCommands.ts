@@ -8,6 +8,11 @@ export interface VMixStateCommandPreviewInput extends VMixStateCommandBase {
 	input: number | string
 	mix: number
 }
+export interface VMixStateCommandActiveInput extends VMixStateCommandBase {
+	command: VMixCommand.ACTIVE_INPUT
+	input: number | string
+	mix: number
+}
 export interface VMixStateCommandTransition extends VMixStateCommandBase {
 	command: VMixCommand.TRANSITION
 	input: number | string
@@ -240,6 +245,7 @@ export interface VMixStateCommandSetImage extends VMixStateCommandBase {
 }
 export type VMixStateCommand =
 	| VMixStateCommandPreviewInput
+	| VMixStateCommandActiveInput
 	| VMixStateCommandTransition
 	| VMixStateCommandAudio
 	| VMixStateCommandAudioBalance
