@@ -36,6 +36,11 @@ export interface DeviceOptionsHyperdeck extends DeviceOptionsBase<HyperdeckOptio
 	type: DeviceType.HYPERDECK
 }
 
+import type { KairosOptions } from './kairos'
+export interface DeviceOptionsKairos extends DeviceOptionsBase<KairosOptions> {
+	type: DeviceType.KAIROS
+}
+
 import type { LawoOptions } from './lawo'
 export interface DeviceOptionsLawo extends DeviceOptionsBase<LawoOptions> {
 	type: DeviceType.LAWO
@@ -133,6 +138,7 @@ export type DeviceOptionsAny =
 	| DeviceOptionsHttpSend
 	| DeviceOptionsHttpWatcher
 	| DeviceOptionsHyperdeck
+	| DeviceOptionsKairos
 	| DeviceOptionsLawo
 	| DeviceOptionsMultiOsc
 	| DeviceOptionsObs
@@ -165,6 +171,7 @@ export enum DeviceType {
 	HTTPSEND = 'HTTPSEND',
 	HTTPWATCHER = 'HTTPWATCHER',
 	HYPERDECK = 'HYPERDECK',
+	KAIROS = 'KAIROS',
 	LAWO = 'LAWO',
 	MULTI_OSC = 'MULTI_OSC',
 	OBS = 'OBS',

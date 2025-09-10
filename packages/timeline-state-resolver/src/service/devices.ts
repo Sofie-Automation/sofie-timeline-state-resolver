@@ -20,6 +20,7 @@ import { TriCasterDevice } from '../integrations/tricaster'
 import { SingularLiveDevice } from '../integrations/singularLive'
 import { MultiOSCMessageDevice } from '../integrations/multiOsc'
 import { WebSocketClientDevice } from '../integrations/websocketClient'
+import { KairosDevice } from '../integrations/kairos'
 
 export type ImplementedServiceDeviceTypes =
 	| DeviceType.ABSTRACT
@@ -42,6 +43,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.QUANTEL
 	| DeviceType.VISCA_OVER_IP
 	| DeviceType.WEBSOCKET_CLIENT
+	| DeviceType.KAIROS
 
 // TODO - move all device implementations here and remove the old Device classes
 export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
@@ -73,6 +75,12 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		deviceClass: HyperdeckDevice,
 		canConnect: true,
 		deviceName: (deviceId: string) => 'Hyperdeck ' + deviceId,
+		executionMode: () => 'salvo',
+	},
+	[DeviceType.KAIROS]: {
+		deviceClass: KairosDevice,
+		canConnect: true,
+		deviceName: (deviceId: string) => 'Kairos ' + deviceId,
 		executionMode: () => 'salvo',
 	},
 	[DeviceType.LAWO]: {

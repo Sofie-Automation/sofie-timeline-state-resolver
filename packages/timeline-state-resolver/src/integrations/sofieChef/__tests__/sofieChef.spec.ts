@@ -1,7 +1,7 @@
 import { SofieChefDevice } from '..'
 import { StatusCode } from 'timeline-state-resolver-types'
 import { MockTime } from '../../../__tests__/mockTime'
-import * as WebSocket from '../../../__mocks__/ws'
+import WebSocket from '../../../__mocks__/ws'
 import { literal } from '../../../lib'
 import { SendWSMessageAny, SendWSMessageType, StatusCode as ChefStatusCode } from '../api'
 import { getDeviceContext } from '../../__tests__/testlib'
