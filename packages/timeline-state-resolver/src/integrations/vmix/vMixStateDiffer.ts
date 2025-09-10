@@ -265,28 +265,42 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 			if (newMixState?.program !== undefined) {
 				let nextInput = newMixState.program
 				let changeOnLayer = false
+
 				if (newMixState.layerToProgram) {
 					nextInput = newVMixState.inputLayers[newMixState.program]
 					changeOnLayer =
 						newVMixState.inputLayers[newMixState.program] !== oldVMixState.inputLayers[newMixState.program]
 				}
 				if (oldMixState?.program !== newMixState.program || changeOnLayer) {
-					commands.push({
-						command: {
-							command: VMixCommand.TRANSITION,
-							effect: changeOnLayer ? VMixTransitionType.Cut : newMixState.transition.effect,
-							input: nextInput,
-							duration: changeOnLayer ? 0 : newMixState.transition.duration,
-							mix: i,
-						},
-						context: CommandContext.None,
-						timelineId: '',
-					})
+					if (newMixState.transition.effect !== VMixTransitionType.Cut) {
+						commands.push({
+							command: {
+								command: VMixCommand.TRANSITION,
+								effect: changeOnLayer ? VMixTransitionType.Cut : newMixState.transition.effect,
+								input: nextInput,
+								duration: changeOnLayer ? 0 : newMixState.transition.duration,
+								mix: i,
+							},
+							context: CommandContext.None,
+							timelineId: '',
+						})
+					} else {
+						commands.push({
+							command: {
+								command: VMixCommand.ACTIVE_INPUT,
+								input: nextInput,
+								mix: i,
+							},
+							context: CommandContext.None,
+							timelineId: '',
+						})
+					}
 				}
 			}
 
 			if (
-				oldMixState?.program === newMixState?.program && // if we're not switching what is on program, because it could break a transition
+				(newMixState?.transition.effect === VMixTransitionType.Cut || oldMixState?.program === newMixState?.program) &&
+				// if we're not switching what is on program using a transition, because that will break the transition
 				newMixState?.preview !== undefined &&
 				newMixState.preview !== oldMixState?.preview
 			) {

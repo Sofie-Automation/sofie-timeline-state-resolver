@@ -976,10 +976,8 @@ describe('vMix', () => {
 			11000,
 			expect.objectContaining({
 				command: {
-					command: VMixCommand.TRANSITION,
+					command: VMixCommand.ACTIVE_INPUT,
 					input: prefixAddedInput('C:/videos/My Clip.mp4'),
-					duration: 0,
-					effect: VMixTransitionType.Cut,
 					mix: 0,
 				},
 			}),
@@ -1005,8 +1003,8 @@ describe('vMix', () => {
 
 		expect(onFunction).toHaveBeenNthCalledWith(
 			1,
-			'Cut',
-			expect.stringContaining('Input=' + prefixAddedInput('C:/videos/My Clip.mp4') + '&Duration=0&Mix=0')
+			'ActiveInput',
+			expect.stringContaining('Input=' + prefixAddedInput('C:/videos/My Clip.mp4') + '&Mix=0')
 		)
 		expect(onFunction).toHaveBeenNthCalledWith(
 			2,
@@ -1051,10 +1049,8 @@ describe('vMix', () => {
 			16000,
 			expect.objectContaining({
 				command: {
-					command: VMixCommand.TRANSITION,
+					command: VMixCommand.ACTIVE_INPUT,
 					input: prefixAddedInput('G:/videos/My Other Clip.mp4'),
-					duration: 0,
-					effect: VMixTransitionType.Cut,
 					mix: 0,
 				},
 			}),
@@ -1102,8 +1098,8 @@ describe('vMix', () => {
 		)
 		expect(onFunction).toHaveBeenNthCalledWith(
 			3,
-			'Cut',
-			expect.stringContaining('Input=' + prefixAddedInput('G:/videos/My Other Clip.mp4') + '&Duration=0&Mix=0')
+			'ActiveInput',
+			expect.stringContaining('Input=' + prefixAddedInput('G:/videos/My Other Clip.mp4') + '&Mix=0')
 		)
 		expect(onFunction).toHaveBeenNthCalledWith(
 			4,
@@ -1583,8 +1579,22 @@ describe('vMix', () => {
 					input: 5,
 				},
 			},
+			// this preview command should work
 			{
 				id: 'preview1',
+				enable: {
+					start: 11000,
+					duration: 5000,
+				},
+				layer: 'vmix_preview1',
+				content: {
+					deviceType: DeviceType.VMIX,
+					type: TimelineContentTypeVMix.PREVIEW,
+					input: 3,
+				},
+			},
+			{
+				id: 'preview2',
 				enable: {
 					start: 11005,
 					duration: 5000,
@@ -1594,19 +1604,6 @@ describe('vMix', () => {
 					deviceType: DeviceType.VMIX,
 					type: TimelineContentTypeVMix.PREVIEW,
 					input: 'Cam 4',
-				},
-			},
-			{
-				id: 'preview2',
-				enable: {
-					start: 11005,
-					duration: 5000,
-				},
-				layer: 'vmix_preview1',
-				content: {
-					deviceType: DeviceType.VMIX,
-					type: TimelineContentTypeVMix.PREVIEW,
-					input: 3,
 				},
 			},
 			{
@@ -1647,10 +1644,8 @@ describe('vMix', () => {
 			11000,
 			expect.objectContaining({
 				command: {
-					command: VMixCommand.TRANSITION,
+					command: VMixCommand.ACTIVE_INPUT,
 					input: 5,
-					duration: 0,
-					effect: VMixTransitionType.Cut,
 					mix: 1,
 				},
 			}),
@@ -1659,12 +1654,12 @@ describe('vMix', () => {
 		)
 		expect(commandReceiver0).toHaveBeenNthCalledWith(
 			3,
-			11005,
+			11000,
 			expect.objectContaining({
 				command: {
 					command: VMixCommand.PREVIEW_INPUT,
-					input: 'Cam 4',
-					mix: 0,
+					input: 3,
+					mix: 1,
 				},
 			}),
 			CommandContext.None,
@@ -1676,8 +1671,8 @@ describe('vMix', () => {
 			expect.objectContaining({
 				command: {
 					command: VMixCommand.PREVIEW_INPUT,
-					input: 3,
-					mix: 1,
+					input: 'Cam 4',
+					mix: 0,
 				},
 			}),
 			CommandContext.None,
@@ -1691,9 +1686,9 @@ describe('vMix', () => {
 			'VerticalSlideReverse',
 			expect.stringContaining('Input=Cam 1&Duration=1337&Mix=0')
 		)
-		expect(onFunction).toHaveBeenNthCalledWith(2, 'Cut', expect.stringContaining('Input=5&Duration=0&Mix=1'))
-		expect(onFunction).toHaveBeenNthCalledWith(3, 'PreviewInput', expect.stringContaining('Input=Cam 4&Mix=0'))
-		expect(onFunction).toHaveBeenNthCalledWith(4, 'PreviewInput', expect.stringContaining('Input=3&Mix=1'))
+		expect(onFunction).toHaveBeenNthCalledWith(2, 'ActiveInput', expect.stringContaining('Input=5&Mix=1'))
+		expect(onFunction).toHaveBeenNthCalledWith(3, 'PreviewInput', expect.stringContaining('Input=3&Mix=1'))
+		expect(onFunction).toHaveBeenNthCalledWith(4, 'PreviewInput', expect.stringContaining('Input=Cam 4&Mix=0'))
 
 		clearMocks()
 		commandReceiver0.mockClear()
@@ -3644,10 +3639,8 @@ describe('vMix', () => {
 			10105,
 			expect.objectContaining({
 				command: {
-					command: VMixCommand.TRANSITION,
-					effect: VMixTransitionType.Cut,
+					command: VMixCommand.ACTIVE_INPUT,
 					input: 1,
-					duration: 0,
 					mix: 0,
 				},
 			}),
@@ -3673,10 +3666,8 @@ describe('vMix', () => {
 			11000,
 			expect.objectContaining({
 				command: {
-					command: VMixCommand.TRANSITION,
-					effect: VMixTransitionType.Cut,
+					command: VMixCommand.ACTIVE_INPUT,
 					input: 2,
-					duration: 0,
 					mix: 0,
 				},
 			}),
@@ -3710,9 +3701,9 @@ describe('vMix', () => {
 
 		expect(onFunction).toHaveBeenCalledTimes(5)
 
-		expect(onFunction).toHaveBeenNthCalledWith(1, 'Cut', expect.stringContaining('Input=1'))
+		expect(onFunction).toHaveBeenNthCalledWith(1, 'ActiveInput', expect.stringContaining('Input=1'))
 		expect(onFunction).toHaveBeenNthCalledWith(2, 'SetMultiViewOverlay', expect.stringContaining('Input=2&Value=1,3'))
-		expect(onFunction).toHaveBeenNthCalledWith(3, 'Cut', expect.stringContaining('Input=2'))
+		expect(onFunction).toHaveBeenNthCalledWith(3, 'ActiveInput', expect.stringContaining('Input=2'))
 		expect(onFunction).toHaveBeenNthCalledWith(4, 'Pause', expect.stringContaining('Input=1'))
 		expect(onFunction).toHaveBeenNthCalledWith(5, 'ListRemoveAll', expect.stringContaining('Input=1'))
 
