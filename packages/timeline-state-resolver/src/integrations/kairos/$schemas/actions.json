@@ -1,0 +1,115 @@
+{
+	"$schema": "../../../$schemas/action-schema.json",
+	"actions": [
+		{
+			"id": "listClips",
+			"name": "List clips in media folder",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"subDirectory": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"name": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"size": {
+							"type": "number"
+						},
+						"datetime": {
+							"type": "number"
+						},
+						"frames": {
+							"type": "number"
+						},
+						"framerate": {
+							"type": "number"
+						}
+					},
+					"required": [
+						"name",
+						"size",
+						"dateTime",
+						"frames",
+						"framerate"
+					],
+					"additionalProperties": false
+				}
+			}
+		},
+		{
+			"id": "listStills",
+			"name": "List stills in media folder",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"subDirectory": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"name": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"size": {
+							"type": "number"
+						},
+						"datetime": {
+							"type": "number"
+						}
+					},
+					"required": [
+						"name",
+						"size",
+					],
+					"additionalProperties": false
+				}
+			}
+		},
+		{
+			"id": "playMacro",
+			"name": "Play a macro",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"ref": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"additionalProperties": false
+			}
+		}
+	]
+}

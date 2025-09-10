@@ -9,7 +9,7 @@ import {
 import { EventEmitter } from 'eventemitter3'
 import { MemUsageReport, threadedClass, ThreadedClass, ThreadedClassManager } from 'threadedclass'
 import PQueue from 'p-queue'
-import * as PAll from 'p-all'
+import PAll from 'p-all'
 
 import {
 	Mappings,

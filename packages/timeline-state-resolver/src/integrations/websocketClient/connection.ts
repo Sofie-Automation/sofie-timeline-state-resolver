@@ -1,4 +1,4 @@
-import * as WebSocket from 'ws'
+import WebSocket from 'ws'
 import { DeviceStatus, StatusCode, WebsocketClientOptions } from 'timeline-state-resolver-types'
 
 export class WebSocketConnection {
