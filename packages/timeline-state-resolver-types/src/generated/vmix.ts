@@ -17,17 +17,17 @@ export interface VmixOptions {
 
 export interface MappingVmixProgram {
 	/**
-	 * Number of the mix (1 is the main mix, 2-4 are optional Mix Inputs)
+	 * Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)
 	 */
-	index?: 1 | 2 | 3 | 4
+	index?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16
 	mappingType: MappingVmixType.Program
 }
 
 export interface MappingVmixPreview {
 	/**
-	 * Number of the mix (1 is the main mix, 2-4 are optional Mix Inputs)
+	 * Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)
 	 */
-	index?: 1 | 2 | 3 | 4
+	index?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16
 	mappingType: MappingVmixType.Preview
 }
 
