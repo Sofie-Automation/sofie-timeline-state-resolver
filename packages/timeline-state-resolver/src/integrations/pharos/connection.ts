@@ -553,6 +553,7 @@ export class Pharos extends EventEmitter {
 		})
 	}
 	public async command(method: 'GET' | 'POST' | 'DELETE' | 'PUT', url0: string, data0?: { [key: string]: Primitives }) {
+		const orgError = new Error() // for later
 		return new Promise((resolve, reject) => {
 			const url = `${this._options.ssl ? 'https' : 'http'}://${this._options.host}${url0}${this._queryString}`
 
@@ -599,7 +600,24 @@ export class Pharos extends EventEmitter {
 					}
 				})
 				.catch((error) => {
-					this.emit('error', new Error(`Error ${method}: ${error}`))
+					if (error instanceof got.RequestError) {
+						// There is a weird case where Pharos replies with a body that doesn't match the content-length.
+						// Which causes node.js http.request to throw an error:
+						// RequestError: Parse Error: Expected HTTP/, RTSP/ or ICE/
+						const statusCode = error.response?.statusCode
+						if (typeof statusCode === 'number' && statusCode >= 200 && statusCode <= 299) {
+							// The request actually succeeded
+							resolve(undefined)
+							return
+						}
+					}
+
+					error.stack += `\nOriginal stack: ${orgError.stack}`
+
+					const emitError = new Error(`Error ${method} ${url} (${JSON.stringify(data)}): ${error}`)
+
+					emitError.stack += `\nOriginal stack: ${orgError.stack}`
+					this.emit('error', emitError)
 					reject(error)
 				})
 		})
