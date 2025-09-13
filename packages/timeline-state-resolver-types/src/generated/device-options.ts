@@ -51,6 +51,11 @@ export interface DeviceOptionsObs extends DeviceOptionsBase<ObsOptions> {
 	type: DeviceType.OBS
 }
 
+import type { OgrafOptions } from './ograf'
+export interface DeviceOptionsOgraf extends DeviceOptionsBase<OgrafOptions> {
+	type: DeviceType.OGRAF
+}
+
 import type { OscOptions } from './osc'
 export interface DeviceOptionsOsc extends DeviceOptionsBase<OscOptions> {
 	type: DeviceType.OSC
@@ -136,6 +141,7 @@ export type DeviceOptionsAny =
 	| DeviceOptionsLawo
 	| DeviceOptionsMultiOsc
 	| DeviceOptionsObs
+	| DeviceOptionsOgraf
 	| DeviceOptionsOsc
 	| DeviceOptionsPanasonicPTZ
 	| DeviceOptionsPharos
@@ -168,6 +174,7 @@ export enum DeviceType {
 	LAWO = 'LAWO',
 	MULTI_OSC = 'MULTI_OSC',
 	OBS = 'OBS',
+	OGRAF = 'OGRAF',
 	OSC = 'OSC',
 	PANASONIC_PTZ = 'PANASONIC_PTZ',
 	PHAROS = 'PHAROS',

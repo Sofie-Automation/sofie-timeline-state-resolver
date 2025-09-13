@@ -1,0 +1,37 @@
+{
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/mapping-schema.json",
+	"mappings": {
+		"renderTarget": {
+			"type": "object",
+			"properties": {
+				"rendererId": {
+					"type": "string",
+					"ui:title": "Renderer ID",
+					"ui:description": "ID of the Renderer",
+					"ui:summaryTitle": "Renderer ID"
+				},
+				"renderTarget": {
+					"type": "string",
+					"ui:title": "Render Target",
+					"ui:description": "The RenderTarget to load the graphic onto",
+					"ui:summaryTitle": "Render Target"
+				}
+			},
+			"required": ["rendererId", "renderTarget"],
+			"additionalProperties": false
+		},
+		"renderer": {
+			"type": "object",
+			"properties": {
+				"rendererId": {
+					"type": "string",
+					"ui:title": "Renderer ID",
+					"ui:description": "ID of the Renderer",
+					"ui:summaryTitle": "Renderer ID"
+				}
+			},
+			"required": ["rendererId"],
+			"additionalProperties": false
+		}
+	}
+}

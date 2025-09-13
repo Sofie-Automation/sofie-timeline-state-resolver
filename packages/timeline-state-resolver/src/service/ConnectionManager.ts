@@ -441,6 +441,7 @@ function createContainer(
 		case DeviceType.LAWO:
 		case DeviceType.MULTI_OSC:
 		case DeviceType.OBS:
+		case DeviceType.OGRAF:
 		case DeviceType.OSC:
 		case DeviceType.PANASONIC_PTZ:
 		case DeviceType.SHOTOKU:
