@@ -3,6 +3,7 @@ import { DeviceType } from '..'
 export enum TimelineContentTypeAtem { //  Atem-state
 	ControlValue = 'controlValue',
 	ME = 'me',
+	USK = 'usk',
 	DSK = 'dsk',
 	AUX = 'aux',
 	SSRC = 'ssrc',
@@ -122,6 +123,7 @@ export interface AtemTransitionSettings {
 export type TimelineContentAtemAny =
 	| TimelineContentAtemControlValue
 	| TimelineContentAtemME
+	| TimelineContentAtemUSK
 	| TimelineContentAtemDSK
 	| TimelineContentAtemAUX
 	| TimelineContentAtemSsrc
@@ -221,6 +223,49 @@ export interface TimelineContentAtemME extends TimelineContentAtemBase {
 				invert?: boolean
 			}
 		}[]
+	}
+}
+export interface TimelineContentAtemUSK extends TimelineContentAtemBase {
+	type: TimelineContentTypeAtem.USK
+	usk: {
+		onAir?: boolean
+		/** 0: Luma, 1: Chroma, 2: Pattern, 3: DVE */
+		mixEffectKeyType?: number
+		/** Use flying key */
+		flyEnabled?: boolean
+		/** Fill */
+		fillSource?: number
+		/** Key */
+		cutSource?: number
+		/** Mask keyer */
+		maskEnabled?: boolean
+		/** -9000 -> 9000 */
+		maskTop?: number
+		/** -9000 -> 9000 */
+		maskBottom?: number
+		/** -16000 -> 16000 */
+		maskLeft?: number
+		/** -16000 -> 16000 */
+		maskRight?: number
+
+		dveSettings?: AtemDVESettings
+		// chromaSettings: UpstreamKeyerChromaSettings;
+		// patternSettings: UpstreamKeyerPatternSettings;
+		flyKeyframes?: [AtemFlyKeyframe | undefined, AtemFlyKeyframe | undefined]
+		flyProperties?: {
+			isAtKeyFrame?: FlyKeyKeyFrame
+			runToInfiniteIndex?: FlyKeyDirection
+		}
+		lumaSettings?: {
+			/** Premultiply key */
+			preMultiplied?: boolean
+			/** 0-1000 */
+			clip?: number
+			/** 0-1000 */
+			gain?: number
+			/** Invert key */
+			invert?: boolean
+		}
 	}
 }
 export interface TimelineContentAtemDSK extends TimelineContentAtemBase {

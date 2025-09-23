@@ -114,7 +114,7 @@ describe('AtemStateBuilder', () => {
 			expect(deviceState1).toEqual(expectedState)
 		})
 
-		test('Upstream keyer', async () => {
+		test('Upstream keyer (legacy)', async () => {
 			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
 				makeDeviceTimelineStateObject({
 					id: 'obj0',
@@ -159,7 +159,7 @@ describe('AtemStateBuilder', () => {
 			expect(deviceState1).toEqual(expectedState)
 		})
 
-		test('Upstream keyer: Uses upstreamKeyerId as index', async () => {
+		test('Upstream keyer: Uses upstreamKeyerId as index (legacy)', async () => {
 			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
 				makeDeviceTimelineStateObject({
 					id: 'obj0',
@@ -202,6 +202,109 @@ describe('AtemStateBuilder', () => {
 			expectedState.controlValues = { 'video.mixEffects.0.usk.2': '0' }
 
 			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMapping)
+			expect(deviceState1).toEqual(expectedState)
+		})
+
+		test('Upstream keyer (new)', async () => {
+			const myLayerMappingUSK: Mappings = {
+				myLayer0: {
+					device: DeviceType.ATEM,
+					deviceId: 'myAtem',
+					options: {
+						mappingType: MappingAtemType.UpStreamKeyer,
+						me: 0,
+						usk: 0,
+					},
+				},
+			}
+
+			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
+					id: 'obj0',
+					enable: {
+						start: -1000, // 1 seconds ago
+						duration: 2000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.ATEM,
+						type: TimelineContentTypeAtem.USK,
+						usk: {
+							lumaSettings: {
+								preMultiplied: false,
+								clip: 300,
+								gain: 2,
+								invert: true,
+							},
+						},
+					},
+				}),
+			]
+
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
+			const expectedMixEffect = AtemConnection.AtemStateUtil.getMixEffect(expectedState, 0)
+			AtemConnection.AtemStateUtil.getUpstreamKeyer(expectedMixEffect, 0).lumaSettings = {
+				preMultiplied: false,
+				clip: 300,
+				gain: 2,
+				invert: true,
+			}
+
+			expectedState['controlValues'] = { 'video.mixEffects.0.keyer.0': '0' }
+
+			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMappingUSK)
+			expect(deviceState1).toEqual(expectedState)
+		})
+
+		test('Upstream keyer: Uses usk index from mapping (new)', async () => {
+			const myLayerMappingUSK: Mappings = {
+				myLayer0: {
+					device: DeviceType.ATEM,
+					deviceId: 'myAtem',
+					options: {
+						mappingType: MappingAtemType.UpStreamKeyer,
+						me: 0,
+						usk: 2,
+					},
+				},
+			}
+
+			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
+					id: 'obj0',
+					enable: {
+						start: -1000, // 1 seconds ago
+						duration: 2000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.ATEM,
+						type: TimelineContentTypeAtem.USK,
+						usk: {
+							lumaSettings: {
+								preMultiplied: false,
+								clip: 300,
+								gain: 2,
+								invert: true,
+							},
+						},
+					},
+				}),
+			]
+
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
+			const expectedMixEffect = AtemConnection.AtemStateUtil.getMixEffect(expectedState, 0)
+			AtemConnection.AtemStateUtil.getUpstreamKeyer(expectedMixEffect, 2).lumaSettings = {
+				preMultiplied: false,
+				clip: 300,
+				gain: 2,
+				invert: true,
+			}
+			expect(expectedMixEffect.upstreamKeyers).toHaveLength(3)
+
+			expectedState.controlValues = { 'video.mixEffects.0.keyer.2': '0' }
+
+			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMappingUSK)
 			expect(deviceState1).toEqual(expectedState)
 		})
 	})

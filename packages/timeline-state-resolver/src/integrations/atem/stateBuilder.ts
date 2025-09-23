@@ -28,6 +28,8 @@ import {
 	TimelineContentAtemAudioRouting,
 	MappingAtemColorGenerator,
 	TimelineContentAtemColorGenerator,
+	MappingAtemUpStreamKeyer,
+	TimelineContentAtemUSK,
 } from 'timeline-state-resolver-types'
 import _ = require('underscore')
 import { Defaults, State as DeviceState, Defaults as StateDefault } from 'atem-state'
@@ -59,6 +61,15 @@ export class AtemStateBuilder {
 						if (content.type === TimelineContentTypeAtem.ME) {
 							builder._applyMixEffect(mapping.options, content)
 							builder._setControlValue(builder._getMixEffectAddressesFromTlObject(mapping.options, content), tlObject)
+						}
+						break
+					case MappingAtemType.UpStreamKeyer:
+						if (content.type === TimelineContentTypeAtem.USK) {
+							builder._applyUpstreamKeyer(mapping.options, content)
+							builder._setControlValue(
+								[`video.mixEffects.${mapping.options.me}.keyer.${mapping.options.usk}`],
+								tlObject
+							)
 						}
 						break
 					case MappingAtemType.DownStreamKeyer:
@@ -191,6 +202,53 @@ export class AtemStateBuilder {
 						})
 					}
 				}
+			}
+		}
+	}
+
+	private _applyUpstreamKeyer(mapping: MappingAtemUpStreamKeyer, content: TimelineContentAtemUSK): void {
+		const objKeyer = content.usk
+		const fixedObjKeyer: PartialDeep<VideoState.USK.UpstreamKeyer> = {
+			...objKeyer,
+			flyKeyframes: [undefined, undefined],
+			flyProperties: undefined,
+		}
+		delete fixedObjKeyer.flyProperties
+		delete fixedObjKeyer.flyKeyframes
+
+		if (objKeyer.flyProperties) {
+			fixedObjKeyer.flyProperties = {
+				isASet: false,
+				isBSet: false,
+				isAtKeyFrame: objKeyer.flyProperties.isAtKeyFrame as number,
+				runToInfiniteIndex: objKeyer.flyProperties.runToInfiniteIndex,
+			}
+		}
+		if (typeof mapping.me !== 'number' || mapping.me < 0) return
+		if (typeof mapping.usk !== 'number' || mapping.usk < 0) return
+
+		const stateMixEffect = AtemStateUtil.getMixEffect(this.#deviceState, mapping.me)
+		// if (!stateMixEffect.upstreamKeyers) stateMixEffect.upstreamKeyers = {}
+
+		stateMixEffect.upstreamKeyers[mapping.usk] = deepMerge<VideoState.USK.UpstreamKeyer>(
+			AtemStateUtil.getUpstreamKeyer(stateMixEffect, mapping.usk),
+			fixedObjKeyer
+		)
+
+		const keyer = stateMixEffect.upstreamKeyers[mapping.usk]
+		if (objKeyer.flyKeyframes && keyer) {
+			keyer.flyKeyframes = [keyer.flyKeyframes[0] ?? undefined, keyer.flyKeyframes[1] ?? undefined]
+			if (objKeyer.flyKeyframes[0]) {
+				keyer.flyKeyframes[0] = literal<VideoState.USK.UpstreamKeyerFlyKeyframe>({
+					...StateDefault.Video.flyKeyframe(0),
+					...objKeyer.flyKeyframes[0],
+				})
+			}
+			if (objKeyer.flyKeyframes[1]) {
+				keyer.flyKeyframes[1] = literal<VideoState.USK.UpstreamKeyerFlyKeyframe>({
+					...StateDefault.Video.flyKeyframe(1),
+					...objKeyer.flyKeyframes[1],
+				})
 			}
 		}
 	}
