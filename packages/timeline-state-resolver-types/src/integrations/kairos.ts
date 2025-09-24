@@ -10,7 +10,7 @@ import type {
 	UpdateSceneSnapshotObject,
 	UpdateAuxObject,
 	// eslint-disable-next-line node/no-missing-import
-} from 'kairos-connection' // TODO - this needs to be a types/lib package, not the connection package
+} from 'kairos-lib'
 
 export enum TimelineContentTypeKairos {
 	SCENE = 'scene',
