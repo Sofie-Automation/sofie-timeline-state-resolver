@@ -81,7 +81,7 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		deviceClass: KairosDevice,
 		canConnect: true,
 		deviceName: (deviceId: string) => 'Kairos ' + deviceId,
-		executionMode: () => 'salvo',
+		executionMode: () => 'sequential',
 	},
 	[DeviceType.LAWO]: {
 		deviceClass: LawoDevice,

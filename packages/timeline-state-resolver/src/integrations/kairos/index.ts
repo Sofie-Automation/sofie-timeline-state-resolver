@@ -114,7 +114,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		timelineState: Timeline.TimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): KairosDeviceState {
-		const deviceState = KairosStateBuilder.fromTimeline(timelineState.layers, mappings)
+		const deviceState = KairosStateBuilder.fromTimeline(timelineState, mappings)
 
 		return deviceState
 	}

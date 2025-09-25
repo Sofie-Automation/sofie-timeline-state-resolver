@@ -7328,12 +7328,12 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"kairos-connection@npm:0.0.2-nightly-main-20250909-152736-9c6b607.0":
-  version: 0.0.2-nightly-main-20250909-152736-9c6b607.0
-  resolution: "kairos-connection@npm:0.0.2-nightly-main-20250909-152736-9c6b607.0"
+"kairos-connection@npm:0.0.2-nightly-main-20250925-094955-e3062ba.0":
+  version: 0.0.2-nightly-main-20250925-094955-e3062ba.0
+  resolution: "kairos-connection@npm:0.0.2-nightly-main-20250925-094955-e3062ba.0"
   dependencies:
     tslib: ^2.8.1
-  checksum: 167b5aae7d4fa012509b70d86395aa950301cc74d95db77ade144a0df572d3d52d9fbd2eccad92d5c19248443940dc161a4df6b4051745a9c4971ab3d7e017cc
+  checksum: 1576b3b4c2497d76c74dd8610dcc1ae10494a5ef5db43c35ee4b26f87517e1732c5f5b342ad217d0a0a02158d9a169f2510be2626e8f4e7693cc0873bc7e8b45
   languageName: node
   linkType: hard
 
@@ -11331,7 +11331,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "timeline-state-resolver-types@workspace:packages/timeline-state-resolver-types"
   dependencies:
-    kairos-connection: 0.0.2-nightly-main-20250909-152736-9c6b607.0
+    kairos-connection: 0.0.2-nightly-main-20250925-094955-e3062ba.0
     tslib: ^2.6.3
   languageName: unknown
   linkType: soft
@@ -11356,7 +11356,7 @@ asn1@evs-broadcast/node-asn1:
     hyperdeck-connection: 2.0.1
     jest-mock-extended: ^3.0.7
     json-schema-to-typescript: ^10.1.5
-    kairos-connection: 0.0.2-nightly-main-20250909-152736-9c6b607.0
+    kairos-connection: 0.0.2-nightly-main-20250925-094955-e3062ba.0
     klona: ^2.0.6
     obs-websocket-js: ^5.0.6
     osc: ^2.4.5

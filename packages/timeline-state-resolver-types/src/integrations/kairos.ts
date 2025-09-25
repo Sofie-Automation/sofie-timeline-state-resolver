@@ -132,7 +132,10 @@ export interface TimelineContentKairosPlayerState<TClip>
 	extends Partial<Pick<UpdateClipPlayerObject, 'colorOverwrite' | 'color'>> {
 	// clip player / ramrec player
 
-	/** Reference to the file to be played */
+	/**
+	 * Reference to the file to be played
+	 * @example "MEDIA.clips.amb&#46;mxf"
+	 */
 	clip?: TClip
 
 	/**
@@ -141,7 +144,11 @@ export interface TimelineContentKairosPlayerState<TClip>
 	 */
 	repeat?: boolean
 
-	/** The point where the file starts playing [milliseconds from start of file] */
+	/**
+	 * The point where the file starts playing [milliseconds from start of file]
+	 * If undefined, this indicates that it doesn't matter where the file starts playing.
+	 * To ensure that a file starts from the beginning, set seek to 0.
+	 * */
 	seek?: number
 
 	/** When pausing, the unix-time the playout was paused. */
