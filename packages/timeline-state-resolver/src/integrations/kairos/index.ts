@@ -9,9 +9,11 @@ import {
 	KairosDeviceTypes,
 	KairosActionMethods,
 	KairosActions,
+	ListClipsResult,
+	ActionExecutionResultCode,
 } from 'timeline-state-resolver-types'
 // eslint-disable-next-line node/no-missing-import
-import { KairosConnection } from 'kairos-connection'
+import { KairosConnection, refMacro } from 'kairos-connection'
 import type { Device, DeviceContextAPI, CommandWithContext } from 'timeline-state-resolver-api'
 import { KairosDeviceState, KairosStateBuilder } from './stateBuilder'
 import { diffKairosStates } from './diffState'
@@ -25,13 +27,41 @@ export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, stri
 export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState, KairosCommandWithContext> {
 	readonly actions: KairosActionMethods = {
 		[KairosActions.ListClips]: async () => {
-			throw new Error('Not implemented')
+			const clipNames = await this._kairos.listMediaClips()
+
+			const resultData: ListClipsResult = []
+			for (const clipName of clipNames) {
+				const clipInfo = await this._kairos.getMediaClip(clipName)
+				if (!clipInfo) continue
+				resultData.push(clipInfo)
+			}
+			return {
+				result: ActionExecutionResultCode.Ok,
+				resultData,
+			}
 		},
 		[KairosActions.ListStills]: async () => {
-			throw new Error('Not implemented')
+			const stillNames = await this._kairos.listMediaStills()
+
+			const resultData: ListClipsResult = []
+			for (const stillName of stillNames) {
+				const stillInfo = await this._kairos.getMediaStill(stillName)
+				if (!stillInfo) continue
+				resultData.push(stillInfo)
+			}
+			return {
+				result: ActionExecutionResultCode.Ok,
+				resultData,
+			}
 		},
-		[KairosActions.PlayMacro]: async () => {
-			throw new Error('Not implemented')
+		[KairosActions.PlayMacro]: async (params) => {
+			if (!params.macroPath || !Array.isArray(params.macroPath)) {
+				return { result: ActionExecutionResultCode.Error, message: 'Invalid payload: macroPath is not an Array' }
+			}
+			await this._kairos.macroPlay(refMacro(params.macroPath))
+			return {
+				result: ActionExecutionResultCode.Ok,
+			}
 		},
 	}
 

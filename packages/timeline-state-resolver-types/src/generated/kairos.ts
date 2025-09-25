@@ -39,11 +39,15 @@ export interface MappingKairosMacro {
 
 export interface MappingKairosClipPlayer {
 	playerId: number
+	framerate?: number
+	clearPlayerOnStop?: boolean
 	mappingType: MappingKairosType.ClipPlayer
 }
 
 export interface MappingKairosRamRecPlayer {
 	playerId: number
+	framerate?: number
+	clearPlayerOnStop?: boolean
 	mappingType: MappingKairosType.RamRecPlayer
 }
 
@@ -54,6 +58,8 @@ export interface MappingKairosStillPlayer {
 
 export interface MappingKairosSoundPlayer {
 	playerId: number
+	framerate?: number
+	clearPlayerOnStop?: boolean
 	mappingType: MappingKairosType.SoundPlayer
 }
 
@@ -70,16 +76,10 @@ export enum MappingKairosType {
 
 export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux | MappingKairosMacro | MappingKairosClipPlayer | MappingKairosRamRecPlayer | MappingKairosStillPlayer | MappingKairosSoundPlayer
 
-export interface ListClipsPayload {
-	subDirectory?: string[]
-}
-
 export type ListClipsResult = {
-	name: string[]
-	size: number
-	datetime?: number
-	frames: number
-	framerate: number
+	name: string
+	status: number
+	loadProgress: number
 }[]
 
 export interface ListStillsPayload {
@@ -87,13 +87,13 @@ export interface ListStillsPayload {
 }
 
 export type ListStillsResult = {
-	name: string[]
-	size: number
-	datetime?: number
+	name: string
+	status: number
+	loadProgress: number
 }[]
 
 export interface PlayMacroPayload {
-	ref?: string[]
+	macroPath: string[]
 }
 
 export enum KairosActions {
@@ -102,7 +102,7 @@ export enum KairosActions {
 	PlayMacro = 'playMacro'
 }
 export interface KairosActionMethods {
-	[KairosActions.ListClips]: (payload: ListClipsPayload) => Promise<ActionExecutionResult<ListClipsResult>>,
+	[KairosActions.ListClips]: (payload: Record<string, never>) => Promise<ActionExecutionResult<ListClipsResult>>,
 	[KairosActions.ListStills]: (payload: ListStillsPayload) => Promise<ActionExecutionResult<ListStillsResult>>,
 	[KairosActions.PlayMacro]: (payload: PlayMacroPayload) => Promise<ActionExecutionResult<void>>
 }
