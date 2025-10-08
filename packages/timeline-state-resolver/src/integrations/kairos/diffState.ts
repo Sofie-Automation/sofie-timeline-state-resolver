@@ -4,7 +4,9 @@ import { KairosStateBuilder, type KairosDeviceState } from './stateBuilder'
 import type { KairosCommandWithContext } from '.'
 // eslint-disable-next-line node/no-missing-import
 import { UpdateSceneLayerObject, UpdateSceneObject, UpdateAuxObject } from 'kairos-connection'
-import { isEqual } from 'underscore'
+
+import { diffMediaPlayers } from './diffState/media-players'
+import { diffObject, getAllKeysString } from './diffState/lib'
 
 export function diffKairosStates(
 	oldKairosState: KairosDeviceState | undefined,
@@ -12,7 +14,16 @@ export function diffKairosStates(
 	mappings: Mappings<SomeMappingKairos>
 ): KairosCommandWithContext[] {
 	// Make sure there is something to diff against
-	oldKairosState = oldKairosState ?? KairosStateBuilder.fromTimeline({}, mappings)
+	oldKairosState =
+		oldKairosState ??
+		KairosStateBuilder.fromTimeline(
+			{
+				time: 0,
+				layers: {},
+				nextEvents: [],
+			},
+			mappings
+		)
 
 	const commands: KairosCommandWithContext[] = []
 
@@ -31,10 +42,26 @@ export function diffKairosStates(
 
 	commands.push(...diffMacros(oldKairosState.macros, newKairosState.macros))
 
-	// commands.push(...diffClipPlayers(oldKairosState.clipPlayers, newKairosState.clipPlayers))
-	// commands.push(...diffRamRecPlayers(oldKairosState.ramRecPlayers, newKairosState.ramRecPlayers))
+	commands.push(
+		...diffMediaPlayers(newKairosState.stateTime, 'clip-player', oldKairosState.clipPlayers, newKairosState.clipPlayers)
+	)
+	commands.push(
+		...diffMediaPlayers(
+			newKairosState.stateTime,
+			'ram-rec-player',
+			oldKairosState.ramRecPlayers,
+			newKairosState.ramRecPlayers
+		)
+	)
+	commands.push(
+		...diffMediaPlayers(
+			newKairosState.stateTime,
+			'sound-player',
+			oldKairosState.soundPlayers,
+			newKairosState.soundPlayers
+		)
+	)
 	// commands.push(...diffStillPlayers(oldKairosState.stillPlayers, newKairosState.stillPlayers))
-	// commands.push(...diffSoundPlayers(oldKairosState.soundPlayers, newKairosState.soundPlayers))
 
 	return commands
 }
@@ -206,36 +233,4 @@ function diffMacros(
 	}
 
 	return commands
-}
-
-function diffObject<T>(oldObj: Partial<T> | undefined, newObj: Partial<T> | undefined): Partial<T> | undefined {
-	if (!newObj) return undefined
-
-	const diff: Partial<T> = {}
-	let hasChange = false
-
-	for (const key in newObj) {
-		const typedKey = key as keyof T
-		if (newObj[typedKey] !== undefined && !isEqual(newObj[typedKey], oldObj?.[typedKey])) {
-			hasChange = true
-			diff[typedKey] = newObj[typedKey]
-		}
-	}
-
-	return hasChange ? diff : undefined
-}
-
-function keyIsValid(key: string, oldObj: any, newObj: any) {
-	const oldVal = oldObj[key]
-	const newVal = newObj[key]
-	return (oldVal !== undefined && oldVal !== null) || (newVal !== undefined && newVal !== null)
-}
-function getAllKeysString<V>(
-	oldObj0: { [key: string]: V } | undefined,
-	newObj0: { [key: string]: V } | undefined
-): string[] {
-	const oldObj = oldObj0 ?? {}
-	const newObj = newObj0 ?? {}
-	const rawKeys = Object.keys(oldObj).concat(Object.keys(newObj))
-	return rawKeys.filter((v, i) => keyIsValid(v, oldObj, newObj) && rawKeys.indexOf(v) === i)
 }

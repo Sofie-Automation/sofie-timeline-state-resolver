@@ -152,6 +152,10 @@ export function getActions(kairos: KairosConnection): KairosActionMethods {
 			}
 		},
 		[KairosActions.MacroPlay]: async (payload) => {
+			if (!payload.macroPath || !Array.isArray(payload.macroPath)) {
+				return { result: ActionExecutionResultCode.Error, message: 'Invalid payload: macroPath is not an Array' }
+			}
+
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.macroPlay(refMacro(payload.macroPath)),

@@ -7328,22 +7328,22 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"kairos-connection@npm:0.0.2-nightly-feat-kairos-lib-20250924-153458-fd923a2.0":
-  version: 0.0.2-nightly-feat-kairos-lib-20250924-153458-fd923a2.0
-  resolution: "kairos-connection@npm:0.0.2-nightly-feat-kairos-lib-20250924-153458-fd923a2.0"
+"kairos-connection@npm:0.0.1-nightly-main-20251008-111321-d929f8e":
+  version: 0.0.1-nightly-main-20251008-111321-d929f8e
+  resolution: "kairos-connection@npm:0.0.1-nightly-main-20251008-111321-d929f8e"
   dependencies:
-    kairos-lib: 0.0.2-nightly-feat-kairos-lib-20250924-153458-fd923a2.0
+    kairos-lib: 0.0.1-nightly-main-20251008-111321-d929f8e
     tslib: ^2.8.1
-  checksum: ef83af471e05a751f02f1fc6ef821548a00927ab59361309be91e1181c363eef2d90fdc836248a98acc31e53540d0bf6cdfa4349abfc7d4cc5f71196e028df24
+  checksum: 166f98e7c1db586cbeb3fc8093a96c719bb4fea8bf6babe6d4687351aa040b5cc3abfbda2ecb9f31e9c5a8db3791b2eea0a1a55cb8cc4563cf16b9f8c0170cce
   languageName: node
   linkType: hard
 
-"kairos-lib@npm:0.0.2-nightly-feat-kairos-lib-20250924-153458-fd923a2.0":
-  version: 0.0.2-nightly-feat-kairos-lib-20250924-153458-fd923a2.0
-  resolution: "kairos-lib@npm:0.0.2-nightly-feat-kairos-lib-20250924-153458-fd923a2.0"
+"kairos-lib@npm:0.0.1-nightly-main-20251008-111321-d929f8e":
+  version: 0.0.1-nightly-main-20251008-111321-d929f8e
+  resolution: "kairos-lib@npm:0.0.1-nightly-main-20251008-111321-d929f8e"
   dependencies:
     tslib: ^2.8.1
-  checksum: f42bb9e2a9802592d7297d8ce7ab2ca32783bd25e7f1a3a700d53708fa0870d3c0fca3eadf4853e01364b63f154a2035aa026905b8a19afcd7c6f422dc6979f1
+  checksum: 3e856a8d8d88ecbe7bd4f6235fd4ff04cec91fe40ab2d6370428ddc0ad56faaf9d975197751df6b9a62da026db5f64b0397668f6f6713bf94eb0459fe57caced
   languageName: node
   linkType: hard
 
@@ -11341,7 +11341,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "timeline-state-resolver-types@workspace:packages/timeline-state-resolver-types"
   dependencies:
-    kairos-lib: 0.0.2-nightly-feat-kairos-lib-20250924-153458-fd923a2.0
+    kairos-lib: 0.0.1-nightly-main-20251008-111321-d929f8e
     tslib: ^2.6.3
   languageName: unknown
   linkType: soft
@@ -11366,7 +11366,7 @@ asn1@evs-broadcast/node-asn1:
     hyperdeck-connection: 2.0.1
     jest-mock-extended: ^3.0.7
     json-schema-to-typescript: ^10.1.5
-    kairos-connection: 0.0.2-nightly-feat-kairos-lib-20250924-153458-fd923a2.0
+    kairos-connection: 0.0.1-nightly-main-20251008-111321-d929f8e
     klona: ^2.0.6
     obs-websocket-js: ^5.0.6
     osc: ^2.4.5

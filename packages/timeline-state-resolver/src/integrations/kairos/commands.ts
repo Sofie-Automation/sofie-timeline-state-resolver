@@ -9,6 +9,8 @@ import type {
 	MacroRef,
 	SceneSnapshotRef,
 	KairosConnection,
+	UpdateRamRecPlayerObject,
+	UpdateAudioPlayerObject,
 	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
 import { assertNever } from '../../lib'
@@ -20,6 +22,7 @@ export type KairosCommandAny =
 	| KairosAuxCommand
 	| KairosMacroCommand
 	| KairosClipPlayerCommand
+	| KairosClipPlayerCommandMethod
 	| KairosRamRecPlayerCommand
 	| KairosStillPlayerCommand
 	| KairosSoundPlayerCommand
@@ -72,13 +75,32 @@ export interface KairosClipPlayerCommand {
 
 	values: Partial<UpdateClipPlayerObject>
 }
+export interface KairosClipPlayerCommandMethod {
+	type: 'clip-player:do'
+	playerId: number
+	command:
+		| 'begin'
+		| 'rewind'
+		| 'stepBack'
+		| 'reverse'
+		| 'play'
+		| 'pause'
+		| 'stop'
+		| 'stepForward'
+		| 'fastForward'
+		| 'end'
+		| 'playlistBegin'
+		| 'playlistBack'
+		| 'playlistNext'
+		| 'playlistEnd'
+}
 
 export interface KairosRamRecPlayerCommand {
 	type: 'ram-rec-player'
 
 	playerId: number
 
-	values: Partial<UpdateClipPlayerObject>
+	values: Partial<UpdateRamRecPlayerObject>
 }
 
 export interface KairosStillPlayerCommand {
@@ -94,7 +116,7 @@ export interface KairosSoundPlayerCommand {
 
 	playerId: number
 
-	values: Partial<UpdateClipPlayerObject>
+	values: Partial<UpdateAudioPlayerObject>
 }
 
 export async function sendCommand(kairos: KairosConnection, command: KairosCommandAny): Promise<void> {
@@ -123,9 +145,67 @@ export async function sendCommand(kairos: KairosConnection, command: KairosComma
 				await kairos.macroStop(command.macroRef)
 			}
 			break
-		case 'clip-player':
+		case 'clip-player': {
+			if (command.values.clip) {
+				await kairos.loadClipPlayerClip(command.playerId, command.values.clip, command.values.position)
+				delete command.values.clip
+				delete command.values.position
+			}
 			await kairos.updateClipPlayer(command.playerId, command.values)
 			break
+		}
+		case 'clip-player:do': {
+			switch (command.command) {
+				case 'begin':
+					await kairos.clipPlayerBegin(command.playerId)
+					break
+				case 'rewind':
+					await kairos.clipPlayerRewind(command.playerId)
+					break
+				case 'stepBack':
+					await kairos.clipPlayerStepBack(command.playerId)
+					break
+				case 'reverse':
+					await kairos.clipPlayerReverse(command.playerId)
+					break
+				case 'play':
+					await kairos.clipPlayerPlay(command.playerId)
+					break
+				case 'pause':
+					await kairos.clipPlayerPause(command.playerId)
+					break
+				case 'stop':
+					await kairos.clipPlayerStop(command.playerId)
+					break
+				case 'stepForward':
+					await kairos.clipPlayerStepForward(command.playerId)
+					break
+				case 'fastForward':
+					await kairos.clipPlayerFastForward(command.playerId)
+					break
+				case 'end':
+					await kairos.clipPlayerEnd(command.playerId)
+					break
+				case 'playlistBegin':
+					await kairos.clipPlayerPlaylistBegin(command.playerId)
+					break
+				case 'playlistBack':
+					await kairos.clipPlayerPlaylistBack(command.playerId)
+					break
+				case 'playlistNext':
+					await kairos.clipPlayerPlaylistNext(command.playerId)
+					break
+				case 'playlistEnd':
+					await kairos.clipPlayerPlaylistEnd(command.playerId)
+					break
+				default:
+					assertNever(command.command)
+					throw new Error(`Unknown Kairos command.command type: ${command.command}`)
+			}
+
+			break
+		}
+
 		case 'ram-rec-player':
 			await kairos.updateRamRecorder(command.playerId, command.values)
 			break

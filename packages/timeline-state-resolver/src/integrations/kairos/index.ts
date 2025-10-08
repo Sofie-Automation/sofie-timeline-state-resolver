@@ -8,9 +8,12 @@ import {
 	SomeMappingKairos,
 	KairosDeviceTypes,
 	KairosActionMethods,
+	KairosActions,
+	ListClipsResult,
+	ActionExecutionResultCode,
 } from 'timeline-state-resolver-types'
 // eslint-disable-next-line node/no-missing-import
-import { KairosConnection } from 'kairos-connection'
+import { KairosConnection, refMacro } from 'kairos-connection'
 import type { Device, DeviceContextAPI, CommandWithContext } from 'timeline-state-resolver-api'
 import { KairosDeviceState, KairosStateBuilder } from './stateBuilder'
 import { diffKairosStates } from './diffState'
@@ -104,7 +107,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		timelineState: Timeline.TimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): KairosDeviceState {
-		const deviceState = KairosStateBuilder.fromTimeline(timelineState.layers, mappings)
+		const deviceState = KairosStateBuilder.fromTimeline(timelineState, mappings)
 
 		return deviceState
 	}

@@ -48,8 +48,10 @@ import {
 	refMacro,
 	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
+import { TimelineObjectInstance } from 'superfly-timeline'
 
 export interface KairosDeviceState {
+	stateTime: number
 	scenes: Record<string, { ref: SceneRef; state: Partial<UpdateSceneObject>; timelineObjIds: string[] } | undefined>
 	sceneSnapshots: Record<
 		string,
@@ -71,11 +73,29 @@ export interface KairosDeviceState {
 	>
 	clipPlayers: Record<
 		number,
-		{ ref: number; state: TimelineContentKairosPlayerState<MediaClipRef>; timelineObjIds: string[] } | undefined
+		| {
+				ref: number
+				state: {
+					content: TimelineContentKairosPlayerState<MediaClipRef>
+					instance: TimelineObjectInstance
+					mappingOptions: MappingOptions
+				}
+				timelineObjIds: string[]
+		  }
+		| undefined
 	>
 	ramRecPlayers: Record<
 		number,
-		{ ref: number; state: TimelineContentKairosPlayerState<MediaRamRecRef>; timelineObjIds: string[] } | undefined
+		| {
+				ref: number
+				state: {
+					content: TimelineContentKairosPlayerState<MediaRamRecRef>
+					instance: TimelineObjectInstance
+					mappingOptions: MappingOptions
+				}
+				timelineObjIds: string[]
+		  }
+		| undefined
 	>
 	stillPlayers: Record<
 		number,
@@ -83,13 +103,23 @@ export interface KairosDeviceState {
 	>
 	soundPlayers: Record<
 		number,
-		{ ref: number; state: TimelineContentKairosPlayerState<MediaSoundRef>; timelineObjIds: string[] } | undefined
+		| {
+				ref: number
+				state: {
+					content: TimelineContentKairosPlayerState<MediaSoundRef>
+					instance: TimelineObjectInstance
+					mappingOptions: MappingOptions
+				}
+				timelineObjIds: string[]
+		  }
+		| undefined
 	>
 }
 
 export class KairosStateBuilder {
 	// Start out with default state:
 	readonly #deviceState: KairosDeviceState = {
+		stateTime: 0,
 		scenes: {},
 		sceneSnapshots: {},
 		sceneLayers: {},
@@ -102,13 +132,15 @@ export class KairosStateBuilder {
 	}
 
 	public static fromTimeline(
-		timelineState: Timeline.StateInTime<TSRTimelineContent>,
+		timelineState: Timeline.TimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): KairosDeviceState {
 		const builder = new KairosStateBuilder()
 
 		// Sort layer based on Layer name
-		const sortedLayers = Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(timelineState)
+		const sortedLayers = Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
+			timelineState.layers
+		)
 			.map(([layerName, tlObject]) => ({ layerName, tlObject }))
 			.sort((a, b) => a.layerName.localeCompare(b.layerName))
 
@@ -142,12 +174,12 @@ export class KairosStateBuilder {
 						break
 					case MappingKairosType.ClipPlayer:
 						if (content.type === TimelineContentTypeKairos.CLIP_PLAYER) {
-							builder._applyClipPlayer(mapping.options, content, tlObject.id)
+							builder._applyClipPlayer(mapping.options, content, tlObject)
 						}
 						break
 					case MappingKairosType.RamRecPlayer:
 						if (content.type === TimelineContentTypeKairos.RAMREC_PLAYER) {
-							builder._applyRamRecPlayer(mapping.options, content, tlObject.id)
+							builder._applyRamRecPlayer(mapping.options, content, tlObject)
 						}
 						break
 					case MappingKairosType.StillPlayer:
@@ -157,7 +189,7 @@ export class KairosStateBuilder {
 						break
 					case MappingKairosType.SoundPlayer:
 						if (content.type === TimelineContentTypeKairos.SOUND_PLAYER) {
-							builder._applySoundPlayer(mapping.options, content, tlObject.id)
+							builder._applySoundPlayer(mapping.options, content, tlObject)
 						}
 						break
 					default:
@@ -166,6 +198,7 @@ export class KairosStateBuilder {
 				}
 			}
 		}
+		builder.#deviceState.stateTime = timelineState.time
 
 		return builder.#deviceState
 	}
@@ -276,7 +309,7 @@ export class KairosStateBuilder {
 	private _applyClipPlayer(
 		mapping: MappingKairosClipPlayer,
 		content: TimelineContentKairosClipPlayer,
-		timelineObjId: string
+		timelineObj: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
@@ -285,15 +318,22 @@ export class KairosStateBuilder {
 		this.#deviceState.clipPlayers[playerId] = this._mergeState(
 			this.#deviceState.clipPlayers[playerId],
 			playerId,
-			content.clipPlayer,
-			timelineObjId
+			{
+				content: content.clipPlayer,
+				instance: timelineObj.instance,
+				mappingOptions: {
+					framerate: mapping.framerate,
+					clearPlayerOnStop: mapping.clearPlayerOnStop,
+				},
+			},
+			timelineObj.id
 		)
 	}
 
 	private _applyRamRecPlayer(
 		mapping: MappingKairosRamRecPlayer,
 		content: TimelineContentKairosRamRecPlayer,
-		timelineObjId: string
+		timelineObj: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
@@ -302,8 +342,15 @@ export class KairosStateBuilder {
 		this.#deviceState.ramRecPlayers[playerId] = this._mergeState(
 			this.#deviceState.ramRecPlayers[playerId],
 			playerId,
-			content.ramRecPlayer,
-			timelineObjId
+			{
+				content: content.ramRecPlayer,
+				instance: timelineObj.instance,
+				mappingOptions: {
+					framerate: mapping.framerate,
+					clearPlayerOnStop: mapping.clearPlayerOnStop,
+				},
+			},
+			timelineObj.id
 		)
 	}
 
@@ -327,7 +374,7 @@ export class KairosStateBuilder {
 	private _applySoundPlayer(
 		mapping: MappingKairosSoundPlayer,
 		content: TimelineContentKairosSoundPlayer,
-		timelineObjId: string
+		timelineObj: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
@@ -336,8 +383,19 @@ export class KairosStateBuilder {
 		this.#deviceState.soundPlayers[playerId] = this._mergeState(
 			this.#deviceState.soundPlayers[playerId],
 			playerId,
-			content.soundPlayer,
-			timelineObjId
+			{
+				content: content.soundPlayer,
+				instance: timelineObj.instance,
+				mappingOptions: {
+					framerate: mapping.framerate,
+					clearPlayerOnStop: mapping.clearPlayerOnStop,
+				},
+			},
+			timelineObj.id
 		)
 	}
+}
+export type MappingOptions = {
+	framerate?: number
+	clearPlayerOnStop?: boolean
 }

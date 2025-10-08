@@ -39,11 +39,15 @@ export interface MappingKairosMacro {
 
 export interface MappingKairosClipPlayer {
 	playerId: number
+	framerate?: number
+	clearPlayerOnStop?: boolean
 	mappingType: MappingKairosType.ClipPlayer
 }
 
 export interface MappingKairosRamRecPlayer {
 	playerId: number
+	framerate?: number
+	clearPlayerOnStop?: boolean
 	mappingType: MappingKairosType.RamRecPlayer
 }
 
@@ -54,6 +58,8 @@ export interface MappingKairosStillPlayer {
 
 export interface MappingKairosSoundPlayer {
 	playerId: number
+	framerate?: number
+	clearPlayerOnStop?: boolean
 	mappingType: MappingKairosType.SoundPlayer
 }
 
