@@ -1,5 +1,5 @@
 import { startTrace, endTrace, cloneDeep } from '../lib'
-import type { FinishedTrace, BaseDeviceAPI, CommandWithContext } from 'timeline-state-resolver-api'
+import type { FinishedTrace, BaseDeviceAPI, CommandWithContext, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { Mappings, Timeline, TSRTimelineContent } from 'timeline-state-resolver-types'
 import { Measurement, StateChangeReport } from './measure'
 import { CommandExecutor } from './commandExecutor'
@@ -9,7 +9,7 @@ interface StateChange<DeviceState, Command extends CommandWithContext<any, any>,
 	commands?: Command[]
 	preliminary?: number
 
-	state: Timeline.TimelineState<TSRTimelineContent>
+	state: DeviceTimelineState<TSRTimelineContent>
 	deviceState: DeviceState
 	addressStates?: Record<string, AddressState>
 	mappings: Mappings
@@ -88,8 +88,14 @@ export class StateHandler<
 
 		const nextState = this.stateQueue[0]
 
+		const timelineState: DeviceTimelineState = {
+			time: state.time,
+			objects: Object.values<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(state.layers),
+		}
+		timelineState.objects.sort((a, b) => String(a.layer).localeCompare(String(b.layer))) // ensure the objects are sorted in layer order
+
 		const trace = startTrace('device:convertTimelineStateToDeviceState', { deviceId: this.context.deviceId })
-		const deviceState = this.device.convertTimelineStateToDeviceState(state, mappings)
+		const deviceState = this.device.convertTimelineStateToDeviceState(timelineState, mappings)
 		this.context.emitTimeTrace(endTrace(trace))
 
 		// Discard any states that comes after this one,
@@ -99,7 +105,7 @@ export class StateHandler<
 			{
 				deviceState: 'deviceState' in deviceState ? deviceState.deviceState : deviceState,
 				addressStates: 'addressStates' in deviceState ? deviceState.addressStates : undefined,
-				state,
+				state: timelineState,
 				mappings,
 
 				measurement: new Measurement(state.time),
@@ -122,7 +128,7 @@ export class StateHandler<
 		this.currentState = {
 			commands: [],
 			deviceState: state,
-			state: this.currentState?.state ?? { time: this.context.getCurrentTime(), layers: {}, nextEvents: [] },
+			state: this.currentState?.state ?? { time: this.context.getCurrentTime(), objects: [] },
 			mappings: this.currentState?.mappings ?? {},
 		}
 		await this.calculateNextStateChange()
@@ -138,8 +144,7 @@ export class StateHandler<
 		// update the current state to the state we received
 		const timelineState = this.currentState?.state || {
 			time: this.context.getCurrentTime(),
-			layers: {},
-			nextEvents: [],
+			objects: [],
 		}
 		const currentMappings = this.currentState?.mappings || {}
 

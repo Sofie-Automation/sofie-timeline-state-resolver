@@ -1,3 +1,4 @@
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 import {
 	DeviceType,
 	Mapping,
@@ -7,32 +8,27 @@ import {
 	ResolvedTimelineObjectInstanceExtended,
 	SomeMappingObs,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentTypeOBS,
 } from 'timeline-state-resolver-types'
 import { JsonObject } from 'type-fest'
 import _ = require('underscore')
 
-export function convertStateToOBS(
-	state: Timeline.TimelineState<TSRTimelineContent>,
-	mappings: Mappings
-): OBSDeviceState {
+export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings): OBSDeviceState {
 	const deviceState = getDefaultState(state.time)
 
 	// Sort layer based on Mapping type (to make sure audio is after inputs) and Layer name
 	const sortedLayers = _.sortBy(
-		_.map(state.layers, (tlObject, layerName) => {
+		state.objects.map((tlObject) => {
 			const tlObjectExt = tlObject as ResolvedTimelineObjectInstanceExtended
-			let mapping = mappings[layerName] as Mapping<SomeMappingObs> | undefined
+			let mapping = mappings[tlObject.layer] as Mapping<SomeMappingObs> | undefined
 			if (!mapping && tlObjectExt.isLookahead && tlObjectExt.lookaheadForLayer) {
 				mapping = mappings[tlObjectExt.lookaheadForLayer] as Mapping<SomeMappingObs> | undefined
 			}
 			return {
-				layerName,
 				tlObject,
 				mapping,
 			}
-		}).sort((a, b) => a.layerName.localeCompare(b.layerName)),
+		}),
 		(o) => o.mapping?.options?.mappingType
 	)
 

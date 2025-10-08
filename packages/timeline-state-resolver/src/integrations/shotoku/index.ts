@@ -2,7 +2,6 @@ import {
 	DeviceStatus,
 	DeviceType,
 	StatusCode,
-	Timeline,
 	TimelineContentShotokuSequence,
 	ShotokuCommandContent,
 	TSRTimelineContent,
@@ -11,9 +10,7 @@ import {
 	ShotokuOptions,
 	ShotokuDeviceTypes,
 } from 'timeline-state-resolver-types'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
-
-import _ = require('underscore')
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { ShotokuAPI, ShotokuCommand, ShotokuCommandType } from './connection'
 
 export interface ShotokuDeviceState {
@@ -65,33 +62,33 @@ export class ShotokuDevice implements Device<ShotokuDeviceTypes, ShotokuDeviceSt
 		await this._shotoku.dispose()
 	}
 
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>): ShotokuDeviceState {
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): ShotokuDeviceState {
 		const deviceState: ShotokuDeviceState = {
 			shots: {},
 			sequences: {},
 		}
 
-		_.each(state.layers, (layer) => {
-			const content = layer.content
+		for (const tlObject of state.objects) {
+			const content = tlObject.content
 
 			if (content.deviceType === DeviceType.SHOTOKU) {
 				if (content.type === TimelineContentTypeShotoku.SHOT) {
 					const show = content.show || 1
 
-					if (!content.shot) return
+					if (!content.shot) continue
 
 					deviceState.shots[show + '.' + content.shot] = {
 						...content,
-						fromTlObject: layer.id,
+						fromTlObject: tlObject.id,
 					}
 				} else {
 					deviceState.sequences[content.sequenceId] = {
 						shots: content.shots.filter((s) => !!s.shot),
-						fromTlObject: layer.id,
+						fromTlObject: tlObject.id,
 					}
 				}
 			}
-		})
+		}
 
 		return deviceState
 	}

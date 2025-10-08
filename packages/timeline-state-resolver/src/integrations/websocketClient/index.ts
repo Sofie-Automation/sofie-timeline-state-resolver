@@ -1,4 +1,4 @@
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResultCode,
 	DeviceStatus,
@@ -22,7 +22,7 @@ export type WebSocketCommand = CommandWithContext<
 	},
 	string
 >
-export type WebSocketClientDeviceState = Timeline.TimelineState<TSRTimelineContent>
+export type WebSocketClientDeviceState = Record<string, Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>
 
 export class WebSocketClientDevice
 	implements Device<WebsocketClientDeviceTypes, WebSocketClientDeviceState, WebSocketCommand>
@@ -71,7 +71,7 @@ export class WebSocketClientDevice
 		return this.connection?.connectionStatus() ?? { statusCode: StatusCode.BAD, messages: ['No Connection'] }
 	}
 
-	public convertTimelineStateToDeviceState(state: WebSocketClientDeviceState): WebSocketClientDeviceState {
+	public convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): WebSocketClientDeviceState {
 		// When a new Timeline State is about to be executed
 		// This is called to convert the generic Timeline State into a custom "device state".
 		// For example:
@@ -80,7 +80,10 @@ export class WebSocketClientDevice
 		//
 		// This is optional and for convenience only (like to simplify the diffing logic in diffStates())
 
-		return state
+		return state.objects.reduce((acc, obj) => {
+			if (obj.layer) acc[obj.layer] = obj
+			return acc
+		}, {} as WebSocketClientDeviceState)
 	}
 
 	// ** Calculate Diffs of state and create the commands
@@ -95,7 +98,7 @@ export class WebSocketClientDevice
 		const commands: WebSocketCommand[] = []
 		for (const [layerName, timelineObject] of Object.entries<
 			Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
-		>(newState.layers)) {
+		>(newState)) {
 			if (timelineObject.content.deviceType !== DeviceType.WEBSOCKET_CLIENT) continue
 
 			// We should send the command whenever the timeline object content has been ADDED or CHANGED

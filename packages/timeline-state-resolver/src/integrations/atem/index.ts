@@ -2,8 +2,6 @@ import * as _ from 'underscore'
 import {
 	AtemOptions,
 	Mappings,
-	Timeline,
-	TSRTimelineContent,
 	ActionExecutionResult,
 	ActionExecutionResultCode,
 	SomeMappingAtem,
@@ -21,7 +19,13 @@ import {
 	AtemStateUtil,
 	Enums as ConnectionEnums,
 } from 'atem-connection'
-import type { Device, DeviceStatus, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	DeviceStatus,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+} from 'timeline-state-resolver-api'
 import { AtemStateBuilder } from './stateBuilder'
 import { createDiffOptions } from './diffState'
 import {
@@ -134,10 +138,10 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 	 * @param timelineState The state to be converted
 	 */
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState,
 		mappings: Mappings
 	): { deviceState: AtemDeviceState; addressStates: Record<string, AnyAddressState> } {
-		const deviceState = AtemStateBuilder.fromTimeline(timelineState.layers, mappings) as AtemDeviceState
+		const deviceState = AtemStateBuilder.fromTimeline(timelineState.objects, mappings) as AtemDeviceState
 		const addressStates = atemStateToAddressStates(deviceState)
 
 		return { deviceState, addressStates }

@@ -16,7 +16,6 @@ import {
 	TriCasterMatrixOutputName,
 	Mapping,
 } from 'timeline-state-resolver-types'
-import * as _ from 'underscore'
 import { isStateEntry, MappingsTriCaster, TriCasterState, WithContext } from './triCasterStateDiffer'
 import {
 	isTimelineObjTriCaster,
@@ -27,6 +26,7 @@ import {
 	isTimelineObjTriCasterME,
 	isTimelineObjTriCasterMixOutput,
 } from './types'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 type DeepPartial<T> = { [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P] }
 
@@ -55,14 +55,13 @@ export class TriCasterTimelineStateConverter {
 	}
 
 	getTriCasterStateFromTimelineState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		newMappings: MappingsTriCaster
 	): WithContext<TriCasterState> {
 		const resultState = this.getDefaultState(newMappings)
-		const sortedLayers = this.sortLayers(timelineState)
 
-		for (const { tlObject, layerName } of sortedLayers) {
-			const mapping: Mapping<SomeMappingTricaster> | undefined = newMappings[layerName]
+		for (const tlObject of timelineState.objects) {
+			const mapping: Mapping<SomeMappingTricaster> | undefined = newMappings[tlObject.layer]
 			if (!mapping) {
 				continue
 			}
@@ -89,13 +88,6 @@ export class TriCasterTimelineStateConverter {
 		}
 
 		return resultState
-	}
-
-	private sortLayers(state: Timeline.TimelineState<TSRTimelineContent>) {
-		return _.map(state.layers, (tlObject, layerName) => ({
-			layerName,
-			tlObject: tlObject,
-		})).sort((a, b) => a.layerName.localeCompare(b.layerName))
 	}
 
 	private applyMixEffectState(

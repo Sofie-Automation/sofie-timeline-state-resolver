@@ -1,11 +1,10 @@
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
 	DeviceStatus,
 	StatusCode,
 	TSRTimelineContent,
-	Timeline,
 	ViscaOverIPActionMethods,
 	ViscaOverIPActions,
 	ViscaOverIPDeviceTypes,
@@ -26,7 +25,7 @@ import {
 } from './connection/commands/inquiry'
 import { ViscaValueConverter } from './connection/lib/ViscaValueConverter'
 
-export type ViscaDeviceState = Timeline.TimelineState<TSRTimelineContent>
+export type ViscaDeviceState = DeviceTimelineState<TSRTimelineContent>
 
 export type ViscaDeviceCommand = CommandWithContext<{}, string>
 
@@ -158,7 +157,7 @@ export class ViscaOverIpDevice implements Device<ViscaOverIPDeviceTypes, ViscaDe
 		}
 	}
 
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>): ViscaDeviceState {
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): ViscaDeviceState {
 		return state
 	}
 

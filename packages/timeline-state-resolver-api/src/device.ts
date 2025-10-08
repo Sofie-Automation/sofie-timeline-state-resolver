@@ -33,6 +33,13 @@ export type CommandWithContext<TCommand, TContext> = {
 	queueId?: string
 }
 
+export interface DeviceTimelineState<TContent extends TSRTimelineContent = TSRTimelineContent> {
+	/** The timestamp for this state */
+	time: Timeline.Time
+	/** All objects that are active on each respective layer */
+	objects: Timeline.ResolvedTimelineObjectInstance<TContent>[]
+}
+
 /**
  * API for use by the DeviceInstance to be able to use a device
  */
@@ -61,7 +68,7 @@ export interface Device<
 
 	// From BaseDeviceAPI: -----------------------------------------------
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState,
 		newMappings: Record<string, Mapping<DeviceTypes['Mappings']>>
 	): DeviceState | { deviceState: DeviceState; addressStates: Record<string, AddressState> }
 	diffStates(
@@ -97,7 +104,7 @@ export interface BaseDeviceAPI<DeviceState, AddressState, Command extends Comman
 	 * @returns Device state (that is fed into `diffStates()` )
 	 */
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState,
 		newMappings: Mappings
 	): DeviceState | { deviceState: DeviceState; addressStates: Record<string, AddressState> }
 
