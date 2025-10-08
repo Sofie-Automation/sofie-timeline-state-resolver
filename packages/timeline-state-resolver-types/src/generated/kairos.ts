@@ -70,41 +70,268 @@ export enum MappingKairosType {
 
 export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux | MappingKairosMacro | MappingKairosClipPlayer | MappingKairosRamRecPlayer | MappingKairosStillPlayer | MappingKairosSoundPlayer
 
-export interface ListClipsPayload {
-	subDirectory?: string[]
+export interface ListScenesPayload {
+	scenePath: string[]
+	deep?: boolean
 }
 
-export type ListClipsResult = {
-	name: string[]
-	size: number
-	datetime?: number
-	frames: number
-	framerate: number
-}[]
+export type ListScenesResult = ({
+	name: string
+} & SceneRef)[]
 
-export interface ListStillsPayload {
-	subDirectory?: string[]
+export interface SceneRef {
+	realm: 'scene'
+	scenePath: string[]
 }
 
-export type ListStillsResult = {
-	name: string[]
-	size: number
-	datetime?: number
-}[]
+export interface ListSceneLayersPayload {
+	scenePath: string[]
+	layerPath: string[]
+	deep?: boolean
+}
 
-export interface PlayMacroPayload {
-	ref?: string[]
+export type ListSceneLayersResult = ({
+	name: string
+} & SceneLayerRef)[]
+
+export interface SceneLayerRef {
+	realm: 'scene-layer'
+	scenePath: string[]
+	layerPath: string[]
+}
+
+export interface ListSceneLayerEffectsPayload {
+	scenePath: string[]
+	layerPath: string[]
+	deep?: boolean
+}
+
+export type ListSceneLayerEffectsResult = ({
+	name: string
+} & SceneLayerEffectRef)[]
+
+export interface SceneLayerEffectRef {
+	realm: 'scene-layer-effect'
+	scenePath: string[]
+	layerPath: string[]
+	effectPath: string[]
+}
+
+export interface ListSceneTransitionsPayload {
+	scenePath: string[]
+}
+
+export type ListSceneTransitionsResult = SceneTransitionRef[]
+
+export interface SceneTransitionRef {
+	realm: 'scene-transition'
+	scenePath: string[]
+	transitionPath: unknown[]
+}
+
+export interface ListSceneSnapshotsPayload {
+	scenePath: string[]
+}
+
+export type ListSceneSnapshotsResult = ({
+	name: string
+} & SceneSnapshotRef)[]
+
+export interface SceneSnapshotRef {
+	realm: 'scene-snapshot'
+	scenePath: string[]
+	snapshotPath: string[]
+}
+
+export interface ListFxInputsPayload {}
+
+export type ListFxInputsResult = ({
+	name: string
+} & FxInputRef)[]
+
+export interface FxInputRef {
+	realm: 'fxInput'
+	fxInputPath: string[]
+}
+
+export interface ListMattesPayload {}
+
+export type ListMattesResult = ({
+	name: string
+} & MatteRef)[]
+
+export interface MatteRef {
+	realm: 'matte'
+	mattePath: string[]
+}
+
+export interface ListMediaClipsPayload {}
+
+export type ListMediaClipsResult = string[]
+
+export interface ListMediaStillsPayload {}
+
+export type ListMediaStillsResult = string[]
+
+export interface ListMediaRamRecPayload {}
+
+export type ListMediaRamRecResult = string[]
+
+export interface ListMediaImagePayload {}
+
+export type ListMediaImageResult = string[]
+
+export interface ListMediaSoundsPayload {}
+
+export type ListMediaSoundsResult = string[]
+
+export interface ListMacrosPayload {
+	macroPath?: string[]
+	deep?: boolean
+}
+
+export type ListMacrosResult = ({
+	name: string
+} & MacroRef)[]
+
+export interface MacroRef {
+	realm: 'macro'
+	macroPath: string[]
+}
+
+export interface ListAuxesPayload {}
+
+export type ListAuxesResult = AuxRef[]
+
+export interface AuxRef {
+	realm: 'aux'
+	path: string
+	/**
+	 * true if the path is a name, false if it is an id
+	 */
+	pathIsName: boolean
+}
+
+export interface ListAuxEffectsPayload {
+	path: string
+	/**
+	 * true if the path is a name, false if it is an id
+	 */
+	pathIsName: boolean
+	deep?: boolean
+}
+
+export type ListAuxEffectsResult = ({
+	name: string
+} & AuxEffectRef)[]
+
+export interface AuxEffectRef {
+	realm: 'aux-effect'
+	auxPath: string
+	/**
+	 * true if the path is a name, false if it is an id
+	 */
+	auxPathIsName: boolean
+	effectPath: string[]
+}
+
+export interface ListGfxScenesPayload {
+	scenePath?: string[]
+	deep?: boolean
+}
+
+export type ListGfxScenesResult = ({
+	name: string
+} & GfxSceneRef)[]
+
+export interface GfxSceneRef {
+	realm: 'gfxScene'
+	scenePath: string[]
+}
+
+export interface ListGfxSceneItemsPayload {
+	scenePath: string[]
+}
+
+export type ListGfxSceneItemsResult = ({
+	name: string
+} & GfxSceneItemRef)[]
+
+export interface GfxSceneItemRef {
+	realm: 'gfxScene-item'
+	scenePath: string[]
+	sceneItemPath: string[]
+}
+
+export interface ListAudioMixerChannelsPayload {}
+
+export type ListAudioMixerChannelsResult = ({
+	name: string
+} & AudioMixerChannelRef)[]
+
+export interface AudioMixerChannelRef {
+	realm: 'audioMixer-channel'
+	channelPath: string[]
+}
+
+export interface MacroPlayPayload {
+	macroPath: string[]
+}
+
+export interface MacroStopPayload {
+	macroPath: string[]
+}
+
+export interface SceneSnapshotRecallPayload {
+	scenePath: string[]
+	snapshotPath: string[]
 }
 
 export enum KairosActions {
-	ListClips = 'listClips',
-	ListStills = 'listStills',
-	PlayMacro = 'playMacro'
+	ListScenes = 'listScenes',
+	ListSceneLayers = 'listSceneLayers',
+	ListSceneLayerEffects = 'listSceneLayerEffects',
+	ListSceneTransitions = 'listSceneTransitions',
+	ListSceneSnapshots = 'listSceneSnapshots',
+	ListFxInputs = 'listFxInputs',
+	ListMattes = 'listMattes',
+	ListMediaClips = 'listMediaClips',
+	ListMediaStills = 'listMediaStills',
+	ListMediaRamRec = 'listMediaRamRec',
+	ListMediaImage = 'listMediaImage',
+	ListMediaSounds = 'listMediaSounds',
+	ListMacros = 'listMacros',
+	ListAuxes = 'listAuxes',
+	ListAuxEffects = 'listAuxEffects',
+	ListGfxScenes = 'listGfxScenes',
+	ListGfxSceneItems = 'listGfxSceneItems',
+	ListAudioMixerChannels = 'listAudioMixerChannels',
+	MacroPlay = 'macroPlay',
+	MacroStop = 'macroStop',
+	SceneSnapshotRecall = 'sceneSnapshotRecall'
 }
 export interface KairosActionMethods {
-	[KairosActions.ListClips]: (payload: ListClipsPayload) => Promise<ActionExecutionResult<ListClipsResult>>,
-	[KairosActions.ListStills]: (payload: ListStillsPayload) => Promise<ActionExecutionResult<ListStillsResult>>,
-	[KairosActions.PlayMacro]: (payload: PlayMacroPayload) => Promise<ActionExecutionResult<void>>
+	[KairosActions.ListScenes]: (payload: ListScenesPayload) => Promise<ActionExecutionResult<ListScenesResult>>,
+	[KairosActions.ListSceneLayers]: (payload: ListSceneLayersPayload) => Promise<ActionExecutionResult<ListSceneLayersResult>>,
+	[KairosActions.ListSceneLayerEffects]: (payload: ListSceneLayerEffectsPayload) => Promise<ActionExecutionResult<ListSceneLayerEffectsResult>>,
+	[KairosActions.ListSceneTransitions]: (payload: ListSceneTransitionsPayload) => Promise<ActionExecutionResult<ListSceneTransitionsResult>>,
+	[KairosActions.ListSceneSnapshots]: (payload: ListSceneSnapshotsPayload) => Promise<ActionExecutionResult<ListSceneSnapshotsResult>>,
+	[KairosActions.ListFxInputs]: (payload: ListFxInputsPayload) => Promise<ActionExecutionResult<ListFxInputsResult>>,
+	[KairosActions.ListMattes]: (payload: ListMattesPayload) => Promise<ActionExecutionResult<ListMattesResult>>,
+	[KairosActions.ListMediaClips]: (payload: ListMediaClipsPayload) => Promise<ActionExecutionResult<ListMediaClipsResult>>,
+	[KairosActions.ListMediaStills]: (payload: ListMediaStillsPayload) => Promise<ActionExecutionResult<ListMediaStillsResult>>,
+	[KairosActions.ListMediaRamRec]: (payload: ListMediaRamRecPayload) => Promise<ActionExecutionResult<ListMediaRamRecResult>>,
+	[KairosActions.ListMediaImage]: (payload: ListMediaImagePayload) => Promise<ActionExecutionResult<ListMediaImageResult>>,
+	[KairosActions.ListMediaSounds]: (payload: ListMediaSoundsPayload) => Promise<ActionExecutionResult<ListMediaSoundsResult>>,
+	[KairosActions.ListMacros]: (payload: ListMacrosPayload) => Promise<ActionExecutionResult<ListMacrosResult>>,
+	[KairosActions.ListAuxes]: (payload: ListAuxesPayload) => Promise<ActionExecutionResult<ListAuxesResult>>,
+	[KairosActions.ListAuxEffects]: (payload: ListAuxEffectsPayload) => Promise<ActionExecutionResult<ListAuxEffectsResult>>,
+	[KairosActions.ListGfxScenes]: (payload: ListGfxScenesPayload) => Promise<ActionExecutionResult<ListGfxScenesResult>>,
+	[KairosActions.ListGfxSceneItems]: (payload: ListGfxSceneItemsPayload) => Promise<ActionExecutionResult<ListGfxSceneItemsResult>>,
+	[KairosActions.ListAudioMixerChannels]: (payload: ListAudioMixerChannelsPayload) => Promise<ActionExecutionResult<ListAudioMixerChannelsResult>>,
+	[KairosActions.MacroPlay]: (payload: MacroPlayPayload) => Promise<ActionExecutionResult<void>>,
+	[KairosActions.MacroStop]: (payload: MacroStopPayload) => Promise<ActionExecutionResult<void>>,
+	[KairosActions.SceneSnapshotRecall]: (payload: SceneSnapshotRecallPayload) => Promise<ActionExecutionResult<void>>
 }
 
 export interface KairosDeviceTypes {

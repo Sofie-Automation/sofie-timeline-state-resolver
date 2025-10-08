@@ -8,7 +8,6 @@ import {
 	SomeMappingKairos,
 	KairosDeviceTypes,
 	KairosActionMethods,
-	KairosActions,
 } from 'timeline-state-resolver-types'
 // eslint-disable-next-line node/no-missing-import
 import { KairosConnection } from 'kairos-connection'
@@ -16,6 +15,7 @@ import type { Device, DeviceContextAPI, CommandWithContext } from 'timeline-stat
 import { KairosDeviceState, KairosStateBuilder } from './stateBuilder'
 import { diffKairosStates } from './diffState'
 import { sendCommand, type KairosCommandAny } from './commands'
+import { getActions } from './actions'
 
 export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, string>
 
@@ -23,22 +23,12 @@ export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, stri
  * This is a wrapper for the Kairos Device. Commands to any and all kairos devices will be sent through here.
  */
 export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState, KairosCommandWithContext> {
-	readonly actions: KairosActionMethods = {
-		[KairosActions.ListClips]: async () => {
-			throw new Error('Not implemented')
-		},
-		[KairosActions.ListStills]: async () => {
-			throw new Error('Not implemented')
-		},
-		[KairosActions.PlayMacro]: async () => {
-			throw new Error('Not implemented')
-		},
-	}
-
-	private readonly _kairos = new KairosConnection()
+	private readonly _kairos: KairosConnection
+	readonly actions: KairosActionMethods
 
 	constructor(protected context: DeviceContextAPI<KairosDeviceState>) {
-		// Nothing
+		this._kairos = new KairosConnection()
+		this.actions = getActions(this._kairos)
 	}
 
 	/**
