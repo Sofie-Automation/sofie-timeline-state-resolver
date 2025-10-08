@@ -1,6 +1,5 @@
 import {
 	AbstractOptions,
-	Timeline,
 	TSRTimelineContent,
 	AbstractActionMethods,
 	ActionExecutionResultCode,
@@ -9,11 +8,17 @@ import {
 	StatusCode,
 	DeviceStatus,
 } from 'timeline-state-resolver-types'
-import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 
 export type AbstractCommandWithContext = CommandWithContext<string, string>
 
-export type AbstractDeviceState = Record<string, Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>
+export type AbstractDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 /*
 	This is a wrapper for an "Abstract" device
@@ -78,7 +83,7 @@ export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDevic
 
 		const commands: Array<AbstractCommandWithContext> = []
 
-		for (const [layerKey, newLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<any>>(newAbstractState)) {
+		for (const [layerKey, newLayer] of Object.entries<DeviceTimelineStateObject<any>>(newAbstractState)) {
 			const oldLayer = oldAbstractState?.layers[layerKey]
 			if (!oldLayer) {
 				// added!
@@ -101,9 +106,7 @@ export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDevic
 		}
 
 		// removed
-		for (const [layerKey, oldLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<any>>(
-			oldAbstractState || {}
-		)) {
+		for (const [layerKey, oldLayer] of Object.entries<DeviceTimelineStateObject<any>>(oldAbstractState || {})) {
 			const newLayer = newAbstractState.layers[layerKey]
 			if (!newLayer) {
 				// removed!

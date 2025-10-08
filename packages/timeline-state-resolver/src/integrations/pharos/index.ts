@@ -2,17 +2,22 @@ import {
 	PharosOptions,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	DeviceStatus,
 	StatusCode,
 	PharosDeviceTypes,
 } from 'timeline-state-resolver-types'
 import { Pharos } from './connection'
-import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates'
 
 export type PharosCommandWithContext = CommandWithContext<CommandContent, string>
-export type PharosState = Record<string, Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>
+export type PharosState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 interface CommandContent {
 	fcn: (pharos: Pharos) => Promise<unknown>

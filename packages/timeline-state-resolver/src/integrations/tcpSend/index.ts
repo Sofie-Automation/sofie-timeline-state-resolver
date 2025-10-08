@@ -1,11 +1,16 @@
-import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
 	DeviceStatus,
 	StatusCode,
 	TSRTimelineContent,
-	Timeline,
 	TcpSendCommandContent,
 	TcpSendOptions,
 	TcpSendActionMethods,
@@ -16,7 +21,7 @@ import { t } from '../../lib'
 import _ = require('underscore')
 import { TcpConnection } from './tcpConnection'
 
-export type TcpSendDeviceState = Record<string, Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>
+export type TcpSendDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 export type TcpSendDeviceCommand = CommandWithContext<
 	{
@@ -90,9 +95,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 	diffStates(oldState: TcpSendDeviceState | undefined, newState: TcpSendDeviceState): Array<TcpSendDeviceCommand> {
 		const commands: Array<TcpSendDeviceCommand> = []
 
-		for (const [layerKey, newLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
-			newState
-		)) {
+		for (const [layerKey, newLayer] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(newState)) {
 			const oldLayer = oldState?.layers[layerKey]
 			// added/changed
 			if (newLayer.content) {
@@ -125,9 +128,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 			}
 		}
 		// removed
-		for (const [layerKey, oldLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
-			oldState ?? {}
-		)) {
+		for (const [layerKey, oldLayer] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(oldState ?? {})) {
 			const newLayer = newState.layers[layerKey]
 			if (!newLayer) {
 				// removed!

@@ -29,8 +29,8 @@ describe('Singular.Live', () => {
 		const deviceState = device.convertTimelineStateToDeviceState(
 			{
 				time: 1000,
-				layers: {
-					myLayer0: makeTimelineObjectResolved({
+				objects: [
+					makeTimelineObjectResolved({
 						id: 'obj0',
 						enable: {
 							start: 1000,
@@ -49,8 +49,7 @@ describe('Singular.Live', () => {
 							},
 						},
 					}),
-				},
-				nextEvents: [],
+				],
 			},
 			myLayerMapping
 		)
@@ -69,8 +68,7 @@ describe('Singular.Live', () => {
 		const deviceState2 = device.convertTimelineStateToDeviceState(
 			{
 				time: 2000,
-				layers: {},
-				nextEvents: [],
+				objects: [],
 			},
 			myLayerMapping
 		)

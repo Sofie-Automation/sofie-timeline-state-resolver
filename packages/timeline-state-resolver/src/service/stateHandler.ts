@@ -1,9 +1,21 @@
 import { startTrace, endTrace, cloneDeep } from '../lib'
-import type { FinishedTrace, BaseDeviceAPI, CommandWithContext, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { Mappings, Timeline, TSRTimelineContent } from 'timeline-state-resolver-types'
+import type {
+	FinishedTrace,
+	BaseDeviceAPI,
+	CommandWithContext,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
+import {
+	Mappings,
+	ResolvedTimelineObjectInstanceExtended,
+	Timeline,
+	TSRTimelineContent,
+} from 'timeline-state-resolver-types'
 import { Measurement, StateChangeReport } from './measure'
 import { CommandExecutor } from './commandExecutor'
 import { StateTracker } from './stateTracker'
+import { Complete } from 'atem-state/dist/util'
 
 interface StateChange<DeviceState, Command extends CommandWithContext<any, any>, AddressState> {
 	commands?: Command[]
@@ -90,7 +102,21 @@ export class StateHandler<
 
 		const timelineState: DeviceTimelineState = {
 			time: state.time,
-			objects: Object.values<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(state.layers),
+			objects: Object.values<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(state.layers).map((obj) => {
+				const objExt = obj as ResolvedTimelineObjectInstanceExtended<TSRTimelineContent>
+
+				return {
+					id: obj.id,
+					priority: obj.priority ?? 0,
+					layer: obj.layer,
+					content: obj.content,
+					instance: obj.instance,
+					datastoreRefs: obj.datastoreRefs,
+					lastModified: obj.lastModified,
+					isLookahead: objExt.isLookahead,
+					lookaheadForLayer: objExt.lookaheadForLayer,
+				} satisfies Complete<DeviceTimelineStateObject>
+			}),
 		}
 		timelineState.objects.sort((a, b) => String(a.layer).localeCompare(String(b.layer))) // ensure the objects are sorted in layer order
 

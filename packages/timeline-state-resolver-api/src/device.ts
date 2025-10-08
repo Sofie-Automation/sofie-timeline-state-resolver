@@ -7,6 +7,7 @@ import type {
 	DeviceStatus,
 	MediaObject,
 	Mapping,
+	TSRTimelineObjProps,
 } from 'timeline-state-resolver-types'
 
 /**
@@ -37,7 +38,33 @@ export interface DeviceTimelineState<TContent extends TSRTimelineContent = TSRTi
 	/** The timestamp for this state */
 	time: Timeline.Time
 	/** All objects that are active on each respective layer */
-	objects: Timeline.ResolvedTimelineObjectInstance<TContent>[]
+	objects: DeviceTimelineStateObject<TContent>[]
+}
+
+/**
+ * A simplified representation of the TimelineObjet that was matched for this device
+ */
+export interface DeviceTimelineStateObject<TContent extends TSRTimelineContent = TSRTimelineContent>
+	extends TSRTimelineObjProps {
+	/** ID of the object. Must be unique! */
+	id: string
+	/**
+	 * Priority. Affects which object "wins" when there are two colliding objects on the same layer.
+	 */
+	priority: number
+	/**
+	 * The layer where the object is played.
+	 * */
+	layer: string | number
+	/** The payload of the timeline-object. Can be anything you want. */
+	content: TContent
+
+	instance: Timeline.TimelineObjectInstance
+
+	/** All datastore values applied and the timestamp of when they were applied */
+	datastoreRefs?: Record<string, number>
+	/** Timestamp of the last datastore value applied to this object */
+	lastModified?: number
 }
 
 /**

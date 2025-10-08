@@ -7,7 +7,6 @@ import {
 	TimelineContentTypeAtem,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	AtemTransitionStyle,
 	TimelineContentAtemME,
 	MappingAtemMixEffect,
@@ -34,6 +33,7 @@ import _ = require('underscore')
 import { Defaults, State as DeviceState, Defaults as StateDefault } from 'atem-state'
 import { assertNever, cloneDeep, deepMerge, literal } from '../../lib'
 import { PartialDeep } from 'type-fest'
+import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 export type InternalAtemConnectionState = AtemState & { controlValues?: Record<string, string> }
 
@@ -42,7 +42,7 @@ export class AtemStateBuilder {
 	readonly #deviceState: InternalAtemConnectionState = AtemStateUtil.Create()
 
 	public static fromTimeline(
-		sortedLayers: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>[],
+		sortedLayers: DeviceTimelineStateObject<TSRTimelineContent>[],
 		mappings: Mappings
 	): DeviceState {
 		const builder = new AtemStateBuilder()
@@ -317,7 +317,7 @@ export class AtemStateBuilder {
 		}
 	}
 
-	private _setControlValue(addresses: string[], tlObject: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>) {
+	private _setControlValue(addresses: string[], tlObject: DeviceTimelineStateObject<TSRTimelineContent>) {
 		if (!this.#deviceState.controlValues) this.#deviceState.controlValues = {}
 
 		for (const a of addresses) {

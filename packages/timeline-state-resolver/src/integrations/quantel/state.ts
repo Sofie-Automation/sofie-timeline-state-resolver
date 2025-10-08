@@ -3,13 +3,12 @@ import {
 	MappingQuantelPort,
 	Mappings,
 	QuantelControlMode,
-	ResolvedTimelineObjectInstanceExtended,
 	SomeMappingQuantel,
 	TSRTimelineContent,
 	TimelineContentQuantelClip,
 } from 'timeline-state-resolver-types'
 import { MappedPorts, QuantelState, QuantelStatePort } from './types'
-import { DeviceTimelineState } from 'timeline-state-resolver-api'
+import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 export function getMappedPorts(mappings: Mappings<SomeMappingQuantel>): MappedPorts {
 	const ports: MappedPorts = {}
@@ -83,7 +82,7 @@ function createPortsFromMappings(state: QuantelState, mappedPorts: MappedPorts) 
 
 /** finds the correct mapping for a layer state and if the state is for a lookahead */
 function getMappingForLayer(
-	layerExt: ResolvedTimelineObjectInstanceExtended,
+	layerExt: DeviceTimelineStateObject,
 	mappings: Mappings<SomeMappingQuantel>
 ): {
 	foundMapping: Mapping<MappingQuantelPort> | undefined
@@ -105,7 +104,7 @@ function setPortStateFromLayer(
 	port: QuantelStatePort,
 	isLookahead: boolean,
 	content: TimelineContentQuantelClip,
-	layer: ResolvedTimelineObjectInstanceExtended
+	layer: DeviceTimelineStateObject
 ) {
 	// Note on lookaheads:
 	// If there is ONLY a lookahead on a port, it'll be treated as a "paused (real) clip"

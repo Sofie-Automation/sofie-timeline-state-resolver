@@ -11,7 +11,6 @@ import {
 	TriCasterMixEffectName,
 	TriCasterMixOutputName,
 	TriCasterInputName,
-	Timeline,
 	TSRTimelineContent,
 	TriCasterMatrixOutputName,
 	Mapping,
@@ -26,7 +25,7 @@ import {
 	isTimelineObjTriCasterME,
 	isTimelineObjTriCasterMixOutput,
 } from './types'
-import { DeviceTimelineState } from 'timeline-state-resolver-api'
+import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 type DeepPartial<T> = { [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P] }
 
@@ -92,7 +91,7 @@ export class TriCasterTimelineStateConverter {
 
 	private applyMixEffectState(
 		resultState: WithContext<TriCasterState>,
-		tlObject: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>,
+		tlObject: DeviceTimelineStateObject<TSRTimelineContent>,
 		mapping: MappingTricasterME
 	) {
 		const mixEffects = resultState.mixEffects
@@ -106,7 +105,7 @@ export class TriCasterTimelineStateConverter {
 
 	private applyDskState(
 		resultState: WithContext<TriCasterState>,
-		tlObject: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>,
+		tlObject: DeviceTimelineStateObject<TSRTimelineContent>,
 		mapping: MappingTricasterDSK
 	) {
 		const mainKeyers = resultState.mixEffects['main']
@@ -118,7 +117,7 @@ export class TriCasterTimelineStateConverter {
 
 	private applyInputState(
 		resultState: WithContext<TriCasterState>,
-		tlObject: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>,
+		tlObject: DeviceTimelineStateObject<TSRTimelineContent>,
 		mapping: MappingTricasterINPUT
 	) {
 		const inputs = resultState.inputs
@@ -129,7 +128,7 @@ export class TriCasterTimelineStateConverter {
 
 	private applyAudioChannelState(
 		resultState: WithContext<TriCasterState>,
-		tlObject: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>,
+		tlObject: DeviceTimelineStateObject<TSRTimelineContent>,
 		mapping: MappingTricasterAUDIOCHANNEL
 	) {
 		const audioChannels = resultState.audioChannels
@@ -143,7 +142,7 @@ export class TriCasterTimelineStateConverter {
 
 	private applyMixOutputState(
 		resultState: WithContext<TriCasterState>,
-		tlObject: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>,
+		tlObject: DeviceTimelineStateObject<TSRTimelineContent>,
 		mapping: MappingTricasterMIXOUTPUT
 	) {
 		if (
@@ -170,7 +169,7 @@ export class TriCasterTimelineStateConverter {
 
 	private applyMatrixOutputState(
 		resultState: WithContext<TriCasterState>,
-		tlObject: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>,
+		tlObject: DeviceTimelineStateObject<TSRTimelineContent>,
 		mapping: MappingTricasterMATRIXOUTPUT
 	) {
 		if (
@@ -194,7 +193,7 @@ export class TriCasterTimelineStateConverter {
 	private deepApplyToExtendedState<T>(
 		target: WithContext<T>,
 		source: DeepPartial<T>,
-		timelineObject: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
+		timelineObject: DeviceTimelineStateObject<TSRTimelineContent>
 	): void {
 		if (!isTimelineObjTriCaster(timelineObject.content)) return
 

@@ -7,7 +7,6 @@ import {
 	SendCommandResult,
 	StatusCode,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentTypeHTTP,
 	TimelineContentTypeHTTPParamType,
 	interpolateTemplateStringIfNeeded,
@@ -16,14 +15,20 @@ import {
 	HttpSendActions,
 	DeviceStatus,
 } from 'timeline-state-resolver-types'
-import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 import _ = require('underscore')
 import got, { OptionsOfTextResponseBody, RequestError } from 'got'
 import { t } from '../../lib'
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import CacheableLookup from 'cacheable-lookup'
 
-export type HttpSendDeviceState = Record<string, Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>
+export type HttpSendDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 export type HttpSendDeviceCommand = CommandWithContext<
 	{

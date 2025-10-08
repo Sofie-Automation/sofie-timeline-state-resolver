@@ -5,7 +5,6 @@ import {
 	MappingObsType,
 	Mappings,
 	OBSSceneItemTransform,
-	ResolvedTimelineObjectInstanceExtended,
 	SomeMappingObs,
 	TSRTimelineContent,
 	TimelineContentTypeOBS,
@@ -19,7 +18,7 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 	// Sort layer based on Mapping type (to make sure audio is after inputs) and Layer name
 	const sortedLayers = _.sortBy(
 		state.objects.map((tlObject) => {
-			const tlObjectExt = tlObject as ResolvedTimelineObjectInstanceExtended
+			const tlObjectExt = tlObject
 			let mapping = mappings[tlObject.layer] as Mapping<SomeMappingObs> | undefined
 			if (!mapping && tlObjectExt.isLookahead && tlObjectExt.lookaheadForLayer) {
 				mapping = mappings[tlObjectExt.lookaheadForLayer] as Mapping<SomeMappingObs> | undefined
@@ -37,7 +36,7 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 			switch (mapping.options.mappingType) {
 				case MappingObsType.CurrentScene:
 					if (tlObject.content.type === TimelineContentTypeOBS.CURRENT_SCENE) {
-						if ((tlObject as ResolvedTimelineObjectInstanceExtended).isLookahead) {
+						if (tlObject.isLookahead) {
 							deviceState.previewScene = tlObject.content.sceneName
 						} else {
 							deviceState.currentScene = tlObject.content.sceneName
@@ -46,7 +45,7 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 					break
 				case MappingObsType.CurrentTransition:
 					if (tlObject.content.type === TimelineContentTypeOBS.CURRENT_TRANSITION) {
-						if ((tlObject as ResolvedTimelineObjectInstanceExtended).isLookahead) {
+						if (tlObject.isLookahead) {
 							// CurrentTransiton can't be looked ahead, same below
 							break
 						}
@@ -56,7 +55,7 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 					break
 				case MappingObsType.Recording:
 					if (tlObject.content.type === TimelineContentTypeOBS.RECORDING) {
-						if ((tlObject as ResolvedTimelineObjectInstanceExtended).isLookahead) {
+						if (tlObject.isLookahead) {
 							// CurrentTransiton can't be looked ahead, same below
 							break
 						}
@@ -66,7 +65,7 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 					break
 				case MappingObsType.Streaming:
 					if (tlObject.content.type === TimelineContentTypeOBS.STREAMING) {
-						if ((tlObject as ResolvedTimelineObjectInstanceExtended).isLookahead) {
+						if (tlObject.isLookahead) {
 							// CurrentTransiton can't be looked ahead, same below
 							break
 						}
@@ -76,7 +75,7 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 					break
 				case MappingObsType.InputAudio:
 					if (tlObject.content.type === TimelineContentTypeOBS.INPUT_AUDIO) {
-						if ((tlObject as ResolvedTimelineObjectInstanceExtended).isLookahead) {
+						if (tlObject.isLookahead) {
 							// InputAudio can't be looked ahead, same below
 							break
 						}
@@ -93,7 +92,7 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 					break
 				case MappingObsType.InputSettings:
 					if (tlObject.content.type === TimelineContentTypeOBS.INPUT_SETTINGS) {
-						if ((tlObject as ResolvedTimelineObjectInstanceExtended).isLookahead) {
+						if (tlObject.isLookahead) {
 							// InputSettings can't be looked ahead, same below
 							break
 						}
@@ -111,7 +110,7 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 					break
 				case MappingObsType.InputMedia:
 					if (tlObject.content.type === TimelineContentTypeOBS.INPUT_MEDIA) {
-						if ((tlObject as ResolvedTimelineObjectInstanceExtended).isLookahead) {
+						if (tlObject.isLookahead) {
 							// InputMedia can't be looked ahead, same below
 							break
 						}
@@ -128,7 +127,7 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 					break
 				case MappingObsType.SceneItem:
 					if (tlObject.content.type === TimelineContentTypeOBS.SCENE_ITEM) {
-						if ((tlObject as ResolvedTimelineObjectInstanceExtended).isLookahead) {
+						if (tlObject.isLookahead) {
 							// SceneItem can't be looked ahead, same below
 							break
 						}

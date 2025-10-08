@@ -1,10 +1,15 @@
-import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResultCode,
 	DeviceStatus,
 	DeviceType,
 	StatusCode,
-	Timeline,
 	TimelineContentTypeWebSocketClient,
 	TSRTimelineContent,
 	WebsocketClientOptions,
@@ -22,7 +27,7 @@ export type WebSocketCommand = CommandWithContext<
 	},
 	string
 >
-export type WebSocketClientDeviceState = Record<string, Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>
+export type WebSocketClientDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 export class WebSocketClientDevice
 	implements Device<WebsocketClientDeviceTypes, WebSocketClientDeviceState, WebSocketCommand>
@@ -96,9 +101,7 @@ export class WebSocketClientDevice
 		// later (send to sendCommand() ).
 
 		const commands: WebSocketCommand[] = []
-		for (const [layerName, timelineObject] of Object.entries<
-			Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
-		>(newState)) {
+		for (const [layerName, timelineObject] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(newState)) {
 			if (timelineObject.content.deviceType !== DeviceType.WEBSOCKET_CLIENT) continue
 
 			// We should send the command whenever the timeline object content has been ADDED or CHANGED
