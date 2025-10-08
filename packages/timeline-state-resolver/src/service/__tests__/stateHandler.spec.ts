@@ -77,10 +77,16 @@ describe('stateHandler', () => {
 				executionType: 'salvo',
 			},
 			{
-				convertTimelineStateToDeviceState: (s) =>
-					withStateHandler
-						? { deviceState: s.layers as unknown as DeviceState, addressStates: s.layers }
-						: (s.layers as unknown as DeviceState),
+				convertTimelineStateToDeviceState: (s) => {
+					const stateObj = s.objects.reduce((acc, obj) => {
+						acc[obj.layer] = obj.content
+						return acc
+					}, {} as any)
+
+					return withStateHandler
+						? { deviceState: stateObj as DeviceState, addressStates: s.objects }
+						: (stateObj as DeviceState)
+				},
 				diffStates: (o, n) =>
 					[
 						...Object.keys(n)
@@ -319,7 +325,15 @@ function createTimelineState(
 ): Timeline.TimelineState<TSRTimelineContent> {
 	return {
 		time,
-		layers: objs as any,
+		layers: Object.fromEntries(
+			Object.entries<any>(objs).map(([id, obj]) => [
+				id,
+				{
+					layer: id,
+					content: obj,
+				},
+			])
+		) as any,
 		nextEvents: [],
 	}
 }

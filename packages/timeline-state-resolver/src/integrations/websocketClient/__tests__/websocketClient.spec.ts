@@ -1,7 +1,6 @@
 import { WebSocketConnection } from '../connection'
-import { WebSocketClientDevice, WebSocketCommand } from '../index'
+import { WebSocketClientDevice, WebSocketClientDeviceState, WebSocketCommand } from '../index'
 import {
-	Timeline,
 	DeviceType,
 	WebsocketClientOptions,
 	TimelineContentTypeWebSocketClient,
@@ -10,6 +9,7 @@ import {
 } from 'timeline-state-resolver-types'
 import { MockTime } from '../../../__tests__/mockTime'
 import { TimelineContentWebSocketClientAny } from 'timeline-state-resolver-types/src'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 // Mock the WebSocketConnection
 jest.mock('../connection')
@@ -125,16 +125,15 @@ describe('WebSocketClientDevice', () => {
 
 	describe('Timeline', () => {
 		test('convertTimelineStateToDeviceState', () => {
-			const timelineState: Timeline.TimelineState<TSRTimelineContent> = createTimelineState(
-				createCommandObject('layer1', 'test ws message')
-			)
-			// As nothings is converted in this device, the result should be the same as the input:
-			expect(device.convertTimelineStateToDeviceState(timelineState)).toBe(timelineState)
+			const objs = createCommandObject('layer1', 'test ws message')
+			const timelineState: DeviceTimelineState<TSRTimelineContent> = createTimelineState(objs)
+
+			expect(device.convertTimelineStateToDeviceState(timelineState)).toEqual(objs)
 		})
 
 		test('diffStates with WebSocket message command', () => {
-			const oldState = createTimelineState(createCommandObject('layer1', 'old ws state'))
-			const newState = createTimelineState(createCommandObject('layer1', 'new test ws message state'))
+			const oldState = createDeviceState(createCommandObject('layer1', 'old ws state'))
+			const newState = createDeviceState(createCommandObject('layer1', 'new test ws message state'))
 
 			const commands = device.diffStates(oldState, newState)
 
@@ -163,23 +162,27 @@ describe('WebSocketClientDevice', () => {
 
 // Helper functions to create test objects:
 function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentWebSocketClientAny }>
-): Timeline.TimelineState<TSRTimelineContent> {
-	const state: Timeline.TimelineState<TimelineContentWebSocketClientAny> = {
+	objs: Record<string, { id: string; layer: string; content: TimelineContentWebSocketClientAny }>
+): DeviceTimelineState<TSRTimelineContent> {
+	return {
 		time: 1000,
-		layers: objs as any,
-		nextEvents: [],
+		objects: Object.values<any>(objs),
 	}
-	return state
+}
+function createDeviceState(
+	objs: Record<string, { id: string; layer: string; content: TimelineContentWebSocketClientAny }>
+): WebSocketClientDeviceState {
+	return objs as any
 }
 
 function createCommandObject(
 	layerId: string,
 	message: string
-): Record<string, { id: string; content: TimelineContentWebSocketClientAny }> {
+): Record<string, { id: string; layer: string; content: TimelineContentWebSocketClientAny }> {
 	return {
 		[`tcp_${layerId}`]: {
 			id: `tcp_${layerId}`,
+			layer: `tcp_${layerId}`,
 			content: {
 				deviceType: DeviceType.WEBSOCKET_CLIENT,
 				type: TimelineContentTypeWebSocketClient.WEBSOCKET_MESSAGE,

@@ -86,7 +86,7 @@ export class WebSocketClientDevice
 		// This is optional and for convenience only (like to simplify the diffing logic in diffStates())
 
 		return state.objects.reduce((acc, obj) => {
-			if (obj.layer) acc[obj.layer] = obj
+			acc[obj.layer] = obj
 			return acc
 		}, {} as WebSocketClientDeviceState)
 	}
@@ -106,9 +106,9 @@ export class WebSocketClientDevice
 
 			// We should send the command whenever the timeline object content has been ADDED or CHANGED
 			let changeType = 'N/A'
-			if (!oldState?.layers[layerName]) {
+			if (!oldState?.[layerName]) {
 				changeType = 'added'
-			} else if (JSON.stringify(oldState?.layers[layerName].content) !== JSON.stringify(timelineObject.content)) {
+			} else if (JSON.stringify(oldState?.[layerName].content) !== JSON.stringify(timelineObject.content)) {
 				changeType = 'changed'
 			} else {
 				continue // no changes

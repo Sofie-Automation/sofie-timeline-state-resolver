@@ -1,16 +1,10 @@
 /* eslint-disable jest/expect-expect */
-import {
-	TSRTimelineContent,
-	TimelineContentAbstractAny,
-	Timeline,
-	DeviceType,
-	StatusCode,
-} from 'timeline-state-resolver-types'
+import { TSRTimelineContent, TimelineContentAbstractAny, DeviceType, StatusCode } from 'timeline-state-resolver-types'
 import { AbstractCommandWithContext, AbstractDevice, AbstractDeviceState } from '..'
 import { MockTime } from '../../../__tests__/mockTime'
-import { ResolvedTimelineObjectInstance } from 'timeline-state-resolver-types/dist/superfly-timeline'
-import { makeTimelineObjectResolved } from '../../../__mocks__/objects'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
 import { getDeviceContext } from '../../__tests__/testlib'
+import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 async function getInitialisedDevice() {
 	const dev = new AbstractDevice(getDeviceContext())
@@ -35,14 +29,13 @@ describe('Abstract device', () => {
 	test('convertTimelineStateToDeviceState', async () => {
 		const device = await getInitialisedDevice()
 
-		const testState: Timeline.TimelineState<TSRTimelineContent> = {
+		const testState: DeviceTimelineState<TSRTimelineContent> = {
 			time: 10,
-			layers: {},
-			nextEvents: [],
+			objects: [],
 		}
 		const resultState = device.convertTimelineStateToDeviceState(testState)
 		expect(resultState).toBeTruthy()
-		expect(testState).toBe(resultState) // Exact same object
+		expect(resultState).toEqual({} as AbstractDeviceState)
 	})
 
 	describe('diffState', () => {
@@ -64,9 +57,7 @@ describe('Abstract device', () => {
 			await compareStates(
 				undefined,
 				{
-					time: 20,
-					nextEvents: [],
-					layers: {},
+					// empty
 				},
 				[]
 			)
@@ -75,14 +66,10 @@ describe('Abstract device', () => {
 		test('Empty states', async () => {
 			await compareStates(
 				{
-					time: 10,
-					nextEvents: [],
-					layers: {},
+					// empty
 				},
 				{
-					time: 20,
-					nextEvents: [],
-					layers: {},
+					// empty
 				},
 				[]
 			)
@@ -91,16 +78,10 @@ describe('Abstract device', () => {
 		test('Start object', async () => {
 			await compareStates(
 				{
-					time: 10,
-					nextEvents: [],
-					layers: {},
+					// empty
 				},
 				{
-					time: 20,
-					nextEvents: [],
-					layers: {
-						[LAYERNAME]: createResolvedTimelineObject('obj0', LAYERNAME),
-					},
+					[LAYERNAME]: createDeviceTimelineStateObject('obj0', LAYERNAME),
 				},
 				[
 					{
@@ -115,18 +96,10 @@ describe('Abstract device', () => {
 		test('Change object', async () => {
 			await compareStates(
 				{
-					time: 10,
-					nextEvents: [],
-					layers: {
-						[LAYERNAME]: createResolvedTimelineObject('obj0', LAYERNAME),
-					},
+					[LAYERNAME]: createDeviceTimelineStateObject('obj0', LAYERNAME),
 				},
 				{
-					time: 20,
-					nextEvents: [],
-					layers: {
-						[LAYERNAME]: createResolvedTimelineObject('obj1', LAYERNAME),
-					},
+					[LAYERNAME]: createDeviceTimelineStateObject('obj1', LAYERNAME),
 				},
 				[
 					{
@@ -141,14 +114,10 @@ describe('Abstract device', () => {
 		test('End object', async () => {
 			await compareStates(
 				{
-					time: 10,
-					nextEvents: [],
-					layers: { [LAYERNAME]: createResolvedTimelineObject('obj0', LAYERNAME) },
+					[LAYERNAME]: createDeviceTimelineStateObject('obj0', LAYERNAME),
 				},
 				{
-					time: 20,
-					nextEvents: [],
-					layers: {},
+					// empty
 				},
 				[
 					{
@@ -162,11 +131,11 @@ describe('Abstract device', () => {
 	})
 })
 
-function createResolvedTimelineObject(
+function createDeviceTimelineStateObject(
 	objectId: string,
 	layerName: string
-): ResolvedTimelineObjectInstance<TimelineContentAbstractAny> {
-	return makeTimelineObjectResolved({
+): DeviceTimelineStateObject<TimelineContentAbstractAny> {
+	return makeDeviceTimelineStateObject({
 		id: objectId,
 		enable: {
 			start: 0,

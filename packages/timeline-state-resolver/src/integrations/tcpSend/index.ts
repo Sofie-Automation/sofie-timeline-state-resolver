@@ -96,7 +96,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 		const commands: Array<TcpSendDeviceCommand> = []
 
 		for (const [layerKey, newLayer] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(newState)) {
-			const oldLayer = oldState?.layers[layerKey]
+			const oldLayer = oldState?.[layerKey]
 			// added/changed
 			if (newLayer.content) {
 				if (!oldLayer) {
@@ -129,7 +129,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 		}
 		// removed
 		for (const [layerKey, oldLayer] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(oldState ?? {})) {
-			const newLayer = newState.layers[layerKey]
+			const newLayer = newState[layerKey]
 			if (!newLayer) {
 				// removed!
 				commands.push({

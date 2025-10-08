@@ -8,7 +8,7 @@ import {
 	MappingSingularLiveType,
 } from 'timeline-state-resolver-types'
 import { getDeviceContext } from '../../__tests__/testlib'
-import { makeTimelineObjectResolved } from '../../../__mocks__/objects'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
 
 describe('Singular.Live', () => {
 	test('POST message', async () => {
@@ -30,7 +30,7 @@ describe('Singular.Live', () => {
 			{
 				time: 1000,
 				objects: [
-					makeTimelineObjectResolved({
+					makeDeviceTimelineStateObject({
 						id: 'obj0',
 						enable: {
 							start: 1000,

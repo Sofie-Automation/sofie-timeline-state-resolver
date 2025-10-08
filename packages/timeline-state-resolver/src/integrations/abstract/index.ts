@@ -84,7 +84,7 @@ export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDevic
 		const commands: Array<AbstractCommandWithContext> = []
 
 		for (const [layerKey, newLayer] of Object.entries<DeviceTimelineStateObject<any>>(newAbstractState)) {
-			const oldLayer = oldAbstractState?.layers[layerKey]
+			const oldLayer = oldAbstractState?.[layerKey]
 			if (!oldLayer) {
 				// added!
 				commands.push({
@@ -107,7 +107,7 @@ export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDevic
 
 		// removed
 		for (const [layerKey, oldLayer] of Object.entries<DeviceTimelineStateObject<any>>(oldAbstractState || {})) {
-			const newLayer = newAbstractState.layers[layerKey]
+			const newLayer = newAbstractState[layerKey]
 			if (!newLayer) {
 				// removed!
 				commands.push({

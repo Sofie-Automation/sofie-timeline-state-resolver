@@ -1,7 +1,7 @@
-import { DeviceType, TimelineContentTCPSendAny, TSRTimelineContent, Timeline } from 'timeline-state-resolver-types'
+import { DeviceType, TimelineContentTCPSendAny } from 'timeline-state-resolver-types'
 import { Socket as OrgSocket } from 'net'
 import { Socket as MockSocket } from '../../../__mocks__/net'
-import { TcpSendDevice } from '..'
+import { TcpSendDevice, TcpSendDeviceState } from '..'
 import { getDeviceContext } from '../../__tests__/testlib'
 import { literal } from '../../../lib'
 
@@ -90,6 +90,7 @@ describe('TCP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				})
@@ -123,12 +124,14 @@ describe('TCP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: content0,
 					},
 				}),
 				createTimelineState({
 					layer0: {
 						id: 'obj1',
+						layer: 'layer0',
 						content: content1,
 					},
 				})
@@ -160,6 +163,7 @@ describe('TCP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				}),
@@ -235,6 +239,7 @@ describe('TCP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				})
@@ -265,6 +270,7 @@ describe('TCP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				})
@@ -294,13 +300,9 @@ describe('TCP-Send', () => {
 	})
 })
 function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentTCPSendAny }>
-): Timeline.TimelineState<TSRTimelineContent> {
-	return {
-		time: 10,
-		layers: objs as any,
-		nextEvents: [],
-	}
+	objs: Record<string, { id: string; layer: string; content: TimelineContentTCPSendAny }>
+): TcpSendDeviceState {
+	return objs as any
 }
 const DEFAULT_TL_CONTENT: {
 	deviceType: DeviceType.TCPSEND

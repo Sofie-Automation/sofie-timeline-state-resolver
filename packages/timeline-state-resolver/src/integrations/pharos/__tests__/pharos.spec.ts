@@ -8,7 +8,7 @@ import {
 import { getDeviceContext } from '../../__tests__/testlib'
 import { EventEmitter } from 'events'
 import type { Pharos, ProjectInfo } from '../connection'
-import { makeTimelineObjectResolved } from '../../../__mocks__/objects'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
 
 class MockPharosApi
 	extends EventEmitter
@@ -121,7 +121,7 @@ describe('Pharos', () => {
 		expect(commands0).toHaveLength(0)
 
 		const state1: PharosState = {
-			myLayer0: makeTimelineObjectResolved({
+			myLayer0: makeDeviceTimelineStateObject({
 				id: 'scene0',
 				enable: {
 					start: 1000,
@@ -145,7 +145,7 @@ describe('Pharos', () => {
 		mockApi.commandCalls = []
 
 		const state2: PharosState = {
-			myLayer0: makeTimelineObjectResolved({
+			myLayer0: makeDeviceTimelineStateObject({
 				id: 'scene1',
 				enable: {
 					start: 2000,
@@ -172,7 +172,7 @@ describe('Pharos', () => {
 		mockApi.commandCalls = []
 
 		const state3: PharosState = {
-			myLayer0: makeTimelineObjectResolved({
+			myLayer0: makeDeviceTimelineStateObject({
 				id: 'scene2',
 				enable: {
 					start: 3000,
