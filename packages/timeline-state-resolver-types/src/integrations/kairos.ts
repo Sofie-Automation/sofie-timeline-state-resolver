@@ -157,6 +157,9 @@ export interface TimelineContentKairosPlayerState<TClip>
 	/** If the video is playing or is paused (defaults to true) */
 	playing?: boolean
 
+	/** If set, defines if the player should Clear (to black) when the clip is stopped, or just Pause. Defaults to the clearPlayerOnStop property of the Mapping, or false */
+	clearPlayerOnStop?: boolean
+
 	// reverse?: boolean
 
 	/** If true, the startTime won't be used to SEEK to the correct place in the media */

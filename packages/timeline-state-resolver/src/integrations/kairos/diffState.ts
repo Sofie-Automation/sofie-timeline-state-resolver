@@ -29,11 +29,6 @@ export function diffKairosStates(
 
 	// TODO - any concerns with temporal order (ie, cutting to/from a clip player before it has started/stopped playing?)
 
-	// TODO - should this act more like atem-state where anything unset gets restored to a hardcoded 'default', or should it only set properties which are explicitly set/diff on the timeline?
-	// I almost did the latter, but then I realized that it would be hard to do anything. You would need to have a 'defaults' baseline object to set the default state, otherwise it wouldnt be
-	// repected when going between two timed objects. eg baseline: { a: 1, b: 2 }, object A: { a: 3, b: 3 } and object B: { a: 4 }.
-	// when going A -> B, it wouldnt know to set b to 2, because that wouldnt be present in the timeline. Depending what the property is, that may be fine or not.
-
 	commands.push(...diffSceneSnapshots(oldKairosState.sceneSnapshots, newKairosState.sceneSnapshots))
 	commands.push(...diffScenes(oldKairosState.scenes, newKairosState.scenes))
 	commands.push(...diffSceneLayers(oldKairosState.sceneLayers, newKairosState.sceneLayers))

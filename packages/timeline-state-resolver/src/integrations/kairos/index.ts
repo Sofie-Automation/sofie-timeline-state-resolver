@@ -8,12 +8,9 @@ import {
 	SomeMappingKairos,
 	KairosDeviceTypes,
 	KairosActionMethods,
-	KairosActions,
-	ListClipsResult,
-	ActionExecutionResultCode,
 } from 'timeline-state-resolver-types'
 // eslint-disable-next-line node/no-missing-import
-import { KairosConnection, refMacro } from 'kairos-connection'
+import { KairosConnection } from 'kairos-connection'
 import type { Device, DeviceContextAPI, CommandWithContext } from 'timeline-state-resolver-api'
 import { KairosDeviceState, KairosStateBuilder } from './stateBuilder'
 import { diffKairosStates } from './diffState'
@@ -44,13 +41,6 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		})
 		this._kairos.on('error', (e) => this.context.logger.error('Kairos', e))
 		this._kairos.on('warn', (e) => this.context.logger.warning(`Kairos: ${e?.message ?? e}`))
-		// this._kairos.on('stateChanged', (state) => {
-		// 	// the external device is communicating something changed, the tracker should be updated (and may fire a "blocked" event if the change is caused by someone else)
-		// 	updateFromKairosState((addr, addrState) => this.context.setAddressState(addr, addrState), state) // note - improvement can be to update depending on the actual paths that changed
-
-		// 	// old stuff for connection statuses/events:
-		// 	this._onKairosStateChanged(state)
-		// })
 
 		this._kairos.on('reset', () => {
 			this.context.resetResolver()
@@ -60,16 +50,8 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		this._kairos.on('connect', () => {
 			this._connectionChanged()
 
-			// if (this._kairos.state) {
-			// 	// Do a state diff to get to the desired state
-			// 	this._protocolVersion = this._kairos.state.info.apiVersion
-			// 	this.context
-			// 		.resetToState(this._kairos.state)
-			// 		.catch((e) => this.context.logger.error('Error resetting kairos state', new Error(e)))
-			// } else {
-			// 	// Do a state diff to at least send all the commands we know about
+			// Do a state diff to at least send all the commands we know about
 			this.context.resetState().catch((e) => this.context.logger.error('Error resetting kairos state', new Error(e)))
-			// }
 		})
 
 		// Start the connection, without waiting
@@ -86,14 +68,6 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		this._kairos.discard()
 		this._kairos.removeAllListeners()
 	}
-
-	// private async resyncState(): Promise<ActionExecutionResult> {
-	// 	this.context.resetResolver()
-
-	// 	return {
-	// 		result: ActionExecutionResultCode.Ok,
-	// 	}
-	// }
 
 	get connected(): boolean {
 		return this._kairos.connected
@@ -157,16 +131,6 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 			this.context.commandError(error, command)
 		}
 	}
-
-	// applyAddressState(state: DeviceState, _address: string, addressState: AnyAddressState): void {
-	// 	applyAddressStateToKairosState(state, addressState)
-	// }
-	// diffAddressStates(state1: AnyAddressState, state2: AnyAddressState): boolean {
-	// 	return diffAddressStates(state1, state2)
-	// }
-	// addressStateReassertsControl(oldState: AnyAddressState | undefined, newState: AnyAddressState): boolean {
-	// 	return oldState?.controlValue !== newState.controlValue
-	// }
 
 	private _connectionChanged() {
 		this.context.connectionChanged(this.getStatus())

@@ -1,11 +1,4 @@
-import {
-	MediaClipRef,
-	MediaRamRecRef,
-	MediaSoundRef,
-	UpdateClipPlayerObject,
-	UpdateRamRecPlayerObject,
-	UpdateAudioPlayerObject,
-} from 'kairos-connection'
+import { MediaClipRef, MediaRamRecRef, MediaSoundRef } from 'kairos-connection'
 import { TimelineObjectInstance } from 'superfly-timeline'
 import { TimelineContentKairosPlayerState } from 'timeline-state-resolver-types'
 import { KairosCommandWithContext } from '..'
@@ -16,7 +9,7 @@ import {
 	KairosClipPlayerCommandMethod,
 } from '../commands'
 import { MappingOptions } from '../stateBuilder'
-import { diffObject, getAllKeysString } from './lib'
+import { diffObjectBoolean, getAllKeysString } from './lib'
 
 export function diffMediaPlayers(
 	stateTime: number,
@@ -26,12 +19,14 @@ export function diffMediaPlayers(
 ): KairosCommandWithContext[] {
 	const commands: KairosCommandWithContext[] = []
 
-	const keys = getAllKeysString(oldClipPlayers, newClipPlayers)
-	for (const key of keys) {
-		const keyNum = parseInt(key)
+	const playerIds = getAllKeysString(oldClipPlayers, newClipPlayers).map(parseInt)
+	for (const playerId of playerIds) {
+		if (isNaN(playerId)) continue
 
-		const newClipPlayer = newClipPlayers[keyNum]
-		const oldClipPlayer = oldClipPlayers[keyNum]
+		/** New state  */
+		const newClipPlayer = newClipPlayers[playerId]
+		/** Old state  */
+		const oldClipPlayer = oldClipPlayers[playerId]
 
 		const cpRef = newClipPlayer?.ref || oldClipPlayer?.ref
 		if (!cpRef) continue // No ClipPlayer to diff
@@ -39,15 +34,16 @@ export function diffMediaPlayers(
 		if (!newClipPlayer && oldClipPlayer) {
 			// ClipPlayer obj was removed, stop it:
 
-			const clearPlayerOnStop = oldClipPlayer.state.mappingOptions.clearPlayerOnStop || false
+			const clearPlayerOnStop =
+				oldClipPlayer.state.content.clearPlayerOnStop ?? oldClipPlayer.state.mappingOptions.clearPlayerOnStop ?? false
 
 			if (clearPlayerOnStop) {
 				commands.push({
 					timelineObjId: oldClipPlayer?.timelineObjIds.join(' & ') ?? '',
-					context: `key=${key} newClipPlayer=${!!newClipPlayer} oldClipPlayer=${!!oldClipPlayer}`,
+					context: `key=${playerId} newClipPlayer=${!!newClipPlayer} oldClipPlayer=${!!oldClipPlayer}`,
 					command: {
 						type: 'clip-player',
-						playerId: keyNum,
+						playerId: playerId,
 						values: {
 							clip: null, // Clear the clip
 						},
@@ -56,10 +52,10 @@ export function diffMediaPlayers(
 			} else {
 				commands.push({
 					timelineObjId: oldClipPlayer?.timelineObjIds.join(' & ') ?? '',
-					context: `key=${key} newClipPlayer=${!!newClipPlayer} oldClipPlayer=${!!oldClipPlayer}`,
+					context: `key=${playerId} newClipPlayer=${!!newClipPlayer} oldClipPlayer=${!!oldClipPlayer}`,
 					command: {
 						type: 'clip-player:do',
-						playerId: keyNum,
+						playerId: playerId,
 						command: 'stop',
 					},
 				})
@@ -70,98 +66,98 @@ export function diffMediaPlayers(
 			const oldState = getClipPlayerState(oldClipPlayer)
 			const newState = getClipPlayerState(newClipPlayer)
 
-			const diff = diffObject(oldState, newState)
+			const diff = diffObjectBoolean(oldState, newState)
 
 			if (diff) {
-				const cmd: Partial<UpdateClipPlayerObject | UpdateRamRecPlayerObject | UpdateAudioPlayerObject> = {}
-				let doCommand: KairosClipPlayerCommandMethod['command'] | null = null
+				/** The properties to update on the ClipPlayer */
+				const updateCmd: KairosClipPlayerCommand | KairosRamRecPlayerCommand | KairosSoundPlayerCommand = {
+					type: playerType,
+					playerId: playerId,
+					values: {},
+				}
+				/** The command to be sent to the ClipPlayer */
+				let playerCommand: KairosClipPlayerCommandMethod['command'] | null = null
 
 				if (
-					diff.seekAbsolute !== undefined &&
-					newState.seekAbsolute !== undefined &&
-					oldState?.seekAbsolute !== undefined &&
-					Math.abs(newState.seekAbsolute - oldState.seekAbsolute) < 100
+					diff.absoluteStartTime &&
+					newState.absoluteStartTime !== undefined &&
+					oldState?.absoluteStartTime !== undefined &&
+					Math.abs(newState.absoluteStartTime - oldState.absoluteStartTime) < 100
 				) {
 					// If the absolute seek position diff is within 100ms, ignore it:
-					delete diff.seekAbsolute
+					delete diff.absoluteStartTime
 				}
 
-				if (playerType === 'clip-player' || playerType === 'ram-rec-player') {
-					// color and colorOverwrite only apply to clip-players and ram-rec-players
-
-					const cmd0 = cmd as Partial<UpdateClipPlayerObject | UpdateRamRecPlayerObject>
-					if (diff.color !== undefined) {
-						cmd0.color = diff.color
+				if (updateCmd.type === 'clip-player' || updateCmd.type === 'ram-rec-player') {
+					// ( color and colorOverwrite only apply to clip-players and ram-rec-players )
+					if (diff.color) {
+						updateCmd.values.color = newState.color
 					}
-					if (diff.colorOverwrite !== undefined) {
-						cmd0.colorOverwrite = diff.colorOverwrite
+					if (diff.colorOverwrite) {
+						updateCmd.values.colorOverwrite = newState.colorOverwrite
 					}
 				}
-				if (diff.repeat !== undefined) {
-					cmd.repeat = diff.repeat
+				if (diff.repeat) {
+					updateCmd.values.repeat = newState.repeat ?? false
 				}
 
 				if (
 					// The clip has changed, trigger a play/stop command:
-					diff.clip !== undefined ||
+					diff.clip ||
 					// The seek position has changed, move the playhead:
-					diff.seekAbsolute !== undefined
+					diff.absoluteStartTime
 				) {
 					// This will trigger a play command below:
 					newState.playing = newState.playing ?? false
-					diff.playing = newState.playing
+					diff.playing = true
 				}
 
-				if (diff.playing === true) {
+				if (diff.playing && newState.playing) {
 					// Start playing the clip!
 
 					// When starting playing, we sync the clip, position and repeat state:
 					if (newState.clip !== undefined) {
-						cmd.clip = newState.clip
+						updateCmd.values.clip = newState.clip
 					}
-					if (newState.seekAbsolute !== undefined) {
-						const newSeek = Math.max(0, -relativeTime(stateTime, newState.seekAbsolute))
+					if (newState.absoluteStartTime !== undefined) {
+						const newSeek = Math.max(0, -relativeTime(stateTime, newState.absoluteStartTime))
 
-						cmd.position = Math.floor((newSeek / 1000) * framerate)
+						updateCmd.values.position = Math.floor((newSeek / 1000) * framerate)
 					}
-					cmd.repeat = newState.repeat ?? false
+					updateCmd.values.repeat = newState.repeat ?? false
 
-					doCommand = 'play'
-				} else if (newState.playing === false) {
+					playerCommand = 'play'
+				} else if (!newState.playing) {
 					// Stop the clip ( or load a paused clip )
 
 					if (newState.seek !== undefined) {
 						// Don't using the absolute time here, as we are pausing / seeking to a certain frame:
-						cmd.position = Math.floor((newState.seek / 1000) * framerate)
+						updateCmd.values.position = Math.floor((newState.seek / 1000) * framerate)
 					}
 					if (newState.clip) {
-						cmd.clip = newState.clip
+						updateCmd.values.clip = newState.clip
 					}
 					// Stop / Pause the clip:
-					if (diff.playing === false) doCommand = 'pause'
+					if (diff.playing) playerCommand = 'pause'
 				}
 
-				if (!isEmptyObject(cmd)) {
+				if (!isEmptyObject(updateCmd.values)) {
 					commands.push({
 						timelineObjId: newClipPlayer?.timelineObjIds.join(' & ') ?? '',
-						context: `key=${key} diff=${JSON.stringify(diff)}`,
-						command: {
-							type: playerType,
-							playerId: keyNum,
-							values: cmd as any,
-						},
-						preliminary: doCommand === 'play' ? 40 : 0, // Send this command a bit early if there's a Play command
+						context: `key=${playerId} diff=${JSON.stringify(diff)}`,
+						command: updateCmd,
+						preliminary: playerCommand === 'play' ? 10 : 0, // Send this command a bit early if there's a Play command
 					})
 				}
 
-				if (doCommand !== null) {
+				if (playerCommand !== null) {
 					commands.push({
 						timelineObjId: newClipPlayer?.timelineObjIds.join(' & ') ?? '',
-						context: `key=${key} diff=${JSON.stringify(diff)}`,
+						context: `key=${playerId} diff=${JSON.stringify(diff)}`,
 						command: {
 							type: 'clip-player:do',
-							playerId: keyNum,
-							command: doCommand,
+							playerId: playerId,
+							command: playerCommand,
 						},
 					})
 				}
@@ -178,7 +174,8 @@ type MediaPlayerOuterState = {
 	timelineObjIds: string[]
 }
 type MediaPlayerInnerState = MediaPlayerAny & {
-	seekAbsolute: number | undefined
+	/** Unix timestamp for at what point in time the clip starts to play */
+	absoluteStartTime: number | undefined
 }
 
 function isEmptyObject(obj: object | undefined): boolean {
@@ -204,13 +201,13 @@ function relativeTime(nowTime: number, absoluteTime: number | undefined): number
 function getClipPlayerState(mediaPlayer: MediaPlayerOuterState | undefined): MediaPlayerInnerState {
 	if (mediaPlayer === undefined)
 		return {
-			seekAbsolute: undefined,
+			absoluteStartTime: undefined,
 		}
 
 	const seek = mediaPlayer.state.content.seek
 	const clipPlayerState: MediaPlayerInnerState = {
 		...mediaPlayer.state.content,
-		seekAbsolute: absoluteTime(mediaPlayer.state.instance, seek !== undefined ? -seek : undefined),
+		absoluteStartTime: absoluteTime(mediaPlayer.state.instance, seek !== undefined ? -seek : undefined),
 	}
 
 	if (clipPlayerState.playing === undefined) {
@@ -221,12 +218,12 @@ function getClipPlayerState(mediaPlayer: MediaPlayerOuterState | undefined): Med
 		// `.repeat` is defined as:
 		// > If this is true, the actual frame position is not guaranteed (ie seek is ignored).
 		delete clipPlayerState.seek
-		delete clipPlayerState.seekAbsolute
+		delete clipPlayerState.absoluteStartTime
 	}
 
 	if (clipPlayerState.playing === false) {
 		// If not playing, the absolute seek position is not relevant
-		delete clipPlayerState.seekAbsolute
+		delete clipPlayerState.absoluteStartTime
 	}
 
 	return clipPlayerState

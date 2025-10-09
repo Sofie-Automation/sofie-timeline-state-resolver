@@ -6,7 +6,10 @@ import { isEqual } from 'underscore'
  * @param newObj
  * @returns
  */
-export function diffObject<T>(oldObj: Partial<T> | undefined, newObj: Partial<T> | undefined): Partial<T> | undefined {
+export function diffObject<T extends object>(
+	oldObj: Partial<T> | undefined,
+	newObj: Partial<T> | undefined
+): Partial<T> | undefined {
 	if (!newObj) return undefined
 
 	const diff: Partial<T> = {}
@@ -17,6 +20,33 @@ export function diffObject<T>(oldObj: Partial<T> | undefined, newObj: Partial<T>
 		if (newObj[typedKey] !== undefined && !isEqual(newObj[typedKey], oldObj?.[typedKey])) {
 			hasChange = true
 			diff[typedKey] = newObj[typedKey]
+		}
+	}
+
+	return hasChange ? diff : undefined
+}
+
+/**
+ * Does a shallow comparison of two objects,
+ * returning an object with booleans where any changed values will result in a `true` value.
+ * @param oldObj
+ * @param newObj
+ * @returns
+ */
+export function diffObjectBoolean<T extends object>(
+	oldObj: Partial<T> | undefined,
+	newObj: Partial<T> | undefined
+): { [P in keyof T]?: boolean } | undefined {
+	if (!newObj) return undefined
+
+	const diff: { [P in keyof T]?: boolean } = {}
+	let hasChange = false
+
+	for (const key in newObj) {
+		const typedKey = key as keyof T
+		if (!isEqual(newObj[key], oldObj?.[key])) {
+			hasChange = true
+			diff[typedKey] = true
 		}
 	}
 
