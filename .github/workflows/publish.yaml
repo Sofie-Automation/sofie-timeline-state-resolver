@@ -29,6 +29,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn install
           yarn build
         env:
@@ -73,6 +74,7 @@ jobs:
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
+          corepack enable
           yarn install
           yarn build
         env:
