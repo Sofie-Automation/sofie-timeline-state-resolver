@@ -7328,22 +7328,22 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"kairos-connection@npm:0.0.1-nightly-main-20251014-062622-71883bd":
-  version: 0.0.1-nightly-main-20251014-062622-71883bd
-  resolution: "kairos-connection@npm:0.0.1-nightly-main-20251014-062622-71883bd"
+"kairos-connection@npm:0.0.1-nightly-main-20251015-060906-1e757e5":
+  version: 0.0.1-nightly-main-20251015-060906-1e757e5
+  resolution: "kairos-connection@npm:0.0.1-nightly-main-20251015-060906-1e757e5"
   dependencies:
-    kairos-lib: 0.0.1-nightly-main-20251014-062622-71883bd
+    kairos-lib: 0.0.1-nightly-main-20251015-060906-1e757e5
     tslib: ^2.8.1
-  checksum: dc4a697fa684a7954ea9eedd71842504da020ad1a1a12cbd018c69328979ffe0d5dcbeafacb6b29eb9e4c674db30a2d382cc346d0c3ecad769be9b24f266ab90
+  checksum: 5d071f8736a7d1196a174bc76a308c20a57372c86397481663576a02adb9e3cc670dae0c09cfcbe33be3aacc7abffa26892ee47b847189bde9585cdba90a77e4
   languageName: node
   linkType: hard
 
-"kairos-lib@npm:0.0.1-nightly-main-20251014-062622-71883bd":
-  version: 0.0.1-nightly-main-20251014-062622-71883bd
-  resolution: "kairos-lib@npm:0.0.1-nightly-main-20251014-062622-71883bd"
+"kairos-lib@npm:0.0.1-nightly-main-20251015-060906-1e757e5":
+  version: 0.0.1-nightly-main-20251015-060906-1e757e5
+  resolution: "kairos-lib@npm:0.0.1-nightly-main-20251015-060906-1e757e5"
   dependencies:
     tslib: ^2.8.1
-  checksum: faf75bff1a757177f4c2e0e52585c0707a50868f1ed373d1e83ab3d35336ba024bd9b4b7e235a2d0d3c2e8932933cafefac7d8b164bf2ed4467b3d24a27caf60
+  checksum: 112e7193d626e57328bc22e4b4bc29ce89234d0964eb1e4ccf68ddc4a784810cf6e4f66fdf1b32e9c7ccb845dc3027bd51e2842acab439f6a24d8d8589805dc5
   languageName: node
   linkType: hard
 
@@ -11341,7 +11341,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "timeline-state-resolver-types@workspace:packages/timeline-state-resolver-types"
   dependencies:
-    kairos-lib: 0.0.1-nightly-main-20251014-062622-71883bd
+    kairos-lib: 0.0.1-nightly-main-20251015-060906-1e757e5
     tslib: ^2.6.3
   languageName: unknown
   linkType: soft
@@ -11366,7 +11366,7 @@ asn1@evs-broadcast/node-asn1:
     hyperdeck-connection: 2.0.1
     jest-mock-extended: ^3.0.7
     json-schema-to-typescript: ^10.1.5
-    kairos-connection: 0.0.1-nightly-main-20251014-062622-71883bd
+    kairos-connection: 0.0.1-nightly-main-20251015-060906-1e757e5
     klona: ^2.0.6
     obs-websocket-js: ^5.0.6
     osc: ^2.4.5

@@ -273,7 +273,23 @@
 			"result": {
 				"type": "array",
 				"items": {
-					"type": "string"
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaClipRef"
+						}
+					]
 				}
 			}
 		},
@@ -289,7 +305,23 @@
 			"result": {
 				"type": "array",
 				"items": {
-					"type": "string"
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaStillRef"
+						}
+					]
 				}
 			}
 		},
@@ -305,7 +337,23 @@
 			"result": {
 				"type": "array",
 				"items": {
-					"type": "string"
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaRamRecRef"
+						}
+					]
 				}
 			}
 		},
@@ -321,7 +369,23 @@
 			"result": {
 				"type": "array",
 				"items": {
-					"type": "string"
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaImageRef"
+						}
+					]
 				}
 			}
 		},
@@ -337,7 +401,23 @@
 			"result": {
 				"type": "array",
 				"items": {
-					"type": "string"
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaSoundRef"
+						}
+					]
 				}
 			}
 		},

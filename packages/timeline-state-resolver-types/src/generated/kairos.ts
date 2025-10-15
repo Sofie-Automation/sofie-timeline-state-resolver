@@ -174,23 +174,58 @@ export interface MatteRef {
 
 export interface ListMediaClipsPayload {}
 
-export type ListMediaClipsResult = string[]
+export type ListMediaClipsResult = ({
+	name: string
+} & MediaClipRef)[]
+
+export interface MediaClipRef {
+	realm: 'media-clip'
+	clipPath: string[]
+}
 
 export interface ListMediaStillsPayload {}
 
-export type ListMediaStillsResult = string[]
+export type ListMediaStillsResult = ({
+	name: string
+} & MediaStillRef)[]
+
+export interface MediaStillRef {
+	realm: 'media-still'
+	clipPath: string[]
+}
 
 export interface ListMediaRamRecPayload {}
 
-export type ListMediaRamRecResult = string[]
+export type ListMediaRamRecResult = ({
+	name: string
+} & MediaRamRecRef)[]
+
+export interface MediaRamRecRef {
+	realm: 'media-ramrec'
+	clipPath: string[]
+}
 
 export interface ListMediaImagePayload {}
 
-export type ListMediaImageResult = string[]
+export type ListMediaImageResult = ({
+	name: string
+} & MediaImageRef)[]
+
+export interface MediaImageRef {
+	realm: 'media-image'
+	clipPath: string[]
+}
 
 export interface ListMediaSoundsPayload {}
 
-export type ListMediaSoundsResult = string[]
+export type ListMediaSoundsResult = ({
+	name: string
+} & MediaSoundRef)[]
+
+export interface MediaSoundRef {
+	realm: 'media-sound'
+	clipPath: string[]
+}
 
 export interface ListMacrosPayload {
 	macroPath?: string[]
