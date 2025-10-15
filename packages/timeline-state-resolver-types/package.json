@@ -83,7 +83,7 @@
 		"production"
 	],
 	"dependencies": {
-		"kairos-lib": "0.0.1-nightly-main-20251008-111321-d929f8e",
+		"kairos-lib": "0.0.1-nightly-main-20251014-062622-71883bd",
 		"tslib": "^2.6.3"
 	},
 	"publishConfig": {

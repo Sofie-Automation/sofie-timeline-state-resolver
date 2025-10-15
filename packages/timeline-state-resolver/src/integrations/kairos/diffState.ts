@@ -5,7 +5,7 @@ import type { KairosCommandWithContext } from '.'
 // eslint-disable-next-line node/no-missing-import
 import { UpdateSceneLayerObject, UpdateSceneObject, UpdateAuxObject } from 'kairos-connection'
 
-import { diffMediaPlayers } from './diffState/media-players'
+import { diffMediaPlayers, diffMediaImageStore as diffMediaImageStore } from './diffState/media-players'
 import { diffObject, getAllKeysString } from './diffState/lib'
 
 export function diffKairosStates(
@@ -56,7 +56,7 @@ export function diffKairosStates(
 			newKairosState.soundPlayers
 		)
 	)
-	// commands.push(...diffStillPlayers(oldKairosState.stillPlayers, newKairosState.stillPlayers))
+	commands.push(...diffMediaImageStore(oldKairosState.imageStores, newKairosState.imageStores))
 
 	return commands
 }

@@ -9,6 +9,10 @@ import type {
 	MediaSoundRef,
 	UpdateSceneSnapshotObject,
 	UpdateAuxObject,
+	MediaStillRef,
+	MediaImageRef,
+	DissolveMode,
+	UpdateImageStoreObject,
 	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-lib'
 
@@ -21,7 +25,7 @@ export enum TimelineContentTypeKairos {
 
 	CLIP_PLAYER = 'clip-player',
 	RAMREC_PLAYER = 'ramrec-player',
-	STILL_PLAYER = 'still-player',
+	IMAGE_STORE = 'image-store',
 	SOUND_PLAYER = 'sound-player',
 
 	AUX = 'aux',
@@ -42,7 +46,7 @@ export type TimelineContentKairosAny =
 	| TimelineContentKairosMacros
 	| TimelineContentKairosClipPlayer
 	| TimelineContentKairosRamRecPlayer
-	| TimelineContentKairosStillPlayer
+	| TimelineContentKairosImageStore
 	| TimelineContentKairosSoundPlayer
 
 export interface TimelineContentKairosScene {
@@ -114,11 +118,43 @@ export interface TimelineContentKairosRamRecPlayer {
 
 	ramRecPlayer: TimelineContentKairosPlayerState<MediaRamRecRef>
 }
-export interface TimelineContentKairosStillPlayer {
+export interface TimelineContentKairosImageStore {
 	deviceType: DeviceType.KAIROS
-	type: TimelineContentTypeKairos.STILL_PLAYER
+	type: TimelineContentTypeKairos.IMAGE_STORE
 
-	// stillPlayer: TimelineContentKairosPlayerState<MediaStillRef>
+	imageStore: Partial<
+		Pick<
+			UpdateImageStoreObject,
+			| 'colorOverwrite'
+			| 'color'
+			| 'removeSourceAlpha'
+			| 'scaleMode'
+			| 'resolution'
+			| 'advancedResolutionControl'
+			| 'resolutionX'
+			| 'resolutionY'
+		>
+	> & {
+		/**
+		 * Reference to the file to be played
+		 * @example "MEDIA.clips.amb&#46;mxf"
+		 */
+		clip: MediaStillRef | MediaImageRef | null
+
+		/**
+		 * If set, defines if the player should Clear (to black) when the still is stopped
+		 * (ie the timeline object ends), or just leave it.
+		 * Defaults to the clearPlayerOnStop property of the Mapping, or false
+		 */
+		clearPlayerOnStop?: boolean
+
+		dissolve?: {
+			enabled?: boolean
+
+			duration: number
+			mode: DissolveMode
+		}
+	}
 }
 export interface TimelineContentKairosSoundPlayer {
 	deviceType: DeviceType.KAIROS
@@ -157,7 +193,11 @@ export interface TimelineContentKairosPlayerState<TClip>
 	/** If the video is playing or is paused (defaults to true) */
 	playing?: boolean
 
-	/** If set, defines if the player should Clear (to black) when the clip is stopped, or just Pause. Defaults to the clearPlayerOnStop property of the Mapping, or false */
+	/**
+	 * If set, defines if the player should Clear (to black) when the clip is stopped,
+	 * or just Pause.
+	 * Defaults to the clearPlayerOnStop property of the Mapping, or false
+	 */
 	clearPlayerOnStop?: boolean
 
 	// reverse?: boolean

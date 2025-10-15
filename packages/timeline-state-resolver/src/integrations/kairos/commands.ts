@@ -11,6 +11,7 @@ import type {
 	KairosConnection,
 	UpdateRamRecPlayerObject,
 	UpdateAudioPlayerObject,
+	UpdateImageStoreObject,
 	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
 import { assertNever } from '../../lib'
@@ -22,10 +23,10 @@ export type KairosCommandAny =
 	| KairosAuxCommand
 	| KairosMacroCommand
 	| KairosClipPlayerCommand
-	| KairosClipPlayerCommandMethod
 	| KairosRamRecPlayerCommand
-	| KairosStillPlayerCommand
+	| KairosImageStoreCommand
 	| KairosSoundPlayerCommand
+	| KairosPlayerCommandMethod
 
 export interface KairosSceneCommand {
 	type: 'scene'
@@ -75,9 +76,10 @@ export interface KairosClipPlayerCommand {
 
 	values: Partial<UpdateClipPlayerObject>
 }
-export interface KairosClipPlayerCommandMethod {
-	type: 'clip-player:do'
+export interface KairosPlayerCommandMethod {
+	type: 'media-player:do'
 	playerId: number
+	playerType: 'clip-player' | 'ram-rec-player' | 'sound-player'
 	command:
 		| 'begin'
 		| 'rewind'
@@ -103,12 +105,12 @@ export interface KairosRamRecPlayerCommand {
 	values: Partial<UpdateRamRecPlayerObject>
 }
 
-export interface KairosStillPlayerCommand {
-	type: 'still-player'
+export interface KairosImageStoreCommand {
+	type: 'image-store'
 
 	playerId: number
 
-	values: null // TODO
+	values: Partial<UpdateImageStoreObject>
 }
 
 export interface KairosSoundPlayerCommand {
@@ -154,64 +156,118 @@ export async function sendCommand(kairos: KairosConnection, command: KairosComma
 			await kairos.updateClipPlayer(command.playerId, command.values)
 			break
 		}
-		case 'clip-player:do': {
+		case 'media-player:do': {
 			switch (command.command) {
-				case 'begin':
-					await kairos.clipPlayerBegin(command.playerId)
+				case 'begin': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerBegin(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderBegin(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerBegin(command.playerId)
+					else if (command.playerType === 'image-store') await kairos.audioPlayerBegin(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'rewind':
-					await kairos.clipPlayerRewind(command.playerId)
+				}
+				case 'rewind': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerRewind(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderRewind(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerRewind(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'stepBack':
-					await kairos.clipPlayerStepBack(command.playerId)
+				}
+				case 'stepBack': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerStepBack(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderStepBack(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerStepBack(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'reverse':
-					await kairos.clipPlayerReverse(command.playerId)
+				}
+				case 'reverse': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerReverse(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderReverse(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerReverse(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'play':
-					await kairos.clipPlayerPlay(command.playerId)
+				}
+				case 'play': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerPlay(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderPlay(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerPlay(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'pause':
-					await kairos.clipPlayerPause(command.playerId)
+				}
+				case 'pause': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerPause(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderPause(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerPause(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'stop':
-					await kairos.clipPlayerStop(command.playerId)
+				}
+				case 'stop': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerStop(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderStop(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerStop(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'stepForward':
-					await kairos.clipPlayerStepForward(command.playerId)
+				}
+				case 'stepForward': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerStepForward(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderStepForward(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerStepForward(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'fastForward':
-					await kairos.clipPlayerFastForward(command.playerId)
+				}
+				case 'fastForward': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerFastForward(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderFastForward(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerFastForward(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'end':
-					await kairos.clipPlayerEnd(command.playerId)
+				}
+				case 'end': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerEnd(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderEnd(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerEnd(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'playlistBegin':
-					await kairos.clipPlayerPlaylistBegin(command.playerId)
+				}
+				case 'playlistBegin': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerPlaylistBegin(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderPlaylistBegin(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerPlaylistBegin(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'playlistBack':
-					await kairos.clipPlayerPlaylistBack(command.playerId)
+				}
+				case 'playlistBack': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerPlaylistBack(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderPlaylistBack(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerPlaylistBack(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'playlistNext':
-					await kairos.clipPlayerPlaylistNext(command.playerId)
+				}
+				case 'playlistNext': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerPlaylistNext(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderPlaylistNext(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerPlaylistNext(command.playerId)
+					else assertNever(command.playerType)
 					break
-				case 'playlistEnd':
-					await kairos.clipPlayerPlaylistEnd(command.playerId)
+				}
+				case 'playlistEnd': {
+					if (command.playerType === 'clip-player') await kairos.clipPlayerPlaylistEnd(command.playerId)
+					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderPlaylistEnd(command.playerId)
+					else if (command.playerType === 'sound-player') await kairos.audioPlayerPlaylistEnd(command.playerId)
+					else assertNever(command.playerType)
 					break
+				}
 				default:
 					assertNever(command.command)
 					throw new Error(`Unknown Kairos command.command type: ${command.command}`)
 			}
-
 			break
 		}
-
 		case 'ram-rec-player':
 			await kairos.updateRamRecorder(command.playerId, command.values)
 			break
-		case 'still-player':
-			// TODO - not implemented
-			// await kairos.(command.ref, command.clip)
+		case 'image-store':
+			await kairos.updateImageStore(command.playerId, command.values)
 			break
 		case 'sound-player':
 			await kairos.updateAudioPlayer(command.playerId, command.values)

@@ -51,9 +51,10 @@ export interface MappingKairosRamRecPlayer {
 	mappingType: MappingKairosType.RamRecPlayer
 }
 
-export interface MappingKairosStillPlayer {
+export interface MappingKairosImageStore {
 	playerId: number
-	mappingType: MappingKairosType.StillPlayer
+	clearPlayerOnStop?: boolean
+	mappingType: MappingKairosType.ImageStore
 }
 
 export interface MappingKairosSoundPlayer {
@@ -70,11 +71,11 @@ export enum MappingKairosType {
 	Macro = 'macro',
 	ClipPlayer = 'clip-player',
 	RamRecPlayer = 'ram-rec-player',
-	StillPlayer = 'still-player',
+	ImageStore = 'image-store',
 	SoundPlayer = 'sound-player',
 }
 
-export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux | MappingKairosMacro | MappingKairosClipPlayer | MappingKairosRamRecPlayer | MappingKairosStillPlayer | MappingKairosSoundPlayer
+export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux | MappingKairosMacro | MappingKairosClipPlayer | MappingKairosRamRecPlayer | MappingKairosImageStore | MappingKairosSoundPlayer
 
 export interface ListScenesPayload {
 	scenePath: string[]

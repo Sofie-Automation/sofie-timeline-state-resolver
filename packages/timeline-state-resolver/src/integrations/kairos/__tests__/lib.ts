@@ -42,5 +42,5 @@ export const EMPTY_STATE: Omit<KairosDeviceState, 'stateTime'> = {
 	sceneSnapshots: {},
 	scenes: {},
 	soundPlayers: {},
-	stillPlayers: {},
+	imageStores: {},
 }

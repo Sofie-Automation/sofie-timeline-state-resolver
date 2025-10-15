@@ -16,11 +16,11 @@ import {
 	TimelineContentKairosClipPlayer,
 	TimelineContentKairosRamRecPlayer,
 	TimelineContentKairosSoundPlayer,
-	TimelineContentKairosStillPlayer,
+	TimelineContentKairosImageStore,
 	MappingKairosAux,
 	MappingKairosClipPlayer,
 	MappingKairosRamRecPlayer,
-	MappingKairosStillPlayer,
+	MappingKairosImageStore,
 	MappingKairosSoundPlayer,
 	TimelineContentKairosPlayerState,
 	TimelineContentKairosSceneSnapshotInfo,
@@ -97,9 +97,18 @@ export interface KairosDeviceState {
 		  }
 		| undefined
 	>
-	stillPlayers: Record<
+	imageStores: Record<
 		number,
-		{ ref: number; state: TimelineContentKairosStillPlayer; timelineObjIds: string[] } | undefined
+		| {
+				ref: number
+				state: {
+					content: TimelineContentKairosImageStore
+					mappingOptions: MappingKairosImageStore
+				}
+
+				timelineObjIds: string[]
+		  }
+		| undefined
 	>
 	soundPlayers: Record<
 		number,
@@ -127,7 +136,7 @@ export class KairosStateBuilder {
 		macros: {},
 		clipPlayers: {},
 		ramRecPlayers: {},
-		stillPlayers: {},
+		imageStores: {},
 		soundPlayers: {},
 	}
 
@@ -182,9 +191,16 @@ export class KairosStateBuilder {
 							builder._applyRamRecPlayer(mapping.options, content, tlObject)
 						}
 						break
-					case MappingKairosType.StillPlayer:
-						if (content.type === TimelineContentTypeKairos.STILL_PLAYER) {
-							builder._applyStillPlayer(mapping.options, content, tlObject.id)
+					case MappingKairosType.ImageStore:
+						if (content.type === TimelineContentTypeKairos.IMAGE_STORE) {
+							builder._applyImageStore(
+								mapping.options,
+								{
+									content,
+									mappingOptions: mapping.options,
+								},
+								tlObject.id
+							)
 						}
 						break
 					case MappingKairosType.SoundPlayer:
@@ -354,19 +370,22 @@ export class KairosStateBuilder {
 		)
 	}
 
-	private _applyStillPlayer(
-		mapping: MappingKairosStillPlayer,
-		content: TimelineContentKairosStillPlayer,
+	private _applyImageStore(
+		mapping: MappingKairosImageStore,
+		state: {
+			mappingOptions: MappingKairosImageStore
+			content: TimelineContentKairosImageStore
+		},
 		timelineObjId: string
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
 		const playerId = mapping.playerId
 
-		this.#deviceState.stillPlayers[playerId] = this._mergeState(
-			this.#deviceState.stillPlayers[playerId],
+		this.#deviceState.imageStores[playerId] = this._mergeState(
+			this.#deviceState.imageStores[playerId],
 			playerId,
-			content,
+			state,
 			timelineObjId
 		)
 	}

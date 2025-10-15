@@ -6,9 +6,10 @@ import {
 	KairosClipPlayerCommand,
 	KairosRamRecPlayerCommand,
 	KairosSoundPlayerCommand,
-	KairosClipPlayerCommandMethod,
+	KairosPlayerCommandMethod,
+	KairosImageStoreCommand,
 } from '../commands'
-import { MappingOptions } from '../stateBuilder'
+import { KairosDeviceState, MappingOptions } from '../stateBuilder'
 import { diffObjectBoolean, getAllKeysString } from './lib'
 
 export function diffMediaPlayers(
@@ -31,19 +32,27 @@ export function diffMediaPlayers(
 		const cpRef = newClipPlayer?.ref || oldClipPlayer?.ref
 		if (!cpRef) continue // No ClipPlayer to diff
 
+		/** The properties to update on the ClipPlayer */
+		const updateCmd: KairosClipPlayerCommand | KairosRamRecPlayerCommand | KairosSoundPlayerCommand = {
+			type: playerType,
+			playerId: playerId,
+			values: {},
+		}
+
 		if (!newClipPlayer && oldClipPlayer) {
 			// ClipPlayer obj was removed, stop it:
+
+			const contextTimelineObjId = oldClipPlayer?.timelineObjIds.join(' & ') ?? ''
 
 			const clearPlayerOnStop =
 				oldClipPlayer.state.content.clearPlayerOnStop ?? oldClipPlayer.state.mappingOptions.clearPlayerOnStop ?? false
 
 			if (clearPlayerOnStop) {
 				commands.push({
-					timelineObjId: oldClipPlayer?.timelineObjIds.join(' & ') ?? '',
+					timelineObjId: contextTimelineObjId,
 					context: `key=${playerId} newClipPlayer=${!!newClipPlayer} oldClipPlayer=${!!oldClipPlayer}`,
 					command: {
-						type: 'clip-player',
-						playerId: playerId,
+						...updateCmd,
 						values: {
 							clip: null, // Clear the clip
 						},
@@ -51,11 +60,12 @@ export function diffMediaPlayers(
 				})
 			} else {
 				commands.push({
-					timelineObjId: oldClipPlayer?.timelineObjIds.join(' & ') ?? '',
+					timelineObjId: contextTimelineObjId,
 					context: `key=${playerId} newClipPlayer=${!!newClipPlayer} oldClipPlayer=${!!oldClipPlayer}`,
 					command: {
-						type: 'clip-player:do',
+						type: 'media-player:do',
 						playerId: playerId,
+						playerType: playerType,
 						command: 'stop',
 					},
 				})
@@ -69,14 +79,8 @@ export function diffMediaPlayers(
 			const diff = diffObjectBoolean(oldState, newState)
 
 			if (diff) {
-				/** The properties to update on the ClipPlayer */
-				const updateCmd: KairosClipPlayerCommand | KairosRamRecPlayerCommand | KairosSoundPlayerCommand = {
-					type: playerType,
-					playerId: playerId,
-					values: {},
-				}
 				/** The command to be sent to the ClipPlayer */
-				let playerCommand: KairosClipPlayerCommandMethod['command'] | null = null
+				let playerCommand: KairosPlayerCommandMethod['command'] | null = null
 
 				if (
 					diff.absoluteStartTime &&
@@ -155,10 +159,114 @@ export function diffMediaPlayers(
 						timelineObjId: newClipPlayer?.timelineObjIds.join(' & ') ?? '',
 						context: `key=${playerId} diff=${JSON.stringify(diff)}`,
 						command: {
-							type: 'clip-player:do',
+							type: 'media-player:do',
 							playerId: playerId,
+							playerType: playerType,
 							command: playerCommand,
 						},
+					})
+				}
+			}
+		}
+	}
+	return commands
+}
+
+export function diffMediaImageStore(
+	oldImageStores: KairosDeviceState['imageStores'],
+	newImageStores: KairosDeviceState['imageStores']
+): KairosCommandWithContext[] {
+	const commands: KairosCommandWithContext[] = []
+
+	// Note: An "Image Store" would have been better named "Still Player", because it is a player that plays still images
+
+	const playerIds = getAllKeysString(oldImageStores, newImageStores).map(parseInt)
+	for (const playerId of playerIds) {
+		if (isNaN(playerId)) continue
+
+		/** New state  */
+		const newImageStore = newImageStores[playerId]
+		/** Old state  */
+		const oldImageStore = oldImageStores[playerId]
+
+		const cpRef = newImageStore?.ref || oldImageStore?.ref
+		if (!cpRef) continue // No ClipPlayer to diff
+
+		if (!newImageStore && oldImageStore) {
+			// ClipPlayer obj was removed, stop it:
+
+			const clearPlayerOnStop =
+				oldImageStore.state.content.imageStore.clearPlayerOnStop ??
+				oldImageStore.state.mappingOptions.clearPlayerOnStop ??
+				false
+
+			if (clearPlayerOnStop) {
+				commands.push({
+					timelineObjId: oldImageStore?.timelineObjIds.join(' & ') ?? '',
+					context: `key=${playerId} newImageStore=${!!newImageStore} oldImageStore=${!!oldImageStore}`,
+					command: {
+						type: 'image-store',
+						playerId: playerId,
+						values: {
+							clip: null, // Clear the clip
+						},
+					},
+				})
+			} else {
+				// Do nothing, just leave it
+			}
+		} else if (newImageStore) {
+			/** The properties to update on the ClipPlayer */
+			const updateCmd: KairosImageStoreCommand = {
+				type: 'image-store',
+				playerId: playerId,
+				values: {},
+			}
+
+			const oldState = oldImageStore?.state.content.imageStore
+			const newState = newImageStore?.state.content.imageStore
+
+			const diff = diffObjectBoolean(oldState, newState)
+
+			if (diff) {
+				if (diff.advancedResolutionControl && newState.advancedResolutionControl !== undefined) {
+					updateCmd.values.advancedResolutionControl = newState.advancedResolutionControl
+				}
+				if (diff.clip) {
+					updateCmd.values.clip = newState.clip ?? null
+				}
+				if (diff.color && newState.color !== undefined) {
+					updateCmd.values.color = newState.color
+				}
+				if (diff.colorOverwrite && newState.colorOverwrite !== undefined) {
+					updateCmd.values.colorOverwrite = newState.colorOverwrite
+				}
+				if (diff.dissolve && newState.dissolve !== undefined) {
+					updateCmd.values.dissolveEnabled = newState.dissolve.enabled ?? false
+					updateCmd.values.dissolveMode = newState.dissolve.mode
+					updateCmd.values.dissolveTime = newState.dissolve.duration
+				}
+				if (diff.removeSourceAlpha && newState.removeSourceAlpha !== undefined) {
+					updateCmd.values.removeSourceAlpha = newState.removeSourceAlpha
+				}
+				if (diff.resolution && newState.resolution !== undefined) {
+					updateCmd.values.resolution = newState.resolution
+				}
+				if (diff.resolutionX && newState.resolutionX !== undefined) {
+					updateCmd.values.resolutionX = newState.resolutionX
+				}
+				if (diff.resolutionY && newState.resolutionY !== undefined) {
+					updateCmd.values.resolutionY = newState.resolutionY
+				}
+				if (diff.scaleMode && newState.scaleMode !== undefined) {
+					updateCmd.values.scaleMode = newState.scaleMode
+				}
+
+				if (!isEmptyObject(updateCmd.values)) {
+					commands.push({
+						timelineObjId: newImageStore?.timelineObjIds.join(' & ') ?? '',
+						context: `key=${playerId} diff=${JSON.stringify(diff)}`,
+						command: updateCmd,
 					})
 				}
 			}
