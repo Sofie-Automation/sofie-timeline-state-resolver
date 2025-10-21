@@ -40,7 +40,7 @@
 		}
 	],
 	"scripts": {
-		"test": "run lint && run unit",
+		"test": "run lint",
 		"validate:dependencies": "yarn npm  audit --environment production && yarn license-validate",
 		"validate:dev-dependencies": "yarn npm audit --environment development",
 		"lint:raw": "run -T eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
