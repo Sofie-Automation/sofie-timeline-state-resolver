@@ -143,6 +143,7 @@ jobs:
             packages/*/CHANGELOG.md
             yarn.lock
             package.json
+            lerna.json
             CHANGELOG.md
           retention-days: 1
           if-no-files-found: error
