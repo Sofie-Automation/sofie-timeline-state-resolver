@@ -1744,6 +1744,45 @@ describe('Sisyfos', () => {
 				}),
 			])
 		})
+
+		it("doesn't emit commands for empty `label` string", async () => {
+			expect(
+				await compareStates(
+					{
+						channels: {
+							0: {
+								faderLevel: undefined,
+								label: 'asfdadf asdfadsf',
+								timelineObjIds: [],
+								pgmOn: undefined,
+								pstOn: undefined,
+								visible: undefined,
+								inputGain: undefined,
+								inputSelector: undefined,
+								muteOn: undefined,
+							},
+						},
+						resync: false,
+					},
+					{
+						channels: {
+							0: {
+								faderLevel: undefined,
+								label: '',
+								timelineObjIds: [],
+								pgmOn: undefined,
+								pstOn: undefined,
+								visible: undefined,
+								inputGain: undefined,
+								inputSelector: undefined,
+								muteOn: undefined,
+							},
+						},
+						resync: false,
+					}
+				)
+			).toHaveLength(0)
+		})
 	})
 })
 
