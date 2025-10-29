@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [9.3.1-nrk.1](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/compare/9.3.1...9.3.1-nrk.1) (2025-10-29)
+
+
+### Features
+
+* Add Atem Action: runMacro ([0a92471](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/commit/0a924717b41a13051112812c78a119ef2ab72b62))
+* **EAV-468:** add `disableDefaults` option to sisyfos mappings ([dabf88a](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/commit/dabf88a1fe655f2b8eb81f9a8446d966da3b61f5))
+
+
+### Bug Fixes
+
+* **sisyfos:** Don't apply default values on set channel ([45946e5](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/commit/45946e5d37bda53ca982ceef7bdc61205ecf8166))
+* **Sisyfos:** don't send empty labels to Sisyfos ([4c5811d](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/commit/4c5811d26e8bbb11c2798f66139abb931fc590b3))
+* **sisyfos:** Use correct typings for pgm ([aad085a](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/commit/aad085a231cbcd7b2db728e00a1f4b12d9876d86))
+* update timeline dependency to latest ([d21240b](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/commit/d21240bfbe2082a9de42c65311d7d9a114f2e51a))
+
+
+
 ### [9.3.1](https://github.com/Sofie-Automation/sofie-timeline-state-resolver/compare/9.3.0...9.3.1) (2025-08-12)
 
 ### Bug Fixes
