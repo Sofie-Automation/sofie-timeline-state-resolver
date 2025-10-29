@@ -212,7 +212,7 @@ export class SisyfosApi extends EventEmitter<SisyfosApiEvents> {
 			pgmOn: typeof apiState.pgmOn === 'number' ? apiState.pgmOn === 1 : undefined,
 			voOn: typeof apiState.pgmOn === 'number' ? apiState.pgmOn === 2 : undefined,
 			pstOn: typeof apiState.pstOn === 'number' ? apiState.pstOn === 1 : undefined,
-			label: apiState.label,
+			label: apiState.label !== '' ? apiState.label : undefined,
 			faderLevel: apiState.faderLevel,
 			muteOn: apiState.muteOn,
 			inputGain: apiState.inputGain,
