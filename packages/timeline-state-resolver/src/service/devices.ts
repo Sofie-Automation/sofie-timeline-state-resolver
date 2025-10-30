@@ -20,6 +20,7 @@ import { TriCasterDevice } from '../integrations/tricaster'
 import { SingularLiveDevice } from '../integrations/singularLive'
 import { MultiOSCMessageDevice } from '../integrations/multiOsc'
 import { WebSocketClientDevice } from '../integrations/websocketClient'
+import { OGrafDevice } from '../integrations/ograf'
 
 export type ImplementedServiceDeviceTypes =
 	| DeviceType.ABSTRACT
@@ -29,6 +30,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.HYPERDECK
 	| DeviceType.LAWO
 	| DeviceType.OBS
+	| DeviceType.OGRAF
 	| DeviceType.OSC
 	| DeviceType.MULTI_OSC
 	| DeviceType.PANASONIC_PTZ
@@ -86,6 +88,12 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		canConnect: true,
 		deviceName: (deviceId: string) => 'OBS ' + deviceId,
 		executionMode: () => 'salvo',
+	},
+	[DeviceType.OGRAF]: {
+		deviceClass: OGrafDevice,
+		canConnect: true,
+		deviceName: (deviceId: string) => 'OGraf ' + deviceId,
+		executionMode: () => 'sequential',
 	},
 	[DeviceType.OSC]: {
 		deviceClass: OscDevice,
