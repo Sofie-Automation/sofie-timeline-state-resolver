@@ -103,7 +103,7 @@
 		"got": "^11.8.6",
 		"hpagent": "^1.2.0",
 		"hyperdeck-connection": "2.0.1",
-		"kairos-connection": "0.0.1-nightly-main-20251015-060906-1e757e5",
+		"kairos-connection": "0.2.0",
 		"klona": "^2.0.6",
 		"obs-websocket-js": "^5.0.6",
 		"osc": "^2.4.5",

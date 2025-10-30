@@ -85,14 +85,14 @@ export function getActions(kairos: KairosConnection): KairosActionMethods {
 		[KairosActions.ListMediaRamRec]: async (_payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
-				resultData: await kairos.listMediaRamRec(),
+				resultData: await kairos.listMediaRamRecs(),
 				resultCode: 0,
 			}
 		},
 		[KairosActions.ListMediaImage]: async (_payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
-				resultData: await kairos.listMediaImage(),
+				resultData: await kairos.listMediaImages(),
 				resultCode: 0,
 			}
 		},

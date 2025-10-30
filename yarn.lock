@@ -7328,22 +7328,22 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"kairos-connection@npm:0.0.1-nightly-main-20251015-060906-1e757e5":
-  version: 0.0.1-nightly-main-20251015-060906-1e757e5
-  resolution: "kairos-connection@npm:0.0.1-nightly-main-20251015-060906-1e757e5"
+"kairos-connection@npm:0.2.0":
+  version: 0.2.0
+  resolution: "kairos-connection@npm:0.2.0"
   dependencies:
-    kairos-lib: 0.0.1-nightly-main-20251015-060906-1e757e5
+    kairos-lib: 0.2.0
     tslib: ^2.8.1
-  checksum: 5d071f8736a7d1196a174bc76a308c20a57372c86397481663576a02adb9e3cc670dae0c09cfcbe33be3aacc7abffa26892ee47b847189bde9585cdba90a77e4
+  checksum: af6fde93a8752f780ae95066265ee5138681a951939b91fcbc2056463479833a550c87b19ff66c390f75cf352060f7edada8b3e1e9883339f5cc28c22768a4fd
   languageName: node
   linkType: hard
 
-"kairos-lib@npm:0.0.1-nightly-main-20251015-060906-1e757e5":
-  version: 0.0.1-nightly-main-20251015-060906-1e757e5
-  resolution: "kairos-lib@npm:0.0.1-nightly-main-20251015-060906-1e757e5"
+"kairos-lib@npm:0.2.0":
+  version: 0.2.0
+  resolution: "kairos-lib@npm:0.2.0"
   dependencies:
     tslib: ^2.8.1
-  checksum: 112e7193d626e57328bc22e4b4bc29ce89234d0964eb1e4ccf68ddc4a784810cf6e4f66fdf1b32e9c7ccb845dc3027bd51e2842acab439f6a24d8d8589805dc5
+  checksum: ade90fb8923d450f919e985e41677610991127a0e301f4d2ec857eae10fed009d65d8b17f2d9e52c42226e6f457b57e0cd033a52509de05319c8f33f1305288b
   languageName: node
   linkType: hard
 
@@ -11341,7 +11341,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "timeline-state-resolver-types@workspace:packages/timeline-state-resolver-types"
   dependencies:
-    kairos-lib: 0.0.1-nightly-main-20251015-060906-1e757e5
+    kairos-lib: 0.2.0
     tslib: ^2.6.3
   languageName: unknown
   linkType: soft
@@ -11366,7 +11366,7 @@ asn1@evs-broadcast/node-asn1:
     hyperdeck-connection: 2.0.1
     jest-mock-extended: ^3.0.7
     json-schema-to-typescript: ^10.1.5
-    kairos-connection: 0.0.1-nightly-main-20251015-060906-1e757e5
+    kairos-connection: 0.2.0
     klona: ^2.0.6
     obs-websocket-js: ^5.0.6
     osc: ^2.4.5
