@@ -8,7 +8,7 @@ import {
 	MappingSingularLiveType,
 } from 'timeline-state-resolver-types'
 import { getDeviceContext } from '../../__tests__/testlib'
-import { makeTimelineObjectResolved } from '../../../__mocks__/objects'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
 
 describe('Singular.Live', () => {
 	test('POST message', async () => {
@@ -29,8 +29,8 @@ describe('Singular.Live', () => {
 		const deviceState = device.convertTimelineStateToDeviceState(
 			{
 				time: 1000,
-				layers: {
-					myLayer0: makeTimelineObjectResolved({
+				objects: [
+					makeDeviceTimelineStateObject({
 						id: 'obj0',
 						enable: {
 							start: 1000,
@@ -49,8 +49,7 @@ describe('Singular.Live', () => {
 							},
 						},
 					}),
-				},
-				nextEvents: [],
+				],
 			},
 			myLayerMapping
 		)
@@ -69,8 +68,7 @@ describe('Singular.Live', () => {
 		const deviceState2 = device.convertTimelineStateToDeviceState(
 			{
 				time: 2000,
-				layers: {},
-				nextEvents: [],
+				objects: [],
 			},
 			myLayerMapping
 		)

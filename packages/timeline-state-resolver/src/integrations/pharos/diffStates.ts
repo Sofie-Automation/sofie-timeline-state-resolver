@@ -1,7 +1,6 @@
 import {
 	DeviceType,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentPharosAny,
 	TimelineContentPharosScene,
 	TimelineContentPharosTimeline,
@@ -9,9 +8,10 @@ import {
 	type Mappings,
 } from 'timeline-state-resolver-types'
 import type { PharosState, PharosCommandWithContext } from '.'
+import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
-type TimelineObjAny = Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
-type TimelineObjPharos = Timeline.ResolvedTimelineObjectInstance<TimelineContentPharosAny>
+type TimelineObjAny = DeviceTimelineStateObject<TSRTimelineContent>
+type TimelineObjPharos = DeviceTimelineStateObject<TimelineContentPharosAny>
 
 const isPharosObject = (obj: TimelineObjAny | undefined): obj is TimelineObjPharos => {
 	return !!obj && obj.content.deviceType === DeviceType.PHAROS

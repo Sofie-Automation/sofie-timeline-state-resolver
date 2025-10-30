@@ -7,7 +7,6 @@ import {
 	SendCommandResult,
 	StatusCode,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentTypeHTTP,
 	TimelineContentTypeHTTPParamType,
 	interpolateTemplateStringIfNeeded,
@@ -16,14 +15,20 @@ import {
 	HttpSendActions,
 	DeviceStatus,
 } from 'timeline-state-resolver-types'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 import _ = require('underscore')
 import got, { OptionsOfTextResponseBody, RequestError } from 'got'
 import { t } from '../../lib'
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import CacheableLookup from 'cacheable-lookup'
 
-export type HttpSendDeviceState = Timeline.TimelineState<TSRTimelineContent>
+export type HttpSendDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 export type HttpSendDeviceCommand = CommandWithContext<
 	{
@@ -124,14 +129,17 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 		)
 	}
 
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>): HttpSendDeviceState {
-		return state
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): HttpSendDeviceState {
+		return state.objects.reduce((acc, obj) => {
+			acc[obj.layer] = obj
+			return acc
+		}, {} as HttpSendDeviceState)
 	}
 	diffStates(oldState: HttpSendDeviceState | undefined, newState: HttpSendDeviceState): Array<HttpSendDeviceCommand> {
 		const commands: Array<HttpSendDeviceCommand> = []
 
-		_.each(newState.layers, (newLayer, layerKey: string) => {
-			const oldLayer = oldState?.layers[layerKey]
+		_.each(newState, (newLayer, layerKey: string) => {
+			const oldLayer = oldState?.[layerKey]
 			if (!oldLayer) {
 				// added!
 				commands.push({
@@ -162,8 +170,8 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 			}
 		})
 		// removed
-		_.each(oldState?.layers ?? {}, (oldLayer, layerKey) => {
-			const newLayer = newState.layers[layerKey]
+		_.each(oldState ?? {}, (oldLayer, layerKey) => {
+			const newLayer = newState[layerKey]
 			if (!newLayer) {
 				// removed!
 				commands.push({

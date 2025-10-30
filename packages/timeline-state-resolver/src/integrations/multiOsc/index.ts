@@ -3,7 +3,6 @@ import {
 	DeviceType,
 	OSCMessageCommandContent,
 	Mappings,
-	Timeline,
 	TSRTimelineContent,
 	MultiOscOptions,
 	SomeMappingMultiOsc,
@@ -12,9 +11,8 @@ import {
 	StatusCode,
 	MultiOscDeviceTypes,
 } from 'timeline-state-resolver-types'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { OSCConnection } from './deviceConnection'
-import { ResolvedTimelineObjectInstance } from 'superfly-timeline'
 import * as osc from 'osc'
 
 export interface MultiOscInitTestOptions {
@@ -117,7 +115,7 @@ export class MultiOSCMessageDevice
 	 * @param state
 	 */
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): MultiOSCDeviceState {
 		const addrToOSCMessage: MultiOSCDeviceState = Object.fromEntries(
@@ -127,26 +125,26 @@ export class MultiOSCMessageDevice
 			Object.keys(this._connections).map((id) => [id, {}])
 		)
 
-		for (const layer of Object.values<ResolvedTimelineObjectInstance<TSRTimelineContent>>(state.layers)) {
-			const mapping = mappings[layer.layer] as Mapping<SomeMappingMultiOsc> | undefined
+		for (const tlObject of state.objects) {
+			const mapping = mappings[tlObject.layer] as Mapping<SomeMappingMultiOsc> | undefined
 			if (!mapping) continue
 
 			const connectionState = addrToOSCMessage[mapping.options.connectionId]
 			if (!connectionState) continue
 
-			if (layer.content.deviceType === DeviceType.OSC) {
+			if (tlObject.content.deviceType === DeviceType.OSC) {
 				const content: OSCDeviceStateContent = {
-					...layer.content,
+					...tlObject.content,
 					connectionId: mapping.options.connectionId,
-					fromTlObject: layer.id,
+					fromTlObject: tlObject.id,
 				}
 				if (
 					(connectionState[content.path] &&
-						addrToPriority[mapping.options.connectionId][content.path] <= (layer.priority || 0)) ||
+						addrToPriority[mapping.options.connectionId][content.path] <= (tlObject.priority || 0)) ||
 					!connectionState[content.path]
 				) {
 					connectionState[content.path] = content
-					addrToPriority[mapping.options.connectionId][content.path] = layer.priority || 0
+					addrToPriority[mapping.options.connectionId][content.path] = tlObject.priority || 0
 				}
 			}
 		}

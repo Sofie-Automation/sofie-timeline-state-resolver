@@ -3,13 +3,13 @@ import {
 	DeviceType,
 	OSCDeviceType,
 	OSCValueType,
-	Timeline,
 	TimelineContentOSCAny,
 	TimelineContentTypeOSC,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
 import { OscCommandWithContext, OscDevice, OscDeviceState } from '..'
 import { getDeviceContext } from '../../__tests__/testlib'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const MOCKED_SOCKET_CONNECT = jest.fn()
 const MOCKED_SOCKET_WRITE = jest.fn()
@@ -44,7 +44,7 @@ async function getInitialisedOscDevice() {
 
 describe('OSC Device', () => {
 	describe('convertTimelineStateToDeviceState', () => {
-		async function compareState(tlState: Timeline.TimelineState<TSRTimelineContent>, expDevState: OscDeviceState) {
+		async function compareState(tlState: DeviceTimelineState<TSRTimelineContent>, expDevState: OscDeviceState) {
 			const device = await getInitialisedOscDevice()
 
 			const actualState = device.convertTimelineStateToDeviceState(tlState)
@@ -61,6 +61,7 @@ describe('OSC Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							...DEFAULT_TL_CONTENT,
 
@@ -85,6 +86,7 @@ describe('OSC Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							...DEFAULT_TL_CONTENT,
 
@@ -119,6 +121,7 @@ describe('OSC Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							...DEFAULT_TL_CONTENT,
 							path: '/path/test',
@@ -354,12 +357,11 @@ describe('OSC Device', () => {
 })
 
 function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentOSCAny }>
-): Timeline.TimelineState<TSRTimelineContent> {
+	objs: Record<string, { id: string; layer: string; content: TimelineContentOSCAny }>
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
-		layers: objs as any,
-		nextEvents: [],
+		objects: Object.values<any>(objs),
 	}
 }
 const DEFAULT_TL_CONTENT: {

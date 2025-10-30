@@ -8,10 +8,9 @@ import {
 	OSCValueType,
 	SomeOSCValue,
 	StatusCode,
-	Timeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import * as osc from 'osc'
 
 import Debug from 'debug'
@@ -108,11 +107,11 @@ export class OscDevice implements Device<OscDeviceTypes, OscDeviceState, OscComm
 		this._oscClient.removeAllListeners()
 	}
 
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>): OscDeviceState {
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): OscDeviceState {
 		const addrToOSCMessage: OscDeviceState = {}
 		const addrToPriority: { [address: string]: number } = {}
 
-		Object.values<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(state.layers).forEach((layer) => {
+		for (const layer of state.objects) {
 			if (layer.content.deviceType === DeviceType.OSC) {
 				const content: OSCDeviceStateContent = {
 					...layer.content,
@@ -126,7 +125,7 @@ export class OscDevice implements Device<OscDeviceTypes, OscDeviceState, OscComm
 					addrToPriority[content.path] = layer.priority || 0
 				}
 			}
-		})
+		}
 
 		return addrToOSCMessage
 	}

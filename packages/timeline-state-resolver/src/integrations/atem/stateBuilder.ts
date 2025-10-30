@@ -7,7 +7,6 @@ import {
 	TimelineContentTypeAtem,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	AtemTransitionStyle,
 	TimelineContentAtemME,
 	MappingAtemMixEffect,
@@ -34,6 +33,7 @@ import _ = require('underscore')
 import { Defaults, State as DeviceState, Defaults as StateDefault } from 'atem-state'
 import { assertNever, cloneDeep, deepMerge, literal } from '../../lib'
 import { PartialDeep } from 'type-fest'
+import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 export type InternalAtemConnectionState = AtemState & { controlValues?: Record<string, string> }
 
@@ -41,19 +41,17 @@ export class AtemStateBuilder {
 	// Start out with default state:
 	readonly #deviceState: InternalAtemConnectionState = AtemStateUtil.Create()
 
-	public static fromTimeline(timelineState: Timeline.StateInTime<TSRTimelineContent>, mappings: Mappings): DeviceState {
+	public static fromTimeline(
+		sortedLayers: DeviceTimelineStateObject<TSRTimelineContent>[],
+		mappings: Mappings
+	): DeviceState {
 		const builder = new AtemStateBuilder()
 
-		// Sort layer based on Layer name
-		const sortedLayers = _.map(timelineState, (tlObject, layerName) => ({ layerName, tlObject })).sort((a, b) =>
-			a.layerName.localeCompare(b.layerName)
-		)
-
 		// For every layer, augment the state
-		_.each(sortedLayers, ({ tlObject, layerName }) => {
+		_.each(sortedLayers, (tlObject) => {
 			const content = tlObject.content
 
-			const mapping = mappings[layerName] as Mapping<SomeMappingAtem> | undefined
+			const mapping = mappings[tlObject.layer] as Mapping<SomeMappingAtem> | undefined
 
 			if (mapping && content.deviceType === DeviceType.ATEM) {
 				switch (mapping.options.mappingType) {
@@ -319,7 +317,7 @@ export class AtemStateBuilder {
 		}
 	}
 
-	private _setControlValue(addresses: string[], tlObject: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>) {
+	private _setControlValue(addresses: string[], tlObject: DeviceTimelineStateObject<TSRTimelineContent>) {
 		if (!this.#deviceState.controlValues) this.#deviceState.controlValues = {}
 
 		for (const a of addresses) {

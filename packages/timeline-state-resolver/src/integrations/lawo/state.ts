@@ -5,7 +5,6 @@ import {
 	MappingLawoSource,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentLawoEmberProperty,
 	TimelineContentLawoSource,
 	TimelineContentLawoSources,
@@ -14,6 +13,7 @@ import {
 
 import { EmberValue } from 'emberplus-connection/dist/types'
 import { Model as EmberModel } from 'emberplus-connection'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 export interface LawoState {
 	faders: {
@@ -34,7 +34,7 @@ export interface LawoState {
 }
 
 export function convertTimelineStateToLawoState(
-	state: Timeline.TimelineState<TSRTimelineContent>,
+	state: DeviceTimelineState<TSRTimelineContent>,
 	mappings: Mappings
 ): LawoState {
 	const lawoState: LawoState = {
@@ -50,7 +50,7 @@ export function convertTimelineStateToLawoState(
 	//   fullpath
 	//   triggerValue
 
-	for (const layer of Object.values<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(state.layers)) {
+	for (const layer of state.objects) {
 		const mapping = mappings[layer.layer]
 		if (!mapping || mapping.device !== DeviceType.LAWO) continue
 

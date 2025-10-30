@@ -7,7 +7,6 @@ import {
 	PanasonicPTZOptions,
 	StatusCode,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentTypePanasonicPtz,
 	FocusMode,
 	PanasonicPTZDeviceTypes,
@@ -16,7 +15,7 @@ import {
 	GetZoomPositionResult,
 	PanasonicPTZActions,
 } from 'timeline-state-resolver-types'
-import type { Device, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { PanasonicPtzState, convertStateToPtz, getDefaultState } from './state'
 import { PanasonicPtzCommandWithContext, diffStates } from './diff'
 import { PanasonicFocusMode, PanasonicPtzHttpInterface } from './connection'
@@ -65,7 +64,7 @@ export class PanasonicPtzDevice
 	}
 
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		newMappings: Mappings
 	): PanasonicPtzState {
 		return convertStateToPtz(state, newMappings)

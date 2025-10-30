@@ -7,7 +7,6 @@ import {
 	SingularCompositionControlNode,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	Mapping,
 	DeviceStatus,
 	StatusCode,
@@ -15,7 +14,7 @@ import {
 } from 'timeline-state-resolver-types'
 import got from 'got'
 import { literal } from '../../lib'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 export interface SingularLiveControlNodeCommandContent extends SingularLiveCommandContent {
 	state?: string
@@ -95,15 +94,15 @@ export class SingularLiveDevice
 	}
 
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		newMappings: Mappings<unknown>
 	): SingularLiveState {
 		// convert the timeline state into something we can use
 		// (won't even use this.mapping)
 		const singularState: SingularLiveState = this._getDefaultState()
 
-		_.each(state.layers, (tlObject, layerName: string) => {
-			const mapping = newMappings[layerName] as Mapping<SomeMappingSingularLive>
+		for (const tlObject of state.objects) {
+			const mapping = newMappings[tlObject.layer] as Mapping<SomeMappingSingularLive>
 			if (
 				mapping &&
 				mapping.device === DeviceType.SINGULAR_LIVE &&
@@ -118,7 +117,7 @@ export class SingularLiveDevice
 					}
 				}
 			}
-		})
+		}
 
 		return singularState
 	}
