@@ -2,7 +2,6 @@ import {
 	HyperdeckOptions,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	HyperdeckActionMethods,
 	ActionExecutionResult,
 	ActionExecutionResultCode,
@@ -21,7 +20,7 @@ import {
 import { deferAsync } from '../../lib'
 import { HyperdeckCommandWithContext, diffHyperdeckStates } from './diffState'
 import { HyperdeckDeviceState, convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from './stateBuilder'
-import type { Device, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 /**
  * This is a wrapper for the Hyperdeck Device. Commands to any and all hyperdeck devices will be sent through here.
@@ -245,10 +244,10 @@ export class HyperdeckDevice
 	 * @param timelineState The state to be converted
 	 */
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): HyperdeckDeviceState {
-		return convertTimelineStateToHyperdeckState(timelineState.layers, mappings)
+		return convertTimelineStateToHyperdeckState(timelineState, mappings)
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {

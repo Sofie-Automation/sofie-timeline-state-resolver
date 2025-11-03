@@ -5,10 +5,9 @@ import {
 	Mappings,
 	SomeMappingLawo,
 	StatusCode,
-	Timeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import type { Device, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 import Debug from 'debug'
 import { convertTimelineStateToLawoState, LawoState } from './state'
@@ -47,7 +46,7 @@ export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoComman
 	}
 
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings<SomeMappingLawo>
 	): LawoState {
 		return convertTimelineStateToLawoState(timelineState, mappings)

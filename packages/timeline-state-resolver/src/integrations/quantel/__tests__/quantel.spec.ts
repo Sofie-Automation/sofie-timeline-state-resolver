@@ -6,7 +6,6 @@ import {
 	QuantelControlMode,
 	QuantelTransitionType,
 	SomeMappingQuantel,
-	Timeline,
 	TimelineContentQuantelAny,
 	TSRTimeline,
 	TSRTimelineContent,
@@ -22,6 +21,7 @@ import { getResolvedState, resolveTimeline } from 'superfly-timeline'
 import { DevicesDict } from '../../../service/devices'
 import { setSoftJumpWaitTime } from '../connection'
 import { waitUntil } from '../../../__tests__/lib'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 async function getInitialisedQuantelDevice(clearMock?: jest.Mock) {
 	const dev = new QuantelDevice(getDeviceContext())
@@ -46,7 +46,7 @@ describe('Quantel Device', () => {
 
 	describe('convertTimelineStateToDeviceState', () => {
 		async function convertState(
-			tlState: Timeline.TimelineState<TSRTimelineContent>,
+			tlState: DeviceTimelineState<TSRTimelineContent>,
 			mappings: Mappings<SomeMappingQuantel>,
 			expDevState: QuantelState
 		) {
@@ -66,6 +66,7 @@ describe('Quantel Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							deviceType: DeviceType.QUANTEL,
 
@@ -113,6 +114,7 @@ describe('Quantel Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							deviceType: DeviceType.QUANTEL,
 
@@ -160,6 +162,7 @@ describe('Quantel Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							deviceType: DeviceType.QUANTEL,
 
@@ -171,6 +174,7 @@ describe('Quantel Device', () => {
 					},
 					layer1: {
 						id: 'obj1',
+						layer: 'layer1',
 						content: {
 							deviceType: DeviceType.QUANTEL,
 
@@ -227,6 +231,7 @@ describe('Quantel Device', () => {
 				createTimelineState({
 					layer0_lookahead: {
 						id: 'obj1',
+						layer: 'layer0_lookahead',
 						content: {
 							deviceType: DeviceType.QUANTEL,
 
@@ -279,6 +284,7 @@ describe('Quantel Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							deviceType: DeviceType.QUANTEL,
 
@@ -290,6 +296,7 @@ describe('Quantel Device', () => {
 					},
 					layer0_lookahead: {
 						id: 'obj1',
+						layer: 'layer0_lookahead',
 						content: {
 							deviceType: DeviceType.QUANTEL,
 
@@ -343,6 +350,7 @@ describe('Quantel Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							deviceType: DeviceType.QUANTEL,
 
@@ -1982,17 +1990,17 @@ function createTimelineState(
 		string,
 		{
 			id: string
+			layer: string
 			content: TimelineContentQuantelAny
 			instance?: { originalStart: number }
 			isLookahead?: boolean
 			lookaheadForLayer?: string
 		}
 	>
-): Timeline.TimelineState<TSRTimelineContent> {
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
-		layers: objs as any,
-		nextEvents: [],
+		objects: Object.values<any>(objs),
 	}
 }
 

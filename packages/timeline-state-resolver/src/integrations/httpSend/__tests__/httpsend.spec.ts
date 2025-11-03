@@ -4,8 +4,6 @@ import {
 	DeviceType,
 	TimelineContentTypeHTTP,
 	TimelineContentHTTPSendAny,
-	Timeline,
-	TSRTimelineContent,
 	HttpSendActions,
 } from 'timeline-state-resolver-types'
 
@@ -62,15 +60,7 @@ describe('HTTP-Send', () => {
 		}
 
 		test('From undefined', async () => {
-			await compareStates(
-				undefined,
-				{
-					time: 20,
-					nextEvents: [],
-					layers: {},
-				},
-				[]
-			)
+			await compareStates(undefined, {}, [])
 		})
 
 		test('empty states', async () => {
@@ -89,6 +79,7 @@ describe('HTTP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				}),
@@ -117,12 +108,14 @@ describe('HTTP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				}),
 				createTimelineState({
 					layer0: {
 						id: 'obj1',
+						layer: 'layer0',
 						content: {
 							...content,
 							params: {
@@ -161,6 +154,7 @@ describe('HTTP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				}),
@@ -314,6 +308,7 @@ describe('HTTP-Send', () => {
 				aStart: createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				}),
@@ -321,6 +316,7 @@ describe('HTTP-Send', () => {
 				bStart: createTimelineState({
 					layer0: {
 						id: 'obj1',
+						layer: 'layer0',
 						content,
 					},
 				}),
@@ -388,13 +384,9 @@ describe('HTTP-Send', () => {
 })
 
 function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentHTTPSendAny }>
-): Timeline.TimelineState<TSRTimelineContent> {
-	return {
-		time: 10,
-		layers: objs as any,
-		nextEvents: [],
-	}
+	objs: Record<string, { id: string; layer: string; content: TimelineContentHTTPSendAny }>
+): HttpSendDeviceState {
+	return objs as any
 }
 const DEFAULT_TL_CONTENT: {
 	deviceType: DeviceType.HTTPSEND

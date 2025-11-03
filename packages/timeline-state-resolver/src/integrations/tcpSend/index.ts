@@ -1,11 +1,16 @@
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
 	DeviceStatus,
 	StatusCode,
 	TSRTimelineContent,
-	Timeline,
 	TcpSendCommandContent,
 	TcpSendOptions,
 	TcpSendActionMethods,
@@ -16,7 +21,7 @@ import { t } from '../../lib'
 import _ = require('underscore')
 import { TcpConnection } from './tcpConnection'
 
-export type TcpSendDeviceState = Timeline.TimelineState<TSRTimelineContent>
+export type TcpSendDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 export type TcpSendDeviceCommand = CommandWithContext<
 	{
@@ -81,16 +86,17 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 		},
 	}
 
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>): TcpSendDeviceState {
-		return state
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): TcpSendDeviceState {
+		return state.objects.reduce((acc, obj) => {
+			if (obj.layer) acc[obj.layer] = obj
+			return acc
+		}, {} as TcpSendDeviceState)
 	}
 	diffStates(oldState: TcpSendDeviceState | undefined, newState: TcpSendDeviceState): Array<TcpSendDeviceCommand> {
 		const commands: Array<TcpSendDeviceCommand> = []
 
-		for (const [layerKey, newLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
-			newState.layers
-		)) {
-			const oldLayer = oldState?.layers[layerKey]
+		for (const [layerKey, newLayer] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(newState)) {
+			const oldLayer = oldState?.[layerKey]
 			// added/changed
 			if (newLayer.content) {
 				if (!oldLayer) {
@@ -122,10 +128,8 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 			}
 		}
 		// removed
-		for (const [layerKey, oldLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
-			oldState?.layers ?? {}
-		)) {
-			const newLayer = newState.layers[layerKey]
+		for (const [layerKey, oldLayer] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(oldState ?? {})) {
+			const newLayer = newState[layerKey]
 			if (!newLayer) {
 				// removed!
 				commands.push({

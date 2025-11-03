@@ -2,7 +2,6 @@ import {
 	DeviceType,
 	TriCasterOptions,
 	SomeMappingTricaster,
-	Timeline,
 	TSRTimelineContent,
 	Mapping,
 	StatusCode,
@@ -12,7 +11,7 @@ import {
 import { WithContext, MappingsTriCaster, TriCasterState, TriCasterStateDiffer } from './triCasterStateDiffer'
 import { TriCasterCommandWithContext } from './triCasterCommands'
 import { TriCasterConnection } from './triCasterConnection'
-import type { Device, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const DEFAULT_PORT = 5951
 
@@ -76,7 +75,7 @@ export class TriCasterDevice
 	 * @param timelineState The state to be converted
 	 */
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Record<string, Mapping<SomeMappingTricaster>>
 	): WithContext<TriCasterState> {
 		if (!this._initialized || !this._stateDiffer) {

@@ -4,12 +4,11 @@ import {
 	StatusCode,
 	TelemetricsDeviceTypes,
 	TelemetricsOptions,
-	Timeline,
 	TimelineContentTelemetrics,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
 import { Socket } from 'net'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const TELEMETRICS_COMMAND_PREFIX = 'P0C'
 const DEFAULT_SOCKET_PORT = 5000
@@ -89,13 +88,13 @@ export class TelemetricsDevice
 	}
 
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		_newMappings: Mappings<unknown>
 	): TelemetricsState {
 		const newTelemetricsState: TelemetricsState = { presetShotIdentifiers: [] }
 
-		newTelemetricsState.presetShotIdentifiers = Object.entries<Timeline.ResolvedTimelineObjectInstance>(state.layers)
-			.map(([_layerName, timelineObject]) => {
+		newTelemetricsState.presetShotIdentifiers = state.objects
+			.map((timelineObject) => {
 				const telemetricsContent = timelineObject.content as TimelineContentTelemetrics
 				return telemetricsContent.presetShotIdentifiers
 			})

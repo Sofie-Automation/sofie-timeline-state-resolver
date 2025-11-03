@@ -1,7 +1,6 @@
 /* eslint-disable jest/expect-expect */
 import {
 	DeviceType,
-	Timeline,
 	TimelineContentShotoku,
 	TimelineContentTypeShotoku,
 	TSRTimelineContent,
@@ -9,6 +8,7 @@ import {
 import { ShotokuCommandWithContext, ShotokuDevice, ShotokuDeviceState } from '..'
 import { getDeviceContext } from '../../__tests__/testlib'
 import { ShotokuCommandType } from '../connection'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const MOCKED_SOCKET_CONNECT = jest.fn((_: any, _2: any, cb: any) => cb())
 const MOCKED_SOCKET_WRITE = jest.fn()
@@ -40,7 +40,7 @@ async function getInitialisedDevice() {
 
 describe('Shotoku Device', () => {
 	describe('convertTimelineStateToDeviceState', () => {
-		async function compareState(tlState: Timeline.TimelineState<TSRTimelineContent>, expDevState: ShotokuDeviceState) {
+		async function compareState(tlState: DeviceTimelineState<TSRTimelineContent>, expDevState: ShotokuDeviceState) {
 			const device = await getInitialisedDevice()
 
 			const actualState = device.convertTimelineStateToDeviceState(tlState)
@@ -60,6 +60,7 @@ describe('Shotoku Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							...DEFAULT_TL_CONTENT,
 
@@ -85,6 +86,7 @@ describe('Shotoku Device', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content: {
 							...DEFAULT_TL_CONTENT,
 							type: TimelineContentTypeShotoku.SEQUENCE,
@@ -312,12 +314,11 @@ describe('Shotoku Device', () => {
 })
 
 function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentShotoku }>
-): Timeline.TimelineState<TSRTimelineContent> {
+	objs: Record<string, { id: string; layer: string; content: TimelineContentShotoku }>
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
-		layers: objs as any,
-		nextEvents: [],
+		objects: Object.values<any>(objs),
 	}
 }
 const DEFAULT_TL_CONTENT: {

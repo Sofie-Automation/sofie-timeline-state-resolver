@@ -3,7 +3,6 @@ import {
 	SofieChefOptions,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	ActionExecutionResultCode,
 	SofieChefActionMethods,
 	StatusCode,
@@ -23,7 +22,7 @@ import {
 	ReceiveWSMessageResponse,
 } from './api'
 import { t } from '../../lib'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates'
 import { buildSofieChefState } from './stateBuilder'
 
@@ -177,7 +176,7 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 	}
 
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): SofieChefState {
 		return buildSofieChefState(timelineState, mappings)

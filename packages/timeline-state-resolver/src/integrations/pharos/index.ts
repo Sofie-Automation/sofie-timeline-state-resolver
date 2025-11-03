@@ -2,17 +2,22 @@ import {
 	PharosOptions,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	DeviceStatus,
 	StatusCode,
 	PharosDeviceTypes,
 } from 'timeline-state-resolver-types'
 import { Pharos } from './connection'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates'
 
 export type PharosCommandWithContext = CommandWithContext<CommandContent, string>
-export type PharosState = Timeline.StateInTime<TSRTimelineContent>
+export type PharosState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 interface CommandContent {
 	fcn: (pharos: Pharos) => Promise<unknown>
@@ -68,10 +73,13 @@ export class PharosDevice implements Device<PharosDeviceTypes, PharosState, Phar
 	}
 
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		_mappings: Mappings
 	): PharosState {
-		return timelineState.layers
+		return timelineState.objects.reduce((acc, obj) => {
+			if (obj.layer) acc[obj.layer] = obj
+			return acc
+		}, {} as PharosState)
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {

@@ -29,11 +29,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/lint-${{ matrix.lib-name }}-cache
           yarn install
           yarn build
@@ -57,11 +58,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/docs-cache
           yarn install
           yarn build
@@ -92,11 +94,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/test-${{ matrix.lib-name }}-${{ matrix.node-version }}-cache
           yarn install
           yarn build
@@ -138,7 +141,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
       - name: Check release is desired
@@ -213,11 +216,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/validate-deps-${{ matrix.lib-name }}-cache
           yarn install
         env:
@@ -252,11 +256,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.node-version'
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/validate-all-deps-${{ matrix.lib-name }}-cache
           yarn install
         env:

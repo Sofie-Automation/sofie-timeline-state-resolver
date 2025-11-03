@@ -5,9 +5,8 @@ import {
 	ObsDeviceTypes,
 	StatusCode,
 	TSRTimelineContent,
-	Timeline,
 } from 'timeline-state-resolver-types'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { OBSDeviceState, convertStateToOBS, getDefaultState } from './state'
 import { OBSRequestTypes } from 'obs-websocket-js'
 import { diffStates } from './diff'
@@ -76,7 +75,7 @@ export class OBSDevice implements Device<ObsDeviceTypes, OBSDeviceState, OBSComm
 	readonly actions = null
 
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		newMappings: Mappings
 	): OBSDeviceState {
 		return convertStateToOBS(state, newMappings)

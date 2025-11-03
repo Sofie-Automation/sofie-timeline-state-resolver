@@ -104,8 +104,8 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 		const convertedState = converter.getTriCasterStateFromTimelineState(
 			{
 				time: Date.now(),
-				layers: {
-					tc_me0_0: wrapIntoResolvedInstance<TimelineContentTriCasterME>({
+				objects: [
+					wrapIntoResolvedInstance<TimelineContentTriCasterME>({
 						layer: 'tc_me0_0',
 						enable: { while: '1' },
 						id: 't0',
@@ -120,7 +120,7 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 							} as TriCasterMixEffect,
 						},
 					}),
-					tc_me0_1: wrapIntoResolvedInstance<TimelineContentTriCasterME>({
+					wrapIntoResolvedInstance<TimelineContentTriCasterME>({
 						layer: 'tc_me0_1',
 						enable: { while: '1' },
 						id: 't1',
@@ -152,8 +152,7 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 							},
 						},
 					}),
-				},
-				nextEvents: [],
+				],
 			},
 			{
 				tc_me0_0: literal<Mapping<SomeMappingTricaster>>({
@@ -215,8 +214,8 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 		const convertedState = converter.getTriCasterStateFromTimelineState(
 			{
 				time: Date.now(),
-				layers: {
-					tc_out2: wrapIntoResolvedInstance<TimelineContentTriCasterMatrixOutput>({
+				objects: [
+					wrapIntoResolvedInstance<TimelineContentTriCasterMatrixOutput>({
 						layer: 'tc_out2',
 						enable: { while: '1' },
 						id: 't0',
@@ -226,8 +225,7 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 							source: 'input5',
 						},
 					}),
-				},
-				nextEvents: [],
+				],
 			},
 			{
 				tc_out2: literal<Mapping<SomeMappingTricaster>>({
@@ -253,8 +251,8 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 		const convertedState = converter.getTriCasterStateFromTimelineState(
 			{
 				time: Date.now(),
-				layers: {
-					tc_out2: wrapIntoResolvedInstance<TimelineContentTriCasterMixOutput>({
+				objects: [
+					wrapIntoResolvedInstance<TimelineContentTriCasterMixOutput>({
 						layer: 'tc_out2',
 						enable: { while: '1' },
 						id: 't0',
@@ -265,8 +263,7 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 							meClean: true,
 						},
 					}),
-				},
-				nextEvents: [],
+				],
 			},
 			{
 				tc_out2: literal<Mapping<SomeMappingTricaster>>({
@@ -293,8 +290,8 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 		const convertedState = converter.getTriCasterStateFromTimelineState(
 			{
 				time: Date.now(),
-				layers: {
-					tc_inp2: wrapIntoResolvedInstance<TimelineContentTriCasterInput>({
+				objects: [
+					wrapIntoResolvedInstance<TimelineContentTriCasterInput>({
 						layer: 'tc_inp2',
 						enable: { while: '1' },
 						id: 't0',
@@ -307,8 +304,7 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 							},
 						},
 					}),
-				},
-				nextEvents: [],
+				],
 			},
 			{
 				tc_inp2: literal<Mapping<SomeMappingTricaster>>({
@@ -337,8 +333,8 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 		const convertedState = converter.getTriCasterStateFromTimelineState(
 			{
 				time: Date.now(),
-				layers: {
-					tc_me0_0: wrapIntoResolvedInstance<TimelineContentTriCasterME>({
+				objects: [
+					wrapIntoResolvedInstance<TimelineContentTriCasterME>({
 						layer: 'tc_me0_0',
 						enable: { while: '1' },
 						id: 't0',
@@ -353,7 +349,7 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 							} as TriCasterMixEffect,
 						},
 					}),
-					tc_me0_1: wrapIntoResolvedInstance<TimelineContentTriCasterME>({
+					wrapIntoResolvedInstance<TimelineContentTriCasterME>({
 						layer: 'tc_me0_1',
 						enable: { while: '1' },
 						id: 't1',
@@ -366,8 +362,7 @@ describe('TimelineStateConverter.getTriCasterStateFromTimelineState', () => {
 							temporalPriority: -1,
 						},
 					}),
-				},
-				nextEvents: [],
+				],
 			},
 			{
 				tc_me0_0: literal<Mapping<SomeMappingTricaster>>({

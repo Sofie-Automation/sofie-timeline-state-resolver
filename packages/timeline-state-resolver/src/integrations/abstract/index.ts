@@ -1,6 +1,5 @@
 import {
 	AbstractOptions,
-	Timeline,
 	TSRTimelineContent,
 	AbstractActionMethods,
 	ActionExecutionResultCode,
@@ -9,11 +8,17 @@ import {
 	StatusCode,
 	DeviceStatus,
 } from 'timeline-state-resolver-types'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 
 export type AbstractCommandWithContext = CommandWithContext<string, string>
 
-export type AbstractDeviceState = Timeline.TimelineState<TSRTimelineContent>
+export type AbstractDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 /*
 	This is a wrapper for an "Abstract" device
@@ -54,8 +59,11 @@ export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDevic
 	 * converts the timeline state into something we can use
 	 * @param state
 	 */
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>) {
-		return state
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>) {
+		return state.objects.reduce((acc, obj) => {
+			acc[obj.layer] = obj
+			return acc
+		}, {} as AbstractDeviceState)
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
@@ -75,10 +83,8 @@ export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDevic
 
 		const commands: Array<AbstractCommandWithContext> = []
 
-		for (const [layerKey, newLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<any>>(
-			newAbstractState.layers
-		)) {
-			const oldLayer = oldAbstractState?.layers[layerKey]
+		for (const [layerKey, newLayer] of Object.entries<DeviceTimelineStateObject<any>>(newAbstractState)) {
+			const oldLayer = oldAbstractState?.[layerKey]
 			if (!oldLayer) {
 				// added!
 				commands.push({
@@ -100,10 +106,8 @@ export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDevic
 		}
 
 		// removed
-		for (const [layerKey, oldLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<any>>(
-			oldAbstractState?.layers || {}
-		)) {
-			const newLayer = newAbstractState.layers[layerKey]
+		for (const [layerKey, oldLayer] of Object.entries<DeviceTimelineStateObject<any>>(oldAbstractState || {})) {
+			const newLayer = newAbstractState[layerKey]
 			if (!newLayer) {
 				// removed!
 				commands.push({

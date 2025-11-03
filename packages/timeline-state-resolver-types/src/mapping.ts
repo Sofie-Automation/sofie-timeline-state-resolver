@@ -16,6 +16,7 @@ export interface Mapping<TOptions extends { mappingType: string } | unknown, TTy
 	options: TOptions
 }
 
+/** @deprecated */
 export interface ResolvedTimelineObjectInstanceExtended<TContent extends Content = TSRTimelineContent>
 	extends ResolvedTimelineObjectInstance<TContent>,
 		TSRTimelineObjProps {}

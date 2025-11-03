@@ -9,10 +9,9 @@ import {
 	QuantelOptions,
 	SomeMappingQuantel,
 	StatusCode,
-	Timeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 import Debug from 'debug'
 import { QuantelCommand, QuantelCommandType, QuantelState } from './types'
@@ -114,7 +113,7 @@ export class QuantelDevice implements Device<QuantelDeviceTypes, QuantelState, Q
 	}
 
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings<SomeMappingQuantel>
 	): QuantelState {
 		return convertTimelineStateToQuantelState(timelineState, mappings)
