@@ -13,7 +13,6 @@ import type {
 	MediaImageRef,
 	DissolveMode,
 	UpdateImageStoreObject,
-	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-lib'
 
 export enum TimelineContentTypeKairos {
