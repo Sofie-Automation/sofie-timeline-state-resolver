@@ -19,8 +19,7 @@ export function diffKairosStates(
 		KairosStateBuilder.fromTimeline(
 			{
 				time: 0,
-				layers: {},
-				nextEvents: [],
+				objects: [],
 			},
 			mappings
 		)

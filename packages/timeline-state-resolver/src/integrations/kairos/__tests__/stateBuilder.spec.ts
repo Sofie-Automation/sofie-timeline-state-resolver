@@ -6,7 +6,9 @@ import {
 	TimelineContentTypeKairos,
 } from 'timeline-state-resolver-types'
 import { KairosStateBuilder } from '../stateBuilder'
-import { EMPTY_STATE, tlObjectInstance } from './lib'
+import { EMPTY_STATE } from './lib'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
+import { refIpInput } from 'kairos-connection'
 
 describe('stateBuilder', () => {
 	const DEFAULT_MAPPINGS: Mappings<SomeMappingKairos> = {
@@ -32,31 +34,31 @@ describe('stateBuilder', () => {
 		expect(
 			KairosStateBuilder.fromTimeline(
 				{
-					layers: {},
-					nextEvents: [],
+					objects: [],
 					time: 123,
 				},
 				DEFAULT_MAPPINGS
 			)
 		).toStrictEqual({ ...EMPTY_STATE, stateTime: 123 })
 	})
-	test('Set ', () => {
+	test('Set', () => {
 		expect(
 			KairosStateBuilder.fromTimeline(
 				{
-					layers: {
-						mainSceneBackgroundLayer: tlObjectInstance(10000, {
-							deviceType: DeviceType.KAIROS,
-							type: TimelineContentTypeKairos.SCENE_LAYER,
-							sceneLayer: {
-								sourcePgm: {
-									realm: 'input',
-									path: 'camera1',
+					objects: [
+						makeDeviceTimelineStateObject({
+							enable: { start: 10000 },
+							id: 'obj0',
+							layer: 'mainSceneBackgroundLayer',
+							content: {
+								deviceType: DeviceType.KAIROS,
+								type: TimelineContentTypeKairos.SCENE_LAYER,
+								sceneLayer: {
+									sourcePgm: refIpInput(1),
 								},
 							},
 						}),
-					},
-					nextEvents: [],
+					],
 					time: 0,
 				},
 				DEFAULT_MAPPINGS
@@ -73,8 +75,8 @@ describe('stateBuilder', () => {
 					},
 					state: {
 						sourcePgm: {
-							path: 'camera1',
-							realm: 'input',
+							ipInput: 1,
+							realm: 'ip-input',
 						},
 					},
 					timelineObjIds: ['obj0'],

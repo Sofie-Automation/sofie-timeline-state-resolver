@@ -3,7 +3,6 @@ import {
 	StatusCode,
 	KairosOptions,
 	Mappings,
-	Timeline,
 	TSRTimelineContent,
 	SomeMappingKairos,
 	KairosDeviceTypes,
@@ -11,7 +10,7 @@ import {
 } from 'timeline-state-resolver-types'
 // eslint-disable-next-line node/no-missing-import
 import { KairosConnection } from 'kairos-connection'
-import type { Device, DeviceContextAPI, CommandWithContext } from 'timeline-state-resolver-api'
+import type { Device, DeviceContextAPI, CommandWithContext, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { KairosDeviceState, KairosStateBuilder } from './stateBuilder'
 import { diffKairosStates } from './diffState'
 import { sendCommand, type KairosCommandAny } from './commands'
@@ -78,7 +77,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 	 * @param timelineState The state to be converted
 	 */
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): KairosDeviceState {
 		const deviceState = KairosStateBuilder.fromTimeline(timelineState, mappings)

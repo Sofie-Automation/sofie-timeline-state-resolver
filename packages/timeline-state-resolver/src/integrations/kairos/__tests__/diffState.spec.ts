@@ -8,7 +8,8 @@ import {
 import { KairosCommandWithContext } from '..'
 import { diffKairosStates } from '../diffState'
 import { KairosDeviceState, KairosStateBuilder } from '../stateBuilder'
-import { tlObjectInstance } from './lib'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
+import { refIpInput } from 'kairos-connection'
 
 describe('diffState', () => {
 	const DEFAULT_MAPPINGS: Mappings<SomeMappingKairos> = {
@@ -51,19 +52,20 @@ describe('diffState', () => {
 			{ ...EMPTY_STATE, stateTime: now },
 			KairosStateBuilder.fromTimeline(
 				{
-					layers: {
-						mainSceneBackgroundLayer: tlObjectInstance(now, {
-							deviceType: DeviceType.KAIROS,
-							type: TimelineContentTypeKairos.SCENE_LAYER,
-							sceneLayer: {
-								sourcePgm: {
-									realm: 'input',
-									path: 'camera1',
+					objects: [
+						makeDeviceTimelineStateObject({
+							enable: { start: now },
+							id: 'obj0',
+							layer: 'mainSceneBackgroundLayer',
+							content: {
+								deviceType: DeviceType.KAIROS,
+								type: TimelineContentTypeKairos.SCENE_LAYER,
+								sceneLayer: {
+									sourcePgm: refIpInput(1),
 								},
 							},
 						}),
-					},
-					nextEvents: [],
+					],
 					time: now,
 				},
 				DEFAULT_MAPPINGS
@@ -81,8 +83,8 @@ describe('diffState', () => {
 						},
 						values: {
 							sourcePgm: {
-								realm: 'input',
-								path: 'camera1',
+								realm: 'ip-input',
+								ipInput: 1,
 							},
 						},
 					},
@@ -97,17 +99,21 @@ describe('diffState', () => {
 			// Play a clip: -----------------------------------------------------------------------
 			let newState = KairosStateBuilder.fromTimeline(
 				{
-					layers: {
-						clipPlayer1: tlObjectInstance(now, {
-							deviceType: DeviceType.KAIROS,
-							type: TimelineContentTypeKairos.CLIP_PLAYER,
-							clipPlayer: {
-								clip: { realm: 'media-clip', clipPath: ['amb.mp4'] },
-								playing: true,
+					objects: [
+						makeDeviceTimelineStateObject({
+							enable: { start: now },
+							id: 'obj0',
+							layer: 'clipPlayer1',
+							content: {
+								deviceType: DeviceType.KAIROS,
+								type: TimelineContentTypeKairos.CLIP_PLAYER,
+								clipPlayer: {
+									clip: { realm: 'media-clip', clipPath: ['amb.mp4'] },
+									playing: true,
+								},
 							},
 						}),
-					},
-					nextEvents: [],
+					],
 					time: now,
 				},
 				DEFAULT_MAPPINGS
@@ -128,14 +134,15 @@ describe('diffState', () => {
 							repeat: false,
 						},
 					},
-					preliminary: 40,
+					preliminary: 10,
 				},
 				// Play command:
 				{
 					context: expect.any(String),
 					timelineObjId: expect.any(String),
 					command: {
-						type: 'clip-player:do',
+						type: 'media-player:do',
+						playerType: 'clip-player',
 						playerId: 1,
 						command: 'play',
 					},
@@ -151,17 +158,21 @@ describe('diffState', () => {
 			now += 1000
 			newState = KairosStateBuilder.fromTimeline(
 				{
-					layers: {
-						clipPlayer1: tlObjectInstance(now, {
-							deviceType: DeviceType.KAIROS,
-							type: TimelineContentTypeKairos.CLIP_PLAYER,
-							clipPlayer: {
-								clip: { realm: 'media-clip', clipPath: ['amb.mp4'] },
-								playing: false, // Is paused
+					objects: [
+						makeDeviceTimelineStateObject({
+							enable: { start: now },
+							id: 'obj0',
+							layer: 'clipPlayer1',
+							content: {
+								deviceType: DeviceType.KAIROS,
+								type: TimelineContentTypeKairos.CLIP_PLAYER,
+								clipPlayer: {
+									clip: { realm: 'media-clip', clipPath: ['amb.mp4'] },
+									playing: false, // Is paused
+								},
 							},
 						}),
-					},
-					nextEvents: [],
+					],
 					time: now,
 				},
 				DEFAULT_MAPPINGS
@@ -187,7 +198,8 @@ describe('diffState', () => {
 					context: expect.any(String),
 					timelineObjId: expect.any(String),
 					command: {
-						type: 'clip-player:do',
+						type: 'media-player:do',
+						playerType: 'clip-player',
 						playerId: 1,
 						command: 'pause',
 					},
@@ -203,17 +215,21 @@ describe('diffState', () => {
 			oldState = newState
 			newState = KairosStateBuilder.fromTimeline(
 				{
-					layers: {
-						clipPlayer1: tlObjectInstance(now, {
-							deviceType: DeviceType.KAIROS,
-							type: TimelineContentTypeKairos.CLIP_PLAYER,
-							clipPlayer: {
-								clip: { realm: 'media-clip', clipPath: ['amb.mp4'] },
-								playing: true, // Is playing
+					objects: [
+						makeDeviceTimelineStateObject({
+							enable: { start: now },
+							id: 'obj0',
+							layer: 'clipPlayer1',
+							content: {
+								deviceType: DeviceType.KAIROS,
+								type: TimelineContentTypeKairos.CLIP_PLAYER,
+								clipPlayer: {
+									clip: { realm: 'media-clip', clipPath: ['amb.mp4'] },
+									playing: true, // Is playing
+								},
 							},
 						}),
-					},
-					nextEvents: [],
+					],
 					time: now,
 				},
 				DEFAULT_MAPPINGS
@@ -233,13 +249,14 @@ describe('diffState', () => {
 							repeat: false,
 						},
 					},
-					preliminary: 40,
+					preliminary: 10,
 				},
 				{
 					context: expect.any(String),
 					timelineObjId: expect.any(String),
 					command: {
-						type: 'clip-player:do',
+						type: 'media-player:do',
+						playerType: 'clip-player',
 						playerId: 1,
 						command: 'play',
 					},
@@ -255,9 +272,8 @@ describe('diffState', () => {
 			oldState = newState
 			newState = KairosStateBuilder.fromTimeline(
 				{
-					layers: {},
+					objects: [],
 					time: now,
-					nextEvents: [],
 				},
 				DEFAULT_MAPPINGS
 			) // Empty state
@@ -266,7 +282,8 @@ describe('diffState', () => {
 					context: expect.any(String),
 					timelineObjId: expect.any(String),
 					command: {
-						type: 'clip-player:do',
+						type: 'media-player:do',
+						playerType: 'clip-player',
 						playerId: 1,
 						command: 'stop',
 					},
@@ -283,11 +300,15 @@ describe('diffState', () => {
 				{ ...EMPTY_STATE, stateTime: now },
 				KairosStateBuilder.fromTimeline(
 					{
-						layers: {
-							clipPlayer1: tlObjectInstance(
-								// The clip was supposed to start 0.5s ago:
-								now - 500,
-								{
+						objects: [
+							makeDeviceTimelineStateObject({
+								enable: {
+									// The clip was supposed to start 0.5s ago:
+									start: now - 500,
+								},
+								id: 'obj0',
+								layer: 'clipPlayer1',
+								content: {
 									deviceType: DeviceType.KAIROS,
 									type: TimelineContentTypeKairos.CLIP_PLAYER,
 									clipPlayer: {
@@ -298,10 +319,9 @@ describe('diffState', () => {
 										playing: true,
 										seek: 100, // should start 100ms into the clip (at the point of intended start)
 									},
-								}
-							),
-						},
-						nextEvents: [],
+								},
+							}),
+						],
 						time: now,
 					},
 					DEFAULT_MAPPINGS
@@ -323,14 +343,15 @@ describe('diffState', () => {
 								position: (600 / 1000) * 25, // The result should be to seek 600ms into the clip (now - (500 + 100))
 							},
 						},
-						preliminary: 40,
+						preliminary: 10,
 					},
 					// Play command:
 					{
 						context: expect.any(String),
 						timelineObjId: expect.any(String),
 						command: {
-							type: 'clip-player:do',
+							type: 'media-player:do',
+							playerType: 'clip-player',
 							playerId: 1,
 							command: 'play',
 						},
@@ -344,11 +365,15 @@ describe('diffState', () => {
 			// Load a clip: -----------------------------------------------------------------------
 			let newState = KairosStateBuilder.fromTimeline(
 				{
-					layers: {
-						clipPlayer1: tlObjectInstance(
-							// We're a bit late, should not affect the outcome though:
-							now - 500,
-							{
+					objects: [
+						makeDeviceTimelineStateObject({
+							enable: {
+								// We're a bit late, should not affect the outcome though:
+								start: now - 500,
+							},
+							id: 'obj0',
+							layer: 'clipPlayer1',
+							content: {
 								deviceType: DeviceType.KAIROS,
 								type: TimelineContentTypeKairos.CLIP_PLAYER,
 								clipPlayer: {
@@ -359,10 +384,9 @@ describe('diffState', () => {
 									playing: false,
 									seek: 100, // load it 100ms into the clip
 								},
-							}
-						),
-					},
-					nextEvents: [],
+							},
+						}),
+					],
 					time: now,
 				},
 				DEFAULT_MAPPINGS
@@ -389,7 +413,8 @@ describe('diffState', () => {
 					context: expect.any(String),
 					timelineObjId: expect.any(String),
 					command: {
-						type: 'clip-player:do',
+						type: 'media-player:do',
+						playerType: 'clip-player',
 						playerId: 1,
 						command: 'pause',
 					},
@@ -405,21 +430,27 @@ describe('diffState', () => {
 			oldState = newState
 			newState = KairosStateBuilder.fromTimeline(
 				{
-					layers: {
-						clipPlayer1: tlObjectInstance(now, {
-							deviceType: DeviceType.KAIROS,
-							type: TimelineContentTypeKairos.CLIP_PLAYER,
-							clipPlayer: {
-								clip: {
-									realm: 'media-clip',
-									clipPath: ['amb.mp4'],
+					objects: [
+						makeDeviceTimelineStateObject({
+							enable: {
+								start: now,
+							},
+							id: 'obj0',
+							layer: 'clipPlayer1',
+							content: {
+								deviceType: DeviceType.KAIROS,
+								type: TimelineContentTypeKairos.CLIP_PLAYER,
+								clipPlayer: {
+									clip: {
+										realm: 'media-clip',
+										clipPath: ['amb.mp4'],
+									},
+									playing: true,
+									seek: 100,
 								},
-								playing: true,
-								seek: 100,
 							},
 						}),
-					},
-					nextEvents: [],
+					],
 					time: now,
 				},
 				DEFAULT_MAPPINGS
@@ -440,13 +471,14 @@ describe('diffState', () => {
 							position: Math.floor((100 / 1000) * 25),
 						},
 					},
-					preliminary: 40,
+					preliminary: 10,
 				},
 				{
 					context: expect.any(String),
 					timelineObjId: expect.any(String),
 					command: {
-						type: 'clip-player:do',
+						type: 'media-player:do',
+						playerType: 'clip-player',
 						playerId: 1,
 						command: 'play',
 					},
