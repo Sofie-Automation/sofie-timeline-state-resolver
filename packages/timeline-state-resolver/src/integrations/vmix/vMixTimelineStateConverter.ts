@@ -13,7 +13,7 @@ import {
 	VMixTransitionType,
 } from 'timeline-state-resolver-types'
 import { TSR_INPUT_PREFIX, VMixInput, VMixInputAudio, VMixState, VMixStateExtended } from './vMixStateDiffer'
-import * as deepMerge from 'deepmerge'
+import deepMerge from 'deepmerge'
 import _ = require('underscore')
 
 const mappingPriority: { [k in MappingVmixType]: number } = {

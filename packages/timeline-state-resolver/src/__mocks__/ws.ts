@@ -132,4 +132,4 @@ class WebSocket extends EventEmitter {
 	}
 }
 namespace WebSocket {}
-export = WebSocket
+export default WebSocket
