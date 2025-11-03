@@ -5,29 +5,34 @@ import {
 	Mappings,
 	TSRTimelineContent,
 	SomeMappingKairos,
-	KairosDeviceTypes,
-	KairosActionMethods,
+	Timeline,
+	ActionExecutionResult,
 } from 'timeline-state-resolver-types'
 // eslint-disable-next-line node/no-missing-import
 import { KairosConnection } from 'kairos-connection'
-import type { Device, DeviceContextAPI, CommandWithContext, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { KairosDeviceState, KairosStateBuilder } from './stateBuilder'
 import { diffKairosStates } from './diffState'
 import { sendCommand, type KairosCommandAny } from './commands'
 import { getActions } from './actions'
+import { CommandWithContext, Device, DeviceContextAPI } from '../../service/device'
 
-export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, string>
+export interface KairosCommandWithContext extends CommandWithContext {
+	command: KairosCommandAny
+	context: string
+}
 
 /**
  * This is a wrapper for the Kairos Device. Commands to any and all kairos devices will be sent through here.
  */
-export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState, KairosCommandWithContext> {
+export class KairosDevice extends Device<KairosOptions, KairosDeviceState, KairosCommandWithContext> {
 	private readonly _kairos: KairosConnection
-	readonly actions: KairosActionMethods
+	readonly actions: Record<string, (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>>
 
-	constructor(protected context: DeviceContextAPI<KairosDeviceState>) {
+	constructor(context: DeviceContextAPI<KairosDeviceState>) {
+		super(context)
+
 		this._kairos = new KairosConnection()
-		this.actions = getActions(this._kairos)
+		this.actions = getActions(this._kairos) as any // Type safety is hard in the r52 api..
 	}
 
 	/**
@@ -72,12 +77,19 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		return this._kairos.connected
 	}
 
+	async makeReady(): Promise<void> {
+		// No-op
+	}
+	async standDown(): Promise<void> {
+		// No-op
+	}
+
 	/**
 	 * Convert a timeline state into an Kairos state.
 	 * @param timelineState The state to be converted
 	 */
 	convertTimelineStateToDeviceState(
-		timelineState: DeviceTimelineState<TSRTimelineContent>,
+		timelineState: Timeline.TimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): KairosDeviceState {
 		const deviceState = KairosStateBuilder.fromTimeline(timelineState, mappings)

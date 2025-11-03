@@ -24,7 +24,6 @@ import { TimelineContentVMixAny } from './integrations/vmix'
 import { TimelineContentOBSAny } from './integrations/obs'
 import { TimelineContentTriCasterAny } from './integrations/tricaster'
 import { TimelineContentKairosAny } from './integrations/kairos'
-import { DeviceType } from './generated'
 
 export * from './integrations/abstract'
 export * from './integrations/atem'
@@ -73,6 +72,7 @@ export enum DeviceType {
 	ATEM = 'ATEM',
 	LAWO = 'LAWO',
 	HTTPSEND = 'HTTPSEND',
+	KAIROS = 'KAIROS',
 	PANASONIC_PTZ = 'PANASONIC_PTZ',
 	TCPSEND = 'TCPSEND',
 	HYPERDECK = 'HYPERDECK',

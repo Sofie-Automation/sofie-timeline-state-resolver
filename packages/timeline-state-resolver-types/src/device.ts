@@ -23,6 +23,7 @@ import {
 	TriCasterOptions,
 	MultiOSCOptions,
 	ViscaOverIPOptions,
+	KairosOptions,
 } from '.'
 import { DeviceCommonOptions } from './generated/common-options'
 
@@ -78,6 +79,7 @@ export type DeviceOptionsAny =
 	| DeviceOptionsTriCaster
 	| DeviceOptionsMultiOSC
 	| DeviceOptionsViscaOverIP
+	| DeviceOptionsKairos
 
 export interface DeviceOptionsAbstract extends DeviceOptionsBase<AbstractOptions> {
 	type: DeviceType.ABSTRACT
@@ -147,4 +149,7 @@ export interface DeviceOptionsMultiOSC extends DeviceOptionsBase<MultiOSCOptions
 }
 export interface DeviceOptionsViscaOverIP extends DeviceOptionsBase<ViscaOverIPOptions> {
 	type: DeviceType.VISCA_OVER_IP
+}
+export interface DeviceOptionsKairos extends DeviceOptionsBase<KairosOptions> {
+	type: DeviceType.KAIROS
 }

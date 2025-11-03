@@ -6,7 +6,7 @@
  */
 import { ActionExecutionResult } from ".."
 
-export interface CasparCGOptions {
+export interface KairosOptions {
 	/**
 	 * Host of KAIROS server
 	 */
@@ -22,12 +22,60 @@ export interface MappingKairosScene {
 	mappingType: MappingKairosType.Scene
 }
 
-export enum MappingKairosType {
-	Scene = 'scene',
-	Scene-layer = 'scene-layer',
+export interface MappingKairosSceneLayer {
+	sceneName: string[]
+	layerName: string[]
+	mappingType: MappingKairosType.SceneLayer
 }
 
-export type SomeMappingKairos = MappingKairosScene | MappingKairosScene-layer
+export interface MappingKairosAux {
+	auxName: string
+	mappingType: MappingKairosType.Aux
+}
+
+export interface MappingKairosMacro {
+	mappingType: MappingKairosType.Macro
+}
+
+export interface MappingKairosClipPlayer {
+	playerId: number
+	framerate?: number
+	clearPlayerOnStop?: boolean
+	mappingType: MappingKairosType.ClipPlayer
+}
+
+export interface MappingKairosRamRecPlayer {
+	playerId: number
+	framerate?: number
+	clearPlayerOnStop?: boolean
+	mappingType: MappingKairosType.RamRecPlayer
+}
+
+export interface MappingKairosImageStore {
+	playerId: number
+	clearPlayerOnStop?: boolean
+	mappingType: MappingKairosType.ImageStore
+}
+
+export interface MappingKairosSoundPlayer {
+	playerId: number
+	framerate?: number
+	clearPlayerOnStop?: boolean
+	mappingType: MappingKairosType.SoundPlayer
+}
+
+export enum MappingKairosType {
+	Scene = 'scene',
+	SceneLayer = 'scene-layer',
+	Aux = 'aux',
+	Macro = 'macro',
+	ClipPlayer = 'clip-player',
+	RamRecPlayer = 'ram-rec-player',
+	ImageStore = 'image-store',
+	SoundPlayer = 'sound-player',
+}
+
+export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux | MappingKairosMacro | MappingKairosClipPlayer | MappingKairosRamRecPlayer | MappingKairosImageStore | MappingKairosSoundPlayer
 
 export interface ListScenesPayload {
 	scenePath: string[]

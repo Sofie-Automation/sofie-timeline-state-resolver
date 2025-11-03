@@ -9,18 +9,27 @@ import {
 	refSceneSnapshot,
 	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
-import { ActionExecutionResultCode, KairosActionMethods, KairosActions } from 'timeline-state-resolver-types'
+import {
+	ActionExecutionResult,
+	ActionExecutionResultCode,
+	KairosActionExecutionPayload,
+	KairosActions,
+} from 'timeline-state-resolver-types'
+
+export type KairosActionMethods = {
+	[id in KairosActions]: (id: string, payload: KairosActionExecutionPayload<id>) => Promise<ActionExecutionResult<any>>
+}
 
 export function getActions(kairos: KairosConnection): KairosActionMethods {
 	return {
-		[KairosActions.ListScenes]: async (payload) => {
+		[KairosActions.ListScenes]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listScenes(refScene(payload.scenePath), payload.deep),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListSceneLayers]: async (payload) => {
+		[KairosActions.ListSceneLayers]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listSceneLayers(
@@ -30,7 +39,7 @@ export function getActions(kairos: KairosConnection): KairosActionMethods {
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListSceneLayerEffects]: async (payload) => {
+		[KairosActions.ListSceneLayerEffects]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listSceneLayerEffects(
@@ -40,84 +49,84 @@ export function getActions(kairos: KairosConnection): KairosActionMethods {
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListSceneTransitions]: async (payload) => {
+		[KairosActions.ListSceneTransitions]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listSceneTransitions(refScene(payload.scenePath)),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListSceneSnapshots]: async (payload) => {
+		[KairosActions.ListSceneSnapshots]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listSceneSnapshots(refScene(payload.scenePath)),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListFxInputs]: async (_payload) => {
+		[KairosActions.ListFxInputs]: async (_id: string, _payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listFxInputs(),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListMattes]: async (_payload) => {
+		[KairosActions.ListMattes]: async (_id: string, _payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listMattes(),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListMediaClips]: async (_payload) => {
+		[KairosActions.ListMediaClips]: async (_id: string, _payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listMediaClips(),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListMediaStills]: async (_payload) => {
+		[KairosActions.ListMediaStills]: async (_id: string, _payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listMediaStills(),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListMediaRamRec]: async (_payload) => {
+		[KairosActions.ListMediaRamRec]: async (_id: string, _payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listMediaRamRecs(),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListMediaImage]: async (_payload) => {
+		[KairosActions.ListMediaImage]: async (_id: string, _payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listMediaImages(),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListMediaSounds]: async (_payload) => {
+		[KairosActions.ListMediaSounds]: async (_id: string, _payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listMediaSounds(),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListMacros]: async (payload) => {
+		[KairosActions.ListMacros]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listMacros(payload.macroPath && refMacro(payload.macroPath), payload.deep),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListAuxes]: async (_payload) => {
+		[KairosActions.ListAuxes]: async (_id: string, _payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listAuxes(),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListAuxEffects]: async (payload) => {
+		[KairosActions.ListAuxEffects]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listAuxEffects(
@@ -127,7 +136,7 @@ export function getActions(kairos: KairosConnection): KairosActionMethods {
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListGfxScenes]: async (payload) => {
+		[KairosActions.ListGfxScenes]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listGfxScenes(
@@ -137,21 +146,21 @@ export function getActions(kairos: KairosConnection): KairosActionMethods {
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListGfxSceneItems]: async (payload) => {
+		[KairosActions.ListGfxSceneItems]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listGfxSceneItems(refGfxScene(payload.scenePath)),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.ListAudioMixerChannels]: async (_payload) => {
+		[KairosActions.ListAudioMixerChannels]: async (_id: string, _payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.listAudioMixerChannels(),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.MacroPlay]: async (payload) => {
+		[KairosActions.MacroPlay]: async (_id: string, payload) => {
 			if (!payload.macroPath || !Array.isArray(payload.macroPath)) {
 				return { result: ActionExecutionResultCode.Error, message: 'Invalid payload: macroPath is not an Array' }
 			}
@@ -162,14 +171,14 @@ export function getActions(kairos: KairosConnection): KairosActionMethods {
 				resultCode: 0,
 			}
 		},
-		[KairosActions.MacroStop]: async (payload) => {
+		[KairosActions.MacroStop]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.macroStop(refMacro(payload.macroPath)),
 				resultCode: 0,
 			}
 		},
-		[KairosActions.SceneSnapshotRecall]: async (payload) => {
+		[KairosActions.SceneSnapshotRecall]: async (_id: string, payload) => {
 			return {
 				result: ActionExecutionResultCode.Ok,
 				resultData: await kairos.sceneSnapshotRecall(

@@ -59,6 +59,7 @@ import { DeviceOptionsVMixInternal } from './integrations/vmix'
 import { DeviceOptionsVizMSEInternal } from './integrations/vizMSE'
 import { BaseRemoteDeviceIntegration } from './service/remoteDeviceInstance'
 import { ConnectionManager } from './service/ConnectionManager'
+import { DeviceOptionsKairos } from 'timeline-state-resolver-types/src'
 
 export { DeviceContainer }
 export { CommandWithContext }
@@ -1218,6 +1219,7 @@ export type DeviceOptionsAnyInternal =
 	| DeviceOptionsTelemetrics
 	| DeviceOptionsTriCaster
 	| DeviceOptionsViscaOverIP
+	| DeviceOptionsKairos
 
 function removeParentFromState(
 	o: Timeline.TimelineState<TSRTimelineContent>

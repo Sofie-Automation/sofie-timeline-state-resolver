@@ -25,6 +25,7 @@ import {
 	TimelineContentKairosSceneSnapshotInfo,
 	KairosMacroActiveState,
 	TimelineContentKairosMacroInfo,
+	Timeline,
 } from 'timeline-state-resolver-types'
 import { assertNever } from '../../lib'
 import {
@@ -48,7 +49,6 @@ import {
 	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
 import { TimelineObjectInstance } from 'superfly-timeline'
-import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 export interface KairosDeviceState {
 	stateTime: number
@@ -141,16 +141,23 @@ export class KairosStateBuilder {
 	}
 
 	public static fromTimeline(
-		timelineState: DeviceTimelineState<TSRTimelineContent>,
+		timelineState: Timeline.TimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): KairosDeviceState {
 		const builder = new KairosStateBuilder()
 
+		// Sort layer based on Layer name
+		const sortedLayers = Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
+			timelineState.layers
+		)
+			.map(([layerName, tlObject]) => ({ layerName, tlObject }))
+			.sort((a, b) => a.layerName.localeCompare(b.layerName))
+
 		// For every layer, augment the state
-		for (const tlObject of timelineState.objects) {
+		for (const { tlObject, layerName } of sortedLayers) {
 			const content = tlObject.content
 
-			const mapping = mappings[tlObject.layer] as Mapping<SomeMappingKairos> | undefined
+			const mapping = mappings[layerName] as Mapping<SomeMappingKairos> | undefined
 
 			if (mapping && content.deviceType === DeviceType.KAIROS) {
 				switch (mapping.options.mappingType) {
@@ -318,7 +325,7 @@ export class KairosStateBuilder {
 	private _applyClipPlayer(
 		mapping: MappingKairosClipPlayer,
 		content: TimelineContentKairosClipPlayer,
-		timelineObj: DeviceTimelineStateObject<TSRTimelineContent>
+		timelineObj: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
@@ -342,7 +349,7 @@ export class KairosStateBuilder {
 	private _applyRamRecPlayer(
 		mapping: MappingKairosRamRecPlayer,
 		content: TimelineContentKairosRamRecPlayer,
-		timelineObj: DeviceTimelineStateObject<TSRTimelineContent>
+		timelineObj: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
@@ -386,7 +393,7 @@ export class KairosStateBuilder {
 	private _applySoundPlayer(
 		mapping: MappingKairosSoundPlayer,
 		content: TimelineContentKairosSoundPlayer,
-		timelineObj: DeviceTimelineStateObject<TSRTimelineContent>
+		timelineObj: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
