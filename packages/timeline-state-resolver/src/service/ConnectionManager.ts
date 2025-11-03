@@ -4,7 +4,7 @@ import _ = require('underscore')
 import { ThreadedClassConfig } from 'threadedclass'
 import { DeviceOptionsAnyInternal } from '../conductor'
 import { DeviceContainer } from '..//devices/deviceContainer'
-import { assertNever } from 'atem-connection/dist/lib/atemUtil'
+// import { assertNever } from 'atem-connection/dist/lib/atemUtil'
 import { CasparCGDevice, DeviceOptionsCasparCGInternal } from '../integrations/casparCG'
 import { DeviceOptionsSisyfosInternal, SisyfosMessageDevice } from '../integrations/sisyfos'
 import { DeviceOptionsVizMSEInternal, VizMSEDevice } from '../integrations/vizMSE'
@@ -444,7 +444,8 @@ function createContainer(
 			return RemoteDeviceInstance.create(deviceId, deviceOptions, getCurrentTime, threadedClassOptions)
 		}
 		default:
-			assertNever(deviceOptions)
+			// HACK: Typescript is giving a weird error..
+			// assertNever(deviceOptions)
 			return null
 	}
 }
