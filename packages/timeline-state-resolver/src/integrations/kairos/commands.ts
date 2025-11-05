@@ -42,7 +42,7 @@ export interface KairosSceneRecallSnapshotCommand {
 	ref: SceneSnapshotRef
 
 	snapshotName: string
-	active: boolean
+	active: boolean | undefined
 }
 
 export interface KairosSceneLayerCommand {
@@ -128,10 +128,14 @@ export async function sendCommand(kairos: KairosConnection, command: KairosComma
 			await kairos.updateScene(command.ref, command.values)
 			break
 		case 'scene-recall-snapshot':
-			if (command.active) {
+			if (command.active === true) {
 				await kairos.sceneSnapshotRecall(command.ref)
-			} else {
+			} else if (command.active === false) {
 				await kairos.sceneSnapshotAbort(command.ref)
+			} else if (command.active === undefined) {
+				// Do nothing
+			} else {
+				assertNever(command.active)
 			}
 			break
 		case 'scene-layer':
