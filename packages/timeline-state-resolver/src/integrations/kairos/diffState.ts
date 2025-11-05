@@ -146,8 +146,8 @@ function diffSceneSnapshots(
 		if (!sceneSnapshotRef) continue // No scene snapshot to diff
 
 		// Check if active state changed
-		const oldActive = oldSceneSnapshot?.state.active ?? false
-		const newActive = newSceneSnapshot?.state.active ?? false
+		const oldActive = oldSceneSnapshot?.state.active ?? undefined
+		const newActive = newSceneSnapshot?.state.active ?? undefined
 
 		if (oldActive !== newActive) {
 			commands.push({
