@@ -90,35 +90,54 @@ export class TSRHandler {
 		this.tsr.connectionManager.on('connectionRemoved', (deviceId: string) => {
 			console.log(`Device ${deviceId} removed`)
 		})
-		this.tsr.connectionManager.on('connectionEvent:error', (deviceId: string, context: string, err: Error) => {
-			console.error(`Device ${deviceId} connection error: ${context} = ${err.message}`)
+		this.tsr.connectionManager.on('error', (ctx: string, err) => {
+			console.log(`Error: connectionManager (${ctx})`, err)
 		})
 		this.tsr.connectionManager.on('warning', (msg: string) => {
 			console.log('Warning: connectionManager', msg)
 		})
-
-		this.tsr.connectionManager.on('connectionEvent:connectionChanged', (deviceId: string, status: DeviceStatus) => {
-			console.log(`Device ${deviceId} status changed: ${JSON.stringify(status)}`)
+		this.tsr.connectionManager.on('info', (msg: string) => {
+			console.log('Warning: connectionManager', msg)
 		})
-		this.tsr.connectionManager.on(
-			'connectionEvent:slowSentCommand',
-			(_deviceId: string, _info: SlowSentCommandInfo) => {
-				// console.log(`Device ${device.deviceId} slow sent command: ${_info}`)
-			}
-		)
-		this.tsr.connectionManager.on(
-			'connectionEvent:slowFulfilledCommand',
-			(_deviceId: string, _info: SlowFulfilledCommandInfo) => {
-				// console.log(`Device ${device.deviceId} slow fulfilled command: ${_info}`)
-			}
-		)
-		this.tsr.connectionManager.on('connectionEvent:commandReport', (deviceId: string, command: any) => {
-			console.log(`Device ${deviceId} command: ${JSON.stringify(command)}`)
+		this.tsr.connectionManager.on('debug', (...args: any) => {
+			console.log('Debug: connectionManager', ...args)
+		})
+
+		this.tsr.connectionManager.on('connectionEvent:error', (deviceId: string, context: string, err: Error) => {
+			console.error(`Device ${deviceId} connection error: ${context} = ${err.message}`)
+		})
+		this.tsr.connectionManager.on('connectionEvent:warning', (deviceId: string, warning: string) => {
+			console.error(`Device ${deviceId} connection warning: ${warning}`)
+		})
+		this.tsr.connectionManager.on('connectionEvent:info', (deviceId: string, info: string) => {
+			console.error(`Device ${deviceId} connection info: ${info}`)
 		})
 		this.tsr.connectionManager.on('connectionEvent:debug', (deviceId: string, ...args: any[]) => {
 			const data = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : arg))
 			console.log(`Device ${deviceId} debug: ${data}`)
 		})
+
+		this.tsr.connectionManager.on('connectionEvent:connectionChanged', (deviceId: string, status: DeviceStatus) => {
+			console.log(`Device ${deviceId} status changed: ${JSON.stringify(status)}`)
+		})
+
+		if (tsrSettings.logCommandReports) {
+			this.tsr.connectionManager.on(
+				'connectionEvent:slowSentCommand',
+				(_deviceId: string, _info: SlowSentCommandInfo) => {
+					// console.log(`Device ${device.deviceId} slow sent command: ${_info}`)
+				}
+			)
+			this.tsr.connectionManager.on(
+				'connectionEvent:slowFulfilledCommand',
+				(_deviceId: string, _info: SlowFulfilledCommandInfo) => {
+					// console.log(`Device ${device.deviceId} slow fulfilled command: ${_info}`)
+				}
+			)
+			this.tsr.connectionManager.on('connectionEvent:commandReport', (deviceId: string, command: any) => {
+				console.log(`Device ${deviceId} command: ${JSON.stringify(command)}`)
+			})
+		}
 
 		await this.tsr.init()
 

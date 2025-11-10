@@ -3,6 +3,7 @@
 	"include": ["src/**/*.ts", "input/**/*.ts"],
 	"exclude": ["node_modules/**"],
 	"compilerOptions": {
-		"types": ["jest", "node"]
+		"types": ["jest", "node"],
+		"noUnusedLocals": false
 	}
 }
