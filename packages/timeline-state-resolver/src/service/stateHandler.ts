@@ -239,11 +239,8 @@ export class StateHandler<
 					const addrState = nextState.addressStates?.[addr]
 					const curExpectedState = this._stateTracker.getExpectedState(addr)
 					if (
-						addrState &&
-						!(
-							this.device.addressStateReassertsControl(curExpectedState, addrState) ||
-							this.device.diffAddressStates(curExpectedState, addrState)
-						)
+						!this.device.addressStateReassertsControl(curExpectedState, addrState) &&
+						!(addrState && this.device.diffAddressStates(curExpectedState, addrState))
 					) {
 						this.device.applyAddressState(newState, addr, currentState)
 					}

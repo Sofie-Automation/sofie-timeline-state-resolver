@@ -149,9 +149,9 @@ export interface BaseDeviceAPI<DeviceState, AddressState, Command extends Comman
 	 */
 	diffAddressStates?(state1: AddressState, state2: AddressState): boolean
 	/**
-	 * Returns true if the
+	 * Returns true if the new state warrants reasserting control over the address
 	 */
-	addressStateReassertsControl?(oldState: AddressState | undefined, newState: AddressState): boolean
+	addressStateReassertsControl?(oldState: AddressState | undefined, newState: AddressState | undefined): boolean
 	/**
 	 * This method takes 2 states and returns a set of device-commands that will
 	 * transition the device from oldState to newState.
