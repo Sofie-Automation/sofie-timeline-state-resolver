@@ -110,6 +110,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._instanceId = Math.floor(Math.random() * 10000)
 		this._startTime = time
 
+		this._logDebug = config.debug ?? this._logDebug
+
 		this._updateTimeSync()
 
 		if (!config.disableSharedHardwareControl && this._device.diffAddressStates && this._device.applyAddressState) {
