@@ -303,9 +303,10 @@ export class StateHandler<
 		if (this._stateTracker && newState.addressStates && this.device.diffAddressStates) {
 			for (const [a, s] of Object.entries<AddressState>(newState.addressStates)) {
 				const currentAddrState = this._stateTracker.getExpectedState(a)
-				const reassertsControl = this.device.addressStateReassertsControl
-					? this.device.addressStateReassertsControl(currentAddrState, s)
-					: this.device.diffAddressStates(currentAddrState, s)
+				const reassertsControl =
+					(this.device.addressStateReassertsControl
+						? this.device.addressStateReassertsControl(currentAddrState, s)
+						: false) || this.device.diffAddressStates(currentAddrState, s)
 
 				this._stateTracker.updateExpectedState(a, s, reassertsControl)
 			}

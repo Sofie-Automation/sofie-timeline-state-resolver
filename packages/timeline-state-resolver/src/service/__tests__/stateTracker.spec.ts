@@ -22,7 +22,7 @@ describe('State Tracker', () => {
 	})
 
 	function getNewStateTracker(): StateTracker<AddressState> {
-		const st = new StateTracker(MOCK_DIFF_FN)
+		const st = new StateTracker(MOCK_DIFF_FN, false)
 
 		st.on('deviceAhead', MOCK_EVENT_DEVICE_AHEAD)
 		st.on('deviceUnderControl', MOCK_EVENT_DEVICE_SYNC)

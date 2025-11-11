@@ -38,7 +38,7 @@ export class StateTracker<State> extends EventEmitter<StateTrackerEvents> {
 	} = {}
 	private waitToSettle = new Map<string, NodeJS.Timeout>()
 
-	constructor(private diff: (state1: State, state2: State) => boolean) {
+	constructor(private diff: (state1: State, state2: State) => boolean, private syncOnFirstBlood: boolean) {
 		super()
 	}
 
@@ -62,8 +62,19 @@ export class StateTracker<State> extends EventEmitter<StateTrackerEvents> {
 	}
 
 	updateState(address: string, state: State) {
+		const firstBlood = !this._state[address]
+
 		this._assertAddressExists(address)
 		this._state[address].currentState = state
+
+		if (firstBlood && !this.getExpectedState(address)) {
+			if (!this.syncOnFirstBlood) {
+				this._state[address].deviceAhead = true
+				this.emit('deviceAhead', address)
+			}
+
+			return
+		}
 
 		if (this.waitToSettle.get(address)) clearTimeout(this.waitToSettle.get(address))
 		this.waitToSettle.set(

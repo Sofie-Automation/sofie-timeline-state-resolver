@@ -110,7 +110,7 @@ describe('stateHandler', () => {
 				sendCommand: MOCK_COMMAND_RECEIVER,
 				...trackerMethods,
 			},
-			withStateHandler ? new StateTracker(diff) : undefined
+			withStateHandler ? new StateTracker(diff, true) : undefined
 		)
 	}
 

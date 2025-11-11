@@ -115,8 +115,9 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._updateTimeSync()
 
 		if (!config.disableSharedHardwareControl && this._device.diffAddressStates && this._device.applyAddressState) {
-			this._stateTracker = new StateTracker((state1, state2) =>
-				this._device.diffAddressStates ? this._device.diffAddressStates(state1, state2) : false
+			this._stateTracker = new StateTracker(
+				(state1, state2) => (this._device.diffAddressStates ? this._device.diffAddressStates(state1, state2) : false),
+				config.syncOnStartup ?? true
 			)
 
 			// for now we just do some logging but in the future we could inform library users so they can react to a device changing
@@ -128,10 +129,18 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			})
 
 			// make sure the commands for the next state change are correct:
+			let doRecalc = false
 			this._stateTracker.on('deviceUpdated', (ahead) => {
-				if (ahead) {
-					this._stateHandler.recalcDiff()
-				}
+				if (doRecalc) return
+				doRecalc = true
+
+				// do a little debounce for multiple calls
+				setImmediate(() => {
+					doRecalc = false
+					if (ahead) {
+						this._stateHandler.recalcDiff()
+					}
+				})
 			})
 		}
 

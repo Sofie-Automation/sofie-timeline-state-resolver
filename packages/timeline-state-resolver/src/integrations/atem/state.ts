@@ -3,6 +3,7 @@ import { SuperSource, TransitionSettings } from 'atem-connection/dist/state/vide
 import { DownstreamKeyer } from 'atem-connection/dist/state/video/downstreamKeyers'
 import { UpstreamKeyer } from 'atem-connection/dist/state/video/upstreamKeyers'
 import { State as DeviceState } from 'atem-state'
+import { resolveUpstreamKeyerState } from 'atem-state/dist/resolvers/upstreamKeyers'
 import { assertNever, deepMerge } from '../../lib'
 import { AtemStateUtil } from 'atem-connection'
 import * as _ from 'underscore'
@@ -251,6 +252,22 @@ export function diffAddressStates(state1: AnyAddressState, state2: AnyAddressSta
 			return true
 		if (state1.state.wipe && state2.state.wipe && !_.isEqual(state1.state.wipe, state2.state.wipe)) return true
 		return false
+	} else if (state1.type === AddressType.UpStreamKey && state2.type === AddressType.UpStreamKey) {
+		const output = resolveUpstreamKeyerState(0, [state1.state], [state2.state], {
+			sources: true,
+			onAir: true,
+			type: true,
+			mask: true,
+			flyKeyframes: 'all',
+			flyProperties: true,
+			dveSettings: true,
+			chromaSettings: false,
+			advancedChromaSettings: false,
+			lumaSettings: true,
+			patternSettings: true,
+		})
+
+		return !!output.length
 	}
 
 	return !_.isEqual(state1.state, state2.state)
