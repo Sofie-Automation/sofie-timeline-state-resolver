@@ -50,6 +50,8 @@ import {
 } from 'kairos-connection'
 import { TimelineObjectInstance } from 'superfly-timeline'
 
+type ResolvedTimelineObjectInstanceExt<T extends TSRTimelineContent> = Timeline.ResolvedTimelineObjectInstance<T> & {isLookahead?: boolean}
+
 export interface KairosDeviceState {
 	stateTime: number
 	scenes: Record<string, { ref: SceneRef; state: Partial<UpdateSceneObject>; timelineObjIds: string[] } | undefined>
@@ -325,7 +327,7 @@ export class KairosStateBuilder {
 	private _applyClipPlayer(
 		mapping: MappingKairosClipPlayer,
 		content: TimelineContentKairosClipPlayer,
-		timelineObj: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
+		timelineObj: ResolvedTimelineObjectInstanceExt<TSRTimelineContent>
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
@@ -335,7 +337,10 @@ export class KairosStateBuilder {
 			this.#deviceState.clipPlayers[playerId],
 			playerId,
 			{
-				content: content.clipPlayer,
+				content: {
+					...content.clipPlayer,
+					playing: timelineObj.isLookahead ? false: content.clipPlayer.playing,
+				},
 				instance: timelineObj.instance,
 				mappingOptions: {
 					framerate: mapping.framerate,
@@ -349,7 +354,7 @@ export class KairosStateBuilder {
 	private _applyRamRecPlayer(
 		mapping: MappingKairosRamRecPlayer,
 		content: TimelineContentKairosRamRecPlayer,
-		timelineObj: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
+		timelineObj: ResolvedTimelineObjectInstanceExt<TSRTimelineContent>
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
@@ -359,7 +364,10 @@ export class KairosStateBuilder {
 			this.#deviceState.ramRecPlayers[playerId],
 			playerId,
 			{
-				content: content.ramRecPlayer,
+				content:  {
+					...content.ramRecPlayer,
+					playing: timelineObj.isLookahead ? false: content.ramRecPlayer.playing,
+				},
 				instance: timelineObj.instance,
 				mappingOptions: {
 					framerate: mapping.framerate,
@@ -393,7 +401,7 @@ export class KairosStateBuilder {
 	private _applySoundPlayer(
 		mapping: MappingKairosSoundPlayer,
 		content: TimelineContentKairosSoundPlayer,
-		timelineObj: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>
+		timelineObj: ResolvedTimelineObjectInstanceExt<TSRTimelineContent>
 	): void {
 		if (typeof mapping.playerId !== 'number' || mapping.playerId < 1) return
 
@@ -403,7 +411,10 @@ export class KairosStateBuilder {
 			this.#deviceState.soundPlayers[playerId],
 			playerId,
 			{
-				content: content.soundPlayer,
+				content:{
+					...content.soundPlayer,
+					playing: timelineObj.isLookahead ? false: content.soundPlayer.playing,
+				},
 				instance: timelineObj.instance,
 				mappingOptions: {
 					framerate: mapping.framerate,
