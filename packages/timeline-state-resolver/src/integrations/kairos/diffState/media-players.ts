@@ -20,7 +20,7 @@ export function diffMediaPlayers(
 ): KairosCommandWithContext[] {
 	const commands: KairosCommandWithContext[] = []
 
-	const playerIds = getAllKeysString(oldClipPlayers, newClipPlayers).map(parseInt)
+	const playerIds = getAllKeysString(oldClipPlayers, newClipPlayers).map((v) => parseInt(v))
 	for (const playerId of playerIds) {
 		if (isNaN(playerId)) continue
 
@@ -180,7 +180,7 @@ export function diffMediaImageStore(
 
 	// Note: An "Image Store" would have been better named "Still Player", because it is a player that plays still images
 
-	const playerIds = getAllKeysString(oldImageStores, newImageStores).map(parseInt)
+	const playerIds = getAllKeysString(oldImageStores, newImageStores).map((v) => parseInt(v))
 	for (const playerId of playerIds) {
 		if (isNaN(playerId)) continue
 
