@@ -50,7 +50,9 @@ import {
 } from 'kairos-connection'
 import { TimelineObjectInstance } from 'superfly-timeline'
 
-type ResolvedTimelineObjectInstanceExt<T extends TSRTimelineContent> = Timeline.ResolvedTimelineObjectInstance<T> & {isLookahead?: boolean}
+type ResolvedTimelineObjectInstanceExt<T extends TSRTimelineContent> = Timeline.ResolvedTimelineObjectInstance<T> & {
+	isLookahead?: boolean
+}
 
 export interface KairosDeviceState {
 	stateTime: number
