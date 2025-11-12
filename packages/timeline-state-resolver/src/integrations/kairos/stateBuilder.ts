@@ -337,10 +337,7 @@ export class KairosStateBuilder {
 			this.#deviceState.clipPlayers[playerId],
 			playerId,
 			{
-				content: {
-					...content.clipPlayer,
-					playing: timelineObj.isLookahead ? false: content.clipPlayer.playing,
-				},
+				content: patchPlayerStateForLookahead(content.clipPlayer, timelineObj.isLookahead),
 				instance: timelineObj.instance,
 				mappingOptions: {
 					framerate: mapping.framerate,
@@ -364,10 +361,7 @@ export class KairosStateBuilder {
 			this.#deviceState.ramRecPlayers[playerId],
 			playerId,
 			{
-				content:  {
-					...content.ramRecPlayer,
-					playing: timelineObj.isLookahead ? false: content.ramRecPlayer.playing,
-				},
+				content: patchPlayerStateForLookahead(content.ramRecPlayer, timelineObj.isLookahead),
 				instance: timelineObj.instance,
 				mappingOptions: {
 					framerate: mapping.framerate,
@@ -411,10 +405,7 @@ export class KairosStateBuilder {
 			this.#deviceState.soundPlayers[playerId],
 			playerId,
 			{
-				content:{
-					...content.soundPlayer,
-					playing: timelineObj.isLookahead ? false: content.soundPlayer.playing,
-				},
+				content: patchPlayerStateForLookahead(content.soundPlayer, timelineObj.isLookahead),
 				instance: timelineObj.instance,
 				mappingOptions: {
 					framerate: mapping.framerate,
@@ -428,4 +419,19 @@ export class KairosStateBuilder {
 export type MappingOptions = {
 	framerate?: number
 	clearPlayerOnStop?: boolean
+}
+
+function patchPlayerStateForLookahead<TClip>(
+	playerState: TimelineContentKairosPlayerState<TClip>,
+	isLookahead: boolean | undefined
+): TimelineContentKairosPlayerState<TClip> {
+	if (!isLookahead) return playerState
+
+	return {
+		...playerState,
+		// Should always be paused in lookahead
+		playing: false,
+		// If no seek, enforce it to the start to allow back to back objects with the same media
+		seek: playerState.seek ?? 0,
+	}
 }
