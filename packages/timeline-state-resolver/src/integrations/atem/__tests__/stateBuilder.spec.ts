@@ -811,4 +811,77 @@ describe('AtemStateBuilder', () => {
 			expect(deviceState1).toEqual(expectedState)
 		})
 	})
+
+	describe('USK Conflict Detection', () => {
+		test('Detects conflict when both legacy and new USK control are used', async () => {
+			const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+
+			const myLayerMapping: Mappings = {
+				legacyLayer: {
+					device: DeviceType.ATEM,
+					deviceId: 'myAtem',
+					options: {
+						mappingType: MappingAtemType.MixEffect,
+						index: 0,
+					},
+				},
+				newLayer: {
+					device: DeviceType.ATEM,
+					deviceId: 'myAtem',
+					options: {
+						mappingType: MappingAtemType.UpStreamKeyer,
+						me: 0,
+						usk: 0,
+					},
+				},
+			}
+
+			const mockState: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
+					id: 'legacyObj',
+					enable: {
+						start: 0,
+						duration: 2000,
+					},
+					layer: 'legacyLayer',
+					content: {
+						deviceType: DeviceType.ATEM,
+						type: TimelineContentTypeAtem.ME,
+						me: {
+							upstreamKeyers: [
+								{
+									upstreamKeyerId: 0,
+									onAir: true,
+								},
+							],
+						},
+					},
+				}),
+				makeDeviceTimelineStateObject({
+					id: 'newObj',
+					enable: {
+						start: 0,
+						duration: 2000,
+					},
+					layer: 'newLayer',
+					content: {
+						deviceType: DeviceType.ATEM,
+						type: TimelineContentTypeAtem.USK,
+						usk: {
+							onAir: true,
+						},
+					},
+				}),
+			]
+
+			AtemStateBuilder.fromTimeline(mockState, myLayerMapping)
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Conflict detected! M/E 0 USK 0'))
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				expect.stringContaining('both legacy (M/E embedded) and new (separate layer) methods')
+			)
+
+			consoleErrorSpy.mockRestore()
+		})
+	})
 })

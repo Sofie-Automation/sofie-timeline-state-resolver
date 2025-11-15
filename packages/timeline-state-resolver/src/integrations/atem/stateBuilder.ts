@@ -37,11 +37,18 @@ import { assertNever, cloneDeep, deepMerge, literal } from '../../lib'
 import { PartialDeep } from 'type-fest'
 import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
+let _legacyUSKWarningIssued = false
+
 export type InternalAtemConnectionState = AtemState & { controlValues?: Record<string, string> }
 
 export class AtemStateBuilder {
 	// Start out with default state:
 	readonly #deviceState: InternalAtemConnectionState = AtemStateUtil.Create()
+
+	// Track legacy USK usage and conflicts
+	private _conflictWarnings = new Set<string>()
+	private _newStyleUSKs = new Set<string>()
+	private _legacyUSKPaths = new Set<string>()
 
 	public static fromTimeline(
 		sortedLayers: DeviceTimelineStateObject<TSRTimelineContent>[],
@@ -163,7 +170,33 @@ export class AtemStateBuilder {
 
 		const objectKeyers = content.me.upstreamKeyers
 		if (objectKeyers) {
+			// Legacy USK handling - issue warning once
+			if (!_legacyUSKWarningIssued) {
+				console.warn(
+					'AtemDevice: Legacy upstream keyer control via M/E timeline objects is deprecated. ' +
+						'Please migrate to using separate USK layers (MappingAtemType.UpStreamKeyer). ' +
+						'Legacy support will be removed in a future version.'
+				)
+				_legacyUSKWarningIssued = true
+			}
+
 			for (const objKeyer of objectKeyers) {
+				// Check for conflicts with new-style USK
+				const conflictKey = `me${mapping.index}_usk${objKeyer.upstreamKeyerId}`
+				if (this._newStyleUSKs.has(conflictKey)) {
+					if (!this._conflictWarnings.has(conflictKey)) {
+						console.error(
+							`AtemDevice: Conflict detected! M/E ${mapping.index} USK ${objKeyer.upstreamKeyerId} ` +
+								'is being controlled by both legacy (M/E embedded) and new (separate layer) methods. ' +
+								'Only one method should be used. The later timeline object will override the earlier one.'
+						)
+						this._conflictWarnings.add(conflictKey)
+					}
+				}
+
+				// Track this legacy USK
+				this._legacyUSKPaths.add(conflictKey)
+
 				const fixedObjKeyer: PartialDeep<VideoState.USK.UpstreamKeyer> = {
 					...objKeyer,
 					flyKeyframes: [undefined, undefined],
@@ -226,6 +259,22 @@ export class AtemStateBuilder {
 		}
 		if (typeof mapping.me !== 'number' || mapping.me < 0) return
 		if (typeof mapping.usk !== 'number' || mapping.usk < 0) return
+
+		// Track that this ME/USK combo is using new-style control
+		const conflictKey = `me${mapping.me}_usk${mapping.usk}`
+		this._newStyleUSKs.add(conflictKey)
+
+		// Check for conflicts with legacy USK
+		if (this._legacyUSKPaths.has(conflictKey)) {
+			if (!this._conflictWarnings.has(conflictKey)) {
+				console.error(
+					`AtemDevice: Conflict detected! M/E ${mapping.me} USK ${mapping.usk} ` +
+						'is being controlled by both legacy (M/E embedded) and new (separate layer) methods. ' +
+						'Only one method should be used. The later timeline object will override the earlier one.'
+				)
+				this._conflictWarnings.add(conflictKey)
+			}
+		}
 
 		const stateMixEffect = AtemStateUtil.getMixEffect(this.#deviceState, mapping.me)
 		// if (!stateMixEffect.upstreamKeyers) stateMixEffect.upstreamKeyers = {}

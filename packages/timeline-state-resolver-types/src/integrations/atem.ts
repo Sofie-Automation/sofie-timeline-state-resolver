@@ -182,6 +182,11 @@ export interface TimelineContentAtemME extends TimelineContentAtemBase {
 		/** Settings for mix rate, wipe style */
 		transitionSettings?: AtemTransitionSettings
 
+		/**
+		 * @deprecated Upstream Keyers should now be controlled using separate timeline objects
+		 * with `type: TimelineContentTypeAtem.USK` and `MappingAtemType.UpStreamKeyer` mappings.
+		 * This legacy method of controlling USKs via M/E properties will be removed in a future version.
+		 */
 		upstreamKeyers?: {
 			readonly upstreamKeyerId: number
 			onAir?: boolean
