@@ -136,7 +136,7 @@
 	"devDependencies": {
 		"@types/simple-oauth2": "^5.0.7",
 		"jest-mock-extended": "^3.0.7",
-		"json-schema-to-typescript": "^10.1.5",
+		"json-schema-to-typescript": "^15.0.4",
 		"timeline-state-resolver-tools": "10.0.0-release53"
 	}
 }
