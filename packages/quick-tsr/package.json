@@ -29,7 +29,7 @@
 		"lint": "run lint:raw .",
 		"lint-fix": "run lint --fix",
 		"inspect": "node --inspect dist/index.js",
-		"start": "run -T ts-node src/index.ts",
+		"start": "tsx src/index.ts",
 		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
 		"validate:dev-dependencies": "yarn npm audit --environment development",
 		"license-validate": "run -T sofie-licensecheck",
@@ -68,5 +68,8 @@
 		"timeline-state-resolver-types": "10.0.0-release53",
 		"tslib": "^2.8.1",
 		"underscore": "^1.13.7"
+	},
+	"devDependencies": {
+		"tsx": "^4.20.6"
 	}
 }
