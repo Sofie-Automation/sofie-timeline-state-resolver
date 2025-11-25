@@ -1,20 +1,23 @@
-import type {
-	UpdateSceneObject,
-	UpdateSceneLayerObject,
-	UpdateAuxObject,
-	UpdateClipPlayerObject,
-	SceneRef,
-	SceneLayerRef,
-	AuxRef,
-	MacroRef,
-	SceneSnapshotRef,
-	KairosConnection,
-	UpdateRamRecPlayerObject,
-	UpdateAudioPlayerObject,
-	UpdateImageStoreObject,
+import {
+	type UpdateSceneObject,
+	type UpdateSceneLayerObject,
+	type UpdateAuxObject,
+	type UpdateClipPlayerObject,
+	type SceneRef,
+	type SceneLayerRef,
+	type AuxRef,
+	type MacroRef,
+	type SceneSnapshotRef,
+	type KairosConnection,
+	type UpdateRamRecPlayerObject,
+	type UpdateAudioPlayerObject,
+	type UpdateImageStoreObject,
+	isRef,
 	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
 import { assertNever } from '../../lib'
+import { KairosDevice } from '.'
+import { isEqual } from 'underscore'
 
 export type KairosCommandAny =
 	| KairosSceneCommand
@@ -49,6 +52,7 @@ export interface KairosSceneLayerCommand {
 	type: 'scene-layer'
 
 	ref: SceneLayerRef
+	sceneLayerId: string
 
 	values: Partial<UpdateSceneLayerObject>
 }
@@ -121,7 +125,11 @@ export interface KairosSoundPlayerCommand {
 	values: Partial<UpdateAudioPlayerObject>
 }
 
-export async function sendCommand(kairos: KairosConnection, command: KairosCommandAny): Promise<void> {
+export async function sendCommand(
+	device: KairosDevice,
+	kairos: KairosConnection,
+	command: KairosCommandAny
+): Promise<void> {
 	const commandType = command.type
 	switch (command.type) {
 		case 'scene':
@@ -138,9 +146,66 @@ export async function sendCommand(kairos: KairosConnection, command: KairosComma
 				assertNever(command.active)
 			}
 			break
-		case 'scene-layer':
-			await kairos.updateSceneLayer(command.ref, command.values)
+		case 'scene-layer': {
+			const values = { ...command.values }
+			if (values.sourceA) {
+				// Handle loading ramrec/still into RAM if needed
+				const source = values.sourceA
+				delete values.sourceA
+				try {
+					await kairos.updateSceneLayer(command.ref, { sourceA: source })
+				} catch (e) {
+					await device.kairosRamLoader.handleFailedRAMLoad(e, -1, source, (currentState) => {
+						// This is called after the RAM load is done
+						const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
+						if (sceneLayer && isEqual(sceneLayer.state.sourceA, source)) {
+							// Only modify if it is the same still:
+							delete sceneLayer.state.sourceA
+							return currentState
+						} else return false
+					})
+				}
+			}
+			if (values.sourcePgm) {
+				// Handle loading ramrec/still into RAM if needed
+				const source = values.sourcePgm
+				delete values.sourcePgm
+				try {
+					await kairos.updateSceneLayer(command.ref, { sourcePgm: source })
+				} catch (e) {
+					await device.kairosRamLoader.handleFailedRAMLoad(e, -1, source, (currentState) => {
+						// This is called after the RAM load is done
+						const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
+						if (sceneLayer && isEqual(sceneLayer.state.sourcePgm, source)) {
+							// Only modify if it is the same still:
+							delete sceneLayer.state.sourcePgm
+							return currentState
+						} else return false
+					})
+				}
+			}
+			if (values.sourcePst) {
+				// Handle loading ramrec/still into RAM if needed
+				const source = values.sourcePst
+				delete values.sourcePst
+				try {
+					await kairos.updateSceneLayer(command.ref, { sourcePst: source })
+				} catch (e) {
+					await device.kairosRamLoader.handleFailedRAMLoad(e, -1, source, (currentState) => {
+						// This is called after the RAM load is done
+						const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
+						if (sceneLayer && isEqual(sceneLayer.state.sourcePst, source)) {
+							// Only modify if it is the same still:
+							delete sceneLayer.state.sourcePst
+							return currentState
+						} else return false
+					})
+				}
+			}
+
+			await kairos.updateSceneLayer(command.ref, values)
 			break
+		}
 		case 'aux':
 			await kairos.updateAux(command.ref, command.values)
 			break
@@ -152,12 +217,13 @@ export async function sendCommand(kairos: KairosConnection, command: KairosComma
 			}
 			break
 		case 'clip-player': {
-			if (command.values.clip) {
-				await kairos.loadClipPlayerClip(command.playerId, command.values.clip, command.values.position)
-				delete command.values.clip
-				delete command.values.position
+			const values = { ...command.values }
+			if (values.clip) {
+				await kairos.loadClipPlayerClip(command.playerId, values.clip, values.position)
+				delete values.clip
+				delete values.position
 			}
-			await kairos.updateClipPlayer(command.playerId, command.values)
+			await kairos.updateClipPlayer(command.playerId, values)
 			break
 		}
 		case 'media-player:do': {
@@ -267,12 +333,65 @@ export async function sendCommand(kairos: KairosConnection, command: KairosComma
 			}
 			break
 		}
-		case 'ram-rec-player':
-			await kairos.updateRamRecorder(command.playerId, command.values)
+		case 'ram-rec-player': {
+			const values = command.values
+			if (values.clip) {
+				// Handle loading ramrec/still into RAM if needed
+				const clip = values.clip
+				delete values.clip
+				try {
+					await kairos.updateRamRecorder(command.playerId, {
+						clip: clip,
+					})
+				} catch (e) {
+					await device.kairosRamLoader.handleFailedRAMLoad(e, command.playerId, clip, (currentState) => {
+						// This is called after the RAM load is done,
+						//
+						const player = currentState.ramRecPlayers[command.playerId]
+						if (player && isEqual(player.state.content.clip, clip)) {
+							// Only modify if it is the same clip
+							delete player.state.content.clip
+							return currentState
+						}
+
+						return false
+					})
+				}
+			}
+
+			await kairos.updateRamRecorder(command.playerId, values)
 			break
-		case 'image-store':
-			await kairos.updateImageStore(command.playerId, command.values)
+		}
+		case 'image-store': {
+			const values = { ...command.values }
+			if (values.clip) {
+				// Handle loading ramrec/still into RAM if needed
+				const clip = values.clip
+				delete values.clip
+				try {
+					await kairos.updateImageStore(command.playerId, {
+						clip: clip,
+					})
+				} catch (e) {
+					if (isRef(clip) && clip.realm !== 'media-still') throw e // Not a still, re-throw
+
+					await device.kairosRamLoader.handleFailedRAMLoad(e, command.playerId, clip, (currentState) => {
+						// This is called after the RAM load is done,
+						//
+						const player = currentState.imageStores[command.playerId]
+						if (player && isEqual(player.state.content.imageStore.clip, clip)) {
+							// Only modify if it is the same still
+							player.state.content.imageStore.clip = null
+							return currentState
+						}
+						return false
+					})
+				}
+			}
+
+			await kairos.updateImageStore(command.playerId, values)
 			break
+		}
 		case 'sound-player':
 			await kairos.updateAudioPlayer(command.playerId, command.values)
 			break

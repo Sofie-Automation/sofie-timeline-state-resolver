@@ -243,6 +243,14 @@ export interface DeviceContextAPI<DeviceState, AddressState = void> {
 	/** Reset the tracked device state to "state" and notify the conductor to reset the resolver */
 	resetToState: (state: DeviceState) => Promise<void>
 
+	/**
+	 * Reset the tracked device state to "state" and notify the conductor to reset the resolver
+	 * @param cb A callback that receives the current state, and should return the modified state.
+	 *           Note: The `currentState` argument is a clone, so it is safe to modify it directly.
+	 * 		     If no changes have been made, return false.
+	 */
+	setModifiedState: (cb: (currentState: DeviceState) => DeviceState | false) => Promise<void>
+
 	/** Calculate a new diff for the next state change */
 	recalcDiff: () => void
 

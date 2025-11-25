@@ -7767,22 +7767,22 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"kairos-connection@npm:0.2.2":
-  version: 0.2.2
-  resolution: "kairos-connection@npm:0.2.2"
+"kairos-connection@npm:0.2.3":
+  version: 0.2.3
+  resolution: "kairos-connection@npm:0.2.3"
   dependencies:
-    kairos-lib: "npm:0.2.2"
+    kairos-lib: "npm:0.2.3"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/55b0ba0fb6a11a43601d7fcc2f186535cea69b53c76d986ceec0011cac6ed66687e980b03672ee8cc1bced2f882b5da3f65693f3f9ad9c5295e4881838cf7f8d
+  checksum: 10c0/461801d6cc11bb6e6594fc2067b18c6dd9359d52afb56f854da995d209c3f4675d03f0c4eff1f24007a05a4ee40b6cd367aa1f6e473cafed1c5460fe3b4d0b1a
   languageName: node
   linkType: hard
 
-"kairos-lib@npm:0.2.2":
-  version: 0.2.2
-  resolution: "kairos-lib@npm:0.2.2"
+"kairos-lib@npm:0.2.3":
+  version: 0.2.3
+  resolution: "kairos-lib@npm:0.2.3"
   dependencies:
     tslib: "npm:^2.8.1"
-  checksum: 10c0/895f4253859b3d6cfc1ba36127052ed13b290c9dda31fa182eb68c8697627e4d2d906f6ae1470982668a90b5cd04d9d3ad90676feb5090305d654a2cc07dd04f
+  checksum: 10c0/d40347cc5f3b00a10acee99156b54e2fe742dc5d80def3749f5096b2c8da5b03491c7ac87172421684846debb13cbc4f1f2a3283debb6b95b3d7b94e64514db1
   languageName: node
   linkType: hard
 
@@ -11748,7 +11748,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "timeline-state-resolver-types@workspace:packages/timeline-state-resolver-types"
   dependencies:
-    kairos-lib: "npm:0.2.2"
+    kairos-lib: "npm:0.2.3"
     tslib: "npm:^2.6.3"
   languageName: unknown
   linkType: soft
@@ -11773,7 +11773,7 @@ asn1@evs-broadcast/node-asn1:
     hyperdeck-connection: "npm:2.0.1"
     jest-mock-extended: "npm:^3.0.7"
     json-schema-to-typescript: "npm:^10.1.5"
-    kairos-connection: "npm:0.2.2"
+    kairos-connection: "npm:0.2.3"
     klona: "npm:^2.0.6"
     obs-websocket-js: "npm:^5.0.6"
     osc: "npm:^2.4.5"
