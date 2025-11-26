@@ -175,4 +175,6 @@ export interface DeviceContextAPI<DeviceState> {
 
 	/** Reset the tracked device state to "state" and notify the conductor to reset the resolver */
 	resetToState: (state: DeviceState) => Promise<void>
+
+	setModifiedState: (cb: (currentState: DeviceState) => DeviceState | false) => Promise<void>
 }

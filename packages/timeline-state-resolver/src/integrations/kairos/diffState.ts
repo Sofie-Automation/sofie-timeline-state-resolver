@@ -123,6 +123,7 @@ function diffSceneLayers(
 				command: {
 					type: 'scene-layer',
 					ref: sceneLayerRef,
+					sceneLayerId: sceneLayerKey,
 					values: diff,
 				},
 			})

@@ -15,6 +15,7 @@ import { diffKairosStates } from './diffState'
 import { sendCommand, type KairosCommandAny } from './commands'
 import { getActions } from './actions'
 import { CommandWithContext, Device, DeviceContextAPI } from '../../service/device'
+import { KairosRamLoader } from './lib/kairosRamLoader'
 
 export interface KairosCommandWithContext extends CommandWithContext {
 	command: KairosCommandAny
@@ -28,11 +29,14 @@ export class KairosDevice extends Device<KairosOptions, KairosDeviceState, Kairo
 	private readonly _kairos: KairosConnection
 	readonly actions: Record<string, (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>>
 
+	public kairosRamLoader: KairosRamLoader
+
 	constructor(context: DeviceContextAPI<KairosDeviceState>) {
 		super(context)
 
 		this._kairos = new KairosConnection()
 		this.actions = getActions(this._kairos) as any // Type safety is hard in the r52 api..
+		this.kairosRamLoader = new KairosRamLoader(this._kairos, context)
 	}
 
 	/**
@@ -137,7 +141,7 @@ export class KairosDevice extends Device<KairosOptions, KairosDeviceState, Kairo
 		if (!this.connected) return
 
 		try {
-			await sendCommand(this._kairos, command.command)
+			await sendCommand(this, this._kairos, command.command)
 		} catch (error: any) {
 			this.context.commandError(error, command)
 		}

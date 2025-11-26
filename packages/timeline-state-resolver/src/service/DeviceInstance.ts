@@ -1,5 +1,5 @@
 import EventEmitter = require('eventemitter3')
-import { actionNotFoundMessage, FinishedTrace } from '../lib'
+import { actionNotFoundMessage, FinishedTrace, cloneDeep } from '../lib'
 import {
 	type DeviceStatus,
 	type DeviceType,
@@ -266,7 +266,16 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 				await this._stateHandler.clearFutureStates()
 				this.emit('resyncStates')
 			},
+			setModifiedState: async (cb: (currentState: DeviceState) => DeviceState | false) => {
+				const currentState = cloneDeep(this._stateHandler.getCurrentState())
+				const newState = cb(currentState)
 
+				if (newState === false) return // false means no changes were made, and no resyncStates is necessary
+
+				await this._stateHandler.setCurrentState(newState)
+				await this._stateHandler.clearFutureStates()
+				this.emit('resyncStates')
+			},
 			resetToState: async (state: any) => {
 				await this._stateHandler.setCurrentState(state)
 				await this._stateHandler.clearFutureStates()
