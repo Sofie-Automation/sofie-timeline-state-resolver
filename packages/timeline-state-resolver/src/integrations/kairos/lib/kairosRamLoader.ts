@@ -7,7 +7,6 @@ import {
 	MediaStillRef,
 	pathToRef,
 	refToPath,
-	ResponseError,
 } from 'kairos-connection'
 import { KairosDeviceState } from '../stateBuilder'
 import { DeviceContextAPI } from 'timeline-state-resolver-api'
@@ -17,22 +16,23 @@ export class KairosRamLoader {
 
 	constructor(private kairos: KairosConnection, private context: DeviceContextAPI<KairosDeviceState>) {}
 
-	async handleFailedRAMLoad(
-		originalError: unknown,
-		playerId: number,
+	async ensureRAMLoaded(
+		playerIdentifier: number | string,
 		source: AnySourceRef | string,
 
 		afterLoadSetModifiedStateCallback: (currentState: KairosDeviceState) => KairosDeviceState | false
 	): Promise<void> {
-		// This method is called whenever there was an "Error" in reply to using a ramrec/still.
-		// This can happen if the ramrec/still is not loaded into RAM.
-		// As a fallback, we try to load the ramrec into RAM, so that it can be played.
-
-		// First, check if the thrown error is indeed a ResponseError
-		if (!(originalError instanceof ResponseError)) throw originalError // Not a ResponseError, re-throw it
+		// This method is called to ensure that a ramrec/still is loaded into RAM.
+		// If the ramrec/still is not loaded into RAM it cannot be used.
 
 		const clipRef = typeof source === 'string' ? pathToRef(source) : source
-		if (!isRef(clipRef) || (clipRef.realm !== 'media-still' && clipRef.realm !== 'media-ramrec')) throw originalError // Not a valid ramrec/still ref, re-throw the original error
+		if (!isRef(clipRef) || (clipRef.realm !== 'media-still' && clipRef.realm !== 'media-ramrec')) {
+			this.context.logger.error(
+				'KairosRamLoader',
+				new Error(`KairosRamLoader: Unsupported clip reference for RAM loading: ${JSON.stringify(source)}`)
+			)
+			return
+		}
 
 		const identifier = clipRef.realm === 'media-ramrec' ? `RamRec ${refToPath(clipRef)}` : `Still ${refToPath(clipRef)}`
 
@@ -45,12 +45,10 @@ export class KairosRamLoader {
 
 		if (media.status === MediaStatus.ERROR) throw new Error(`Cannot load ${identifier}: status is ERROR`)
 
-		// if (media.status === MediaStatus.LOAD && media.loadProgress === 1)
-		// 	throw new Error(
-		// 		`Error when load ${identifier}, it is already loaded. Original Error: ${originalError.message} ${
-		// 			originalError.stack
-		// 		}`
-		// 	)
+		if (media.status === MediaStatus.LOAD && media.loadProgress === 1) {
+			// Is already loaded, OK
+			return
+		}
 
 		// Run the rest asynchronously, to not block commands (since we execute commands sequentially):
 		Promise.resolve()
@@ -63,13 +61,13 @@ export class KairosRamLoader {
 						})
 					} else {
 						await this.kairos.updateMediaStill(clipRef, {
-							status: MediaStatus.LOAD, // Load the ramrec into RAM
+							status: MediaStatus.LOAD, // Load the still into RAM
 						})
 					}
 				}
 
 				// Ensure that we're not already waiting for this clip to load:
-				const debounceKey = `${identifier}_${playerId}`
+				const debounceKey = `${identifier}_${playerIdentifier}`
 				if (this.debounceTrackLoadRAM.has(debounceKey)) return // Already waiting for this clip to load
 				this.debounceTrackLoadRAM.add(debounceKey)
 

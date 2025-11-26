@@ -152,55 +152,52 @@ export async function sendCommand(
 				// Handle loading ramrec/still into RAM if needed
 				const source = values.sourceA
 				delete values.sourceA
-				try {
-					await kairos.updateSceneLayer(command.ref, { sourceA: source })
-				} catch (e) {
-					await device.kairosRamLoader.handleFailedRAMLoad(e, -1, source, (currentState) => {
-						// This is called after the RAM load is done
-						const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
-						if (sceneLayer && isEqual(sceneLayer.state.sourceA, source)) {
-							// Only modify if it is the same still:
-							delete sceneLayer.state.sourceA
-							return currentState
-						} else return false
-					})
-				}
+
+				await kairos.updateSceneLayer(command.ref, { sourceA: source })
+
+				await device.kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
+					// This is called after the RAM load is done
+					const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
+					if (sceneLayer && isEqual(sceneLayer.state.sourceA, source)) {
+						// Only modify if it is the same source:
+						delete sceneLayer.state.sourceA
+						return currentState
+					} else return false
+				})
 			}
 			if (values.sourcePgm) {
 				// Handle loading ramrec/still into RAM if needed
 				const source = values.sourcePgm
 				delete values.sourcePgm
-				try {
-					await kairos.updateSceneLayer(command.ref, { sourcePgm: source })
-				} catch (e) {
-					await device.kairosRamLoader.handleFailedRAMLoad(e, -1, source, (currentState) => {
-						// This is called after the RAM load is done
-						const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
-						if (sceneLayer && isEqual(sceneLayer.state.sourcePgm, source)) {
-							// Only modify if it is the same still:
-							delete sceneLayer.state.sourcePgm
-							return currentState
-						} else return false
-					})
-				}
+
+				await kairos.updateSceneLayer(command.ref, { sourcePgm: source })
+
+				await device.kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
+					// This is called after the RAM load is done
+					const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
+					if (sceneLayer && isEqual(sceneLayer.state.sourcePgm, source)) {
+						// Only modify if it is the same still:
+						delete sceneLayer.state.sourcePgm
+						return currentState
+					} else return false
+				})
 			}
 			if (values.sourcePst) {
 				// Handle loading ramrec/still into RAM if needed
 				const source = values.sourcePst
 				delete values.sourcePst
-				try {
-					await kairos.updateSceneLayer(command.ref, { sourcePst: source })
-				} catch (e) {
-					await device.kairosRamLoader.handleFailedRAMLoad(e, -1, source, (currentState) => {
-						// This is called after the RAM load is done
-						const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
-						if (sceneLayer && isEqual(sceneLayer.state.sourcePst, source)) {
-							// Only modify if it is the same still:
-							delete sceneLayer.state.sourcePst
-							return currentState
-						} else return false
-					})
-				}
+
+				await kairos.updateSceneLayer(command.ref, { sourcePst: source })
+
+				await device.kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
+					// This is called after the RAM load is done
+					const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
+					if (sceneLayer && isEqual(sceneLayer.state.sourcePst, source)) {
+						// Only modify if it is the same still:
+						delete sceneLayer.state.sourcePst
+						return currentState
+					} else return false
+				})
 			}
 
 			await kairos.updateSceneLayer(command.ref, values)
@@ -339,24 +336,24 @@ export async function sendCommand(
 				// Handle loading ramrec/still into RAM if needed
 				const clip = values.clip
 				delete values.clip
-				try {
-					await kairos.updateRamRecorder(command.playerId, {
-						clip: clip,
-					})
-				} catch (e) {
-					await device.kairosRamLoader.handleFailedRAMLoad(e, command.playerId, clip, (currentState) => {
-						// This is called after the RAM load is done,
-						//
-						const player = currentState.ramRecPlayers[command.playerId]
-						if (player && isEqual(player.state.content.clip, clip)) {
-							// Only modify if it is the same clip
-							delete player.state.content.clip
-							return currentState
-						}
 
-						return false
-					})
-				}
+				await kairos.updateRamRecorder(command.playerId, {
+					clip: clip,
+				})
+
+				await device.kairosRamLoader.ensureRAMLoaded(command.playerId, clip, (currentState) => {
+					// This is called after the RAM load is done,
+					//
+					const player = currentState.ramRecPlayers[command.playerId]
+					if (player && isEqual(player.state.content.clip, clip)) {
+						// Only modify if it is the same clip:
+						// delete player.state.content.clip
+						delete currentState.ramRecPlayers[command.playerId]
+						return currentState
+					}
+
+					return false
+				})
 			}
 
 			await kairos.updateRamRecorder(command.playerId, values)
@@ -368,20 +365,22 @@ export async function sendCommand(
 				// Handle loading ramrec/still into RAM if needed
 				const clip = values.clip
 				delete values.clip
-				try {
-					await kairos.updateImageStore(command.playerId, {
-						clip: clip,
-					})
-				} catch (e) {
-					if (isRef(clip) && clip.realm !== 'media-still') throw e // Not a still, re-throw
 
-					await device.kairosRamLoader.handleFailedRAMLoad(e, command.playerId, clip, (currentState) => {
+				await kairos.updateImageStore(command.playerId, {
+					clip: clip,
+				})
+
+				if (isRef(clip) && clip.realm === 'media-still') {
+					// type guard
+
+					await device.kairosRamLoader.ensureRAMLoaded(command.playerId, clip, (currentState) => {
 						// This is called after the RAM load is done,
 						//
 						const player = currentState.imageStores[command.playerId]
 						if (player && isEqual(player.state.content.imageStore.clip, clip)) {
 							// Only modify if it is the same still
-							player.state.content.imageStore.clip = null
+							// player.state.content.imageStore.clip = null
+							delete currentState.imageStores[command.playerId]
 							return currentState
 						}
 						return false
