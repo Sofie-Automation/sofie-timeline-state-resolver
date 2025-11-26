@@ -76,6 +76,7 @@ describe('diffState', () => {
 					timelineObjId: expect.any(String),
 					command: {
 						type: 'scene-layer',
+						sceneLayerId: 'SCENES.Main.Layers.Background',
 						ref: {
 							realm: 'scene-layer',
 							scenePath: ['Main'],
