@@ -26,4 +26,6 @@ export interface TSRTimelineObjProps {
 	isLookahead?: boolean
 	/** Only valid when isLookahead is true. Set so that a lookahead object knows what layer it belongs to */
 	lookaheadForLayer?: string | number
+	/** Only valid when isLookahead is true. Offsets the lookahead when a part or piece is queued with an offset */
+	lookaheadOffset?: number
 }

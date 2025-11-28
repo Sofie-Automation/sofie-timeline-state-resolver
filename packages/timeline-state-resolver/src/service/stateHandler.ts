@@ -115,6 +115,7 @@ export class StateHandler<
 					lastModified: obj.lastModified,
 					isLookahead: objExt.isLookahead,
 					lookaheadForLayer: objExt.lookaheadForLayer,
+					lookaheadOffset: objExt.lookaheadOffset,
 				} satisfies Complete<DeviceTimelineStateObject>
 			}),
 		}
