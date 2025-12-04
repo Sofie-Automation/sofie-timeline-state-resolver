@@ -124,6 +124,15 @@ function setPortStateFromLayer(
 	} else {
 		const startTime = layer.instance.originalStart || layer.instance.start
 
+		const inPointSeekOffsetByLookahead =
+			content.inPoint && layer.lookaheadOffset
+				? content.inPoint + layer.lookaheadOffset
+				: content.inPoint
+				? content.inPoint
+				: layer.lookaheadOffset
+				? layer.lookaheadOffset
+				: undefined
+
 		port.timelineObjId = layer.id
 		port.notOnAir = content.notOnAir || isLookahead
 		port.outTransition = content.outTransition
@@ -137,7 +146,7 @@ function setPortStateFromLayer(
 			pauseTime: content.pauseTime,
 			playing: isLookahead ? false : content.playing ?? true,
 
-			inPoint: content.inPoint,
+			inPoint: !isLookahead ? content.inPoint : inPointSeekOffsetByLookahead,
 			length: content.length,
 
 			playTime: (content.noStarttime || isLookahead ? null : startTime) || null,
