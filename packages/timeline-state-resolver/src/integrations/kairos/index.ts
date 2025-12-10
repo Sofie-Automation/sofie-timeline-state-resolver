@@ -24,14 +24,14 @@ export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, stri
  */
 export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState, KairosCommandWithContext> {
 	private readonly _kairos: KairosConnection
-	readonly actions: KairosActionMethods
+	private readonly _kairosRamLoader: KairosRamLoader
 
-	public kairosRamLoader: KairosRamLoader
+	readonly actions: KairosActionMethods
 
 	constructor(public context: DeviceContextAPI<KairosDeviceState>) {
 		this._kairos = new KairosConnection()
+		this._kairosRamLoader = new KairosRamLoader(this._kairos, context)
 		this.actions = getActions(this._kairos)
-		this.kairosRamLoader = new KairosRamLoader(this._kairos, context)
 	}
 
 	/**
@@ -129,7 +129,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		if (!this.connected) return
 
 		try {
-			await sendCommand(this, this._kairos, command.command)
+			await sendCommand(this._kairos, this._kairosRamLoader, command.command)
 		} catch (error: any) {
 			this.context.commandError(error, command)
 		}

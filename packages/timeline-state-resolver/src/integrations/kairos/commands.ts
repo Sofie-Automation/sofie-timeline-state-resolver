@@ -16,8 +16,8 @@ import {
 	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
 import { assertNever } from '../../lib'
-import { KairosDevice } from '.'
 import { isEqual } from 'underscore'
+import type { KairosRamLoader } from './lib/kairosRamLoader'
 
 export type KairosCommandAny =
 	| KairosSceneCommand
@@ -126,8 +126,8 @@ export interface KairosSoundPlayerCommand {
 }
 
 export async function sendCommand(
-	device: KairosDevice,
 	kairos: KairosConnection,
+	kairosRamLoader: KairosRamLoader,
 	command: KairosCommandAny
 ): Promise<void> {
 	const commandType = command.type
@@ -155,7 +155,7 @@ export async function sendCommand(
 
 				await kairos.updateSceneLayer(command.ref, { sourceA: source })
 
-				await device.kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
+				await kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
 					// This is called after the RAM load is done
 					const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
 					if (sceneLayer && isEqual(sceneLayer.state.sourceA, source)) {
@@ -172,7 +172,7 @@ export async function sendCommand(
 
 				await kairos.updateSceneLayer(command.ref, { sourcePgm: source })
 
-				await device.kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
+				await kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
 					// This is called after the RAM load is done
 					const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
 					if (sceneLayer && isEqual(sceneLayer.state.sourcePgm, source)) {
@@ -189,7 +189,7 @@ export async function sendCommand(
 
 				await kairos.updateSceneLayer(command.ref, { sourcePst: source })
 
-				await device.kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
+				await kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
 					// This is called after the RAM load is done
 					const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
 					if (sceneLayer && isEqual(sceneLayer.state.sourcePst, source)) {
@@ -341,7 +341,7 @@ export async function sendCommand(
 					clip: clip,
 				})
 
-				await device.kairosRamLoader.ensureRAMLoaded(command.playerId, clip, (currentState) => {
+				await kairosRamLoader.ensureRAMLoaded(command.playerId, clip, (currentState) => {
 					// This is called after the RAM load is done,
 					//
 					const player = currentState.ramRecPlayers[command.playerId]
@@ -373,7 +373,7 @@ export async function sendCommand(
 				if (isRef(clip) && clip.realm === 'media-still') {
 					// type guard
 
-					await device.kairosRamLoader.ensureRAMLoaded(command.playerId, clip, (currentState) => {
+					await kairosRamLoader.ensureRAMLoaded(command.playerId, clip, (currentState) => {
 						// This is called after the RAM load is done,
 						//
 						const player = currentState.imageStores[command.playerId]
