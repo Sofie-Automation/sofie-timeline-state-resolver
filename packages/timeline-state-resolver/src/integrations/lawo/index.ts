@@ -24,7 +24,7 @@ export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoComman
 
 	async init(options: LawoOptions): Promise<boolean> {
 		this._lawo = new LawoConnection(options, this.context.getCurrentTime)
-		this._lawo.on('error', (e) => this.context.logger.error('Lawo.LawoConnection', e))
+		this._lawo.on('error', (context, e) => this.context.logger.error('Lawo.LawoConnection ' + context, e))
 		this._lawo.on('debug', (...debug) => this.context.logger.debug('Lawo.LawoConnection', ...debug))
 		this._lawo.on('connected', (firstConnection) => {
 			if (firstConnection) {
