@@ -15,9 +15,7 @@
 						"type": "boolean"
 					}
 				},
-				"required": [
-					"scenePath"
-				],
+				"required": ["scenePath"],
 				"additionalProperties": false
 			},
 			"result": {
@@ -31,10 +29,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
-							"additionalProperties": false
+							"required": ["name"]
 						},
 						{
 							"$ref": "./lib/refs.json#/SceneRef"
@@ -60,10 +55,7 @@
 						"type": "boolean"
 					}
 				},
-				"required": [
-					"scenePath",
-					"layerPath"
-				],
+				"required": ["scenePath", "layerPath"],
 				"additionalProperties": false
 			},
 			"result": {
@@ -77,9 +69,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -106,10 +96,7 @@
 						"type": "boolean"
 					}
 				},
-				"required": [
-					"scenePath",
-					"layerPath"
-				],
+				"required": ["scenePath", "layerPath"],
 				"additionalProperties": false
 			},
 			"result": {
@@ -123,9 +110,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -146,9 +131,7 @@
 						"$ref": "./lib/refs.json#/SceneRef/properties/scenePath"
 					}
 				},
-				"required": [
-					"scenePath"
-				],
+				"required": ["scenePath"],
 				"additionalProperties": false
 			},
 			"result": {
@@ -169,9 +152,7 @@
 						"$ref": "./lib/refs.json#/SceneRef/properties/scenePath"
 					}
 				},
-				"required": [
-					"scenePath"
-				],
+				"required": ["scenePath"],
 				"additionalProperties": false
 			},
 			"result": {
@@ -185,9 +166,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -217,9 +196,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -249,9 +226,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -281,9 +256,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -313,9 +286,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -345,9 +316,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -377,9 +346,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -409,9 +376,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -448,9 +413,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -493,10 +456,7 @@
 						"type": "boolean"
 					}
 				},
-				"required": [
-					"path",
-					"pathIsName"
-				],
+				"required": ["path", "pathIsName"],
 				"additionalProperties": false
 			},
 			"result": {
@@ -510,9 +470,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -549,9 +507,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -572,9 +528,7 @@
 						"$ref": "./lib/refs.json#/GfxSceneRef/properties/scenePath"
 					}
 				},
-				"required": [
-					"scenePath"
-				],
+				"required": ["scenePath"],
 				"additionalProperties": false
 			},
 			"result": {
@@ -588,9 +542,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -620,9 +572,7 @@
 									"type": "string"
 								}
 							},
-							"required": [
-								"name"
-							],
+							"required": ["name"],
 							"additionalProperties": false
 						},
 						{
@@ -643,9 +593,7 @@
 						"$ref": "./lib/refs.json#/MacroRef/properties/macroPath"
 					}
 				},
-				"required": [
-					"macroPath"
-				],
+				"required": ["macroPath"],
 				"additionalProperties": false
 			}
 		},
@@ -660,9 +608,7 @@
 						"$ref": "./lib/refs.json#/MacroRef/properties/macroPath"
 					}
 				},
-				"required": [
-					"macroPath"
-				],
+				"required": ["macroPath"],
 				"additionalProperties": false
 			}
 		},
@@ -680,10 +626,7 @@
 						"$ref": "./lib/refs.json#/SceneSnapshotRef/properties/snapshotPath"
 					}
 				},
-				"required": [
-					"scenePath",
-					"snapshotPath"
-				],
+				"required": ["scenePath", "snapshotPath"],
 				"additionalProperties": false
 			}
 		}

@@ -1,7 +1,8 @@
 import { isEqual } from 'underscore'
 
 /**
- * Does a shallow comparision of two objects, returning an object with only the changed keys.
+ * Iterates over top-level keys and returns an object with only the changed keys.
+ * Uses deep equality comparison for each value.
  * @param oldObj
  * @param newObj
  * @returns

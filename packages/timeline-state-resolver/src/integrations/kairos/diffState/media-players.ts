@@ -190,10 +190,10 @@ export function diffMediaImageStore(
 		const oldImageStore = oldImageStores[playerId]
 
 		const cpRef = newImageStore?.ref || oldImageStore?.ref
-		if (!cpRef) continue // No ClipPlayer to diff
+		if (!cpRef) continue // No ImageStore to diff
 
 		if (!newImageStore && oldImageStore) {
-			// ClipPlayer obj was removed, stop it:
+			// ImageStore obj was removed, stop it:
 
 			const clearPlayerOnStop =
 				oldImageStore.state.content.imageStore.clearPlayerOnStop ??
@@ -216,7 +216,7 @@ export function diffMediaImageStore(
 				// Do nothing, just leave it
 			}
 		} else if (newImageStore) {
-			/** The properties to update on the ClipPlayer */
+			/** The properties to update on the ImageStore */
 			const updateCmd: KairosImageStoreCommand = {
 				type: 'image-store',
 				playerId: playerId,

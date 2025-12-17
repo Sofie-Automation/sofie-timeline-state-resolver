@@ -229,7 +229,6 @@ export async function sendCommand(
 					if (command.playerType === 'clip-player') await kairos.clipPlayerBegin(command.playerId)
 					else if (command.playerType === 'ram-rec-player') await kairos.ramRecorderBegin(command.playerId)
 					else if (command.playerType === 'sound-player') await kairos.audioPlayerBegin(command.playerId)
-					else if (command.playerType === 'image-store') await kairos.audioPlayerBegin(command.playerId)
 					else assertNever(command.playerType)
 					break
 				}
@@ -331,7 +330,7 @@ export async function sendCommand(
 			break
 		}
 		case 'ram-rec-player': {
-			const values = command.values
+			const values = { ...command.values }
 			if (values.clip) {
 				// Handle loading ramrec/still into RAM if needed
 				const clip = values.clip
