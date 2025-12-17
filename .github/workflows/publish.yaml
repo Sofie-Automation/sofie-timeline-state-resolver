@@ -61,7 +61,7 @@ jobs:
           # - timeline-state-resolver-api
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
@@ -92,7 +92,7 @@ jobs:
     if: ${{ needs.check-publish.outputs.can-publish == '1' }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           persist-credentials: false

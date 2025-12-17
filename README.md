@@ -46,6 +46,18 @@ Contrary to what your editor might say, the typings-only library cannot use depe
 
 Check the main [timeline-state-resolver](/packages/timeline-state-resolver) package for instructions on using the library and more information
 
+If you are using a TSR plugin in your own project, you can easily extend the TSR types to include your own device by adding a file into your project like `tsr-extend.d.ts`:
+
+```ts
+import type { FakeDeviceType, TimelineContentFakeAny } from './test-types.js'
+
+declare module 'timeline-state-resolver-types' {
+	interface TimelineContentMap {
+		[FakeDeviceType]: TimelineContentFakeAny
+	}
+}
+```
+
 ## Development
 
 When creating features that span the timeline-state-resolver and timeline-state-resolver-types packages - such as when creating a PR for supporting a new device - you will need to link the two packages together. To do that, after checking out a branch run:

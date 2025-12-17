@@ -2,7 +2,7 @@
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import $RefParser from 'json-schema-ref-parser'
+import $RefParser from '@apidevtools/json-schema-ref-parser'
 import meow from 'meow'
 
 /** ********************************************************

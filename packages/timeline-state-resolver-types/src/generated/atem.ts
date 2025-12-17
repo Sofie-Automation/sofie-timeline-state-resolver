@@ -32,6 +32,12 @@ export interface MappingAtemMixEffect {
 	mappingType: MappingAtemType.MixEffect
 }
 
+export interface MappingAtemUpStreamKeyer {
+	me: number
+	usk: number
+	mappingType: MappingAtemType.UpStreamKeyer
+}
+
 export interface MappingAtemDownStreamKeyer {
 	index: number
 	mappingType: MappingAtemType.DownStreamKeyer
@@ -79,6 +85,7 @@ export interface MappingAtemColorGenerator {
 export enum MappingAtemType {
 	ControlValue = 'controlValue',
 	MixEffect = 'mixEffect',
+	UpStreamKeyer = 'upStreamKeyer',
 	DownStreamKeyer = 'downStreamKeyer',
 	SuperSourceBox = 'superSourceBox',
 	Auxilliary = 'auxilliary',
@@ -90,7 +97,7 @@ export enum MappingAtemType {
 	ColorGenerator = 'colorGenerator',
 }
 
-export type SomeMappingAtem = MappingAtemControlValue | MappingAtemMixEffect | MappingAtemDownStreamKeyer | MappingAtemSuperSourceBox | MappingAtemAuxilliary | MappingAtemMediaPlayer | MappingAtemSuperSourceProperties | MappingAtemAudioChannel | MappingAtemMacroPlayer | MappingAtemAudioRouting | MappingAtemColorGenerator
+export type SomeMappingAtem = MappingAtemControlValue | MappingAtemMixEffect | MappingAtemUpStreamKeyer | MappingAtemDownStreamKeyer | MappingAtemSuperSourceBox | MappingAtemAuxilliary | MappingAtemMediaPlayer | MappingAtemSuperSourceProperties | MappingAtemAudioChannel | MappingAtemMacroPlayer | MappingAtemAudioRouting | MappingAtemColorGenerator
 
 export interface RunMacroPayload {
 	macroIndex: number

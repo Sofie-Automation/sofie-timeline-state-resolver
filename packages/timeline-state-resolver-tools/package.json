@@ -79,12 +79,12 @@
 		"production"
 	],
 	"dependencies": {
-		"i18next-conv": "^13.1.1",
-		"i18next-parser": "^6.6.0",
-		"json-schema-ref-parser": "^9.0.9",
-		"json-schema-to-typescript": "^10.1.5",
-		"meow": "^11.0.0",
-		"vinyl-fs": "^3.0.3"
+		"@apidevtools/json-schema-ref-parser": "^15.1.2",
+		"i18next-conv": "^16.0.0",
+		"i18next-parser": "^9.3.0",
+		"json-schema-to-typescript": "^15.0.4",
+		"meow": "^14.0.0",
+		"vinyl-fs": "^4.0.2"
 	},
 	"publishConfig": {
 		"access": "public"
