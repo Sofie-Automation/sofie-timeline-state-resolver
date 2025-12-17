@@ -61,6 +61,14 @@ export class StateTracker<State> extends EventEmitter<StateTrackerEvents> {
 		return this._state[address]?.expectedState
 	}
 
+	unsetExpectedState(address: string) {
+		if (!this._state[address]) {
+			// address not found => expectedState is already undefined
+			return
+		}
+		this._state[address].expectedState = undefined
+	}
+
 	updateState(address: string, state: State) {
 		const firstBlood = !this._state[address]
 

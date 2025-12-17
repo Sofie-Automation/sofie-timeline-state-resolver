@@ -76,22 +76,36 @@ describe('State Tracker', () => {
 
 		test('Expected State updated after Device State', () => {
 			const st = getNewStateTracker()
-			st.updateState('1', { id: 'a' })
-			mockTime.advanceTime(210)
-			st.updateExpectedState('1', { id: 'b' }, true)
-			const isAhead = st.isDeviceAhead('1')
 
-			expect(isAhead).toBe(false)
+			{
+				st.updateState('1', { id: 'a' })
+				mockTime.advanceTime(210)
+
+				const isAhead = st.isDeviceAhead('1')
+				expect(isAhead).toBe(true)
+			}
+
+			{
+				st.updateExpectedState('1', { id: 'b' }, true) // reasserts timeline state
+				const isAhead = st.isDeviceAhead('1')
+				expect(isAhead).toBe(false)
+			}
 		})
 
 		test('Device State updated after Expected State', () => {
 			const st = getNewStateTracker()
-			st.updateExpectedState('1', { id: 'b' }, true)
-			st.updateState('1', { id: 'a' })
-			mockTime.advanceTime(210)
-			const isAhead = st.isDeviceAhead('1')
+			{
+				st.updateExpectedState('1', { id: 'b' }, true)
+				mockTime.advanceTime(210)
+				const isAhead = st.isDeviceAhead('1')
+				expect(isAhead).toBe(false)
+			}
 
-			expect(isAhead).toBe(true)
+			{
+				st.updateState('1', { id: 'a' })
+				const isAhead = st.isDeviceAhead('1')
+				expect(isAhead).toBe(false)
+			}
 		})
 	})
 
@@ -133,6 +147,35 @@ describe('State Tracker', () => {
 			const expectedState = st.getExpectedState('2')
 
 			expect(expectedState).toBe(undefined)
+		})
+	})
+
+	describe('unsetExpectedState', () => {
+		test('remove an expected state', () => {
+			const st = getNewStateTrackerWithState()
+			st.unsetExpectedState('1')
+
+			const expectedState = st.getExpectedState('1')
+			expect(expectedState).toBe(undefined)
+
+			const curState = st.getCurrentState('1')
+			expect(curState).toBeDefined()
+		})
+
+		test('remove a non-existent address', () => {
+			const addr = '2'
+			const st = getNewStateTrackerWithState()
+			st.unsetExpectedState(addr)
+
+			// no new addresses are to be tracked from unsetting something that doesn't exist
+			const allAddresses = st.getAllAddresses()
+			expect(allAddresses).not.toContain(addr)
+
+			const expectedState = st.getExpectedState(addr)
+			expect(expectedState).toBeUndefined()
+
+			const curState = st.getCurrentState(addr)
+			expect(curState).toBeUndefined()
 		})
 	})
 
