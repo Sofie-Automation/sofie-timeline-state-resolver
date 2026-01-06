@@ -12030,7 +12030,6 @@ asn1@evs-broadcast/node-asn1:
     debug: "npm:^4.4.3"
     deepmerge: "npm:^4.3.1"
     emberplus-connection: "npm:^0.3.1"
-    eventemitter3: "npm:^4.0.7"
     got: "npm:^11.8.6"
     hpagent: "npm:^1.2.0"
     hyperdeck-connection: "npm:2.0.1"

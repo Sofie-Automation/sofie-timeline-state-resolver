@@ -1,4 +1,4 @@
-import EventEmitter = require('eventemitter3')
+import { EventEmitter } from 'node:events'
 import { actionNotFoundMessage } from '../lib'
 import type {
 	FinishedTrace,

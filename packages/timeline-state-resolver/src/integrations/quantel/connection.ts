@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { QuantelTransitionType, QuantelControlMode } from 'timeline-state-resolver-types'
 import { QuantelGateway, Q, QuantelErrorResponse } from 'tv-automation-quantel-gateway-client'
 import _ = require('underscore')

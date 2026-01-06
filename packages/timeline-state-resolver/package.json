@@ -99,7 +99,6 @@
 		"debug": "^4.4.3",
 		"deepmerge": "^4.3.1",
 		"emberplus-connection": "^0.3.1",
-		"eventemitter3": "^4.0.7",
 		"got": "^11.8.6",
 		"hpagent": "^1.2.0",
 		"hyperdeck-connection": "2.0.1",

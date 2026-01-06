@@ -6,7 +6,7 @@ import {
 	TimelineObject,
 	TimelineState,
 } from 'superfly-timeline'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { MemUsageReport, threadedClass, ThreadedClass, ThreadedClassManager } from 'threadedclass'
 import PQueue from 'p-queue'
 import * as PAll from 'p-all'

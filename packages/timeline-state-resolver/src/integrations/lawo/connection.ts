@@ -1,5 +1,5 @@
 import { EmberClient, Model as EmberModel } from 'emberplus-connection'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { deferAsync } from '../../lib'
 import { LawoDeviceMode, LawoOptions } from 'timeline-state-resolver-types'
 import _ = require('underscore')
