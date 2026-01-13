@@ -52,8 +52,8 @@ exports[`Diff States Simple diff against empty state 1`] = `
       },
       "transitionStatus": true,
       "upstreamKeyers": {
-        "advancedChromaSettings": false,
-        "chromaSettings": false,
+        "advancedChromaSettings": true,
+        "chromaSettings": true,
         "dveSettings": true,
         "flyKeyframes": "all",
         "flyProperties": true,

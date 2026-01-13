@@ -254,7 +254,7 @@ export interface TimelineContentAtemUSK extends TimelineContentAtemBase {
 		maskRight?: number
 
 		dveSettings?: AtemDVESettings
-		// chromaSettings: UpstreamKeyerChromaSettings;
+		chromaSettings?: AtemUpstreamChromaKeyerSettings
 		// patternSettings: UpstreamKeyerPatternSettings;
 		flyKeyframes?: [AtemFlyKeyframe | undefined, AtemFlyKeyframe | undefined]
 		flyProperties?: {
@@ -443,6 +443,53 @@ interface AtemDVEBaseSettings {
 	maskRight?: number
 }
 type AtemFlyKeyframe = Omit<AtemDVEBaseSettings, 'maskEnabled'>
+
+export interface AtemUpstreamChromaKeyerSettings {
+	/** 0 - 1000 */
+	foregroundLevel?: number
+	/** 0 - 1000 */
+	backgroundLevel?: number
+	/** 0 - 1000 */
+	keyEdge?: number
+	/** 0 - 1000 */
+	spillSuppression?: number
+	/** 0 - 1000 */
+	flareSuppression?: number
+	/** -1000 - 1000 */
+	brightness?: number
+	/** -1000 - 1000 */
+	contrast?: number
+	/** 0 - 2000 */
+	saturation?: number
+	/** -1000 - 1000 */
+	red?: number
+	/** -1000 - 1000 */
+	green?: number
+	/** -1000 - 1000 */
+	blue?: number
+
+	sample?: {
+		/** 0 - 10000 */
+		y: number
+		/** 0 - 10000 */
+		cb: number
+		/** 0 - 10000 */
+		cr: number
+	}
+
+	/** Older ATEM models (before the Constellation 8K) use a simpler Chroma keyer */
+	classic?: {
+		/** 0 - 3599 */
+		hue?: number
+		/** 0 - 1000 */
+		gain?: number
+		/** 0 - 1000 */
+		ySuppress?: number
+		/** 0 - 1000 */
+		lift?: number
+		narrow?: boolean
+	}
+}
 
 export interface TimelineContentAtemSsrcProps extends TimelineContentAtemBase {
 	type: TimelineContentTypeAtem.SSRCPROPS
