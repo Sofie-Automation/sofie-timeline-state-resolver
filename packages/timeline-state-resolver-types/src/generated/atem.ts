@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from '../actions'
+import type { ActionExecutionResult } from "../actions"
 
 export interface AtemOptions {
 	host: string
@@ -97,19 +97,7 @@ export enum MappingAtemType {
 	ColorGenerator = 'colorGenerator',
 }
 
-export type SomeMappingAtem =
-	| MappingAtemControlValue
-	| MappingAtemMixEffect
-	| MappingAtemUpStreamKeyer
-	| MappingAtemDownStreamKeyer
-	| MappingAtemSuperSourceBox
-	| MappingAtemAuxilliary
-	| MappingAtemMediaPlayer
-	| MappingAtemSuperSourceProperties
-	| MappingAtemAudioChannel
-	| MappingAtemMacroPlayer
-	| MappingAtemAudioRouting
-	| MappingAtemColorGenerator
+export type SomeMappingAtem = MappingAtemControlValue | MappingAtemMixEffect | MappingAtemUpStreamKeyer | MappingAtemDownStreamKeyer | MappingAtemSuperSourceBox | MappingAtemAuxilliary | MappingAtemMediaPlayer | MappingAtemSuperSourceProperties | MappingAtemAudioChannel | MappingAtemMacroPlayer | MappingAtemAudioRouting | MappingAtemColorGenerator
 
 export interface RunMacroPayload {
 	macroIndex: number
@@ -117,10 +105,10 @@ export interface RunMacroPayload {
 
 export enum AtemActions {
 	Resync = 'resync',
-	RunMacro = 'runMacro',
+	RunMacro = 'runMacro'
 }
 export interface AtemActionMethods {
-	[AtemActions.Resync]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[AtemActions.Resync]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
 	[AtemActions.RunMacro]: (payload: RunMacroPayload) => Promise<ActionExecutionResult<void>>
 }
 

@@ -149,7 +149,7 @@ export class ViscaUdpSocket extends EventEmitter {
 		if (this._debug) this.log('RECV ', packet.toString('hex'), rinfo, !!this._inFlight)
 		this._lastReceivedAt = Date.now()
 
-		const type = packet.readUInt16BE(0)
+		const type = packet.readUInt16BE(0) as CommandType
 		const length = packet.readUInt32BE(4)
 
 		if (this._debug) this.log('type', type, !!this._inFlight)

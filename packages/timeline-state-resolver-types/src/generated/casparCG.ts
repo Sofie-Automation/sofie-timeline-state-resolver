@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from '../actions'
+import type { ActionExecutionResult } from "../actions"
 
 export interface CasparCGOptions {
 	/**
@@ -57,11 +57,11 @@ export type ListMediaResult = {
 export enum CasparCGActions {
 	ClearAllChannels = 'clearAllChannels',
 	RestartServer = 'restartServer',
-	ListMedia = 'listMedia',
+	ListMedia = 'listMedia'
 }
 export interface CasparCGActionMethods {
-	[CasparCGActions.ClearAllChannels]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
-	[CasparCGActions.RestartServer]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[CasparCGActions.ClearAllChannels]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
+	[CasparCGActions.RestartServer]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
 	[CasparCGActions.ListMedia]: (payload: ListMediaPayload) => Promise<ActionExecutionResult<ListMediaResult>>
 }
 

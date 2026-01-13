@@ -127,6 +127,7 @@ export class OBSConnection extends EventEmitter<OBSConnectionEventsTypes> {
 			const items = await this._obs.call('GetSceneItemList', { sceneName: scene.sceneName as string })
 
 			for (const item of items.sceneItems) {
+				// eslint-disable-next-line @typescript-eslint/no-base-to-string
 				sceneItemMap.set(scene.sceneName + '_' + item.sourceName, item.sceneItemId as number)
 			}
 		}

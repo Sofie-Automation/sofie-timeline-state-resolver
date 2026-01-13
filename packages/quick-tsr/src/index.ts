@@ -5,7 +5,7 @@ import * as _ from 'underscore'
 import * as path from 'path'
 import { Mappings, TSRTimeline, DeviceOptionsAny, Datastore } from 'timeline-state-resolver-types'
 import { TSRHandler } from './tsrHandler'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const clone = require('fast-clone')
 // import { TSRHandler } from './tsrHandler'
 
@@ -62,7 +62,6 @@ function reloadInput(changed?: { path: string; stats: fs.Stats }) {
 			delete require.cache[require.resolve(requirePath)]
 
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-var-requires
 				const fileContents = require(requirePath)
 
 				const fileInput: TSRInput = fileContents.input || {}

@@ -342,7 +342,7 @@ export class HyperdeckDevice implements Device<
 			try {
 				const res = await this._hyperdeck.sendCommand(new HyperdeckCommands.SlotInfoCommand(slot))
 				this._slotStatus[slot] = res
-				if (res.status === 'mounted') {
+				if (res.status === SlotStatus.MOUNTED) {
 					totalRecordingTime += res.recordingTime
 				}
 			} catch (e) {

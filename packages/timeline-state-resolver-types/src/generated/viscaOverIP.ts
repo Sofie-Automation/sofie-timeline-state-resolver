@@ -4,20 +4,9 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from '../actions'
-import type {
-	SetPanTiltSpeedPayload,
-	GetPanTiltPositionResult,
-	SetZoomSpeedPayload,
-	GetZoomPositionResult,
-	StorePresetPayload,
-	RecallPresetPayload,
-	ResetPresetPayload,
-	SetFocusSpeedPayload,
-	SetFocusModePayload,
-	GetFocusPositionResult,
-	GetFocusModeResult,
-} from './generic-ptz-actions'
+import type { ActionExecutionResult } from "../actions"
+import type { SetPanTiltSpeedPayload, GetPanTiltPositionResult, SetZoomSpeedPayload, GetZoomPositionResult, StorePresetPayload, RecallPresetPayload, ResetPresetPayload, SetFocusSpeedPayload, SetFocusModePayload, GetFocusPositionResult, GetFocusModeResult } from './generic-ptz-actions'
+
 
 export interface ViscaOverIPOptions {
 	host: string
@@ -38,29 +27,21 @@ export enum ViscaOverIPActions {
 	SetFocusMode = 'setFocusMode',
 	TriggerOnePushFocus = 'triggerOnePushFocus',
 	GetFocusPosition = 'getFocusPosition',
-	GetFocusMode = 'getFocusMode',
+	GetFocusMode = 'getFocusMode'
 }
 export interface ViscaOverIPActionMethods {
-	[ViscaOverIPActions.SetPanTiltSpeed]: (payload: SetPanTiltSpeedPayload) => Promise<ActionExecutionResult<void>>
-	[ViscaOverIPActions.GetPanTiltPosition]: (
-		payload: Record<string, never>
-	) => Promise<ActionExecutionResult<GetPanTiltPositionResult>>
-	[ViscaOverIPActions.SetZoomSpeed]: (payload: SetZoomSpeedPayload) => Promise<ActionExecutionResult<void>>
-	[ViscaOverIPActions.GetZoomPosition]: (
-		payload: Record<string, never>
-	) => Promise<ActionExecutionResult<GetZoomPositionResult>>
-	[ViscaOverIPActions.StorePreset]: (payload: StorePresetPayload) => Promise<ActionExecutionResult<void>>
-	[ViscaOverIPActions.RecallPreset]: (payload: RecallPresetPayload) => Promise<ActionExecutionResult<void>>
-	[ViscaOverIPActions.ResetPreset]: (payload: ResetPresetPayload) => Promise<ActionExecutionResult<void>>
-	[ViscaOverIPActions.SetFocusSpeed]: (payload: SetFocusSpeedPayload) => Promise<ActionExecutionResult<void>>
-	[ViscaOverIPActions.SetFocusMode]: (payload: SetFocusModePayload) => Promise<ActionExecutionResult<void>>
-	[ViscaOverIPActions.TriggerOnePushFocus]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
-	[ViscaOverIPActions.GetFocusPosition]: (
-		payload: Record<string, never>
-	) => Promise<ActionExecutionResult<GetFocusPositionResult>>
-	[ViscaOverIPActions.GetFocusMode]: (
-		payload: Record<string, never>
-	) => Promise<ActionExecutionResult<GetFocusModeResult>>
+	[ViscaOverIPActions.SetPanTiltSpeed]: (payload: SetPanTiltSpeedPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.GetPanTiltPosition]: (payload: Record<string, never>) => Promise<ActionExecutionResult<GetPanTiltPositionResult>>,
+	[ViscaOverIPActions.SetZoomSpeed]: (payload: SetZoomSpeedPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.GetZoomPosition]: (payload: Record<string, never>) => Promise<ActionExecutionResult<GetZoomPositionResult>>,
+	[ViscaOverIPActions.StorePreset]: (payload: StorePresetPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.RecallPreset]: (payload: RecallPresetPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.ResetPreset]: (payload: ResetPresetPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.SetFocusSpeed]: (payload: SetFocusSpeedPayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.SetFocusMode]: (payload: SetFocusModePayload) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.TriggerOnePushFocus]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
+	[ViscaOverIPActions.GetFocusPosition]: (payload: Record<string, never>) => Promise<ActionExecutionResult<GetFocusPositionResult>>,
+	[ViscaOverIPActions.GetFocusMode]: (payload: Record<string, never>) => Promise<ActionExecutionResult<GetFocusModeResult>>
 }
 
 export interface ViscaOverIPDeviceTypes {

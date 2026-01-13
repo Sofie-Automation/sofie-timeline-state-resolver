@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable */
 
 import { compile } from 'json-schema-to-typescript'
 import * as fs from 'fs/promises'

@@ -683,6 +683,7 @@ export class Pharos extends EventEmitter {
 						this._serverSessionKey = array
 					}
 				} else {
+					// eslint-disable-next-line @typescript-eslint/no-base-to-string
 					const json = JSON.parse(data.toString())
 					this._onReceiveMessage(json)
 				}

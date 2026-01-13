@@ -1109,7 +1109,6 @@ export class VizMSEManager extends EventEmitter {
 		let i = 0
 		const maxNumberOfTries = 5
 
-		// eslint-disable-next-line no-constant-condition
 		while (true) {
 			try {
 				this._triggerCommandSent()

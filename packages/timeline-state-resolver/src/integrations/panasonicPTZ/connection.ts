@@ -142,7 +142,8 @@ export class PanasonicPtzHttpInterface extends EventEmitter {
 		check() // do a check right away
 	}
 
-	private static _isError(response: string) {
+	private static _isError(response0: string) {
+		const response = response0 as PanasonicHttpResponse
 		if (
 			response === PanasonicHttpResponse.ERROR_1 ||
 			response === PanasonicHttpResponse.ERROR_2 ||

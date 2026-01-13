@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from '../actions'
+import type { ActionExecutionResult } from "../actions"
 
 export interface VmixOptions {
 	host: string
@@ -119,20 +119,7 @@ export enum MappingVmixType {
 	Script = 'script',
 }
 
-export type SomeMappingVmix =
-	| MappingVmixProgram
-	| MappingVmixPreview
-	| MappingVmixInput
-	| MappingVmixAudioChannel
-	| MappingVmixAudioBus
-	| MappingVmixOutput
-	| MappingVmixOverlay
-	| MappingVmixRecording
-	| MappingVmixStreaming
-	| MappingVmixExternal
-	| MappingVmixFadeToBlack
-	| MappingVmixFader
-	| MappingVmixScript
+export type SomeMappingVmix = MappingVmixProgram | MappingVmixPreview | MappingVmixInput | MappingVmixAudioChannel | MappingVmixAudioBus | MappingVmixOutput | MappingVmixOverlay | MappingVmixRecording | MappingVmixStreaming | MappingVmixExternal | MappingVmixFadeToBlack | MappingVmixFader | MappingVmixScript
 
 export interface OpenPresetPayload {
 	/**
@@ -153,13 +140,13 @@ export enum VmixActions {
 	OpenPreset = 'openPreset',
 	SavePreset = 'savePreset',
 	StartExternal = 'startExternal',
-	StopExternal = 'stopExternal',
+	StopExternal = 'stopExternal'
 }
 export interface VmixActionMethods {
-	[VmixActions.LastPreset]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
-	[VmixActions.OpenPreset]: (payload: OpenPresetPayload) => Promise<ActionExecutionResult<void>>
-	[VmixActions.SavePreset]: (payload: SavePresetPayload) => Promise<ActionExecutionResult<void>>
-	[VmixActions.StartExternal]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[VmixActions.LastPreset]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
+	[VmixActions.OpenPreset]: (payload: OpenPresetPayload) => Promise<ActionExecutionResult<void>>,
+	[VmixActions.SavePreset]: (payload: SavePresetPayload) => Promise<ActionExecutionResult<void>>,
+	[VmixActions.StartExternal]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
 	[VmixActions.StopExternal]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
 }
 

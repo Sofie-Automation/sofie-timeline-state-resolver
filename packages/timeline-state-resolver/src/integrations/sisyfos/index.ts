@@ -387,6 +387,7 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			// @ts-ignore backwards-compatibility:
 			if (!foundMapping.mappingType) foundMapping.mappingType = MappingSisyfosType.CHANNEL
 			// @ts-ignore backwards-compatibility:
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
 			if (content.type === 'sisyfos') content.type = TimelineContentTypeSisyfos.CHANNEL
 
 			debug(

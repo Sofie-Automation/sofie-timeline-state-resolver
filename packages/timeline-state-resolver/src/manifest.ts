@@ -219,5 +219,6 @@ export const builtinDeviceManifest: TSRManifest = {
 			configSchema: JSON.stringify(WebsocketClientOptions),
 			mappingsSchemas: {},
 		},
+
 	},
 }

@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from '../actions'
+import type { ActionExecutionResult } from "../actions"
 
 export interface TcpSendOptions {
 	host: string
@@ -34,11 +34,11 @@ export interface SendTcpCommandPayload {
 export enum TcpSendActions {
 	Reconnect = 'reconnect',
 	ResetState = 'resetState',
-	SendTcpCommand = 'sendTcpCommand',
+	SendTcpCommand = 'sendTcpCommand'
 }
 export interface TcpSendActionMethods {
-	[TcpSendActions.Reconnect]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
-	[TcpSendActions.ResetState]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[TcpSendActions.Reconnect]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
+	[TcpSendActions.ResetState]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
 	[TcpSendActions.SendTcpCommand]: (payload: SendTcpCommandPayload) => Promise<ActionExecutionResult<void>>
 }
 

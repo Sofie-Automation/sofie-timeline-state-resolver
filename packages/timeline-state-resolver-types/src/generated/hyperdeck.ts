@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from '../actions'
+import type { ActionExecutionResult } from "../actions"
 
 export interface HyperdeckOptions {
 	host: string
@@ -28,10 +28,10 @@ export type SomeMappingHyperdeck = MappingHyperdeckTransport
 
 export enum HyperdeckActions {
 	FormatDisks = 'formatDisks',
-	Resync = 'resync',
+	Resync = 'resync'
 }
 export interface HyperdeckActionMethods {
-	[HyperdeckActions.FormatDisks]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[HyperdeckActions.FormatDisks]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
 	[HyperdeckActions.Resync]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
 }
 
