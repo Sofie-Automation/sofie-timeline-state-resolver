@@ -1,6 +1,6 @@
-// eslint-disable-next-line node/no-extraneous-import
+// eslint-disable-next-line n/no-extraneous-import
 import * as _ from 'underscore'
-// eslint-disable-next-line node/no-extraneous-import
+// eslint-disable-next-line n/no-extraneous-import
 import * as Original from 'superfly-timeline'
 import * as Local from '../superfly-timeline'
 
