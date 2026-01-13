@@ -4,14 +4,14 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 
 export interface AbstractOptions {}
 
 export type SomeMappingAbstract = Record<string, never>
 
 export enum AbstractActions {
-	TestAction = 'testAction'
+	TestAction = 'testAction',
 }
 export interface AbstractActionMethods {
 	[AbstractActions.TestAction]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>

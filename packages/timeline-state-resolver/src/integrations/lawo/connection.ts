@@ -30,7 +30,10 @@ export class LawoConnection extends EventEmitter {
 	} = {}
 	private transitionInterval: NodeJS.Timeout | undefined
 
-	constructor(options: LawoOptions, private getCurrentTime: () => number) {
+	constructor(
+		options: LawoOptions,
+		private getCurrentTime: () => number
+	) {
 		super()
 		if (options.faderInterval) {
 			this._faderIntervalTime = options.faderInterval

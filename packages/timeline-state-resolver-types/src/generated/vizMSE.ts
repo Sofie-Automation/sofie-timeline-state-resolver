@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 
 export interface VizMSEOptions {
 	/**
@@ -85,13 +85,13 @@ export enum VizMSEActions {
 	PurgeRundown = 'purgeRundown',
 	Activate = 'activate',
 	StandDown = 'standDown',
-	ClearAllEngines = 'clearAllEngines'
+	ClearAllEngines = 'clearAllEngines',
 }
 export interface VizMSEActionMethods {
-	[VizMSEActions.VizReset]: (payload: VizResetPayload) => Promise<ActionExecutionResult<void>>,
-	[VizMSEActions.PurgeRundown]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
-	[VizMSEActions.Activate]: (payload: ActivatePayload) => Promise<ActionExecutionResult<void>>,
-	[VizMSEActions.StandDown]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
+	[VizMSEActions.VizReset]: (payload: VizResetPayload) => Promise<ActionExecutionResult<void>>
+	[VizMSEActions.PurgeRundown]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[VizMSEActions.Activate]: (payload: ActivatePayload) => Promise<ActionExecutionResult<void>>
+	[VizMSEActions.StandDown]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
 	[VizMSEActions.ClearAllEngines]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
 }
 

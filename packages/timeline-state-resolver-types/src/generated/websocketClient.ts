@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 
 export interface WebsocketClientOptions {
 	webSocket: {
@@ -46,11 +46,13 @@ export interface SendWebSocketMessagePayload {
 
 export enum WebsocketClientActions {
 	Reconnect = 'reconnect',
-	SendWebSocketMessage = 'sendWebSocketMessage'
+	SendWebSocketMessage = 'sendWebSocketMessage',
 }
 export interface WebsocketClientActionMethods {
-	[WebsocketClientActions.Reconnect]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
-	[WebsocketClientActions.SendWebSocketMessage]: (payload: SendWebSocketMessagePayload) => Promise<ActionExecutionResult<void>>
+	[WebsocketClientActions.Reconnect]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[WebsocketClientActions.SendWebSocketMessage]: (
+		payload: SendWebSocketMessagePayload
+	) => Promise<ActionExecutionResult<void>>
 }
 
 export interface WebsocketClientDeviceTypes {

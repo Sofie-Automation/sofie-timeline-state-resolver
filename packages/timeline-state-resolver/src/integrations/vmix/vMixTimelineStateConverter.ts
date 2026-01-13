@@ -62,7 +62,7 @@ export class VMixTimelineStateConverter {
 			})).sort((a, b) => a.layerName.localeCompare(b.layerName)),
 			(o) =>
 				o.mapping
-					? mappingPriority[o.mapping?.options.mappingType] ?? Number.POSITIVE_INFINITY
+					? (mappingPriority[o.mapping?.options.mappingType] ?? Number.POSITIVE_INFINITY)
 					: Number.POSITIVE_INFINITY
 		)
 

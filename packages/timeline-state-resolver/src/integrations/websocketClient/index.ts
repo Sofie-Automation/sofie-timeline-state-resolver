@@ -29,9 +29,11 @@ export type WebSocketCommand = CommandWithContext<
 >
 export type WebSocketClientDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
-export class WebSocketClientDevice
-	implements Device<WebsocketClientDeviceTypes, WebSocketClientDeviceState, WebSocketCommand>
-{
+export class WebSocketClientDevice implements Device<
+	WebsocketClientDeviceTypes,
+	WebSocketClientDeviceState,
+	WebSocketCommand
+> {
 	// Use ! as the connection will be initialized in init:
 	private connection: WebSocketConnection | undefined
 

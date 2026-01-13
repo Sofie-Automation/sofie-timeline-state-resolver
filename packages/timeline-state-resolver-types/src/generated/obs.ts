@@ -74,7 +74,15 @@ export enum MappingObsType {
 	InputMedia = 'inputMedia',
 }
 
-export type SomeMappingObs = MappingObsCurrentScene | MappingObsCurrentTransition | MappingObsRecording | MappingObsStreaming | MappingObsSceneItem | MappingObsInputAudio | MappingObsInputSettings | MappingObsInputMedia
+export type SomeMappingObs =
+	| MappingObsCurrentScene
+	| MappingObsCurrentTransition
+	| MappingObsRecording
+	| MappingObsStreaming
+	| MappingObsSceneItem
+	| MappingObsInputAudio
+	| MappingObsInputSettings
+	| MappingObsInputMedia
 
 export interface ObsDeviceTypes {
 	Options: ObsOptions

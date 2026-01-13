@@ -20,7 +20,7 @@ export enum HttpMethod {
 	GET = 'get',
 	POST = 'post',
 	PUT = 'put',
-	DELETE = 'delete'
+	DELETE = 'delete',
 }
 
 export type SomeMappingHttpWatcher = Record<string, never>

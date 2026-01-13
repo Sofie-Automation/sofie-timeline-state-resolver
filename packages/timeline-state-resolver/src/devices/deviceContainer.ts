@@ -25,7 +25,7 @@ export class DeviceContainer<TOptions extends DeviceOptionsBase<any>> extends Ba
 
 	static async create<
 		TOptions extends DeviceOptionsBase<unknown>,
-		TCtor extends new (...args: any[]) => Device<any, TOptions>
+		TCtor extends new (...args: any[]) => Device<any, TOptions>,
 	>(
 		orgModule: string,
 		orgClassExport: string,

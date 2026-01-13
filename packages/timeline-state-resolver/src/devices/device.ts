@@ -98,9 +98,9 @@ export interface IDevice<TOptions extends DeviceOptionsBase<any>> {
  * class will use.
  */
 export abstract class Device<
-		DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> }, // TODO: This type is not used as much as it should be, but as this class is deprecated it is not worth the effort to fix it
-		TOptions extends DeviceOptionsBase<DeviceTypes['Options']>
-	>
+	DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> }, // TODO: This type is not used as much as it should be, but as this class is deprecated it is not worth the effort to fix it
+	TOptions extends DeviceOptionsBase<DeviceTypes['Options']>,
+>
 	extends EventEmitter<DeviceEvents>
 	implements IDevice<TOptions>
 {
@@ -320,7 +320,7 @@ export abstract class Device<
 export abstract class DeviceWithState<
 	TState,
 	DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> },
-	TOptions extends DeviceOptionsBase<DeviceTypes['Options']>
+	TOptions extends DeviceOptionsBase<DeviceTypes['Options']>,
 > extends Device<DeviceTypes, TOptions> {
 	private _states: { [time: string]: TState } = {}
 	private _setStateCount = 0

@@ -36,9 +36,11 @@ export type MultiOscCommandWithContext = CommandWithContext<OSCDeviceStateConten
 /**
  * This is a generic wrapper for any osc-enabled device.
  */
-export class MultiOSCMessageDevice
-	implements Device<MultiOscDeviceTypes, MultiOSCDeviceState, MultiOscCommandWithContext>
-{
+export class MultiOSCMessageDevice implements Device<
+	MultiOscDeviceTypes,
+	MultiOSCDeviceState,
+	MultiOscCommandWithContext
+> {
 	readonly actions = null
 
 	private _connections: Record<string, OSCConnection> = {}

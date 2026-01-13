@@ -1,6 +1,7 @@
 import { DeviceType, TemplateString } from '..'
 
-export enum TimelineContentTypeCasparCg { //  CasparCG-state
+export enum TimelineContentTypeCasparCg {
+	//  CasparCG-state
 	MEDIA = 'media',
 	IP = 'ip',
 	INPUT = 'input',

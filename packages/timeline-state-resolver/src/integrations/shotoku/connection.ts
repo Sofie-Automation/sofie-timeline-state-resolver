@@ -115,12 +115,15 @@ export class ShotokuAPI extends EventEmitter<ShotokuAPIEvents> {
 					setTimeout(() => {
 						resolve()
 					}, TIMEOUT)
-					setTimeout(() => {
-						if (this._tcpClient && this.connected) {
-							// Forcefully destroy the connection:
-							this._tcpClient.destroy()
-						}
-					}, Math.floor(TIMEOUT / 2))
+					setTimeout(
+						() => {
+							if (this._tcpClient && this.connected) {
+								// Forcefully destroy the connection:
+								this._tcpClient.destroy()
+							}
+						},
+						Math.floor(TIMEOUT / 2)
+					)
 				} else {
 					resolve()
 				}

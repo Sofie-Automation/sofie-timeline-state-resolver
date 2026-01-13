@@ -115,7 +115,7 @@ export class InternalTransitionHandler {
 									options2.acceleration || 0.0001,
 									options2.maxSpeed || 0.05,
 									options2.snapDistance || 1 / 1920
-							  )
+								)
 							: new LinearMovement(getGroupValues(t.values, groups, groupId), options2.linearSpeed || 1 / 1000),
 				}
 			})

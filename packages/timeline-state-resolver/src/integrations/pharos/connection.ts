@@ -812,9 +812,12 @@ export class Pharos extends EventEmitter {
 			}
 		}
 
-		setTimeout(() => {
-			this._reconnect()
-		}, Math.min(60, this._reconnectAttempts) * 1000)
+		setTimeout(
+			() => {
+				this._reconnect()
+			},
+			Math.min(60, this._reconnectAttempts) * 1000
+		)
 	}
 	private _connectionChanged(connected: boolean) {
 		if (this._connected !== connected) {

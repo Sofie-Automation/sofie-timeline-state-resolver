@@ -130,12 +130,14 @@ export interface AllStates<TContent extends Content = Content> {
 		[time: string]: ResolvedTimelineObjectInstanceKeyframe<TContent>[] | null
 	}
 }
-export interface ResolvedTimelineObjectInstanceKeyframe<TContent extends Content = Content>
-	extends ResolvedTimelineObjectInstance<TContent> {
+export interface ResolvedTimelineObjectInstanceKeyframe<
+	TContent extends Content = Content,
+> extends ResolvedTimelineObjectInstance<TContent> {
 	isKeyframe?: boolean
 }
-export interface ResolvedTimelineObjectInstance<TContent extends Content = Content>
-	extends ResolvedTimelineObject<TContent> {
+export interface ResolvedTimelineObjectInstance<
+	TContent extends Content = Content,
+> extends ResolvedTimelineObject<TContent> {
 	instance: TimelineObjectInstance
 	/** All datastore values applied and the timestamp of when they were applied */
 	datastoreRefs?: Record<string, number>

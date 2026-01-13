@@ -42,9 +42,7 @@ export interface TimelineContentSisyfosTriggerValue extends TimelineContentSisyf
 	triggerValue: string
 }
 export interface TimelineContentSisyfosChannel
-	extends SisyfosTimelineObjectProps,
-		TimelineContentSisyfos,
-		SisyfosChannelOptions {
+	extends SisyfosTimelineObjectProps, TimelineContentSisyfos, SisyfosChannelOptions {
 	type: TimelineContentTypeSisyfos.CHANNEL
 }
 export interface TimelineContentSisyfosChannels extends SisyfosTimelineObjectProps, TimelineContentSisyfos {

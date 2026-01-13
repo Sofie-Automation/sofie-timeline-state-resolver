@@ -5,7 +5,6 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 
-
 export interface SetPanTiltSpeedPayload {
 	/**
 	 * Pan Speed; Range: [-1.0, 1.0]; -1.0 = fastest LEFT, 0.0 = STOP, 1.0 = fastest RIGHT (each protocol might internally support a different range, which the value will be mapped into)
@@ -76,9 +75,8 @@ export interface SetFocusModePayload {
 
 export enum FocusMode {
 	AUTO = 'auto',
-	MANUAL = 'manual'
+	MANUAL = 'manual',
 }
-
 
 export interface GetFocusPositionResult {
 	/**

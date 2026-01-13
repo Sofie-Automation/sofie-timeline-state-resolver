@@ -28,8 +28,11 @@ interface StateChange<DeviceState, Command extends CommandWithContext<any, any>,
 
 	measurement?: Measurement
 }
-interface ExecutedStateChange<DeviceState, Command extends CommandWithContext<any, any>, AddressState>
-	extends StateChange<DeviceState | undefined, Command, AddressState> {
+interface ExecutedStateChange<
+	DeviceState,
+	Command extends CommandWithContext<any, any>,
+	AddressState,
+> extends StateChange<DeviceState | undefined, Command, AddressState> {
 	commands: Command[]
 }
 
@@ -38,7 +41,7 @@ const CLOCK_INTERVAL = 20
 export class StateHandler<
 	DeviceState extends Object,
 	Command extends CommandWithContext<any, any>,
-	AddressState = any
+	AddressState = any,
 > {
 	private stateQueue: StateChange<DeviceState, Command, AddressState>[] = []
 	private currentState: ExecutedStateChange<DeviceState, Command, AddressState> | undefined

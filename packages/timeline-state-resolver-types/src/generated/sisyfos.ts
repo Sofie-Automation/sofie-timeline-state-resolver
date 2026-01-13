@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 
 export interface SisyfosOptions {
 	host: string
@@ -51,11 +51,13 @@ export interface LoadMixerPresetPayload {
 export enum SisyfosActions {
 	Reinit = 'reinit',
 	SetSisyfosChannelState = 'setSisyfosChannelState',
-	LoadMixerPreset = 'loadMixerPreset'
+	LoadMixerPreset = 'loadMixerPreset',
 }
 export interface SisyfosActionMethods {
-	[SisyfosActions.Reinit]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
-	[SisyfosActions.SetSisyfosChannelState]: (payload: SetSisyfosChannelStatePayload) => Promise<ActionExecutionResult<void>>,
+	[SisyfosActions.Reinit]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[SisyfosActions.SetSisyfosChannelState]: (
+		payload: SetSisyfosChannelStatePayload
+	) => Promise<ActionExecutionResult<void>>
 	[SisyfosActions.LoadMixerPreset]: (payload: LoadMixerPresetPayload) => Promise<ActionExecutionResult<void>>
 }
 

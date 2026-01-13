@@ -35,7 +35,7 @@ export class VMixStateSynchronizer {
 						? {
 								...realInputs[inputKey].transform!,
 								alpha: expectedInputs[inputKey].transform!.alpha, // we don't know the value of alpha - we have to assume it hasn't changed, otherwise we will be sending commands for it all the time
-						  }
+							}
 						: realInputs[inputKey].transform,
 				layers: realInputs[inputKey].layers,
 

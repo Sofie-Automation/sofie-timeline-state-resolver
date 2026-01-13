@@ -162,7 +162,7 @@ export class TriCasterTimelineStateConverter {
 							value: tlObject.content.meClean,
 							timelineObjId: tlObject.id,
 							temporalPriority: tlObject.content.temporalPriority,
-					  }
+						}
 					: resultState.mixOutputs[mapping.name]?.meClean,
 		}
 	}

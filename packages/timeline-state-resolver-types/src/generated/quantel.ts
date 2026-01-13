@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 
 export interface QuantelOptions {
 	/**
@@ -55,7 +55,7 @@ export interface MappingQuantelPort {
  */
 export enum QuantelControlMode {
 	QUALITY = 'quality',
-	SPEED = 'speed'
+	SPEED = 'speed',
 }
 
 export enum MappingQuantelType {
@@ -66,10 +66,10 @@ export type SomeMappingQuantel = MappingQuantelPort
 
 export enum QuantelActions {
 	RestartGateway = 'restartGateway',
-	ClearStates = 'clearStates'
+	ClearStates = 'clearStates',
 }
 export interface QuantelActionMethods {
-	[QuantelActions.RestartGateway]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
+	[QuantelActions.RestartGateway]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
 	[QuantelActions.ClearStates]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
 }
 
