@@ -90,7 +90,7 @@
 	"dependencies": {
 		"@tv2media/v-connection": "^7.3.4",
 		"atem-connection": "3.7.0",
-		"atem-state": "1.2.0",
+		"atem-state": "1.2.1",
 		"cacheable-lookup": "^5.0.4",
 		"casparcg-connection": "6.3.3",
 		"casparcg-state": "3.0.4",
@@ -115,8 +115,8 @@
 		"tv-automation-quantel-gateway-client": "^3.1.7",
 		"type-fest": "^3.13.1",
 		"underscore": "^1.13.7",
-		"utf-8-validate": "^6.0.5",
-		"ws": "^8.18.3",
+		"utf-8-validate": "^6.0.6",
+		"ws": "^8.19.0",
 		"xml-js": "^1.6.11"
 	},
 	"publishConfig": {
@@ -131,7 +131,7 @@
 		]
 	},
 	"devDependencies": {
-		"@types/simple-oauth2": "^5.0.7",
+		"@types/simple-oauth2": "^5.0.8",
 		"jest-mock-extended": "^4.0.0",
 		"json-schema-to-typescript": "^15.0.4",
 		"timeline-state-resolver-tools": "10.0.0-release53"
