@@ -157,9 +157,8 @@ export class MSEMock extends EventEmitter implements MSE {
 			response: 'mock',
 		}
 	}
-	timeout(t?: number): number {
+	timeout(_t?: number): number {
 		throw new Error('Not implemented')
-		return t || 0
 	}
 	async close(): Promise<boolean> {
 		return true
@@ -221,7 +220,7 @@ export class VRundownMock implements VRundown {
 	}
 
 	async cleanupAllSofieShows(): Promise<CommandResult[]> {
-		throw [{ path: '', status: 200, response: 'mock' }]
+		return [{ path: '', status: 200, response: 'mock' }]
 	}
 
 	async listTemplates(): Promise<string[]> {

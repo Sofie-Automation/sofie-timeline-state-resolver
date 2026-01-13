@@ -22,23 +22,11 @@
 	"contributors": [],
 	"scripts": {
 		"start": "tsx src/index.ts",
-		"lint:raw": "run -T eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
-		"lint": "run lint:raw .",
-		"lint-fix": "run lint --fix",
 		"inspect": "node --inspect dist/index.js",
 		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
 		"validate:dev-dependencies": "yarn npm audit --environment development",
 		"license-validate": "run -T sofie-licensecheck",
 		"test": "echo \"Note: no test specified for quick-tsr\" && exit 0"
-	},
-	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
-	"lint-staged": {
-		"*.{css,json,md,scss}": [
-			"yarn run -T prettier --write"
-		],
-		"*.{ts,tsx,js,jsx}": [
-			"yarn lint:raw --fix"
-		]
 	},
 	"engines": {
 		"node": ">= 20.5"
