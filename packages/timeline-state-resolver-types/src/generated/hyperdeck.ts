@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 import type { DeviceType } from './device-options.js'
 
 export interface HyperdeckOptions {
@@ -37,7 +37,7 @@ export interface HyperdeckActionMethods {
 }
 
 export interface HyperdeckDeviceTypes {
-	Type: DeviceType.HYPERDECK,
+	Type: DeviceType.HYPERDECK
 	Options: HyperdeckOptions
 	Mappings: SomeMappingHyperdeck
 	Actions: HyperdeckActionMethods

@@ -182,7 +182,10 @@ export class PanTiltSpeedControl implements Command<PanTiltSpeed> {
 	 * @param panSpeed Acceptable values are 1-99. 50 is pan stop, 49 is slowest LEFT, 51 is slowest RIGHT, 1 is fastest LEFT, 99 is fastest RIGHT
 	 * @param tiltSpeed Acceptable values are 1-99. 50 is tilt stop, 49 is slowest DOWN, 51 is slowest UP, 1 is fastest DOWN, 99 is fastest UP
 	 */
-	constructor(private panSpeed: number, private tiltSpeed: number) {
+	constructor(
+		private panSpeed: number,
+		private tiltSpeed: number
+	) {
 		if (!_.isFinite(panSpeed)) throw new Error('Camera pan speed is not a finite number')
 		if (panSpeed < 1 || panSpeed > 99) throw new Error('Camera pan speed must be between 1 and 99')
 		if (!_.isFinite(tiltSpeed)) throw new Error('Camera tilt speed is not a finite number')
@@ -214,7 +217,10 @@ export class PanTiltPositionControl implements Command<PanTiltPosition> {
 	 * @param panPosition
 	 * @param tiltPosition
 	 */
-	constructor(private panPosition: number, private tiltPosition: number) {
+	constructor(
+		private panPosition: number,
+		private tiltPosition: number
+	) {
 		if (!_.isFinite(panPosition)) throw new Error('Camera pan position is not a finite number')
 		if (panPosition < 0 || panPosition > 0xffff) throw new Error('Camera pan position must be between 0 and 65535')
 		if (!_.isFinite(tiltPosition)) throw new Error('Camera tilt speed is not a finite number')

@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 import type { DeviceType } from './device-options.js'
 
 export interface AbstractOptions {}
@@ -19,7 +19,7 @@ export interface AbstractActionMethods {
 }
 
 export interface AbstractDeviceTypes {
-	Type: DeviceType.ABSTRACT,
+	Type: DeviceType.ABSTRACT
 	Options: AbstractOptions
 	Mappings: SomeMappingAbstract
 	Actions: AbstractActionMethods

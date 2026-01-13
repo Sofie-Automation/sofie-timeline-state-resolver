@@ -1,7 +1,10 @@
 import { ViscaCommand } from '../abstractCommand'
 
 export class PresetDriveSpeedCommand extends ViscaCommand {
-	constructor(private readonly memoryNumber: number, private readonly speed: number) {
+	constructor(
+		private readonly memoryNumber: number,
+		private readonly speed: number
+	) {
 		super()
 	}
 

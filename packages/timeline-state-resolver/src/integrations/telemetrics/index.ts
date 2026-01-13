@@ -24,9 +24,11 @@ type TelemetricsCommandWithContext = CommandWithContext<{ presetShotIdentifier: 
  * Connects to a Telemetrics Device on port 5000 using a TCP socket.
  * This class uses a fire and forget approach.
  */
-export class TelemetricsDevice
-	implements Device<TelemetricsDeviceTypes, TelemetricsState, TelemetricsCommandWithContext>
-{
+export class TelemetricsDevice implements Device<
+	TelemetricsDeviceTypes,
+	TelemetricsState,
+	TelemetricsCommandWithContext
+> {
 	readonly actions = null
 
 	private socket: Socket | undefined

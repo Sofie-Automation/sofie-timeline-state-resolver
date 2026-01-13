@@ -62,7 +62,7 @@ export enum MappingTricasterType {
 export type SomeMappingTricaster = MappingTricasterME | MappingTricasterDSK | MappingTricasterINPUT | MappingTricasterAUDIOCHANNEL | MappingTricasterMIXOUTPUT | MappingTricasterMATRIXOUTPUT
 
 export interface TricasterDeviceTypes {
-	Type: DeviceType.TRICASTER,
+	Type: DeviceType.TRICASTER
 	Options: TricasterOptions
 	Mappings: SomeMappingTricaster
 	Actions: null

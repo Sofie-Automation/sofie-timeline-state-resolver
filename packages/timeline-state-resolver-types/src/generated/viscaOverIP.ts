@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 import type { SetPanTiltSpeedPayload, GetPanTiltPositionResult, SetZoomSpeedPayload, GetZoomPositionResult, StorePresetPayload, RecallPresetPayload, ResetPresetPayload, SetFocusSpeedPayload, SetFocusModePayload, GetFocusPositionResult, GetFocusModeResult } from './generic-ptz-actions'
 
 import type { DeviceType } from './device-options.js'
@@ -46,7 +46,7 @@ export interface ViscaOverIPActionMethods {
 }
 
 export interface ViscaOverIPDeviceTypes {
-	Type: DeviceType.VISCA_OVER_IP,
+	Type: DeviceType.VISCA_OVER_IP
 	Options: ViscaOverIPOptions
 	Mappings: SomeMappingViscaOverIP
 	Actions: ViscaOverIPActionMethods

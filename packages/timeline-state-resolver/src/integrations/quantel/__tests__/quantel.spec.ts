@@ -2098,8 +2098,10 @@ describe('Quantel Device', () => {
 	})
 })
 
-interface DeviceTimelineStateObjectQuantelWithPartialInstance
-	extends Omit<Partial<DeviceTimelineStateObject<TimelineContentQuantelAny>>, 'instance'> {
+interface DeviceTimelineStateObjectQuantelWithPartialInstance extends Omit<
+	Partial<DeviceTimelineStateObject<TimelineContentQuantelAny>>,
+	'instance'
+> {
 	instance?: Partial<Timeline.TimelineObjectInstance>
 }
 

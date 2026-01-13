@@ -43,7 +43,10 @@ export class StateTracker<State> extends EventEmitter<StateTrackerEvents> {
 	 * @param diff Method that compares 2 Address States and returns true if they are different
 	 * @param syncOnFirstBlood If set to true and a current state is reported for an Address without a current state, the address wil NOT be marked as ahead
 	 */
-	constructor(private diff: (state1: State, state2: State | undefined) => boolean, private syncOnFirstBlood: boolean) {
+	constructor(
+		private diff: (state1: State, state2: State | undefined) => boolean,
+		private syncOnFirstBlood: boolean
+	) {
 		super()
 	}
 

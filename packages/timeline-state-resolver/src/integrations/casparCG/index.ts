@@ -316,7 +316,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			const seekOffsetByLookahead =
 				content.seek !== undefined && layerProps.lookaheadOffset !== undefined
 					? content.seek + layerProps.lookaheadOffset
-					: content.seek ?? layerProps.lookaheadOffset
+					: (content.seek ?? layerProps.lookaheadOffset)
 
 			stateLayer = literal<MediaLayer>({
 				id: layer.id,
@@ -584,7 +584,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 										...(backgroundStateLayer as NextUp),
 										auto: false,
 									})
-							  )
+								)
 							: undefined,
 					})
 				} else if (backgroundStateLayer) {

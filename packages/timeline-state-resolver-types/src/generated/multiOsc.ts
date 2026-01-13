@@ -18,7 +18,7 @@ export interface MultiOscOptions {
 
 export enum MultiOSCDeviceType {
 	TCP = 'tcp',
-	UDP = 'udp'
+	UDP = 'udp',
 }
 
 export interface MappingMultiOscLayer {
@@ -33,7 +33,7 @@ export enum MappingMultiOscType {
 export type SomeMappingMultiOsc = MappingMultiOscLayer
 
 export interface MultiOscDeviceTypes {
-	Type: DeviceType.MULTI_OSC,
+	Type: DeviceType.MULTI_OSC
 	Options: MultiOscOptions
 	Mappings: SomeMappingMultiOsc
 	Actions: null

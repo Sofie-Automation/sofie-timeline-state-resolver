@@ -189,7 +189,11 @@ export type VRundownMocked = MockClass<VRundown>
 export class VRundownMock implements VRundown {
 	private elements: { [key: string]: VElement } = {}
 	private _isActive = false
-	constructor(public readonly profile: string, public readonly playlist: string, public readonly description?: string) {
+	constructor(
+		public readonly profile: string,
+		public readonly playlist: string,
+		public readonly description?: string
+	) {
 		// Hack: replace methods with jest-ified ones
 		_.each(Object.getOwnPropertyNames(VRundownMock.prototype), (key) => {
 			if (key !== 'prototype') {

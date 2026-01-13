@@ -25,7 +25,8 @@ export interface LawoCommand {
 	priority: number
 }
 
-export enum TimelineContentTypeLawo { //  Lawo-state
+export enum TimelineContentTypeLawo {
+	//  Lawo-state
 	SOURCE = 'lawosource', // a general content type, possibly to be replaced by specific ones later?
 	SOURCES = 'lawosources',
 	EMBER_PROPERTY = 'lawofullpathemberproperty',

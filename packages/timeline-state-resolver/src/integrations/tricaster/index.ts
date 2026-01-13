@@ -15,9 +15,11 @@ import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-sta
 
 const DEFAULT_PORT = 5951
 
-export class TriCasterDevice
-	implements Device<TricasterDeviceTypes, WithContext<TriCasterState>, TriCasterCommandWithContext>
-{
+export class TriCasterDevice implements Device<
+	TricasterDeviceTypes,
+	WithContext<TriCasterState>,
+	TriCasterCommandWithContext
+> {
 	readonly actions = null
 
 	private _connected = false

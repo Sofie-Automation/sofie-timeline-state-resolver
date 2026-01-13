@@ -14,7 +14,10 @@ import { DeviceContextAPI } from 'timeline-state-resolver-api'
 export class KairosRamLoader {
 	private debounceTrackLoadRAM = new Set<string>()
 
-	constructor(private kairos: KairosConnection, private context: DeviceContextAPI<KairosDeviceState>) {}
+	constructor(
+		private kairos: KairosConnection,
+		private context: DeviceContextAPI<KairosDeviceState>
+	) {}
 
 	async ensureRAMLoaded(
 		playerIdentifier: number | string,

@@ -16,9 +16,11 @@ type HTTPWatcherCommandWithContext = CommandWithContext<never, never>
  * This is a HTTPWatcherDevice, requests a uri on a regular interval and watches
  * it's response.
  */
-export class HTTPWatcherDevice
-	implements Device<HttpWatcherDeviceTypes, HTTPWatcherDeviceState, HTTPWatcherCommandWithContext>
-{
+export class HTTPWatcherDevice implements Device<
+	HttpWatcherDeviceTypes,
+	HTTPWatcherDeviceState,
+	HTTPWatcherCommandWithContext
+> {
 	readonly actions = null
 
 	private uri?: string

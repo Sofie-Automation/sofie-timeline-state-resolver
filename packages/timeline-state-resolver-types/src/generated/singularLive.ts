@@ -22,7 +22,7 @@ export enum MappingSingularLiveType {
 export type SomeMappingSingularLive = MappingSingularLiveComposition
 
 export interface SingularLiveDeviceTypes {
-	Type: DeviceType.SINGULAR_LIVE,
+	Type: DeviceType.SINGULAR_LIVE
 	Options: SingularLiveOptions
 	Mappings: SomeMappingSingularLive
 	Actions: null

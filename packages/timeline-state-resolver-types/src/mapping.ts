@@ -18,8 +18,7 @@ export interface Mapping<TOptions extends { mappingType: string } | unknown, TTy
 
 /** @deprecated */
 export interface ResolvedTimelineObjectInstanceExtended<TContent extends Content = TSRTimelineContent>
-	extends ResolvedTimelineObjectInstance<TContent>,
-		TSRTimelineObjProps {}
+	extends ResolvedTimelineObjectInstance<TContent>, TSRTimelineObjProps {}
 
 export interface TSRTimelineObjProps {
 	/** Only set to true when an object is inserted by lookahead */

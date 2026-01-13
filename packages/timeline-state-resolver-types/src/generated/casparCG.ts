@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 import type { DeviceType } from './device-options.js'
 
 export interface CasparCGOptions {
@@ -67,7 +67,7 @@ export interface CasparCGActionMethods {
 }
 
 export interface CasparCGDeviceTypes {
-	Type: DeviceType.CASPARCG,
+	Type: DeviceType.CASPARCG
 	Options: CasparCGOptions
 	Mappings: SomeMappingCasparCG
 	Actions: CasparCGActionMethods

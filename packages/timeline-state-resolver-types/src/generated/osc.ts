@@ -14,13 +14,13 @@ export interface OscOptions {
 
 export enum OSCDeviceType {
 	TCP = 'tcp',
-	UDP = 'udp'
+	UDP = 'udp',
 }
 
 export type SomeMappingOsc = Record<string, never>
 
 export interface OscDeviceTypes {
-	Type: DeviceType.OSC,
+	Type: DeviceType.OSC
 	Options: OscOptions
 	Mappings: SomeMappingOsc
 	Actions: null

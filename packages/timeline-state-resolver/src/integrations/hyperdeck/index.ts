@@ -25,9 +25,11 @@ import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-sta
 /**
  * This is a wrapper for the Hyperdeck Device. Commands to any and all hyperdeck devices will be sent through here.
  */
-export class HyperdeckDevice
-	implements Device<HyperdeckDeviceTypes, HyperdeckDeviceState, HyperdeckCommandWithContext>
-{
+export class HyperdeckDevice implements Device<
+	HyperdeckDeviceTypes,
+	HyperdeckDeviceState,
+	HyperdeckCommandWithContext
+> {
 	readonly actions: HyperdeckActionMethods = {
 		[HyperdeckActions.FormatDisks]: this.formatDisks.bind(this),
 		[HyperdeckActions.Resync]: this.resyncState.bind(this),

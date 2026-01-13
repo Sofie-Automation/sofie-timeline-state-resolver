@@ -34,7 +34,7 @@ export enum LawoDeviceMode {
 	Ruby = 1,
 	RubyManualRamp = 2,
 	MC2 = 3,
-	Manual = 4
+	Manual = 4,
 }
 
 export interface MappingLawoSource {
@@ -62,7 +62,7 @@ export enum EmberParameterType {
 	Boolean = 'BOOLEAN',
 	Trigger = 'TRIGGER',
 	Enum = 'ENUM',
-	Octets = 'OCTETS'
+	Octets = 'OCTETS',
 }
 
 export interface MappingLawoTriggerValue {
@@ -79,7 +79,7 @@ export enum MappingLawoType {
 export type SomeMappingLawo = MappingLawoSource | MappingLawoSources | MappingLawoFullpath | MappingLawoTriggerValue
 
 export interface LawoDeviceTypes {
-	Type: DeviceType.LAWO,
+	Type: DeviceType.LAWO
 	Options: LawoOptions
 	Mappings: SomeMappingLawo
 	Actions: null

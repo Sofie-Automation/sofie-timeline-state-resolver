@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions'
 import type { DeviceType } from './device-options.js'
 
 export interface VmixOptions {
@@ -186,7 +186,7 @@ export interface VmixActionMethods {
 }
 
 export interface VmixDeviceTypes {
-	Type: DeviceType.VMIX,
+	Type: DeviceType.VMIX
 	Options: VmixOptions
 	Mappings: SomeMappingVmix
 	Actions: VmixActionMethods

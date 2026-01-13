@@ -90,7 +90,8 @@ export interface TimelineDatastoreReferencesContent {
 export type TSRTimeline = TSRTimelineObj<TSRTimelineContent>[]
 
 export interface TSRTimelineObj<TContent extends { deviceType: DeviceTypeExt }>
-	extends Omit<Timeline.TimelineObject<TContent & TimelineDatastoreReferencesContent>, 'children'>,
+	extends
+		Omit<Timeline.TimelineObject<TContent & TimelineDatastoreReferencesContent>, 'children'>,
 		TSRTimelineObjProps {
 	children?: TSRTimelineObj<TSRTimelineContent>[]
 }

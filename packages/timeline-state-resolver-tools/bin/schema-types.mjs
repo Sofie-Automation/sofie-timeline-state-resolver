@@ -396,9 +396,9 @@ ${actionDefinitions
 `
 		// Prepend import:
 		output =
-			`import type { ActionExecutionResult } from "${
+			`import type { ActionExecutionResult } from '${
 				isMainRepository ? '../actions' : 'timeline-state-resolver-types'
-			}"\n` + output
+			}'\n` + output
 	}
 
 	let deviceTypeId = toConstantCase(dir)
@@ -416,7 +416,7 @@ ${actionDefinitions
 
 	output += `
 export interface ${dirId}DeviceTypes {
-	Type: DeviceType.${deviceTypeId},
+	Type: DeviceType.${deviceTypeId}
 	Options: ${dirId}Options
 	Mappings: SomeMapping${dirId}
 	Actions: ${actionDefinitions.length > 0 ? `${dirId}ActionMethods` : 'null'}

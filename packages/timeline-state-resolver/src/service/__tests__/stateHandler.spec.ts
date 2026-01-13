@@ -140,15 +140,15 @@ describe('stateHandler', () => {
 												type: 'removed',
 												property: e,
 											},
-									  }
+										}
 									: n[e].value !== o?.[e]?.value
-									? {
-											command: {
-												type: 'changed',
-												property: e,
-											},
-									  }
-									: null
+										? {
+												command: {
+													type: 'changed',
+													property: e,
+												},
+											}
+										: null
 							)
 							.filter((c) => c !== null),
 					] as CommandWithContext[]

@@ -24,7 +24,10 @@ export class TriCasterConnection extends EventEmitter<TriCasterConnectionEvents>
 	private _pingTimeout: NodeJS.Timeout | null = null
 	private _isClosing = false
 
-	constructor(private _host: string, private _port: number) {
+	constructor(
+		private _host: string,
+		private _port: number
+	) {
 		super()
 	}
 
