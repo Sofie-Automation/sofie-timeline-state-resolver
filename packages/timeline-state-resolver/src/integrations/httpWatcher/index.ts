@@ -4,6 +4,7 @@ import {
 	StatusCode,
 	DeviceStatus,
 	HttpWatcherDeviceTypes,
+	HttpMethod,
 } from 'timeline-state-resolver-types'
 import got, { Headers, Response } from 'got'
 import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
@@ -83,16 +84,16 @@ export class HTTPWatcherDevice implements Device<
 
 	async init(options: HttpWatcherOptions): Promise<boolean> {
 		switch (options.httpMethod) {
-			case 'post':
+			case HttpMethod.POST:
 				this.httpMethod = TimelineContentTypeHTTP.POST
 				break
-			case 'delete':
+			case HttpMethod.DELETE:
 				this.httpMethod = TimelineContentTypeHTTP.DELETE
 				break
-			case 'put':
+			case HttpMethod.PUT:
 				this.httpMethod = TimelineContentTypeHTTP.PUT
 				break
-			case 'get':
+			case HttpMethod.GET:
 			case undefined:
 			default:
 				this.httpMethod = TimelineContentTypeHTTP.GET

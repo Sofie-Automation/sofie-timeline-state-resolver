@@ -111,7 +111,6 @@ export async function waitUntil(
 
 	const previousErrors: string[] = []
 
-	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		await mockTime?.advanceTimeTicks(100)
 		await waitTime(100)

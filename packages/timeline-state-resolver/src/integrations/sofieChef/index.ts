@@ -271,8 +271,9 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 			this.context.connectionChanged(this.getStatus())
 		}
 	}
-	private _handleReceivedMessage(data: WebSocket.Data) {
+	private _handleReceivedMessage(data: WebSocket.RawData) {
 		try {
+			// eslint-disable-next-line @typescript-eslint/no-base-to-string
 			const message: SendWSMessageAny = JSON.parse(data.toString())
 			if (message) {
 				if (message.type === SendWSMessageType.REPLY) {

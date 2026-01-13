@@ -270,11 +270,11 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 
 			if (response.statusCode >= 200 && response.statusCode < 300) {
 				this.context.logger.debug(
-					`HTTPSend: ${command.content.type}: Good statuscode response on url "${command.content.url}": ${response.statusCode} (${context})`
+					`HTTPSend: ${command.content.type}: Good statuscode response on url "${commandUrl}": ${response.statusCode} (${context})`
 				)
 			} else {
 				this.context.logger.warning(
-					`HTTPSend: ${command.content.type}: Bad statuscode response on url "${command.content.url}": ${response.statusCode} (${context})`
+					`HTTPSend: ${command.content.type}: Bad statuscode response on url "${commandUrl}": ${response.statusCode} (${context})`
 				)
 			}
 
@@ -290,7 +290,7 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 			const err = error as RequestError // make typescript happy
 
 			this.context.logger.error(
-				`HTTPSend.response error on ${command.content.type} "${command.content.url}" (${context})`,
+				`HTTPSend.response error on ${command.content.type} "${JSON.stringify(command.content.url)}" (${context})`,
 				err
 			)
 			this.context.commandError(err, {

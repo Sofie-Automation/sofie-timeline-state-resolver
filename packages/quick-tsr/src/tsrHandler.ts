@@ -122,13 +122,13 @@ export class TSRHandler {
 			this.tsr.connectionManager.on(
 				'connectionEvent:slowSentCommand',
 				(deviceId: string, info: SlowSentCommandInfo) => {
-					console.log(`Device ${deviceId} slow sent command: ${info}`)
+					console.log(`Device ${deviceId} slow sent command: ${JSON.stringify(info)}`)
 				}
 			)
 			this.tsr.connectionManager.on(
 				'connectionEvent:slowFulfilledCommand',
 				(deviceId: string, info: SlowFulfilledCommandInfo) => {
-					console.log(`Device ${deviceId} slow fulfilled command: ${info}`)
+					console.log(`Device ${deviceId} slow fulfilled command: ${JSON.stringify(info)}`)
 				}
 			)
 			this.tsr.connectionManager.on('connectionEvent:commandReport', (deviceId: string, command: any) => {
@@ -147,7 +147,7 @@ export class TSRHandler {
 			if (deviceContainer.deviceType === DeviceType.CASPARCG) {
 				const device = deviceContainer.device as ThreadedClass<CasparCGDevice>
 
-				console.log(`Fetching media list for ${device.deviceId}...`)
+				console.log(`Fetching media list for ${deviceContainer.deviceId}...`)
 
 				const list: ActionExecutionResult<ListMediaResult> = await device.executeAction('listMedia', {})
 

@@ -18,7 +18,7 @@ export type Complete<T> = {
 
 /** Deeply extend an object with some partial objects */
 export function deepMerge<T extends object>(destination: T, source: PartialDeep<T>): T {
-	return deepmerge<T>(destination, source)
+	return deepmerge<T>(destination, source as Partial<T>)
 }
 
 export function startTrace(measurement: string, tags?: Record<string, string>): Trace {

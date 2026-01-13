@@ -1,4 +1,3 @@
-// eslint-disable-next-line n/no-extraneous-import
 import { TransportStatus as UpstreamTransportStatus } from 'hyperdeck-connection'
 import { TransportStatus as LocalTransportStatus } from '../'
 

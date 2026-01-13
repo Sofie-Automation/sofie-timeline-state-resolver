@@ -1,4 +1,3 @@
-// eslint-disable-next-line n/no-extraneous-import
 import { Enums as AtemStateEnums } from 'atem-state'
 import { AtemTransitionStyle } from '../'
 
