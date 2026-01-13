@@ -16,7 +16,9 @@
     "build": "(rimraf packages/*/dist packages/*/*.tsbuildinfo || true) && run build:prepare && run build:main",
     "build:prepare": "run generate-schema-types && run translations:bundle",
     "build:main": "tsc --build tsconfig.build.json",
-    "lint": "lerna exec yarn lint -- --",
+    "lint:raw": "run eslint --ext .ts --ext .js --ext .tsx --ext .jsx ",
+    "lint": "run lint:raw .",
+    "lint-fix": "run lint --fix",
     "test": "lerna exec yarn test",
     "test:changed": "lerna run --since origin/master --include-dependents test",
     "unit": "lerna exec yarn unit",
@@ -30,10 +32,7 @@
     "validate:dev-dependencies": "lerna exec --parallel yarn validate:dev-dependencies",
     "generate-schema-types": "yarn workspace timeline-state-resolver generate-schema-types",
     "translations:extract": "yarn workspace timeline-state-resolver translations:extract",
-    "translations:bundle": "yarn workspace timeline-state-resolver translations:bundle",
-    "lint-staged": "./node_modules/.bin/lint-staged",
-    "prettier": "cd $INIT_CWD && \"$PROJECT_CWD/node_modules/.bin/prettier\"",
-    "eslint": "cd $INIT_CWD && \"$PROJECT_CWD/node_modules/.bin/eslint\""
+    "translations:bundle": "yarn workspace timeline-state-resolver translations:bundle"
   },
   "devDependencies": {
     "@sofie-automation/code-standard-preset": "~3.2.0",
@@ -58,5 +57,13 @@
     "typescript": "~5.7.3"
   },
   "prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
+  "lint-staged": {
+    "*.{css,json,md,scss}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx,js,jsx}": [
+      "yarn lint-fix"
+    ]
+  },
   "packageManager": "yarn@4.12.0"
 }

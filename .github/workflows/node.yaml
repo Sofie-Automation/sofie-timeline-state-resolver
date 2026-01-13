@@ -15,15 +15,6 @@ jobs:
     continue-on-error: true
     timeout-minutes: 15
 
-    strategy:
-      fail-fast: false
-      matrix:
-        lib-name:
-          - timeline-state-resolver
-          - timeline-state-resolver-types
-          - timeline-state-resolver-api
-          - quick-tsr
-
     steps:
       - uses: actions/checkout@v6
         with:
@@ -35,14 +26,16 @@ jobs:
       - name: Prepare Environment
         run: |
           corepack enable
-          yarn config set cacheFolder /home/runner/lint-${{ matrix.lib-name }}-cache
           yarn install
+        env:
+          CI: true
+      - name: Run typecheck
+        run: |
           yarn build
         env:
           CI: true
-      - name: Run typecheck and linter
+      - name: Run linter
         run: |
-          cd packages/${{ matrix.lib-name }}
           yarn lint
         env:
           CI: true

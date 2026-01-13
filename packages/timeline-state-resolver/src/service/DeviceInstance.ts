@@ -50,7 +50,6 @@ function loadDeviceIntegration(pluginPath: string | null, deviceType: DeviceType
 	}
 
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const plugin = require(pluginPath)
 
 		const pluginDevices = plugin.Devices

@@ -44,18 +44,19 @@ const prefixSofie = !!process.argv[4] // eg 1
 		})
 	}
 
-	const updateDependencies = (depsObject) => {
-		for (const depName of Object.keys(depsObject || {})) {
-			const foundPackage = packages.find((p) => p.originalName === depName)
-			if (foundPackage) {
-				modifyDependency(depName, depsObject, foundPackage.package.version)
-				changed = true
-			}
-		}
-	}
-
 	for (const p of packages) {
 		let changed = false
+
+		const updateDependencies = (depsObject) => {
+			for (const depName of Object.keys(depsObject || {})) {
+				const foundPackage = packages.find((p) => p.originalName === depName)
+				if (foundPackage) {
+					modifyDependency(depName, depsObject, foundPackage.package.version)
+					changed = true
+				}
+			}
+		}
+
 		// Rewrite internal dependencies to target the correct version, so that it works when published to npm:
 		updateDependencies(p.package.dependencies, p.originalName)
 		updateDependencies(p.package.devDependencies, p.originalName)
@@ -114,7 +115,7 @@ async function exists(checkPath) {
 	try {
 		await fsp.access(checkPath, fs.constants.F_OK)
 		return true
-	} catch (err) {
+	} catch (_err) {
 		return false
 	}
 }

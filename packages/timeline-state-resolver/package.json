@@ -48,9 +48,6 @@
 	],
 	"scripts": {
 		"unlink:all": "yarn unlink atem-connection & yarn unlink atem-state & yarn unlink casparcg-connection & yarn unlink casparcg-state & yarn unlink superfly-timeline",
-		"lint:raw": "run -T eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
-		"lint": "run lint:raw .",
-		"lint-fix": "run lint --fix",
 		"license-validate": "run -T sofie-licensecheck",
 		"unit": "run -T jest --forceExit",
 		"unitci": "run -T jest --forceExit --coverage",
@@ -122,14 +119,6 @@
 	},
 	"publishConfig": {
 		"access": "public"
-	},
-	"lint-staged": {
-		"*.{css,json,md,scss}": [
-			"yarn run -T prettier --write"
-		],
-		"*.{ts,tsx,mjs,js,jsx}": [
-			"yarn lint:raw --fix"
-		]
 	},
 	"devDependencies": {
 		"@types/simple-oauth2": "^5.0.8",
