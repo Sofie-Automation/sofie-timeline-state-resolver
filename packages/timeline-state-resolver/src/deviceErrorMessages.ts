@@ -27,8 +27,15 @@ import { DeviceStatusError, interpolateTemplateString } from 'timeline-state-res
  * // Multi-device usage:
  * import { AtemErrorMessages } from './integrations/atem'
  * import { CasparcgErrorMessages } from './integrations/casparCG'
+ *
  * const allMessages = { ...AtemErrorMessages, ...CasparcgErrorMessages }
+ *
+ * const errors = [
+ *   { code: AtemErrorCode.DISCONNECTED, context: { deviceName: 'Studio A Vision Mixer', host: '192.168.1.10' } },
+ *   { code: AtemErrorCode.PSU_FAULT, context: { deviceName: 'Studio A Vision Mixer', host: '192.168.1.10', psuNumber: 2, totalPsus: 2 } }
+ * ]
  * const messages = errorsToMessages(errors, allMessages)
+ * // ['ATEM Studio A Vision Mixer disconnected', 'ATEM PSU 2 is faulty. The device has 2 PSU(s) in total.']
  */
 export function errorsToMessages(errors: DeviceStatusError[], templates: Record<string, string> = {}): string[] {
 	return errors.map((error) => {
