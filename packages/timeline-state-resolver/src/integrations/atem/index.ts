@@ -157,7 +157,10 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 	}
 
 	/**
-	 * Check status and return it with useful messages appended.
+	 * Get device status with structured errors.
+	 * Returns both:
+	 * - errors: Structured error objects for customization by consuming applications
+	 * - messages: Default human-readable strings (converted from errors)
 	 */
 	public getStatus(): Omit<DeviceStatus, 'active'> {
 		const errors: AtemError[] = []
