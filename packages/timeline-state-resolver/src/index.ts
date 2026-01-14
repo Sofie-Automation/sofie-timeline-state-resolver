@@ -9,5 +9,8 @@ export { HyperdeckDevice } from './integrations/hyperdeck'
 export { QuantelDevice } from './integrations/quantel'
 export { VizMSEDevice } from './integrations/vizMSE'
 
+// ATEM error exports for blueprint customization
+export { AtemErrorCode, AtemErrorMessages, type AtemError, type AtemErrorContextMap } from 'timeline-state-resolver-types'
+
 export { TSRDevicesManifestEntry } from 'timeline-state-resolver-api'
 export * from 'timeline-state-resolver-types'
