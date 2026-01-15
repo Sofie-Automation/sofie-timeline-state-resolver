@@ -1,20 +1,4 @@
-import { DeviceStatusError } from 'timeline-state-resolver-types'
-
-/**
- * Interpolates {{variable}} placeholders in a template string.
- * @param template - Template string with {{variable}} placeholders
- * @param context - Object with values for interpolation
- * @returns Interpolated string
- */
-function interpolate(template: string, context: Record<string, unknown>): string {
-	return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
-		const value = context[key]
-		if (value === undefined || value === null) {
-			return match // Keep placeholder if no value
-		}
-		return String(value)
-	})
-}
+import { DeviceStatusError, interpolateTemplateString } from 'timeline-state-resolver-types'
 
 /**
  * Converts structured device errors to human-readable messages using templates.
@@ -49,6 +33,6 @@ function interpolate(template: string, context: Record<string, unknown>): string
 export function errorsToMessages(errors: DeviceStatusError[], templates: Record<string, string> = {}): string[] {
 	return errors.map((error) => {
 		const template = templates[error.code] ?? error.code
-		return interpolate(template, error.context)
+		return interpolateTemplateString(template, error.context, true)
 	})
 }
