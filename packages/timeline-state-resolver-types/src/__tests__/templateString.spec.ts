@@ -9,6 +9,10 @@ describe('interpolateTemplateString', () => {
 		expect(interpolateTemplateString('Hello there {{name}}', {})).toEqual('Hello there name')
 	})
 
+	test('missing arg with leaveUnknownPlaceholders', () => {
+		expect(interpolateTemplateString('Hello there {{name}}', {}, true)).toEqual('Hello there {{name}}')
+	})
+
 	test('repeated arg', () => {
 		expect(interpolateTemplateString('Hello there {{name}} {{name}} {{name}}', { name: 'Bob' })).toEqual(
 			'Hello there Bob Bob Bob'
