@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 
 const SETTLE_TIME = 200 // ms
 

@@ -1,5 +1,5 @@
 import * as osc from 'osc'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { MetaArgument } from 'osc'
 
 /** How often to check connection status */
