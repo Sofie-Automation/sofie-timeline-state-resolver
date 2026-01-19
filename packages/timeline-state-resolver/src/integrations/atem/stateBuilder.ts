@@ -243,11 +243,13 @@ export class AtemStateBuilder {
 		const objKeyer = content.usk
 		const fixedObjKeyer: PartialDeep<VideoState.USK.UpstreamKeyer> = {
 			...objKeyer,
+			chromaSettings: undefined,
 			flyKeyframes: [undefined, undefined],
 			flyProperties: undefined,
 		}
 		delete fixedObjKeyer.flyProperties
 		delete fixedObjKeyer.flyKeyframes
+		delete fixedObjKeyer.chromaSettings
 
 		if (objKeyer.flyProperties) {
 			fixedObjKeyer.flyProperties = {
@@ -298,6 +300,35 @@ export class AtemStateBuilder {
 					...StateDefault.Video.flyKeyframe(1),
 					...objKeyer.flyKeyframes[1],
 				})
+			}
+		}
+
+		if (objKeyer.chromaSettings && keyer) {
+			const chromaSettings = { ...objKeyer.chromaSettings }
+			delete chromaSettings.classic
+			delete chromaSettings.sample
+
+			keyer.advancedChromaSettings = {
+				properties: {
+					...StateDefault.Video.UpstreamKeyerAdvancedChromaProperties,
+					...chromaSettings,
+				},
+				// Always define the sample
+				sample: { ...StateDefault.Video.UpstreamKeyerAdvancedChromaSample },
+			}
+
+			if (objKeyer.chromaSettings.sample && keyer.advancedChromaSettings.sample) {
+				keyer.advancedChromaSettings.sample.sampledY = objKeyer.chromaSettings.sample.y
+				keyer.advancedChromaSettings.sample.sampledCb = objKeyer.chromaSettings.sample.cb
+				keyer.advancedChromaSettings.sample.sampledCr = objKeyer.chromaSettings.sample.cr
+			}
+
+			// Handle simple keyer settings if provided
+			if (objKeyer.chromaSettings.classic) {
+				keyer.chromaSettings = {
+					...StateDefault.Video.UpstreamKeyerChromaSettings,
+					...objKeyer.chromaSettings.classic,
+				}
 			}
 		}
 	}
