@@ -31,7 +31,11 @@ import {
 	CasparCGDeviceTypes,
 	CasparCGActions,
 	StatusCode,
+	CasparCGErrorCode,
+	CasparCGErrorMessages,
 } from 'timeline-state-resolver-types'
+import { createCasparCGError } from './errors'
+import { errorsToMessages } from '../../deviceErrorMessages'
 
 import {
 	CasparCGState,
@@ -756,25 +760,41 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			}
 		}
 	}
+	/**
+	 * Returns the current device status, including structured errors for blueprint customization.
+	 */
 	getStatus(): DeviceStatus {
 		let statusCode = StatusCode.GOOD
-		const messages: Array<string> = []
+		const errors: DeviceStatus['errors'] = []
 
 		if (statusCode === StatusCode.GOOD) {
 			if (!this._connected) {
 				statusCode = StatusCode.BAD
-				messages.push(`CasparCG disconnected`)
+				errors.push(
+					createCasparCGError(CasparCGErrorCode.DISCONNECTED, {
+						deviceName: this.deviceName,
+						host: this._ccg.host,
+						port: this._ccg.port,
+					})
+				)
 			}
 		}
 
 		if (this._queueOverflow) {
 			statusCode = StatusCode.BAD
-			messages.push('Command queue overflow: CasparCG server has to be restarted')
+			errors.push(
+				createCasparCGError(CasparCGErrorCode.QUEUE_OVERFLOW, {
+					deviceName: this.deviceName,
+					host: this._ccg.host,
+					port: this._ccg.port,
+				})
+			)
 		}
 
 		return {
-			statusCode: statusCode,
-			messages: messages,
+			statusCode,
+			messages: errorsToMessages(errors, CasparCGErrorMessages),
+			errors,
 			active: this.isActive,
 		}
 	}
