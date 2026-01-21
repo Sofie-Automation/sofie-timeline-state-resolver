@@ -10,6 +10,9 @@ import {
 	AtemActionMethods,
 	AtemActions,
 	StatusCode,
+	AtemErrorCode,
+	AtemErrorMessages,
+	AtemError,
 } from 'timeline-state-resolver-types'
 import { AtemState, State as DeviceState } from 'atem-state'
 import {
@@ -35,9 +38,7 @@ import {
 	atemStateToAddressStates,
 	diffAddressStates,
 	updateFromAtemState,
-} from './state.js'
-import { AtemErrorCode, AtemErrorMessages } from 'timeline-state-resolver-types'
-import type { AtemError } from 'timeline-state-resolver-types'
+} from './state'
 import { createAtemError } from './errors.js'
 import { errorsToMessages } from '../../deviceErrorMessages.js'
 
