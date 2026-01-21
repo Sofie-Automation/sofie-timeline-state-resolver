@@ -9,16 +9,5 @@ export { HyperdeckDevice } from './integrations/hyperdeck/index.js'
 export { QuantelDevice } from './integrations/quantel/index.js'
 export { VizMSEDevice } from './integrations/vizMSE/index.js'
 
-// ATEM error exports for blueprint customization
-export { AtemErrorCode, AtemErrorMessages, type AtemError, type AtemErrorContextMap } from 'timeline-state-resolver-types'
-
-// CasparCG error exports for blueprint customization
-export {
-	CasparCGErrorCode,
-	CasparCGErrorMessages,
-	type CasparCGError,
-	type CasparCGErrorContextMap,
-} from 'timeline-state-resolver-types'
-
 export { TSRDevicesManifestEntry } from 'timeline-state-resolver-api'
 export * from 'timeline-state-resolver-types'
