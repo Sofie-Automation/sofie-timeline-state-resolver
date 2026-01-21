@@ -10,6 +10,9 @@ import {
 	AtemActionMethods,
 	AtemActions,
 	StatusCode,
+	AtemErrorCode,
+	AtemErrorMessages,
+	AtemError,
 } from 'timeline-state-resolver-types'
 import { AtemState, State as DeviceState } from 'atem-state'
 import {
@@ -36,8 +39,6 @@ import {
 	diffAddressStates,
 	updateFromAtemState,
 } from './state'
-import { AtemErrorCode, AtemErrorMessages } from 'timeline-state-resolver-types'
-import type { AtemError } from 'timeline-state-resolver-types'
 import { createAtemError } from './errors'
 import { errorsToMessages } from '../../deviceErrorMessages'
 

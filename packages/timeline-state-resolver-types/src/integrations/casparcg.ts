@@ -29,7 +29,10 @@ export interface CasparCGErrorContextMap {
 	}
 }
 
-export type CasparCGError<T extends CasparCGErrorCode = CasparCGErrorCode> = DeviceStatusError<T, CasparCGErrorContextMap[T]>
+export type CasparCGError<T extends CasparCGErrorCode = CasparCGErrorCode> = DeviceStatusError<
+	T,
+	CasparCGErrorContextMap[T]
+>
 
 /**
  * Default error message templates for CasparCG devices.
