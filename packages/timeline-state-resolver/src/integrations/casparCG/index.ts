@@ -314,13 +314,9 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			const loopingPlayTime = content.loop && !content.seek && !content.inPoint && !content.length
 
 			const seekOffsetByLookahead =
-				content.seek && layerProps.lookaheadOffset
+				content.seek !== undefined && layerProps.lookaheadOffset !== undefined
 					? content.seek + layerProps.lookaheadOffset
-					: content.seek
-					? content.seek
-					: layerProps.lookaheadOffset
-					? layerProps.lookaheadOffset
-					: undefined
+					: content.seek ?? layerProps.lookaheadOffset
 
 			stateLayer = literal<MediaLayer>({
 				id: layer.id,

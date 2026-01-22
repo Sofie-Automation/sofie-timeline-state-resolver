@@ -125,13 +125,9 @@ function setPortStateFromLayer(
 		const startTime = layer.instance.originalStart || layer.instance.start
 
 		const inPointSeekOffsetByLookahead =
-			content.inPoint && layer.lookaheadOffset
+			content.inPoint !== undefined && layer.lookaheadOffset !== undefined
 				? content.inPoint + layer.lookaheadOffset
-				: content.inPoint
-				? content.inPoint
-				: layer.lookaheadOffset
-				? layer.lookaheadOffset
-				: undefined
+				: content.inPoint ?? layer.lookaheadOffset
 
 		port.timelineObjId = layer.id
 		port.notOnAir = content.notOnAir || isLookahead
