@@ -515,7 +515,8 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				// create a channel in state if necessary, or reuse existing channel
 				const channel = caspar.channels[mapping.options.channel] || { channelNo: mapping.options.channel, layers: {} }
 				channel.channelNo = mapping.options.channel
-				channel.fps = this.initOptions ? this.initOptions.fps || 25 : 25
+				// Use configured fps if set (for override), otherwise auto-detect from CasparCG INFO, then default
+				channel.fps = this.initOptions?.fps || this._currentState.channels[mapping.options.channel]?.fps || 25
 				caspar.channels[channel.channelNo] = channel
 
 				let foregroundObj: ResolvedTimelineObjectInstanceExtended | undefined = timelineState.layers[layerName]
