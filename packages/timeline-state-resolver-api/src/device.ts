@@ -166,6 +166,9 @@ export interface DeviceEvents {
 
 /** Various methods that the Devices can call */
 export interface DeviceContextAPI<DeviceState, AddressState = void> {
+	/** Human-readable name for this device */
+	deviceName: string
+
 	logger: {
 		/** Emit a "error" message */
 		error: (context: string, err: Error) => void
