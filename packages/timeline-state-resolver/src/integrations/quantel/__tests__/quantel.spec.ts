@@ -6,6 +6,7 @@ import {
 	QuantelControlMode,
 	QuantelTransitionType,
 	SomeMappingQuantel,
+	Timeline,
 	TimelineContentQuantelAny,
 	TSRTimeline,
 	TSRTimelineContent,
@@ -21,7 +22,7 @@ import { getResolvedState, resolveTimeline } from 'superfly-timeline'
 import { DevicesDict } from '../../../service/devices'
 import { setSoftJumpWaitTime } from '../connection'
 import { waitUntil } from '../../../__tests__/lib'
-import { DeviceTimelineState } from 'timeline-state-resolver-api'
+import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 async function getInitialisedQuantelDevice(clearMock?: jest.Mock) {
 	const dev = new QuantelDevice(getDeviceContext())
@@ -45,7 +46,7 @@ describe('Quantel Device', () => {
 	})
 
 	describe('convertTimelineStateToDeviceState', () => {
-		async function convertState(
+		async function convertAndCompareState(
 			tlState: DeviceTimelineState<TSRTimelineContent>,
 			mappings: Mappings<SomeMappingQuantel>,
 			expDevState: QuantelState
@@ -58,11 +59,11 @@ describe('Quantel Device', () => {
 		}
 
 		test('convert empty state', async () => {
-			await convertState(createTimelineState({}), {}, { time: 10, port: {} })
+			await convertAndCompareState(createTimelineState({}), {}, { time: 10, port: {} })
 		})
 
 		test('convert 1 layer', async () => {
-			await convertState(
+			await convertAndCompareState(
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
@@ -110,7 +111,7 @@ describe('Quantel Device', () => {
 		})
 
 		test('convert 1 layer (with guid)', async () => {
-			await convertState(
+			await convertAndCompareState(
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
@@ -158,7 +159,7 @@ describe('Quantel Device', () => {
 		})
 
 		test('convert 2 layers for 1 port', async () => {
-			await convertState(
+			await convertAndCompareState(
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
@@ -226,8 +227,8 @@ describe('Quantel Device', () => {
 				}
 			)
 		})
-		test('convert empty layer + 1 lookahaed', async () => {
-			await convertState(
+		test('convert empty layer + 1 lookahead', async () => {
+			await convertAndCompareState(
 				createTimelineState({
 					layer0_lookahead: {
 						id: 'obj1',
@@ -279,8 +280,8 @@ describe('Quantel Device', () => {
 				}
 			)
 		})
-		test('convert 1 layer + 1 lookahaed', async () => {
-			await convertState(
+		test('convert 1 layer + 1 lookahead', async () => {
+			await convertAndCompareState(
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
@@ -345,8 +346,120 @@ describe('Quantel Device', () => {
 			)
 		})
 
+		test('convert lookahead with offset', async () => {
+			const mapping: Mappings<SomeMappingQuantel> = {
+				layer0: {
+					device: DeviceType.QUANTEL,
+					deviceId: 'myQuantel',
+
+					options: {
+						mappingType: MappingQuantelType.Port,
+						portId: 'my_port',
+						channelId: 2,
+					},
+				},
+			}
+			const timelineState: DeviceTimelineState<TSRTimelineContent> = createTimelineState({
+				layer0_lookahead: {
+					id: 'obj0',
+					layer: 'layer0_lookahead',
+					content: {
+						deviceType: DeviceType.QUANTEL,
+
+						title: 'myClip0',
+					},
+					instance: {
+						originalStart: 10,
+					},
+					isLookahead: true,
+					lookaheadForLayer: 'layer0',
+					lookaheadOffset: 100,
+				},
+			})
+			const expectedDeviceState: QuantelState = {
+				time: 10,
+				port: {
+					my_port: {
+						timelineObjId: 'obj0',
+						mode: QuantelControlMode.QUALITY,
+						notOnAir: true,
+						lookahead: true,
+						lookaheadClip: {
+							timelineObjId: 'obj0',
+							title: 'myClip0',
+						},
+						clip: {
+							title: 'myClip0',
+							inPoint: 100,
+							playing: false,
+							playTime: null,
+						},
+						channels: [2],
+					},
+				},
+			}
+
+			await convertAndCompareState(timelineState, mapping, expectedDeviceState)
+		})
+		test('convert lookahead with offset and start time', async () => {
+			const mapping: Mappings<SomeMappingQuantel> = {
+				layer0: {
+					device: DeviceType.QUANTEL,
+					deviceId: 'myQuantel',
+
+					options: {
+						mappingType: MappingQuantelType.Port,
+						portId: 'my_port',
+						channelId: 2,
+					},
+				},
+			}
+			const timelineState: DeviceTimelineState<TSRTimelineContent> = createTimelineState({
+				layer0_lookahead: {
+					id: 'obj0',
+					layer: 'layer0_lookahead',
+					content: {
+						deviceType: DeviceType.QUANTEL,
+
+						title: 'myClip0',
+						inPoint: 50,
+					},
+					instance: {
+						originalStart: 10,
+					},
+					isLookahead: true,
+					lookaheadForLayer: 'layer0',
+					lookaheadOffset: 100,
+				},
+			})
+			const expectedDeviceState: QuantelState = {
+				time: 10,
+				port: {
+					my_port: {
+						timelineObjId: 'obj0',
+						mode: QuantelControlMode.QUALITY,
+						notOnAir: true,
+						lookahead: true,
+						lookaheadClip: {
+							timelineObjId: 'obj0',
+							title: 'myClip0',
+						},
+						clip: {
+							title: 'myClip0',
+							inPoint: 150,
+							playing: false,
+							playTime: null,
+						},
+						channels: [2],
+					},
+				},
+			}
+
+			await convertAndCompareState(timelineState, mapping, expectedDeviceState)
+		})
+
 		test('convert inPoint', async () => {
-			await convertState(
+			await convertAndCompareState(
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
@@ -1985,18 +2098,13 @@ describe('Quantel Device', () => {
 	})
 })
 
+interface DeviceTimelineStateObjectQuantelWithPartialInstance
+	extends Omit<Partial<DeviceTimelineStateObject<TimelineContentQuantelAny>>, 'instance'> {
+	instance?: Partial<Timeline.TimelineObjectInstance>
+}
+
 function createTimelineState(
-	objs: Record<
-		string,
-		{
-			id: string
-			layer: string
-			content: TimelineContentQuantelAny
-			instance?: { originalStart: number }
-			isLookahead?: boolean
-			lookaheadForLayer?: string
-		}
-	>
+	objs: Record<string, DeviceTimelineStateObjectQuantelWithPartialInstance>
 ): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
