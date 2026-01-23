@@ -313,6 +313,11 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			const holdOnFirstFrame = !isForeground || layerProps.isLookahead
 			const loopingPlayTime = content.loop && !content.seek && !content.inPoint && !content.length
 
+			const seekOffsetByLookahead =
+				content.seek !== undefined && layerProps.lookaheadOffset !== undefined
+					? content.seek + layerProps.lookaheadOffset
+					: content.seek ?? layerProps.lookaheadOffset
+
 			stateLayer = literal<MediaLayer>({
 				id: layer.id,
 				layerNo: mapping.layer,
@@ -324,7 +329,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				playing: !layerProps.isLookahead && (content.playing !== undefined ? content.playing : isForeground),
 
 				looping: content.loop,
-				seek: content.seek,
+				seek: !layerProps.isLookahead ? content.seek : seekOffsetByLookahead,
 				inPoint: content.inPoint,
 				length: content.length,
 

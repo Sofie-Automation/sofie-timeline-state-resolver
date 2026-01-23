@@ -25,6 +25,7 @@ export function makeDeviceTimelineStateObject<TContent extends TSRTimelineConten
 
 		isLookahead: false,
 		lookaheadForLayer: undefined,
+		lookaheadOffset: undefined,
 
 		instance: {
 			id: `@${object.id}:0`,
