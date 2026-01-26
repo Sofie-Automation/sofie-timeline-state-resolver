@@ -109,7 +109,7 @@ describe('Atem', () => {
 		testState.info.power = [true, false]
 		atem.emit('stateChanged', testState, ['info.power'])
 		expect(device.getStatus()).toEqual({
-			messages: ['ATEM PSU 2 is faulty (2 PSUs total)'],
+			messages: ['ATEM PSU 2 is faulty. The device has 2 PSU(s) in total.'],
 			statusCode: StatusCode.WARNING_MAJOR,
 			errors: [
 				createAtemError(AtemErrorCode.PSU_FAULT, {
