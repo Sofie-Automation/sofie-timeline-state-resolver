@@ -98,6 +98,8 @@ exports[`index imports 1`] = `
   "TransportStatus",
   "VIZMSETransitionType",
   "VMixCommand",
+  "VMixErrorCode",
+  "VMixErrorMessages",
   "VMixInputType",
   "VMixTransitionType",
   "VideoFormat",
