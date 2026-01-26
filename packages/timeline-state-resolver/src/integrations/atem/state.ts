@@ -261,8 +261,8 @@ export function diffAddressStates(state1: AnyAddressState, state2: AnyAddressSta
 			flyKeyframes: 'all',
 			flyProperties: true,
 			dveSettings: true,
-			chromaSettings: false,
-			advancedChromaSettings: false,
+			chromaSettings: true,
+			advancedChromaSettings: true,
 			lumaSettings: true,
 			patternSettings: true,
 		})
