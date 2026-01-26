@@ -5,7 +5,9 @@ interface AddressState {
 	id: string
 }
 
-const MOCK_DIFF_FN = jest.fn((state1: AddressState | undefined, state2: AddressState) => state1?.id !== state2.id)
+const MOCK_DIFF_FN = jest.fn(
+	(state1: AddressState | undefined, state2: AddressState | undefined) => state1?.id !== state2?.id
+)
 const MOCK_EVENT_DEVICE_AHEAD = jest.fn()
 const MOCK_EVENT_DEVICE_SYNC = jest.fn()
 
