@@ -73,9 +73,6 @@ export class TSRHandler {
 		this.tsr.on('debug', (msg, ...args) => {
 			console.log('Debug: TSR', msg, ...args)
 		})
-		// this.tsr.on('debug', (...args: any[]) => {
-		// console.log(...args)
-		// })
 
 		this.tsr.on('setTimelineTriggerTime', (_r: TimelineTriggerTimeResult) => {
 			// TODO
@@ -97,20 +94,20 @@ export class TSRHandler {
 			console.log('Warning: connectionManager', msg)
 		})
 		this.tsr.connectionManager.on('info', (msg: string) => {
-			console.log('Warning: connectionManager', msg)
+			console.log('Info: connectionManager', msg)
 		})
 		this.tsr.connectionManager.on('debug', (...args: any) => {
 			console.log('Debug: connectionManager', ...args)
 		})
 
 		this.tsr.connectionManager.on('connectionEvent:error', (deviceId: string, context: string, err: Error) => {
-			console.error(`Device ${deviceId} connection error: ${context} = ${err.message}`)
+			console.log(`Device ${deviceId} connection error: ${context} = ${err.message}`)
 		})
 		this.tsr.connectionManager.on('connectionEvent:warning', (deviceId: string, warning: string) => {
-			console.error(`Device ${deviceId} connection warning: ${warning}`)
+			console.log(`Device ${deviceId} connection warning: ${warning}`)
 		})
 		this.tsr.connectionManager.on('connectionEvent:info', (deviceId: string, info: string) => {
-			console.error(`Device ${deviceId} connection info: ${info}`)
+			console.log(`Device ${deviceId} connection info: ${info}`)
 		})
 		this.tsr.connectionManager.on('connectionEvent:debug', (deviceId: string, ...args: any[]) => {
 			const data = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : arg))
@@ -124,14 +121,14 @@ export class TSRHandler {
 		if (tsrSettings.logCommandReports) {
 			this.tsr.connectionManager.on(
 				'connectionEvent:slowSentCommand',
-				(_deviceId: string, _info: SlowSentCommandInfo) => {
-					// console.log(`Device ${device.deviceId} slow sent command: ${_info}`)
+				(deviceId: string, info: SlowSentCommandInfo) => {
+					console.log(`Device ${deviceId} slow sent command: ${info}`)
 				}
 			)
 			this.tsr.connectionManager.on(
 				'connectionEvent:slowFulfilledCommand',
-				(_deviceId: string, _info: SlowFulfilledCommandInfo) => {
-					// console.log(`Device ${device.deviceId} slow fulfilled command: ${_info}`)
+				(deviceId: string, info: SlowFulfilledCommandInfo) => {
+					console.log(`Device ${deviceId} slow fulfilled command: ${info}`)
 				}
 			)
 			this.tsr.connectionManager.on('connectionEvent:commandReport', (deviceId: string, command: any) => {
@@ -140,13 +137,6 @@ export class TSRHandler {
 		}
 
 		await this.tsr.init()
-
-		// this._initialized = true
-		// this._triggerupdateMapping()
-		// this._triggerupdateTimeline()
-		// this._triggerupdateDevices()
-		// this.onSettingsChanged()
-		// this.logger.debug('tsr init done')
 	}
 	async destroy(): Promise<void> {
 		if (this.tsr) return this.tsr.destroy()

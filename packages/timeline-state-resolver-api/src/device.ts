@@ -107,7 +107,9 @@ export interface Device<
 	sendCommand(command: Command): Promise<void>
 
 	applyAddressState?(state: DeviceState, address: string, addressState: AddressState): void
-	diffAddressStates?(state1: AddressState, state2: AddressState): boolean
+	diffAddressStates?(state1: AddressState, state2: AddressState | undefined): boolean
+	diffAddressStates?(state1: AddressState | undefined, state2: AddressState): boolean
+	addressStateReassertsControl?(oldState: AddressState, newState: AddressState | undefined): boolean
 	addressStateReassertsControl?(oldState: AddressState | undefined, newState: AddressState): boolean
 	// -------------------------------------------------------------------
 }
@@ -147,11 +149,13 @@ export interface BaseDeviceAPI<DeviceState, AddressState, Command extends Comman
 	 * The implementation should return true if the contents of the address state differ,
 	 * but not if only the control value differs
 	 */
-	diffAddressStates?(state1: AddressState, state2: AddressState): boolean
+	diffAddressStates?(state1: AddressState, state2: AddressState | undefined): boolean
+	diffAddressStates?(state1: AddressState | undefined, state2: AddressState): boolean
 	/**
 	 * Returns true if the new state warrants reasserting control over the address
 	 */
-	addressStateReassertsControl?(oldState: AddressState | undefined, newState: AddressState | undefined): boolean
+	addressStateReassertsControl?(oldState: AddressState, newState: AddressState | undefined): boolean
+	addressStateReassertsControl?(oldState: AddressState | undefined, newState: AddressState): boolean
 	/**
 	 * This method takes 2 states and returns a set of device-commands that will
 	 * transition the device from oldState to newState.

@@ -32,7 +32,7 @@
 		"syncOnStartup": {
 			"type": "boolean",
 			"ui:title": "Sync the device after connecting",
-			"ui:hint": "Should the device be synced upon first connection. Defaults to true and can only be turned off if \" Shared Hardware Control\" is supported and enabled",
+			"ui:hint": "Should the device be synced upon first connection. Defaults to true and can only be turned off if \"Shared Hardware Control\" is supported and enabled",
 			"default": true
 		}
 	},

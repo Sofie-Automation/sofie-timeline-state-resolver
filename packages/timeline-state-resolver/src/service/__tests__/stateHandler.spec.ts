@@ -424,7 +424,7 @@ describe('stateHandler', () => {
 			await getNewStateHandlerWithStates(createTimelineState(10000, {}))
 			await mockTime.tick()
 
-			// we get no commands here as the device is ah`ead
+			// we get no commands here as the device is ahead
 			expect(MOCK_COMMAND_RECEIVER).toHaveBeenCalledTimes(0)
 
 			// entry1 is removed from the expected states
