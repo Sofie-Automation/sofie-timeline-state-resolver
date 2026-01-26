@@ -130,7 +130,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 
 			// make sure the commands for the next state change are correct:
 			let doRecalc = false
-			this._stateTracker.on('deviceUpdated', (ahead) => {
+			this._stateTracker.on('deviceUpdated', (_addr, ahead) => {
 				if (doRecalc) return
 				doRecalc = true
 
