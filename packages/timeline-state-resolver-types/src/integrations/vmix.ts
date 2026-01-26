@@ -1,4 +1,42 @@
 import { DeviceType } from '../generated/index.js'
+import { DeviceStatusError } from '../deviceError.js'
+
+/**
+ * Error codes for VMix device issues.
+ * These codes can be customized in blueprints via deviceErrorMessages.
+ */
+export const VMixErrorCode = {
+	NOT_CONNECTED: 'DEVICE_VMIX_NOT_CONNECTED',
+	NOT_INITIALIZED: 'DEVICE_VMIX_NOT_INITIALIZED',
+} as const
+
+export type VMixErrorCode = (typeof VMixErrorCode)[keyof typeof VMixErrorCode]
+
+/**
+ * Context data for each VMix error type.
+ * These fields are available for message template interpolation.
+ */
+export interface VMixErrorContextMap {
+	[VMixErrorCode.NOT_CONNECTED]: {
+		deviceName: string
+		host: string
+	}
+	[VMixErrorCode.NOT_INITIALIZED]: {
+		deviceName: string
+		host: string
+	}
+}
+
+export type VMixError<T extends VMixErrorCode = VMixErrorCode> = DeviceStatusError<T, VMixErrorContextMap[T]>
+
+/**
+ * Default error message templates for VMix devices.
+ * Can be overridden in blueprints via deviceErrorMessages.
+ */
+export const VMixErrorMessages: Record<VMixErrorCode, string> = {
+	[VMixErrorCode.NOT_CONNECTED]: 'Not connected',
+	[VMixErrorCode.NOT_INITIALIZED]: 'Not initialized',
+}
 
 export enum VMixCommand {
 	PREVIEW_INPUT = 'PREVIEW_INPUT',

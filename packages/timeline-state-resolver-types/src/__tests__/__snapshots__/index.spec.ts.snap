@@ -85,6 +85,8 @@ exports[`index imports 1`] = `
   "UdpSendActions",
   "VIZMSETransitionType",
   "VMixCommand",
+  "VMixErrorCode",
+  "VMixErrorMessages",
   "VMixInputType",
   "VMixTransitionType",
   "VideoFormat",
