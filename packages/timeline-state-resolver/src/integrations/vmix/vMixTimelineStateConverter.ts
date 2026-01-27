@@ -1,4 +1,6 @@
 import {
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
 	DeviceType,
 	Mapping,
 	MappingVmixType,
@@ -22,7 +24,6 @@ import {
 } from './vMixStateDiffer.js'
 import deepMerge from 'deepmerge'
 import _ from 'underscore'
-import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 const mappingPriority: { [k in MappingVmixType]: number } = {
 	[MappingVmixType.Program]: 0,
@@ -58,18 +59,20 @@ export class VMixTimelineStateConverter {
 
 		// Sort layer based on Mapping type (to make sure audio is after inputs) and Layer name
 		const sortedLayers = _.sortBy(
-			_.map(state.objects, (tlObject) => ({
-				layerName: tlObject.layer.toString(),
-				tlObject,
-				mapping: mappings[tlObject.layer.toString()] as Mapping<SomeMappingVmix, DeviceType> | undefined,
-			})).sort((a, b) => a.layerName.localeCompare(b.layerName)),
+			state.objects
+				.map((tlObject) => ({
+					layerName: tlObject.layer.toString(),
+					tlObject,
+					mapping: mappings[tlObject.layer.toString()] as Mapping<SomeMappingVmix, DeviceType> | undefined,
+				}))
+				.sort((a, b) => a.layerName.localeCompare(b.layerName)),
 			(o) =>
 				o.mapping
 					? (mappingPriority[o.mapping?.options.mappingType] ?? Number.POSITIVE_INFINITY)
 					: Number.POSITIVE_INFINITY
 		)
 
-		_.each(sortedLayers, ({ tlObject, layerName, mapping }) => {
+		sortedLayers.forEach(({ tlObject, mapping }) => {
 			const content = tlObject.content
 
 			if (!mapping || content.deviceType !== DeviceType.VMIX) return
@@ -156,7 +159,7 @@ export class VMixTimelineStateConverter {
 								images: content.images,
 							},
 							{ key: mapping.options.index, filePath: content.filePath },
-							layerName
+							tlObject.layer.toString()
 						)
 					}
 					break

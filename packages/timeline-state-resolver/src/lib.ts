@@ -1,8 +1,15 @@
 import { klona } from 'klona'
-import { ITranslatableMessage, ActionExecutionResultCode, ActionExecutionResult } from 'timeline-state-resolver-types'
+import {
+	ITranslatableMessage,
+	ActionExecutionResultCode,
+	ActionExecutionResult,
+	TSRTimelineObjProps,
+	TSRTimelineContent,
+	Timeline,
+} from 'timeline-state-resolver-types'
 import { PartialDeep } from 'type-fest'
 import deepmerge from 'deepmerge'
-import type { FinishedTrace, Trace } from 'timeline-state-resolver-api'
+import type { DeviceTimelineStateObject, FinishedTrace, Trace } from 'timeline-state-resolver-api'
 
 export function literal<T>(o: T) {
 	return o
@@ -92,4 +99,21 @@ export function actionNotFoundMessage(id: never): ActionExecutionResult<any> {
 
 export function cloneDeep<T>(input: T): T {
 	return klona(input)
+}
+
+export function convertResolvedTimelineObjectToDeviceTimelineStateObject<TContent extends TSRTimelineContent>(
+	obj: Timeline.ResolvedTimelineObjectInstance<TContent> & TSRTimelineObjProps
+): DeviceTimelineStateObject<TContent> {
+	return {
+		id: obj.id,
+		priority: obj.priority ?? 0,
+		layer: obj.layer,
+		content: obj.content,
+		instance: obj.instance,
+		datastoreRefs: obj.datastoreRefs,
+		lastModified: obj.lastModified,
+		isLookahead: obj.isLookahead,
+		lookaheadForLayer: obj.lookaheadForLayer,
+		lookaheadOffset: obj.lookaheadOffset,
+	} satisfies Complete<DeviceTimelineStateObject<TContent>>
 }
