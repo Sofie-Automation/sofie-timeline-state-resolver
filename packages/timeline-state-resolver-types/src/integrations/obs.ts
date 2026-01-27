@@ -1,4 +1,38 @@
 import { DeviceType } from '../generated/index.js'
+import { DeviceStatusError } from '../deviceError.js'
+
+/**
+ * Error codes for OBS device issues.
+ * These codes can be customized in blueprints via deviceErrorMessages.
+ */
+export const OBSErrorCode = {
+	DISCONNECTED: 'DEVICE_OBS_DISCONNECTED',
+} as const
+
+export type OBSErrorCode = (typeof OBSErrorCode)[keyof typeof OBSErrorCode]
+
+/**
+ * Context data for each OBS error type.
+ * These fields are available for message template interpolation.
+ */
+export interface OBSErrorContextMap {
+	[OBSErrorCode.DISCONNECTED]: {
+		deviceName: string
+		host: string
+		port: number
+		error?: string
+	}
+}
+
+export type OBSError<T extends OBSErrorCode = OBSErrorCode> = DeviceStatusError<T, OBSErrorContextMap[T]>
+
+/**
+ * Default error message templates for OBS devices.
+ * Can be overridden in blueprints via deviceErrorMessages.
+ */
+export const OBSErrorMessages: Record<OBSErrorCode, string> = {
+	[OBSErrorCode.DISCONNECTED]: 'Disconnected: {{error}}',
+}
 
 export type TimelineContentOBSAny =
 	| TimelineContentOBSCurrentScene
