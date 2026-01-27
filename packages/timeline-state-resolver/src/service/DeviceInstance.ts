@@ -106,6 +106,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._device = new deviceSpecs.deviceClass(this._getDeviceContextAPI())
 		this._deviceId = id
 		this._deviceType = config.type
+		this._logDebug = config.debug || false
+		this._logDebugStates = config.debugState || false
 		this._deviceName = deviceSpecs.deviceName(id, config)
 		this._instanceId = Math.floor(Math.random() * 10000)
 		this._startTime = time
