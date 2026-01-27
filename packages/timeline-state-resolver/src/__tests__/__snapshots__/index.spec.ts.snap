@@ -30,6 +30,8 @@ exports[`index imports 1`] = `
   "FlyKeyDirection",
   "FlyKeyKeyFrame",
   "FocusMode",
+  "HTTPWatcherErrorCode",
+  "HTTPWatcherErrorMessages",
   "HttpMethod",
   "HttpSendActions",
   "HyperdeckActions",
