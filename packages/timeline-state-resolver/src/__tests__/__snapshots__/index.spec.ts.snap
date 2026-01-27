@@ -71,6 +71,8 @@ exports[`index imports 1`] = `
   "OgrafActions",
   "PREPARETIME",
   "PanasonicPTZActions",
+  "PharosErrorCode",
+  "PharosErrorMessages",
   "QuantelActions",
   "QuantelControlMode",
   "QuantelDevice",

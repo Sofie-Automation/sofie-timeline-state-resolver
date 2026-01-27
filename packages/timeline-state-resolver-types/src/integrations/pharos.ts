@@ -33,3 +33,21 @@ export interface TimelineContentPharosTimeline extends TimelineContentPharos {
 	rate?: number
 	fade?: number
 }
+
+export const PharosErrorCode = {
+	NOT_CONNECTED: 'DEVICE_PHAROS_NOT_CONNECTED',
+} as const
+export type PharosErrorCode = (typeof PharosErrorCode)[keyof typeof PharosErrorCode]
+
+export interface PharosErrorContextMap {
+	[PharosErrorCode.NOT_CONNECTED]: Record<string, never>
+}
+
+export type PharosError<T extends PharosErrorCode = PharosErrorCode> = {
+	code: T
+	context: PharosErrorContextMap[T]
+}
+
+export const PharosErrorMessages: Record<PharosErrorCode, string> = {
+	[PharosErrorCode.NOT_CONNECTED]: 'Not connected',
+}
