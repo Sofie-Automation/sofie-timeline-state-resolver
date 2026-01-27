@@ -240,11 +240,8 @@ export class StateHandler<
 					const addrState = nextState.addressStates?.[addr]
 					const curExpectedState = this._stateTracker.getExpectedState(addr)
 					if (
-						addrState &&
-						!(
-							this.device.addressStateReassertsControl(curExpectedState, addrState) ||
-							this.device.diffAddressStates(curExpectedState, addrState)
-						)
+						!this.device.addressStateReassertsControl(curExpectedState, addrState) &&
+						!(addrState && this.device.diffAddressStates(curExpectedState, addrState))
 					) {
 						this.device.applyAddressState(newState, addr, currentState)
 					}
@@ -305,13 +302,23 @@ export class StateHandler<
 			})
 
 		if (this._stateTracker && newState.addressStates && this.device.diffAddressStates) {
+			const unsetAddresses = new Set(this._stateTracker.getAllAddresses())
+
+			// update address states coming from the timeline
 			for (const [a, s] of Object.entries<AddressState>(newState.addressStates)) {
 				const currentAddrState = this._stateTracker.getExpectedState(a)
-				const reassertsControl = this.device.addressStateReassertsControl
-					? this.device.addressStateReassertsControl(currentAddrState, s)
-					: this.device.diffAddressStates(currentAddrState, s)
+				const reassertsControl =
+					(this.device.addressStateReassertsControl
+						? this.device.addressStateReassertsControl(currentAddrState, s)
+						: false) || this.device.diffAddressStates(currentAddrState, s)
 
 				this._stateTracker.updateExpectedState(a, s, reassertsControl)
+				unsetAddresses.delete(a)
+			}
+
+			// any address that is not on the timeline should be unset - we do not know anything about its expected state
+			for (const a of unsetAddresses.values()) {
+				this._stateTracker.unsetExpectedState(a)
 			}
 		}
 

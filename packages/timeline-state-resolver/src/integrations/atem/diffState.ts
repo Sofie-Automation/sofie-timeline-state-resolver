@@ -66,19 +66,7 @@ export function createDiffOptions(mappings: Mappings<SomeMappingAtem>): DeepComp
 					stinger: true,
 					wipe: true,
 				},
-				upstreamKeyers: {
-					sources: true,
-					onAir: true,
-					type: true,
-					mask: true,
-					flyKeyframes: 'all',
-					flyProperties: true,
-					dveSettings: true,
-					chromaSettings: true,
-					advancedChromaSettings: true,
-					lumaSettings: true,
-					patternSettings: true,
-				},
+				upstreamKeyers: UpstreamKeyerDiffOptions,
 			},
 			superSources: {
 				boxes: 'all',
@@ -100,4 +88,18 @@ export function createDiffOptions(mappings: Mappings<SomeMappingAtem>): DeepComp
 			},
 		},
 	}
+}
+
+export const UpstreamKeyerDiffOptions: DeepComplete<Diff.DiffUpstreamKeyer> = {
+	sources: true,
+	onAir: true,
+	type: true,
+	mask: true,
+	flyKeyframes: 'all',
+	flyProperties: true,
+	dveSettings: true,
+	chromaSettings: true,
+	advancedChromaSettings: true,
+	lumaSettings: true,
+	patternSettings: true,
 }

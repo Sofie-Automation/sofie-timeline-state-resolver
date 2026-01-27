@@ -38,14 +38,30 @@ export class StateTracker<State> extends EventEmitter<StateTrackerEvents> {
 	} = {}
 	private waitToSettle = new Map<string, NodeJS.Timeout>()
 
-	constructor(private diff: (state1: State, state2: State) => boolean) {
+	/**
+	 *
+	 * @param diff Method that compares 2 Address States and returns true if they are different
+	 * @param syncOnFirstBlood If set to true and a current state is reported for an Address without a current state, the address wil NOT be marked as ahead
+	 */
+	constructor(private diff: (state1: State, state2: State | undefined) => boolean, private syncOnFirstBlood: boolean) {
 		super()
 	}
 
+	/**
+	 * @param address Address to check
+	 * @returns true if the Address State is different from the timeline
+	 */
 	isDeviceAhead(address: string): boolean {
 		return this._state[address]?.deviceAhead ?? false
 	}
 
+	/**
+	 * Update the expected state for a given Address
+	 *
+	 * @param address Address to update
+	 * @param state New expected state
+	 * @param didSetDevice true if this update sent commands to the device
+	 */
 	updateExpectedState(address: string, state: State, didSetDevice: boolean) {
 		this._assertAddressExists(address)
 		this._state[address].expectedState = state
@@ -57,13 +73,49 @@ export class StateTracker<State> extends EventEmitter<StateTrackerEvents> {
 		}
 	}
 
+	/**
+	 * Looks up the expected state for a given address
+	 *
+	 * @param address Address to return
+	 * @returns Address State
+	 */
 	getExpectedState(address: string): State | undefined {
 		return this._state[address]?.expectedState
 	}
 
+	/**
+	 * Remove/unset the expected state for a given address indicating it is no longer described by the timeline
+	 *
+	 * @param address Address to update
+	 */
+	unsetExpectedState(address: string) {
+		if (!this._state[address]) {
+			// address not found => expectedState is already undefined
+			return
+		}
+		this._state[address].expectedState = undefined
+	}
+
+	/**
+	 * Update the current state for a given Address as read directly from the device
+	 *
+	 * @param address Address to update
+	 * @param state New state
+	 */
 	updateState(address: string, state: State) {
+		const firstBlood = !this._state[address]
+
 		this._assertAddressExists(address)
 		this._state[address].currentState = state
+
+		if (firstBlood && !this.getExpectedState(address)) {
+			if (!this.syncOnFirstBlood) {
+				this._state[address].deviceAhead = true
+				this.emit('deviceAhead', address)
+			}
+
+			return
+		}
 
 		if (this.waitToSettle.get(address)) clearTimeout(this.waitToSettle.get(address))
 		this.waitToSettle.set(
@@ -81,14 +133,26 @@ export class StateTracker<State> extends EventEmitter<StateTrackerEvents> {
 			}, SETTLE_TIME)
 		)
 	}
+	/**
+	 * Looks up the current state for a given address
+	 *
+	 * @param address Address to return
+	 * @returns Address State
+	 */
 	getCurrentState(address: string): State | undefined {
 		return this._state[address]?.currentState
 	}
 
+	/**
+	 * @returns All addresses that are tracked
+	 */
 	getAllAddresses(): string[] {
 		return Object.keys(this._state)
 	}
 
+	/**
+	 * Removes all addresses
+	 */
 	clearState() {
 		this._state = {}
 	}

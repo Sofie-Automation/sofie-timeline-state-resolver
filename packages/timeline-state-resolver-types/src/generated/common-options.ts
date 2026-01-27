@@ -11,4 +11,5 @@ export interface DeviceCommonOptions {
 	disable?: boolean
 	threadUsage?: number
 	disableSharedHardwareControl?: boolean
+	syncOnStartup?: boolean
 }
