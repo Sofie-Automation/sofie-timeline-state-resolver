@@ -5,7 +5,6 @@ import {
 	Mappings,
 	SomeMappingVmix,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentTypeVMix,
 	VMixInputOverlays,
 	VMixLayers,
@@ -22,6 +21,7 @@ import {
 } from './vMixStateDiffer'
 import * as deepMerge from 'deepmerge'
 import _ = require('underscore')
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const mappingPriority: { [k in MappingVmixType]: number } = {
 	[MappingVmixType.Program]: 0,
@@ -48,17 +48,17 @@ export class VMixTimelineStateConverter {
 	constructor(private defaultStateFactory: VMixDefaultStateFactory) {}
 
 	getVMixStateFromTimelineState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		mappings: MappingsVmix
 	): VMixStateExtended {
 		const deviceState = this._fillStateWithMappingsDefaults(this.defaultStateFactory.getDefaultState(), mappings)
 
 		// Sort layer based on Mapping type (to make sure audio is after inputs) and Layer name
 		const sortedLayers = _.sortBy(
-			_.map(state.layers, (tlObject, layerName) => ({
-				layerName,
+			_.map(state.objects, (tlObject) => ({
+				layerName: tlObject.layer.toString(),
 				tlObject,
-				mapping: mappings[layerName] as Mapping<SomeMappingVmix, DeviceType> | undefined,
+				mapping: mappings[tlObject.layer.toString()] as Mapping<SomeMappingVmix, DeviceType> | undefined,
 			})).sort((a, b) => a.layerName.localeCompare(b.layerName)),
 			(o) =>
 				o.mapping
@@ -69,132 +69,123 @@ export class VMixTimelineStateConverter {
 		_.each(sortedLayers, ({ tlObject, layerName, mapping }) => {
 			const content = tlObject.content
 
-			if (mapping && content.deviceType === DeviceType.VMIX) {
-				switch (mapping.options.mappingType) {
-					case MappingVmixType.Program:
-						if (content.type === TimelineContentTypeVMix.PROGRAM) {
-							const mixProgram = (mapping.options.index || 1) - 1
-							if (content.input !== undefined) {
-								this._switchToInput(content.input, deviceState, mixProgram, content.transition)
-							} else if (content.inputLayer) {
-								this._switchToInput(content.inputLayer, deviceState, mixProgram, content.transition, true)
-							} else if (content.transition) {
-								const mixState = deviceState.reportedState.mixes[mixProgram]
-								if (mixState) {
-									mixState.transition = content.transition
-								}
+			if (!mapping || content.deviceType !== DeviceType.VMIX) return
+			switch (mapping.options.mappingType) {
+				case MappingVmixType.Program:
+					if (content.type === TimelineContentTypeVMix.PROGRAM) {
+						const mixProgram = (mapping.options.index || 1) - 1
+						if (content.input !== undefined) {
+							this._switchToInput(content.input, deviceState, mixProgram, content.transition)
+						} else if (content.inputLayer) {
+							this._switchToInput(content.inputLayer, deviceState, mixProgram, content.transition, true)
+						} else if (content.transition) {
+							const mixState = deviceState.reportedState.mixes[mixProgram]
+							if (mixState) {
+								mixState.transition = content.transition
 							}
 						}
-						break
-					case MappingVmixType.Preview:
-						if (content.type === TimelineContentTypeVMix.PREVIEW) {
-							const mixPreview = (mapping.options.index || 1) - 1
-							const mixState = deviceState.reportedState.mixes[mixPreview]
-							if (mixState != null && content.input != null) mixState.preview = content.input
+					}
+					break
+				case MappingVmixType.Preview:
+					if (content.type === TimelineContentTypeVMix.PREVIEW) {
+						const mixPreview = (mapping.options.index || 1) - 1
+						const mixState = deviceState.reportedState.mixes[mixPreview]
+						if (mixState != null && content.input != null) mixState.preview = content.input
+					}
+					break
+				case MappingVmixType.AudioChannel:
+					if (content.type === TimelineContentTypeVMix.AUDIO) {
+						const filteredVMixTlAudio = _.pick(content, 'volume', 'balance', 'audioAuto', 'audioBuses', 'muted', 'fade')
+						if (mapping.options.index) {
+							deviceState.reportedState = this._modifyInputAudio(deviceState, filteredVMixTlAudio, {
+								key: mapping.options.index,
+							})
+						} else if (mapping.options.inputLayer) {
+							deviceState.reportedState = this._modifyInputAudio(deviceState, filteredVMixTlAudio, {
+								layer: mapping.options.inputLayer,
+							})
 						}
-						break
-					case MappingVmixType.AudioChannel:
-						if (content.type === TimelineContentTypeVMix.AUDIO) {
-							const filteredVMixTlAudio = _.pick(
-								content,
-								'volume',
-								'balance',
-								'audioAuto',
-								'audioBuses',
-								'muted',
-								'fade'
-							)
-							if (mapping.options.index) {
-								deviceState.reportedState = this._modifyInputAudio(deviceState, filteredVMixTlAudio, {
-									key: mapping.options.index,
-								})
-							} else if (mapping.options.inputLayer) {
-								deviceState.reportedState = this._modifyInputAudio(deviceState, filteredVMixTlAudio, {
-									layer: mapping.options.inputLayer,
-								})
-							}
+					}
+					break
+				case MappingVmixType.Fader:
+					if (content.type === TimelineContentTypeVMix.FADER) {
+						deviceState.reportedState.faderPosition = content.position
+					}
+					break
+				case MappingVmixType.Recording:
+					if (content.type === TimelineContentTypeVMix.RECORDING) {
+						deviceState.reportedState.recording = content.on
+					}
+					break
+				case MappingVmixType.Streaming:
+					if (content.type === TimelineContentTypeVMix.STREAMING) {
+						deviceState.reportedState.streaming = content.on
+					}
+					break
+				case MappingVmixType.External:
+					if (content.type === TimelineContentTypeVMix.EXTERNAL) {
+						deviceState.reportedState.external = content.on
+					}
+					break
+				case MappingVmixType.FadeToBlack:
+					if (content.type === TimelineContentTypeVMix.FADE_TO_BLACK) {
+						deviceState.reportedState.fadeToBlack = content.on
+					}
+					break
+				case MappingVmixType.Input:
+					if (content.type === TimelineContentTypeVMix.INPUT) {
+						deviceState.reportedState = this._modifyInput(
+							deviceState,
+							{
+								type: content.inputType,
+								playing: content.playing,
+								loop: content.loop,
+								position: content.seek,
+								transform: content.transform,
+								layers:
+									content.layers ??
+									(content.overlays ? this._convertDeprecatedInputOverlays(content.overlays) : undefined),
+								listFilePaths: content.listFilePaths,
+								restart: content.restart,
+								text: content.text,
+								url: content.url,
+								index: content.index,
+								images: content.images,
+							},
+							{ key: mapping.options.index, filePath: content.filePath },
+							layerName
+						)
+					}
+					break
+				case MappingVmixType.Output:
+					if (content.type === TimelineContentTypeVMix.OUTPUT) {
+						deviceState.outputs[mapping.options.index] = {
+							source: content.source,
+							input: content.input,
 						}
-						break
-					case MappingVmixType.Fader:
-						if (content.type === TimelineContentTypeVMix.FADER) {
-							deviceState.reportedState.faderPosition = content.position
+					}
+					break
+				case MappingVmixType.Overlay:
+					if (content.type === TimelineContentTypeVMix.OVERLAY) {
+						const overlayIndex = mapping.options.index - 1
+						const overlayState = deviceState.reportedState.overlays[overlayIndex]
+						if (overlayState != null) {
+							overlayState.input = content.input
 						}
-						break
-					case MappingVmixType.Recording:
-						if (content.type === TimelineContentTypeVMix.RECORDING) {
-							deviceState.reportedState.recording = content.on
-						}
-						break
-					case MappingVmixType.Streaming:
-						if (content.type === TimelineContentTypeVMix.STREAMING) {
-							deviceState.reportedState.streaming = content.on
-						}
-						break
-					case MappingVmixType.External:
-						if (content.type === TimelineContentTypeVMix.EXTERNAL) {
-							deviceState.reportedState.external = content.on
-						}
-						break
-					case MappingVmixType.FadeToBlack:
-						if (content.type === TimelineContentTypeVMix.FADE_TO_BLACK) {
-							deviceState.reportedState.fadeToBlack = content.on
-						}
-						break
-					case MappingVmixType.Input:
-						if (content.type === TimelineContentTypeVMix.INPUT) {
-							deviceState.reportedState = this._modifyInput(
-								deviceState,
-								{
-									type: content.inputType,
-									playing: content.playing,
-									loop: content.loop,
-									position: content.seek,
-									transform: content.transform,
-									layers:
-										content.layers ??
-										(content.overlays ? this._convertDeprecatedInputOverlays(content.overlays) : undefined),
-									listFilePaths: content.listFilePaths,
-									restart: content.restart,
-									text: content.text,
-									url: content.url,
-									index: content.index,
-									images: content.images,
-								},
-								{ key: mapping.options.index, filePath: content.filePath },
-								layerName
-							)
-						}
-						break
-					case MappingVmixType.Output:
-						if (content.type === TimelineContentTypeVMix.OUTPUT) {
-							deviceState.outputs[mapping.options.index] = {
-								source: content.source,
-								input: content.input,
-							}
-						}
-						break
-					case MappingVmixType.Overlay:
-						if (content.type === TimelineContentTypeVMix.OVERLAY) {
-							const overlayIndex = mapping.options.index - 1
-							const overlayState = deviceState.reportedState.overlays[overlayIndex]
-							if (overlayState != null) {
-								overlayState.input = content.input
-							}
-						}
-						break
-					case MappingVmixType.Script:
-						if (content.type === TimelineContentTypeVMix.SCRIPT) {
-							deviceState.runningScripts.push(content.name)
-						}
-						break
-					case MappingVmixType.AudioBus:
-						if (content.type === TimelineContentTypeVMix.AUDIO_BUS) {
-							const existingBus = deviceState.reportedState.audioBuses[mapping.options.index]
-							if (!existingBus) break
-							existingBus.muted = content.muted ?? existingBus.muted
-							existingBus.volume = content.volume ?? existingBus.volume
-						}
-				}
+					}
+					break
+				case MappingVmixType.Script:
+					if (content.type === TimelineContentTypeVMix.SCRIPT) {
+						deviceState.runningScripts.push(content.name)
+					}
+					break
+				case MappingVmixType.AudioBus:
+					if (content.type === TimelineContentTypeVMix.AUDIO_BUS) {
+						const existingBus = deviceState.reportedState.audioBuses[mapping.options.index]
+						if (!existingBus) break
+						existingBus.muted = content.muted ?? existingBus.muted
+						existingBus.volume = content.volume ?? existingBus.volume
+					}
 			}
 		})
 		return deviceState

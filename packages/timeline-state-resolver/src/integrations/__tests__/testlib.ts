@@ -22,5 +22,6 @@ export function getDeviceContext(): DeviceContextAPI<any, any> {
 		resetToState: jest.fn(async () => Promise.resolve()),
 		recalcDiff: jest.fn(),
 		setAddressState: jest.fn(),
+		getCurrentState: jest.fn(() => undefined),
 	}
 }

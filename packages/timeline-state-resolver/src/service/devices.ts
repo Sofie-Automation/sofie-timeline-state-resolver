@@ -20,6 +20,7 @@ import { TriCasterDevice } from '../integrations/tricaster'
 import { SingularLiveDevice } from '../integrations/singularLive'
 import { MultiOSCMessageDevice } from '../integrations/multiOsc'
 import { WebSocketClientDevice } from '../integrations/websocketClient'
+import { vMixDeviceEntry } from '../integrations/vmix/vMixDeviceEntry'
 
 export type ImplementedServiceDeviceTypes =
 	| DeviceType.ABSTRACT
@@ -42,6 +43,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.QUANTEL
 	| DeviceType.VISCA_OVER_IP
 	| DeviceType.WEBSOCKET_CLIENT
+	| DeviceType.VMIX
 
 // TODO - move all device implementations here and remove the old Device classes
 export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
@@ -165,4 +167,5 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		deviceName: (deviceId: string) => 'WebSocket Client ' + deviceId,
 		executionMode: () => 'sequential',
 	},
+	[DeviceType.VMIX]: new vMixDeviceEntry(),
 }

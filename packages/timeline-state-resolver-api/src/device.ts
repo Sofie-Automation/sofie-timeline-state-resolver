@@ -251,4 +251,7 @@ export interface DeviceContextAPI<DeviceState, AddressState = void> {
 	recalcDiff: () => void
 
 	setAddressState: (address: string, state: AddressState) => void
+
+	/** Get current state */
+	getCurrentState: () => DeviceState | undefined
 }

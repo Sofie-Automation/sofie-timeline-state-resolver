@@ -2,14 +2,12 @@ import type { DeviceOptionsAny } from 'timeline-state-resolver-types'
 import { ConnectionManager } from '../service/ConnectionManager'
 import { MockTime } from './mockTime'
 import type { DeviceOptionsSisyfosInternal } from '../integrations/sisyfos'
-import type { DeviceOptionsVMixInternal } from '../integrations/vmix'
 import type { DeviceOptionsVizMSEInternal } from '../integrations/vizMSE'
 import type { DeviceOptionsCasparCGInternal } from '../integrations/casparCG'
 
 export type DeviceOptionsAnyInternal =
 	| DeviceOptionsAny
 	| DeviceOptionsSisyfosInternal
-	| DeviceOptionsVMixInternal
 	| DeviceOptionsVizMSEInternal
 	| DeviceOptionsCasparCGInternal
 
