@@ -98,8 +98,8 @@ export const UpstreamKeyerDiffOptions: DeepComplete<Diff.DiffUpstreamKeyer> = {
 	flyKeyframes: 'all',
 	flyProperties: true,
 	dveSettings: true,
-	chromaSettings: false,
-	advancedChromaSettings: false,
+	chromaSettings: true,
+	advancedChromaSettings: true,
 	lumaSettings: true,
 	patternSettings: true,
 }

@@ -9,7 +9,7 @@ import {
 } from 'superfly-timeline'
 import { TimelineTriggerTimeResult } from './conductor'
 import { TSRTimeline, TSRTimelineContent, TSRTimelineObj } from 'timeline-state-resolver-types'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 
 export type AsyncResolverEvents = {
 	error: [string]

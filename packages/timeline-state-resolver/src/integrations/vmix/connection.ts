@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { Socket } from 'net'
 import { MappingVmixAudioBus, VMixCommand } from 'timeline-state-resolver-types'
 import { VMixStateCommand } from './vMixCommands'

@@ -87,7 +87,7 @@ export interface TimelineDatastoreReferencesContent {
 
 export type TSRTimeline = TSRTimelineObj<TSRTimelineContent>[]
 
-export interface TSRTimelineObj<TContent extends { deviceType: DeviceType }>
+export interface TSRTimelineObj<TContent extends { deviceType: DeviceTypeExt }>
 	extends Omit<Timeline.TimelineObject<TContent & TimelineDatastoreReferencesContent>, 'children'>,
 		TSRTimelineObjProps {
 	children?: TSRTimelineObj<TSRTimelineContent>[]
@@ -98,29 +98,35 @@ export interface TimelineContentEmpty extends Content {
 	type: 'empty'
 }
 
-export type TSRTimelineContent =
-	| TimelineContentEmpty
-	| TimelineContentAbstractAny
-	| TimelineContentAtemAny
-	| TimelineContentCasparCGAny
-	| TimelineContentHTTPSendAny
-	| TimelineContentTCPSendAny
-	| TimelineContentHyperdeckAny
-	| TimelineContentLawoAny
-	| TimelineContentOBSAny
-	| TimelineContentOSCAny
-	| TimelineContentPharosAny
-	| TimelineContentPanasonicPtzAny
-	| TimelineContentQuantelAny
-	| TimelineContentShotoku
-	| TimelineContentSisyfosAny
-	| TimelineContentSofieChefAny
-	| TimelineContentSingularLiveAny
-	| TimelineContentVMixAny
-	| TimelineContentVIZMSEAny
-	| TimelineContentTelemetricsAny
-	| TimelineContentTriCasterAny
-	| TimelineContentWebSocketClientAny
+// An extended DeviceType that also includes string keys for TSR plugins
+export type DeviceTypeExt = DeviceType | keyof TimelineContentMap
+
+// A map of the known Content types. TSR plugins can be injected here when needed
+export interface TimelineContentMap {
+	[DeviceType.ABSTRACT]: TimelineContentAbstractAny | TimelineContentEmpty
+	[DeviceType.ATEM]: TimelineContentAtemAny
+	[DeviceType.CASPARCG]: TimelineContentCasparCGAny
+	[DeviceType.HTTPSEND]: TimelineContentHTTPSendAny
+	[DeviceType.TCPSEND]: TimelineContentTCPSendAny
+	[DeviceType.HYPERDECK]: TimelineContentHyperdeckAny
+	[DeviceType.LAWO]: TimelineContentLawoAny
+	[DeviceType.OBS]: TimelineContentOBSAny
+	[DeviceType.OSC]: TimelineContentOSCAny
+	[DeviceType.PHAROS]: TimelineContentPharosAny
+	[DeviceType.PANASONIC_PTZ]: TimelineContentPanasonicPtzAny
+	[DeviceType.QUANTEL]: TimelineContentQuantelAny
+	[DeviceType.SHOTOKU]: TimelineContentShotoku
+	[DeviceType.SISYFOS]: TimelineContentSisyfosAny
+	[DeviceType.SOFIE_CHEF]: TimelineContentSofieChefAny
+	[DeviceType.SINGULAR_LIVE]: TimelineContentSingularLiveAny
+	[DeviceType.VMIX]: TimelineContentVMixAny
+	[DeviceType.VIZMSE]: TimelineContentVIZMSEAny
+	[DeviceType.TELEMETRICS]: TimelineContentTelemetricsAny
+	[DeviceType.TRICASTER]: TimelineContentTriCasterAny
+	[DeviceType.WEBSOCKET_CLIENT]: TimelineContentWebSocketClientAny
+}
+
+export type TSRTimelineContent = TimelineContentMap[keyof TimelineContentMap]
 
 /**
  * A simple key value store that can be referred to from the timeline objects

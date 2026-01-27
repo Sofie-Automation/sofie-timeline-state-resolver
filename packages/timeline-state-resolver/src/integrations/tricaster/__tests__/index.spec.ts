@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import {
 	DeviceType,
 	SomeMappingTricaster,
@@ -26,7 +26,7 @@ jest.mock('../triCasterConnection', () => ({
 
 describe('TriCasterDevice', () => {
 	beforeEach(() => {
-		;(TriCasterConnection as jest.Mock).mockClear()
+		;(TriCasterConnection as unknown as jest.Mock).mockClear()
 		MOCK_CONNECT.mockClear()
 		MOCK_CLOSE.mockClear()
 	})

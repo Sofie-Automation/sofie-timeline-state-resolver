@@ -37,7 +37,27 @@ export function deferAsync(fn: () => Promise<void>, catcher: (e: unknown) => voi
 	fn().catch(catcher)
 }
 
-/** Create a Translatable message */
+/**
+ * Set a value on an object from a .-delimited path
+ * @param obj The base object
+ * @param path Path of the value to set
+ * @param val The value to set
+ */
+export function set(obj: Record<string, any>, path: string, val: any) {
+	try {
+		const p = path.split('.')
+		p.slice(0, -1).reduce((a, b) => (a[b] ? a[b] : (a[b] = {})), obj)[p.slice(-1)[0]] = val
+	} catch (e) {
+		// Add context:
+		if (e instanceof Error) {
+			e.message = `Unable to set property "${path}" of object ${JSON.stringify(obj)} to value ${JSON.stringify(
+				val
+			)}. Original error: ${e.message}`
+		}
+		throw e
+	}
+}
+
 export function t(key: string, args?: { [k: string]: any }): ITranslatableMessage {
 	return {
 		key,

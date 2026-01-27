@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { TcpSendOptions } from 'timeline-state-resolver-types'
 import { Socket } from 'net'
 

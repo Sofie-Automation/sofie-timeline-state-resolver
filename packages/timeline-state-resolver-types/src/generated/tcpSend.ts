@@ -29,7 +29,6 @@ export interface SendTcpCommandPayload {
 	message: string
 	temporalPriority?: number
 	queueId?: string
-	[k: string]: unknown
 }
 
 export enum TcpSendActions {

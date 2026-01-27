@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 
 import { VMixCommand } from 'timeline-state-resolver-types'
 import { TSR_INPUT_PREFIX } from './vMixStateDiffer'

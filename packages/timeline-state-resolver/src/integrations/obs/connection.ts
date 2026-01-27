@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import OBSWebSocket, { OBSRequestTypes, OBSResponseTypes } from 'obs-websocket-js'
 
 const RECONNECT_TIME = 5000

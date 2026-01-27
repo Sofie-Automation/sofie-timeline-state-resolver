@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import * as _ from 'underscore'
 import { SlowReportOptions } from 'timeline-state-resolver-types'
 import type { SlowSentCommandInfo, SlowFulfilledCommandInfo, CommandReport } from 'timeline-state-resolver-api'
