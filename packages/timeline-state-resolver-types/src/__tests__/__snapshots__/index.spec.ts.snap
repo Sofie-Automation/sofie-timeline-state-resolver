@@ -57,6 +57,8 @@ exports[`index imports 1`] = `
   "QuantelTransitionType",
   "ShotokuTransitionType",
   "SisyfosActions",
+  "SisyfosErrorCode",
+  "SisyfosErrorMessages",
   "SlotId",
   "SlotStatus",
   "SofieChefActions",

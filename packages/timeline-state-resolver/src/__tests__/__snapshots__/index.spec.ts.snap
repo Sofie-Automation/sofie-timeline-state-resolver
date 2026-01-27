@@ -71,6 +71,8 @@ exports[`index imports 1`] = `
   "SendMode",
   "ShotokuTransitionType",
   "SisyfosActions",
+  "SisyfosErrorCode",
+  "SisyfosErrorMessages",
   "SlotId",
   "SlotStatus",
   "SofieChefActions",
