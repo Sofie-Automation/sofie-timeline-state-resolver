@@ -7,9 +7,10 @@ import {
 	SomeMappingSisyfos,
 	TimelineContentTypeSisyfos,
 	MappingSisyfosType,
-	Timeline,
 	TSRTimelineContent,
 	TimelineContentSisyfosAny,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
 } from 'timeline-state-resolver-types'
 import * as OSC from '../../../__mocks__/osc'
 const MockOSC = OSC.MockOSC
@@ -678,7 +679,7 @@ describe('Sisyfos', () => {
 			sisyfos_channels_base: myChannelMapping0,
 			sisyfos_channel_1: myChannelMapping1,
 			sisyfos_channel_2: myChannelMapping2,
-			sisyfos_channels: myChannelMapping3,
+			sisyfos_channels_ext: myChannelMapping3,
 		}
 
 		const myConductor = new Conductor({
@@ -765,7 +766,7 @@ describe('Sisyfos', () => {
 					start: mockTime.now + 3000, // 3 seconds in the future
 					duration: 1000,
 				},
-				layer: 'sisyfos_channels',
+				layer: 'sisyfos_channels_ext',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNELS,
@@ -908,7 +909,7 @@ describe('Sisyfos', () => {
 			sisyfos_channels_base_trigger: myTriggerMapping0,
 			sisyfos_channel_1: myChannelMapping1,
 			sisyfos_channel_2: myChannelMapping2,
-			sisyfos_channels: myChannelMapping3,
+			sisyfos_channels_trigger: myChannelMapping3,
 		}
 
 		const myConductor = new Conductor({
@@ -980,7 +981,7 @@ describe('Sisyfos', () => {
 					start: mockTime.now + 1000, // 1 seconds in the future
 					duration: 10000,
 				},
-				layer: 'sisyfos_channel_1',
+				layer: 'sisyfos_channels_trigger',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.TRIGGERVALUE,
@@ -1433,7 +1434,7 @@ describe('Sisyfos', () => {
 
 	describe('convertTimelineStateToDeviceState', () => {
 		async function convertState(
-			tlState: Timeline.TimelineState<TSRTimelineContent>,
+			tlState: DeviceTimelineState<TSRTimelineContent>,
 			mappings: Mappings<SomeMappingSisyfos>
 		) {
 			const device = await getSisyfosDevice()
@@ -1442,12 +1443,12 @@ describe('Sisyfos', () => {
 		}
 
 		test('convert empty state', async () => {
-			expect(await convertState(createTimelineState({}), {})).toEqual({ channels: {}, resync: false })
+			expect(await convertState(createTimelineState([]), {})).toEqual({ channels: {}, resync: false })
 		})
 
 		it('applies mapping defaults for channel when disableDefaults!==true', async () => {
 			expect(
-				await convertState(createTimelineState({}), {
+				await convertState(createTimelineState([]), {
 					channel0: {
 						device: DeviceType.SISYFOS,
 						deviceId: 'sisyfos0',
@@ -1478,16 +1479,17 @@ describe('Sisyfos', () => {
 		it('applies mapping defaults for channels when theit disableDefaults!==true', async () => {
 			expect(
 				await convertState(
-					createTimelineState({
-						channels: {
+					createTimelineState([
+						{
 							id: 'channelsTlObj',
+							layer: 'channels',
 							content: {
 								deviceType: DeviceType.SISYFOS,
 								type: TimelineContentTypeSisyfos.CHANNELS,
 								channels: [{ mappedLayer: 'channel0' }, { mappedLayer: 'channel1' }],
 							},
 						},
-					}),
+					]),
 					{
 						channel0: {
 							device: DeviceType.SISYFOS,
@@ -1545,7 +1547,7 @@ describe('Sisyfos', () => {
 
 		it('does not apply mapping defaults for channel when disableDefaults===true', async () => {
 			expect(
-				await convertState(createTimelineState({}), {
+				await convertState(createTimelineState([]), {
 					channel0: {
 						device: DeviceType.SISYFOS,
 						deviceId: 'sisyfos0',
@@ -1577,16 +1579,17 @@ describe('Sisyfos', () => {
 		it('only applies properties present in the timeline object when disableDefaults===true', async () => {
 			expect(
 				await convertState(
-					createTimelineState({
-						channel0: {
+					createTimelineState([
+						{
 							id: 'channelTlObj',
+							layer: 'channel0',
 							content: {
 								deviceType: DeviceType.SISYFOS,
 								type: TimelineContentTypeSisyfos.CHANNEL,
 								isPgm: 2,
 							},
 						},
-					}),
+					]),
 					{
 						channel0: {
 							device: DeviceType.SISYFOS,
@@ -1620,16 +1623,17 @@ describe('Sisyfos', () => {
 		it('does not apply mapping defaults for mapped channels when their disableDefaults===true', async () => {
 			expect(
 				await convertState(
-					createTimelineState({
-						channels: {
+					createTimelineState([
+						{
 							id: 'channelsTlObj',
+							layer: 'channels',
 							content: {
 								deviceType: DeviceType.SISYFOS,
 								type: TimelineContentTypeSisyfos.CHANNELS,
 								channels: [{ mappedLayer: 'channel0' }, { mappedLayer: 'channel1' }],
 							},
 						},
-					}),
+					]),
 					{
 						channel0: {
 							device: DeviceType.SISYFOS,
@@ -1802,11 +1806,10 @@ async function getSisyfosDevice() {
 }
 
 function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentSisyfosAny }>
-): Timeline.TimelineState<TSRTimelineContent> {
+	objs: Pick<DeviceTimelineStateObject<TimelineContentSisyfosAny>, 'id' | 'layer' | 'content'>[]
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
-		layers: objs as any,
-		nextEvents: [],
+		objects: objs as any,
 	}
 }

@@ -1,13 +1,12 @@
 import { EventEmitter } from 'node:events'
 import {
 	ActionExecutionResult,
-	Timeline,
 	TSRTimelineContent,
 	Mappings,
 	DeviceStatus,
 	DeviceOptionsAny,
 } from 'timeline-state-resolver-types'
-import type { DeviceEvents } from 'timeline-state-resolver-api'
+import type { DeviceEvents, DeviceTimelineState } from 'timeline-state-resolver-api'
 import type { DeviceInstanceWrapper, DeviceDetails } from '../service/DeviceInstance'
 import type { ExpectedPlayoutItem } from '../expectedPlayoutItems'
 
@@ -81,11 +80,9 @@ export class MockDeviceInstanceWrapper
 		//
 	}
 
-	handleState = jest.fn(
-		(_newState: Timeline.TimelineState<TSRTimelineContent>, _newMappings: Mappings<unknown>): void => {
-			// throw new Error('Method not implemented.')
-		}
-	)
+	handleState = jest.fn((_newState: DeviceTimelineState<TSRTimelineContent>, _newMappings: Mappings<unknown>): void => {
+		// throw new Error('Method not implemented.')
+	})
 	clearFuture = jest.fn((_t: number): void => {
 		// throw new Error('Method not implemented.')
 	})
