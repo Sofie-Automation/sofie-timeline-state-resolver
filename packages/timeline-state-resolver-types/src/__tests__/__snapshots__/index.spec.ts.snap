@@ -54,6 +54,8 @@ exports[`index imports 1`] = `
   "PanasonicPTZActions",
   "QuantelActions",
   "QuantelControlMode",
+  "QuantelErrorCode",
+  "QuantelErrorMessages",
   "QuantelTransitionType",
   "ShotokuTransitionType",
   "SisyfosActions",
