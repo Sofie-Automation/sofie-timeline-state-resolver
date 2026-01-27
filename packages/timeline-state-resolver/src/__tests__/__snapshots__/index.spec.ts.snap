@@ -80,6 +80,8 @@ exports[`index imports 1`] = `
   "QuantelErrorMessages",
   "QuantelTransitionType",
   "SendMode",
+  "ShotokuErrorCode",
+  "ShotokuErrorMessages",
   "ShotokuTransitionType",
   "SisyfosActions",
   "SisyfosErrorCode",

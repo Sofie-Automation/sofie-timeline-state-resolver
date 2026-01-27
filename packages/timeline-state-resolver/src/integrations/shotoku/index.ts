@@ -9,9 +9,14 @@ import {
 	ShotokuTransitionType,
 	ShotokuOptions,
 	ShotokuDeviceTypes,
+	ShotokuError,
+	ShotokuErrorCode,
+	ShotokuErrorMessages,
 } from 'timeline-state-resolver-types'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { ShotokuAPI, ShotokuCommand, ShotokuCommandType } from './connection.js'
+import { createShotokuError } from './errors.js'
+import { errorsToMessages } from '../../deviceErrorMessages.js'
 
 export interface ShotokuDeviceState {
 	shots: Record<string, ShotokuCommandContent & { fromTlObject: string }>
@@ -158,11 +163,14 @@ export class ShotokuDevice implements Device<ShotokuDeviceTypes, ShotokuDeviceSt
 		return this._shotoku.connected
 	}
 	getStatus(): Omit<DeviceStatus, 'active'> {
-		const messages: string[] = []
-		if (!this._shotoku.connected) messages.push('Not connected')
+		const errors: ShotokuError[] = []
+		if (!this._shotoku.connected) {
+			errors.push(createShotokuError(ShotokuErrorCode.NOT_CONNECTED, {}))
+		}
 		return {
 			statusCode: this._shotoku.connected ? StatusCode.GOOD : StatusCode.BAD,
-			messages: [],
+			messages: errorsToMessages(errors, ShotokuErrorMessages),
+			errors,
 		}
 	}
 
