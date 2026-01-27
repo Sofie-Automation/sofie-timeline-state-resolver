@@ -68,6 +68,8 @@ exports[`index imports 1`] = `
   "OSCValueType",
   "PREPARETIME",
   "PanasonicPTZActions",
+  "PharosErrorCode",
+  "PharosErrorMessages",
   "QuantelActions",
   "QuantelControlMode",
   "QuantelDevice",
