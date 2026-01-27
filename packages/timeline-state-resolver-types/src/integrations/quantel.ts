@@ -40,3 +40,27 @@ export interface QuantelTransitionDelay {
 	// For how long to delay the stop (ms)
 	delay: number
 }
+
+export const QuantelErrorCode = {
+	NOT_CONNECTED: 'DEVICE_QUANTEL_NOT_CONNECTED',
+	NOT_INITIALIZED: 'DEVICE_QUANTEL_NOT_INITIALIZED',
+	STATUS_MESSAGE: 'DEVICE_QUANTEL_STATUS_MESSAGE',
+} as const
+export type QuantelErrorCode = (typeof QuantelErrorCode)[keyof typeof QuantelErrorCode]
+
+export interface QuantelErrorContextMap {
+	[QuantelErrorCode.NOT_CONNECTED]: Record<string, never>
+	[QuantelErrorCode.NOT_INITIALIZED]: Record<string, never>
+	[QuantelErrorCode.STATUS_MESSAGE]: { statusMessage: string }
+}
+
+export type QuantelError<T extends QuantelErrorCode = QuantelErrorCode> = {
+	code: T
+	context: QuantelErrorContextMap[T]
+}
+
+export const QuantelErrorMessages: Record<QuantelErrorCode, string> = {
+	[QuantelErrorCode.NOT_CONNECTED]: 'Not connected',
+	[QuantelErrorCode.NOT_INITIALIZED]: 'Quantel device connection not initialized (restart required)',
+	[QuantelErrorCode.STATUS_MESSAGE]: '{{statusMessage}}',
+}

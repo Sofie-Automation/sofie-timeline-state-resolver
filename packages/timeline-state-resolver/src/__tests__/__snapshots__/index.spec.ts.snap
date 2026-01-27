@@ -67,6 +67,8 @@ exports[`index imports 1`] = `
   "QuantelActions",
   "QuantelControlMode",
   "QuantelDevice",
+  "QuantelErrorCode",
+  "QuantelErrorMessages",
   "QuantelTransitionType",
   "SendMode",
   "ShotokuTransitionType",
