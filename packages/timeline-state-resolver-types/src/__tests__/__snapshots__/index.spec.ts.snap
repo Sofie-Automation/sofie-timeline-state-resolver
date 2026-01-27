@@ -98,6 +98,8 @@ exports[`index imports 1`] = `
   "Transition",
   "TranslationsBundleType",
   "TransportStatus",
+  "TriCasterErrorCode",
+  "TriCasterErrorMessages",
   "VIZMSETransitionType",
   "VMixCommand",
   "VMixErrorCode",
