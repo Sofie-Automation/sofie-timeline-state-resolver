@@ -33,3 +33,21 @@ export interface TimelineContentShotokuSequence {
 }
 
 export type TimelineContentShotoku = TimelineContentShotokuShot | TimelineContentShotokuSequence
+
+export const ShotokuErrorCode = {
+	NOT_CONNECTED: 'DEVICE_SHOTOKU_NOT_CONNECTED',
+} as const
+export type ShotokuErrorCode = (typeof ShotokuErrorCode)[keyof typeof ShotokuErrorCode]
+
+export interface ShotokuErrorContextMap {
+	[ShotokuErrorCode.NOT_CONNECTED]: Record<string, never>
+}
+
+export type ShotokuError<T extends ShotokuErrorCode = ShotokuErrorCode> = {
+	code: T
+	context: ShotokuErrorContextMap[T]
+}
+
+export const ShotokuErrorMessages: Record<ShotokuErrorCode, string> = {
+	[ShotokuErrorCode.NOT_CONNECTED]: 'Not connected',
+}
