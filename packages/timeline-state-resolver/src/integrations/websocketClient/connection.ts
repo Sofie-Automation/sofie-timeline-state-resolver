@@ -1,10 +1,21 @@
 import WebSocket from 'ws'
-import { DeviceStatus, StatusCode, WebsocketClientOptions } from 'timeline-state-resolver-types'
+import {
+	DeviceStatus,
+	StatusCode,
+	WebsocketClientOptions,
+	WebSocketClientError,
+	WebSocketClientErrorCode,
+	WebSocketClientErrorMessages,
+} from 'timeline-state-resolver-types'
+import { createWebSocketClientError } from './errors'
+import { errorsToMessages } from '../../deviceErrorMessages'
 
 export class WebSocketConnection {
 	private ws?: WebSocket
 	private isWsConnected = false
 	private readonly options: WebsocketClientOptions
+	private lastError?: { error: string; uri?: string }
+	private disconnectReason?: string
 
 	constructor(options: WebsocketClientOptions) {
 		this.options = options
@@ -31,16 +42,25 @@ export class WebSocketConnection {
 
 					this.ws.on('error', (error) => {
 						clearTimeout(timeout)
+						this.lastError = {
+							error: error.message || error.toString(),
+							uri: this.options.webSocket?.uri,
+						}
 						reject(error)
 					})
 				})
 
-				this.ws.on('close', () => {
+				this.ws.on('close', (code, reason) => {
 					this.isWsConnected = false
+					this.disconnectReason = reason ? reason.toString() : code ? `Code ${code}` : undefined
 				})
 			}
 		} catch (error) {
 			this.isWsConnected = false
+			this.lastError = {
+				error: error instanceof Error ? error.message : String(error),
+				uri: this.options.webSocket?.uri,
+			}
 			throw error
 		}
 	}
@@ -50,12 +70,30 @@ export class WebSocketConnection {
 	}
 
 	connectionStatus(): Omit<DeviceStatus, 'active'> {
-		const messages: string[] = []
-		// Prepare for more detailed status messages:
-		messages.push(this.isWsConnected ? 'WS Connected' : 'WS Disconnected')
+		const errors: WebSocketClientError[] = []
+
+		if (!this.isWsConnected) {
+			if (this.lastError) {
+				errors.push(
+					createWebSocketClientError(WebSocketClientErrorCode.CONNECTION_FAILED, {
+						uri: this.lastError.uri,
+						error: this.lastError.error,
+					})
+				)
+			} else {
+				errors.push(
+					createWebSocketClientError(WebSocketClientErrorCode.NOT_CONNECTED, {
+						uri: this.options.webSocket?.uri,
+						reason: this.disconnectReason,
+					})
+				)
+			}
+		}
+
 		return {
 			statusCode: this.isWsConnected ? StatusCode.GOOD : StatusCode.BAD,
-			messages,
+			messages: errorsToMessages(errors, WebSocketClientErrorMessages),
+			errors,
 		}
 	}
 

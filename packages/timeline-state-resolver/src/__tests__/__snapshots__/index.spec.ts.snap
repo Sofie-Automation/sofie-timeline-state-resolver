@@ -126,6 +126,8 @@ exports[`index imports 1`] = `
   "VizMSEActions",
   "VizMSEDevice",
   "VmixActions",
+  "WebSocketClientErrorCode",
+  "WebSocketClientErrorMessages",
   "WebsocketClientActions",
   "errorsToMessages",
   "fillStateFromDatastore",

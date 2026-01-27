@@ -111,6 +111,8 @@ exports[`index imports 1`] = `
   "ViscaOverIPActions",
   "VizMSEActions",
   "VmixActions",
+  "WebSocketClientErrorCode",
+  "WebSocketClientErrorMessages",
   "WebsocketClientActions",
   "fillStateFromDatastore",
   "interpolateTemplateString",
