@@ -7,6 +7,7 @@ import { resolveUpstreamKeyerState } from 'atem-state/dist/resolvers/upstreamKey
 import { assertNever, deepMerge } from '../../lib'
 import { AtemStateUtil } from 'atem-connection'
 import * as _ from 'underscore'
+import { UpstreamKeyerDiffOptions } from './diffState'
 
 /**
  * This function converts a full device state into substates that can be addressed
@@ -253,19 +254,7 @@ export function diffAddressStates(state1: AnyAddressState, state2: AnyAddressSta
 		if (state1.state.wipe && state2.state.wipe && !_.isEqual(state1.state.wipe, state2.state.wipe)) return true
 		return false
 	} else if (state1.type === AddressType.UpStreamKey && state2.type === AddressType.UpStreamKey) {
-		const output = resolveUpstreamKeyerState(0, [state1.state], [state2.state], {
-			sources: true,
-			onAir: true,
-			type: true,
-			mask: true,
-			flyKeyframes: 'all',
-			flyProperties: true,
-			dveSettings: true,
-			chromaSettings: true,
-			advancedChromaSettings: true,
-			lumaSettings: true,
-			patternSettings: true,
-		})
+		const output = resolveUpstreamKeyerState(0, [state1.state], [state2.state], UpstreamKeyerDiffOptions)
 
 		return !!output.length
 	}
