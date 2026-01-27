@@ -35,6 +35,8 @@ exports[`index imports 1`] = `
   "HttpSendActions",
   "HyperdeckActions",
   "HyperdeckDevice",
+  "HyperdeckErrorCode",
+  "HyperdeckErrorMessages",
   "KairosActions",
   "KairosMacroActiveState",
   "LOOKAHEADTIME",

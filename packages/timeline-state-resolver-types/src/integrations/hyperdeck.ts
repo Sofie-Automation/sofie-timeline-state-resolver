@@ -1,4 +1,64 @@
 import { DeviceType } from '../generated/index.js'
+import { DeviceStatusError } from '../deviceError.js'
+
+/**
+ * Error codes for Hyperdeck device issues.
+ * These codes can be customized in blueprints via deviceErrorMessages.
+ */
+export const HyperdeckErrorCode = {
+	NOT_CONNECTED: 'DEVICE_HYPERDECK_NOT_CONNECTED',
+	LOW_RECORDING_TIME: 'DEVICE_HYPERDECK_LOW_RECORDING_TIME',
+	SLOT_NOT_MOUNTED: 'DEVICE_HYPERDECK_SLOT_NOT_MOUNTED',
+	NOT_RECORDING: 'DEVICE_HYPERDECK_NOT_RECORDING',
+	NOT_PLAYING: 'DEVICE_HYPERDECK_NOT_PLAYING',
+} as const
+
+export type HyperdeckErrorCode = (typeof HyperdeckErrorCode)[keyof typeof HyperdeckErrorCode]
+
+/**
+ * Context data for each Hyperdeck error type.
+ * These fields are available for message template interpolation.
+ */
+export interface HyperdeckErrorContextMap {
+	[HyperdeckErrorCode.NOT_CONNECTED]: {
+		deviceName: string
+		host: string
+		port: number
+	}
+	[HyperdeckErrorCode.LOW_RECORDING_TIME]: {
+		deviceName: string
+		minutes: number
+		seconds: number
+	}
+	[HyperdeckErrorCode.SLOT_NOT_MOUNTED]: {
+		deviceName: string
+		slot: number
+	}
+	[HyperdeckErrorCode.NOT_RECORDING]: {
+		deviceName: string
+	}
+	[HyperdeckErrorCode.NOT_PLAYING]: {
+		deviceName: string
+	}
+}
+
+export type HyperdeckError<T extends HyperdeckErrorCode = HyperdeckErrorCode> = DeviceStatusError<
+	T,
+	HyperdeckErrorContextMap[T]
+>
+
+/**
+ * Default error message templates for Hyperdeck devices.
+ * Can be overridden in blueprints via deviceErrorMessages.
+ */
+export const HyperdeckErrorMessages: Record<HyperdeckErrorCode, string> = {
+	[HyperdeckErrorCode.NOT_CONNECTED]: 'Not connected',
+	[HyperdeckErrorCode.LOW_RECORDING_TIME]:
+		'Recording time left is less than {{minutes}} minutes and {{seconds}} seconds',
+	[HyperdeckErrorCode.SLOT_NOT_MOUNTED]: 'Slot {{slot}} is not mounted',
+	[HyperdeckErrorCode.NOT_RECORDING]: 'Hyperdeck not recording',
+	[HyperdeckErrorCode.NOT_PLAYING]: 'Hyperdeck not playing',
+}
 
 export enum TimelineContentTypeHyperdeck {
 	TRANSPORT = 'transport',

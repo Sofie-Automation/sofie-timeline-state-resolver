@@ -119,7 +119,7 @@ describe('HTTP-Watcher', () => {
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(1)
 			MOCKED_SOCKET_GET.mockClear()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: goodStatusCode, body: 'sorry not sorry' })
 			await mockTime.advanceTimeTicks(10100)
@@ -169,7 +169,7 @@ describe('HTTP-Watcher', () => {
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(1)
 			MOCKED_SOCKET_GET.mockClear()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: goodStatusCode, body: 'sorry not sorry' })
 			await mockTime.advanceTimeTicks(10100)
