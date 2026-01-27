@@ -45,6 +45,8 @@ exports[`index imports 1`] = `
   "MappingVmixType",
   "MediaSourceType",
   "MultiOSCDeviceType",
+  "OBSErrorCode",
+  "OBSErrorMessages",
   "OSCDeviceType",
   "OSCValueType",
   "PanasonicPTZActions",
