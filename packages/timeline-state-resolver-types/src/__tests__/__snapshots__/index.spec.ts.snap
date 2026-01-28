@@ -54,6 +54,8 @@ exports[`index imports 1`] = `
   "OBSErrorCode",
   "OBSErrorMessages",
   "OSCDeviceType",
+  "OSCErrorCode",
+  "OSCErrorMessages",
   "OSCValueType",
   "PanasonicPTZActions",
   "PharosErrorCode",
