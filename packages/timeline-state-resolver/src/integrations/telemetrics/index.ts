@@ -6,9 +6,13 @@ import {
 	TelemetricsOptions,
 	TimelineContentTelemetrics,
 	TSRTimelineContent,
+	TelemetricsErrorCode,
+	TelemetricsErrorMessages,
 } from 'timeline-state-resolver-types'
 import { Socket } from 'net'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+import { createTelemetricsError } from './errors'
+import { errorsToMessages } from '../../deviceErrorMessages'
 
 const TELEMETRICS_COMMAND_PREFIX = 'P0C'
 const DEFAULT_SOCKET_PORT = 5000
@@ -46,29 +50,43 @@ export class TelemetricsDevice implements Device<
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
-		const messages: string[] = []
+		const errors: DeviceStatus['errors'] = []
+		const deviceName = 'Telemetrics'
 
 		switch (this.statusCode) {
 			case StatusCode.GOOD:
 				this.errorMessage = ''
-				messages.push('Connected')
 				break
 			case StatusCode.BAD:
-				messages.push('No connection')
+				errors.push(
+					createTelemetricsError(TelemetricsErrorCode.NOT_CONNECTED, {
+						deviceName,
+					})
+				)
 				break
 			case StatusCode.UNKNOWN:
 				this.errorMessage = ''
-				messages.push('Not initialized')
+				errors.push(
+					createTelemetricsError(TelemetricsErrorCode.NOT_INITIALIZED, {
+						deviceName,
+					})
+				)
 				break
 		}
 
 		if (this.errorMessage) {
-			messages.push(this.errorMessage)
+			errors.push(
+				createTelemetricsError(TelemetricsErrorCode.GENERAL_ERROR, {
+					deviceName,
+					message: this.errorMessage,
+				})
+			)
 		}
 
 		return {
 			statusCode: this.statusCode,
-			messages,
+			messages: errorsToMessages(errors, TelemetricsErrorMessages),
+			errors,
 		}
 	}
 

@@ -83,6 +83,8 @@ exports[`index imports 1`] = `
   "SofieChefErrorMessages",
   "StatusCode",
   "TcpSendActions",
+  "TelemetricsErrorCode",
+  "TelemetricsErrorMessages",
   "Timeline",
   "TimelineContentTypeAtem",
   "TimelineContentTypeCasparCg",
