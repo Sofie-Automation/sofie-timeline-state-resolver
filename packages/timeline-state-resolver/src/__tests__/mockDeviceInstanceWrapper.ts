@@ -62,7 +62,7 @@ export class MockDeviceInstanceWrapper
 		return Date.now()
 	})
 
-	initDevice = jest.fn(async (_activeRundownPlaylistId?: string | undefined): Promise<boolean> => {
+	initDevice = jest.fn(async (_activeRundownPlaylistId?: string): Promise<boolean> => {
 		// throw new Error('Method not implemented.')
 		return true
 	})
@@ -70,11 +70,9 @@ export class MockDeviceInstanceWrapper
 		if (!ConstructedMockDevices[this.deviceId]) throw new Error(`Device "${this.deviceId}" has already been terminated`)
 		delete ConstructedMockDevices[this.deviceId]
 	})
-	executeAction = jest.fn(
-		async (_id: string, _payload?: Record<string, any> | undefined): Promise<ActionExecutionResult> => {
-			throw new Error('Method not implemented.')
-		}
-	)
+	executeAction = jest.fn(async (_id: string, _payload?: Record<string, any>): Promise<ActionExecutionResult> => {
+		throw new Error('Method not implemented.')
+	})
 
 	/** @deprecated - just here for API compatiblity with the old class */
 	prepareForHandleState(): void {

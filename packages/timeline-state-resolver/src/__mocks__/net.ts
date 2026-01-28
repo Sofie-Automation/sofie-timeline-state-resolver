@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 const sockets: Array<Socket> = []
-const onNextSocket: Array<Function> = []
+const onNextSocket: Array<(s: Socket) => void> = []
 
 const orgSetImmediate = setImmediate
 

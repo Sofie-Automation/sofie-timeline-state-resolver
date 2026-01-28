@@ -364,7 +364,7 @@ export abstract class DeviceWithState<
 		let foundState: TState | null = null
 		_.each(this._states, (state: TState, stateTimeStr: string) => {
 			const stateTime = parseFloat(stateTimeStr)
-			if (stateTime > foundTime && stateTime <= time!) {
+			if (stateTime > foundTime && stateTime <= time) {
 				foundState = state
 				foundTime = stateTime
 			}

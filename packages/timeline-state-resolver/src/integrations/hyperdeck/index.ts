@@ -145,7 +145,7 @@ export class HyperdeckDevice implements Device<
 			const state = await this._queryCurrentState()
 
 			this.context.resetToState(state)
-		} catch (e) {
+		} catch (_e) {
 			this.context.resetResolver()
 		}
 
@@ -168,7 +168,7 @@ export class HyperdeckDevice implements Device<
 				slotSel.slotId = i
 				try {
 					await this._hyperdeck.sendCommand(slotSel)
-				} catch (e) {
+				} catch (_e) {
 					continue
 				}
 				// get code:
@@ -345,7 +345,7 @@ export class HyperdeckDevice implements Device<
 				if (res.status === SlotStatus.MOUNTED) {
 					totalRecordingTime += res.recordingTime
 				}
-			} catch (e) {
+			} catch (_e) {
 				// null
 			}
 		}

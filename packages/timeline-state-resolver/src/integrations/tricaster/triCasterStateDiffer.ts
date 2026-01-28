@@ -29,7 +29,7 @@ import {
 import { TriCasterShortcutStateConverter } from './triCasterShortcutStateConverter'
 import { TriCasterTimelineStateConverter } from './triCasterTimelineStateConverter'
 import { TriCasterInfo } from './triCasterConnection'
-import _ = require('underscore')
+import _ from 'underscore'
 
 const BLACK_INPUT = 'black'
 const DEFAULT_TRANSITION_DURATION = 1 // in seconds

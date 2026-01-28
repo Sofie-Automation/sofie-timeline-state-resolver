@@ -16,7 +16,7 @@ import { OSCConnection } from './deviceConnection'
 import * as osc from 'osc'
 
 export interface MultiOscInitTestOptions {
-	oscSenders?: Record<string, (msg: osc.OscMessage, address?: string | undefined, port?: number | undefined) => void>
+	oscSenders?: Record<string, (msg: osc.OscMessage, address?: string, port?: number) => void>
 }
 
 interface MultiOSCDeviceState {

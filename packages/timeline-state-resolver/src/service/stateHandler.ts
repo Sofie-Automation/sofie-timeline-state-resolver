@@ -39,7 +39,7 @@ interface ExecutedStateChange<
 const CLOCK_INTERVAL = 20
 
 export class StateHandler<
-	DeviceState extends Object,
+	DeviceState extends object,
 	Command extends CommandWithContext<any, any>,
 	AddressState = any,
 > {

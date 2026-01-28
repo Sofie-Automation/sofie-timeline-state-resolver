@@ -31,7 +31,7 @@ import {
 	MappingAtemUpStreamKeyer,
 	TimelineContentAtemUSK,
 } from 'timeline-state-resolver-types'
-import _ = require('underscore')
+import _ from 'underscore'
 import { Defaults, State as DeviceState, Defaults as StateDefault } from 'atem-state'
 import { assertNever, cloneDeep, deepMerge, literal } from '../../lib'
 import { PartialDeep } from 'type-fest'

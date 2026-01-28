@@ -10402,7 +10402,6 @@ asn1@evs-broadcast/node-asn1:
   resolution: "quick-tsr@workspace:packages/quick-tsr"
   dependencies:
     chokidar: "npm:^3.6.0"
-    fast-clone: "npm:^1.5.13"
     threadedclass: "npm:^1.3.0"
     timeline-state-resolver: "npm:10.0.0-release53"
     timeline-state-resolver-types: "npm:10.0.0-release53"

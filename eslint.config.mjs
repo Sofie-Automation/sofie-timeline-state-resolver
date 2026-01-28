@@ -38,18 +38,8 @@ extendedRules.push({
 	files: ['**/*.ts'],
 	rules: {
 		// nocommit Temporary disable rules
-		'@typescript-eslint/no-wrapper-object-types': 0,
-		'@typescript-eslint/no-unused-vars': 0,
-		'@typescript-eslint/no-require-imports': 0,
-		'@typescript-eslint/no-unnecessary-type-assertion': 0,
-		'@typescript-eslint/prefer-promise-reject-errors': 0,
-		'@typescript-eslint/no-empty-object-type': 0,
-		'@typescript-eslint/no-unsafe-declaration-merging': 0,
-		'@typescript-eslint/no-unsafe-function-type': 0,
-		'@typescript-eslint/no-duplicate-type-constituents': 0,
 		'n/file-extension-in-import': 0,
 		'n/no-missing-import': 0,
-		'prettier/prettier': 0,
 	},
 })
 

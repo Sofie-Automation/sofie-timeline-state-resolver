@@ -1020,7 +1020,7 @@ export class VizMSEManager extends EventEmitter {
 					return this._msePingConnected ? this._monitorEngines() : Promise.resolve()
 				})
 		}
-		return Promise.reject()
+		throw new Error('Not initialized')
 	}
 	private async _monitorEngines() {
 		if (!this.engineRestPort) {

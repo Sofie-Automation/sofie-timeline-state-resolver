@@ -596,7 +596,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 
 				return Promise.resolve()
 			} catch (e) {
-				return Promise.reject(e)
+				return Promise.reject(e as Error)
 			}
 		}
 	}

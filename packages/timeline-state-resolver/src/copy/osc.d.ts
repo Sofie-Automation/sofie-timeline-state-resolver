@@ -48,7 +48,7 @@ declare module 'osc' {
 		args: Argument | Array<Argument> | MetaArgument | Array<MetaArgument>
 	}
 
-	export interface OscBundle {}
+	export type OscBundle = Record<string, any>
 
 	export interface SenderInfo {
 		address: string

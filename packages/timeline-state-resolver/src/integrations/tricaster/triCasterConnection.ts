@@ -1,6 +1,6 @@
 import got from 'got'
 import { EventEmitter } from 'node:events'
-import WebSocket = require('ws')
+import WebSocket from 'ws'
 import { TriCasterInfoParser, TriCasterProductInfo, TriCasterSwitcherInfo } from './triCasterInfoParser'
 import { serializeToWebSocketMessage, TriCasterCommand } from './triCasterCommands'
 

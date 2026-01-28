@@ -21,7 +21,7 @@ import {
 	VMixStateExtended,
 } from './vMixStateDiffer'
 import deepMerge from 'deepmerge'
-import _ = require('underscore')
+import _ from 'underscore'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 const mappingPriority: { [k in MappingVmixType]: number } = {

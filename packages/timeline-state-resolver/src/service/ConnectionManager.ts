@@ -1,6 +1,6 @@
 import { DeviceOptionsAny, DeviceOptionsBase, DeviceType } from 'timeline-state-resolver-types'
 import { BaseRemoteDeviceIntegration, RemoteDeviceInstance } from './remoteDeviceInstance'
-import _ = require('underscore')
+import _ from 'underscore'
 import { ThreadedClassConfig } from 'threadedclass'
 import { DeviceContainer } from '..//devices/deviceContainer'
 import { assertNever } from 'atem-connection/dist/lib/atemUtil'
