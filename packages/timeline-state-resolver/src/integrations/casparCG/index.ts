@@ -174,16 +174,18 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 						firstConnect = false
 						this.clearStates()
 						this.emit('resyncStates')
+						// Clear all state on resync
+						this._currentState = { channels: {} }
 					}
 
-					// Populate channel info (including fps) after resync decision
-					this._currentState = { channels: {} }
+					// Populate/update channel info (including fps), preserving existing layers
 					for (const obj of channelInfo) {
+						const existingChannel = this._currentState.channels[obj.channel]
 						this._currentState.channels[obj.channel] = {
 							channelNo: obj.channel,
 							videoMode: this.getVideMode(obj),
 							fps: obj.frameRate,
-							layers: {},
+							layers: existingChannel?.layers || {},
 						}
 					}
 				})
