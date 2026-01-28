@@ -122,6 +122,8 @@ exports[`index imports 1`] = `
   "VideoFormat",
   "ViscaOverIPActions",
   "VizMSEActions",
+  "VizMSEErrorCode",
+  "VizMSEErrorMessages",
   "VmixActions",
   "WebSocketClientErrorCode",
   "WebSocketClientErrorMessages",
