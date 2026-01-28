@@ -76,6 +76,8 @@ exports[`index imports 1`] = `
   "SlotId",
   "SlotStatus",
   "SofieChefActions",
+  "SofieChefErrorCode",
+  "SofieChefErrorMessages",
   "StatusCode",
   "TcpSendActions",
   "Timeline",

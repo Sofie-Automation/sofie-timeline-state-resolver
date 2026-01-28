@@ -10,6 +10,7 @@ export { QuantelDevice } from './integrations/quantel/index.js'
 export { VizMSEDevice } from './integrations/vizMSE/index.js'
 export { PanasonicPtzDevice } from './integrations/panasonicPTZ/index.js'
 export { OscDevice } from './integrations/osc/index.js'
+export { SofieChefDevice } from './integrations/sofieChef/index.js'
 
 export { TSRDevicesManifestEntry } from 'timeline-state-resolver-api'
 export * from 'timeline-state-resolver-types'
