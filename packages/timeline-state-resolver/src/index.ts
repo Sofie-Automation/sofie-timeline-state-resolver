@@ -11,6 +11,7 @@ export { VizMSEDevice } from './integrations/vizMSE'
 export { PanasonicPtzDevice } from './integrations/panasonicPTZ'
 export { OscDevice } from './integrations/osc'
 export { SofieChefDevice } from './integrations/sofieChef'
+export { TelemetricsDevice } from './integrations/telemetrics'
 
 export { TSRDevicesManifestEntry } from 'timeline-state-resolver-api'
 export * from 'timeline-state-resolver-types'
