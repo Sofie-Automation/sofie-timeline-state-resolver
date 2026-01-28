@@ -8,6 +8,7 @@ export { CasparCGDevice } from './integrations/casparCG'
 export { HyperdeckDevice } from './integrations/hyperdeck'
 export { QuantelDevice } from './integrations/quantel'
 export { VizMSEDevice } from './integrations/vizMSE'
+export { PanasonicPtzDevice } from './integrations/panasonicPTZ'
 export { OscDevice } from './integrations/osc'
 
 export { TSRDevicesManifestEntry } from 'timeline-state-resolver-api'
