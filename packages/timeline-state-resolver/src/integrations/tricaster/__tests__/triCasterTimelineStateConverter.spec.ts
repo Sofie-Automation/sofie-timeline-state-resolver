@@ -10,7 +10,7 @@ import {
 	SomeMappingTricaster,
 	TriCasterMixEffect,
 } from 'timeline-state-resolver-types'
-import { TriCasterTimelineStateConverter } from '../triCasterTimelineStateConverter'
+import { TriCasterTimelineStateConverter } from '../triCasterTimelineStateConverter.js'
 import {
 	CompleteTriCasterMixEffectState,
 	CompleteTriCasterState,
@@ -19,9 +19,9 @@ import {
 	TriCasterLayerState,
 	WithContext,
 	wrapStateInContext,
-} from '../triCasterStateDiffer'
-import { literal } from '../../../lib'
-import { wrapIntoResolvedInstance } from './helpers'
+} from '../triCasterStateDiffer.js'
+import { literal } from '../../../lib.js'
+import { wrapIntoResolvedInstance } from './helpers.js'
 
 function setupTimelineStateConverter() {
 	return new TriCasterTimelineStateConverter(() => mockGetDefaultState(), {

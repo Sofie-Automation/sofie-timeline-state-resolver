@@ -33,7 +33,7 @@ import {
 } from 'timeline-state-resolver-types'
 import _ from 'underscore'
 import { Defaults, State as DeviceState, Defaults as StateDefault } from 'atem-state'
-import { assertNever, cloneDeep, deepMerge, literal } from '../../lib'
+import { assertNever, cloneDeep, deepMerge, literal } from '../../lib.js'
 import { PartialDeep } from 'type-fest'
 import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 

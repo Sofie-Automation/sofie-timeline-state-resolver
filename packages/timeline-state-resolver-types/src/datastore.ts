@@ -4,7 +4,7 @@ import {
 	TimelineDatastoreReferences,
 	TimelineDatastoreReferencesContent,
 	TSRTimelineContent,
-} from '.'
+} from './index.js'
 
 /**
  * Set a value on an object from a .-delimited path

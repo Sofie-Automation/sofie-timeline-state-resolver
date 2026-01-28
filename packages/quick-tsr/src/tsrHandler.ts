@@ -20,7 +20,7 @@ import {
 } from 'timeline-state-resolver-types'
 import { ThreadedClass } from 'threadedclass'
 
-import { TSRSettings } from './index'
+import { TSRSettings } from './index.js'
 
 /**
  * Represents a connection between Gateway and TSR

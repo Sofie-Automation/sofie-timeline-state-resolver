@@ -2,8 +2,8 @@ import * as path from 'path'
 import { EventEmitter } from 'node:events'
 
 import { VMixCommand } from 'timeline-state-resolver-types'
-import { TSR_INPUT_PREFIX } from './vMixStateDiffer'
-import { CommandContext, VMixStateCommandWithContext } from './vMixCommands'
+import { TSR_INPUT_PREFIX } from './vMixStateDiffer.js'
+import { CommandContext, VMixStateCommandWithContext } from './vMixCommands.js'
 /**
  * Handles pre-loading of inputs.
  */

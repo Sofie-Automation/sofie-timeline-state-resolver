@@ -1,4 +1,4 @@
-import { DeviceType } from '..'
+import { DeviceType } from '../generated/index.js'
 
 /*
  * TRIGGERVALUE is used to SET_CHANNEL in Sisyfos

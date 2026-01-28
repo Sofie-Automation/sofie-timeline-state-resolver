@@ -1,5 +1,5 @@
-import { PanasonicFocusMode, PanasonicPtzHttpInterface } from '../../../integrations/panasonicPTZ/connection'
-import got from '../../../__mocks__/got'
+import { PanasonicFocusMode, PanasonicPtzHttpInterface } from '../../../integrations/panasonicPTZ/connection.js'
+import got from '../../../__mocks__/got.js'
 import { URL } from 'url'
 import { OptionsOfJSONResponseBody, Response } from 'got'
 import {
@@ -18,7 +18,7 @@ import {
 	ZoomSpeedQuery,
 	ZoomPositionQuery,
 	PowerMode,
-} from '../commands'
+} from '../commands.js'
 
 const orgSetTimeout = setTimeout
 

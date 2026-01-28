@@ -1,4 +1,4 @@
-import { DeviceType } from '..'
+import { DeviceType } from '../generated/index.js'
 
 export type TriCasterMixEffectName = 'main' | `v${number}`
 export type TriCasterKeyerName = `dsk${number}`

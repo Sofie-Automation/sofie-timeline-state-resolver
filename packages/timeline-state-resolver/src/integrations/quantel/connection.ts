@@ -14,8 +14,8 @@ import {
 	QuantelStatePortClipContent,
 	QuantelTrackedState,
 	QuantelTrackedStatePort,
-} from './types'
-import { WaitGroup } from '../../waitGroup'
+} from './types.js'
+import { WaitGroup } from '../../waitGroup.js'
 
 let SOFT_JUMP_WAIT_TIME = 250 // Is a constant, but can be changed during unit tests
 

@@ -1,7 +1,7 @@
 import { VMixCommand, VMixInputType, VMixTransitionType } from 'timeline-state-resolver-types'
-import { VMixStateDiffer } from '../vMixStateDiffer'
-import { makeMockFullState, prefixAddedInput } from './mockState'
-import { VMixStateCommand } from '../vMixCommands'
+import { VMixStateDiffer } from '../vMixStateDiffer.js'
+import { makeMockFullState, prefixAddedInput } from './mockState.js'
+import { VMixStateCommand } from '../vMixCommands.js'
 
 function createTestee(): VMixStateDiffer {
 	return new VMixStateDiffer(() => Date.now(), jest.fn())

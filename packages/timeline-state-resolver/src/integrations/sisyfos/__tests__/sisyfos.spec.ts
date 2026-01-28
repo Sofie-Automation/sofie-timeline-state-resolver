@@ -1,4 +1,4 @@
-import { Conductor } from '../../../conductor'
+import { Conductor } from '../../../conductor.js'
 import {
 	Mappings,
 	DeviceType,
@@ -11,13 +11,13 @@ import {
 	TSRTimelineContent,
 	TimelineContentSisyfosAny,
 } from 'timeline-state-resolver-types'
-import * as OSC from '../../../__mocks__/osc'
+import * as OSC from '../../../__mocks__/osc.js'
 const MockOSC = OSC.MockOSC
-import { MockTime } from '../../../__tests__/mockTime'
+import { MockTime } from '../../../__tests__/mockTime.js'
 import { ThreadedClass } from 'threadedclass'
-import { SisyfosMessageDevice } from '../../../integrations/sisyfos'
-import { addConnections, getMockCall, waitUntil } from '../../../__tests__/lib'
-import { SisyfosCommandType, SisyfosState } from '../connection'
+import { SisyfosMessageDevice } from '../../../integrations/sisyfos/index.js'
+import { addConnections, getMockCall, waitUntil } from '../../../__tests__/lib.js'
+import { SisyfosCommandType, SisyfosState } from '../connection.js'
 
 describe('Sisyfos', () => {
 	jest.mock('osc', () => OSC)

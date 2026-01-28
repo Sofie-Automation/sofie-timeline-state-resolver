@@ -1,4 +1,4 @@
-import { ControlCommand } from '../abstractCommand'
+import { ControlCommand } from '../abstractCommand.js'
 
 /** The IF_Clear command */
 export class ResetSequenceNumberCommand extends ControlCommand {

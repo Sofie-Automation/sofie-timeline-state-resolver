@@ -6,7 +6,7 @@ import {
 	DeviceType,
 	interpolateTemplateStringIfNeeded,
 } from 'timeline-state-resolver-types'
-import type { SofieChefState } from '.'
+import type { SofieChefState } from './index.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 export function buildSofieChefState(

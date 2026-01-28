@@ -5,9 +5,12 @@ module.exports = {
 			'ts-jest',
 			{
 				tsconfig: 'tsconfig.json',
-				diagnostics: { ignoreCodes: [6133, 6192] },
+				diagnostics: { ignoreCodes: [6133, 6192, 151002] },
 			},
 		],
+	},
+	moduleNameMapper: {
+		'(.+)\\.js$': '$1',
 	},
 	testMatch: ['**/__tests__/**/*.spec.(ts|js)'],
 	testPathIgnorePatterns: ['integrationTests'],

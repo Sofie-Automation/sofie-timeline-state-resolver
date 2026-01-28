@@ -10,10 +10,10 @@ import {
 	MappingMultiOscType,
 	SomeOSCValue,
 } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
-import { getMockCall } from '../../../__tests__/lib'
-import { MultiOSCMessageDevice } from '..'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import { getMockCall } from '../../../__tests__/lib.js'
+import { MultiOSCMessageDevice } from '../index.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 import { TSRTimelineContent } from 'timeline-state-resolver-types/src'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 

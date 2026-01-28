@@ -1,5 +1,5 @@
-import { Content, TimelineObject } from './timeline'
-import { InstanceId, Reference, Time } from './types'
+import { Content, TimelineObject } from './timeline.js'
+import { InstanceId, Reference, Time } from './types.js'
 
 /**
  * The ResolvedTimeline contains all objects on the timeline, resolved.

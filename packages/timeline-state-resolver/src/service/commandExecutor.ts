@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import type { BaseDeviceAPI, CommandWithContext } from 'timeline-state-resolver-api'
-import { Measurement } from './measure'
-import { StateHandlerContext } from './stateHandler'
+import { Measurement } from './measure.js'
+import { StateHandlerContext } from './stateHandler.js'
 
 export class CommandExecutor<DeviceState, Command extends CommandWithContext<any, any>> {
 	constructor(

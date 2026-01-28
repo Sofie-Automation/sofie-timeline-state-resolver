@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceWithState } from './../../devices/device'
+import { DeviceWithState } from './../../devices/device.js'
 import {
 	DeviceType,
 	DeviceOptionsSisyfos,
@@ -24,11 +24,11 @@ import {
 } from 'timeline-state-resolver-types'
 import type { CommandWithContext } from 'timeline-state-resolver-api'
 
-import { DoOnTime, SendMode } from '../../devices/doOnTime'
+import { DoOnTime, SendMode } from '../../devices/doOnTime.js'
 
-import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection'
+import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection.js'
 import Debug from 'debug'
-import { startTrace, endTrace, t } from '../../lib'
+import { startTrace, endTrace, t } from '../../lib.js'
 const debug = Debug('timeline-state-resolver:sisyfos')
 
 export interface DeviceOptionsSisyfosInternal extends DeviceOptionsSisyfos {

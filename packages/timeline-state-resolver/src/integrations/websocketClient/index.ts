@@ -16,7 +16,7 @@ import {
 	WebsocketClientDeviceTypes,
 	WebsocketClientActions,
 } from 'timeline-state-resolver-types'
-import { WebSocketConnection } from './connection'
+import { WebSocketConnection } from './connection.js'
 import { WebsocketClientActionMethods } from 'timeline-state-resolver-types'
 
 /** this is not an extends but an implementation of the CommandWithContext */

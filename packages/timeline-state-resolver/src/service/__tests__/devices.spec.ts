@@ -1,7 +1,7 @@
 import type { DeviceEntry } from 'timeline-state-resolver-api'
-import { getDeviceContext } from '../../integrations/__tests__/testlib'
-import { builtinDeviceManifest } from '../../manifest'
-import { DevicesDict } from '../devices'
+import { getDeviceContext } from '../../integrations/__tests__/testlib.js'
+import { builtinDeviceManifest } from '../../manifest.js'
+import { DevicesDict } from '../devices.js'
 
 describe('Ensure that all integrations have defined their actions', () => {
 	for (const [key, device] of Object.entries<DeviceEntry>(DevicesDict)) {

@@ -18,7 +18,7 @@ import {
 	VMixInputAudio,
 	VMixState,
 	VMixStateExtended,
-} from './vMixStateDiffer'
+} from './vMixStateDiffer.js'
 import deepMerge from 'deepmerge'
 import _ from 'underscore'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'

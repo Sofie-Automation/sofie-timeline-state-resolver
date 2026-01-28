@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import * as _ from 'underscore'
 import * as path from 'path'
 import { Mappings, TSRTimeline, DeviceOptionsAny, Datastore } from 'timeline-state-resolver-types'
-import { TSRHandler } from './tsrHandler'
+import { TSRHandler } from './tsrHandler.js'
 
 // import { TSRHandler } from './tsrHandler'
 

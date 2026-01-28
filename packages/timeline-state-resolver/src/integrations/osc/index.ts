@@ -15,8 +15,8 @@ import * as osc from 'osc'
 
 import Debug from 'debug'
 import _ from 'underscore'
-import { Easing } from '../../devices/transitions/easings'
-import { assertNever } from '../../lib'
+import { Easing } from '../../devices/transitions/easings.js'
+import { assertNever } from '../../lib.js'
 const debug = Debug('timeline-state-resolver:osc')
 
 export interface OscDeviceState {

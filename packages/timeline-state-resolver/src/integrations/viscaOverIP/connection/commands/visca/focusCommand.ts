@@ -1,5 +1,5 @@
-import { FocusDirection } from '../../enums'
-import { ViscaCommand } from '../abstractCommand'
+import { FocusDirection } from '../../enums.js'
+import { ViscaCommand } from '../abstractCommand.js'
 
 export class FocusCommand extends ViscaCommand {
 	constructor(

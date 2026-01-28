@@ -12,7 +12,7 @@ import {
 	MultiOscDeviceTypes,
 } from 'timeline-state-resolver-types'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { OSCConnection } from './deviceConnection'
+import { OSCConnection } from './deviceConnection.js'
 import * as osc from 'osc'
 
 export interface MultiOscInitTestOptions {

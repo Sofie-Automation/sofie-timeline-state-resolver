@@ -1,8 +1,8 @@
 import got from 'got'
 import { EventEmitter } from 'node:events'
 import WebSocket from 'ws'
-import { TriCasterInfoParser, TriCasterProductInfo, TriCasterSwitcherInfo } from './triCasterInfoParser'
-import { serializeToWebSocketMessage, TriCasterCommand } from './triCasterCommands'
+import { TriCasterInfoParser, TriCasterProductInfo, TriCasterSwitcherInfo } from './triCasterInfoParser.js'
+import { serializeToWebSocketMessage, TriCasterCommand } from './triCasterCommands.js'
 
 export type TriCasterConnectionEvents = {
 	connected: [info: TriCasterInfo, shortcutStateXml: string]

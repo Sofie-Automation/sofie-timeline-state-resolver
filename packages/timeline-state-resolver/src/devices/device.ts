@@ -10,9 +10,9 @@ import {
 	ActionExecutionResult,
 } from 'timeline-state-resolver-types'
 import { EventEmitter } from 'node:events'
-import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo } from './doOnTime'
-import { ExpectedPlayoutItem } from '../expectedPlayoutItems'
-import { actionNotFoundMessage } from '../lib'
+import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo } from './doOnTime.js'
+import { ExpectedPlayoutItem } from '../expectedPlayoutItems.js'
+import { actionNotFoundMessage } from '../lib.js'
 import type { FinishedTrace } from 'timeline-state-resolver-api'
 import type { CommandWithContext, DeviceEvents } from 'timeline-state-resolver-api'
 

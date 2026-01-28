@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events'
-import { actionNotFoundMessage, cloneDeep } from '../lib'
+import { actionNotFoundMessage, cloneDeep } from '../lib.js'
 import type {
 	FinishedTrace,
 	DeviceEntry,
@@ -16,11 +16,11 @@ import {
 	type Timeline,
 	type TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { StateHandler } from './stateHandler'
-import { DevicesDict } from './devices'
-import type { DeviceOptionsAny, ExpectedPlayoutItem } from '..'
-import type { StateChangeReport } from './measure'
-import { StateTracker } from './stateTracker'
+import { StateHandler } from './stateHandler.js'
+import { DevicesDict } from './devices.js'
+import type { DeviceOptionsAny, ExpectedPlayoutItem } from '../index.js'
+import type { StateChangeReport } from './measure.js'
+import { StateTracker } from './stateTracker.js'
 
 type Config = DeviceOptionsAny
 type DeviceState = object

@@ -13,7 +13,7 @@ import {
 	SingularLiveDeviceTypes,
 } from 'timeline-state-resolver-types'
 import got from 'got'
-import { literal } from '../../lib'
+import { literal } from '../../lib.js'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 export interface SingularLiveControlNodeCommandContent extends SingularLiveCommandContent {

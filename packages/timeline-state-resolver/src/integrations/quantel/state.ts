@@ -7,7 +7,7 @@ import {
 	TSRTimelineContent,
 	TimelineContentQuantelClip,
 } from 'timeline-state-resolver-types'
-import { MappedPorts, QuantelState, QuantelStatePort } from './types'
+import { MappedPorts, QuantelState, QuantelStatePort } from './types.js'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 export function getMappedPorts(mappings: Mappings<SomeMappingQuantel>): MappedPorts {

@@ -1,16 +1,16 @@
 import { MediaClipRef, MediaRamRecRef, MediaSoundRef } from 'kairos-connection'
 import { TimelineObjectInstance } from 'superfly-timeline'
 import { TimelineContentKairosPlayerState } from 'timeline-state-resolver-types'
-import { KairosCommandWithContext } from '..'
+import { KairosCommandWithContext } from '../index.js'
 import {
 	KairosClipPlayerCommand,
 	KairosRamRecPlayerCommand,
 	KairosSoundPlayerCommand,
 	KairosPlayerCommandMethod,
 	KairosImageStoreCommand,
-} from '../commands'
-import { KairosDeviceState, MappingOptions } from '../stateBuilder'
-import { diffObjectBoolean, getAllKeysString } from './lib'
+} from '../commands.js'
+import { KairosDeviceState, MappingOptions } from '../stateBuilder.js'
+import { diffObjectBoolean, getAllKeysString } from './lib.js'
 
 export function diffMediaPlayers(
 	stateTime: number,

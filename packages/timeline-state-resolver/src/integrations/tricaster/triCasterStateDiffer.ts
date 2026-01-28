@@ -25,10 +25,10 @@ import {
 	TriCasterCommandWithContext,
 	TriCasterGenericCommandName,
 	TriCasterGenericCommand,
-} from './triCasterCommands'
-import { TriCasterShortcutStateConverter } from './triCasterShortcutStateConverter'
-import { TriCasterTimelineStateConverter } from './triCasterTimelineStateConverter'
-import { TriCasterInfo } from './triCasterConnection'
+} from './triCasterCommands.js'
+import { TriCasterShortcutStateConverter } from './triCasterShortcutStateConverter.js'
+import { TriCasterTimelineStateConverter } from './triCasterTimelineStateConverter.js'
+import { TriCasterInfo } from './triCasterConnection.js'
 import _ from 'underscore'
 
 const BLACK_INPUT = 'black'

@@ -1,6 +1,6 @@
 import * as AtemConnection from 'atem-connection'
-import { AtemDevice } from '..'
-import { MockTime } from '../../../__tests__/mockTime'
+import { AtemDevice } from '../index.js'
+import { MockTime } from '../../../__tests__/mockTime.js'
 import {
 	Mappings,
 	DeviceType,
@@ -14,10 +14,10 @@ import {
 	TimelineContentAtemME,
 	StatusCode,
 } from 'timeline-state-resolver-types'
-import { literal } from '../../../lib'
-import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
-import { compareAtemCommands, createDevice, extractAllCommands, waitForConnection } from './util'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { literal } from '../../../lib.js'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
+import { compareAtemCommands, createDevice, extractAllCommands, waitForConnection } from './util.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 describe('Atem', () => {

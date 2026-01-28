@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { EventEmitter } from 'events'
 import got from 'got'
 import * as querystring from 'querystring'
-import { Command, PowerMode, PowerModeQuery } from './commands'
+import { Command, PowerMode, PowerModeQuery } from './commands.js'
 
 const PROBE_INTERVAL = 10 * 1000 // Probe every 10s
 

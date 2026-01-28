@@ -1,5 +1,5 @@
-import { waitTime } from '../../__tests__/lib'
-import { CommandExecutor } from '../commandExecutor'
+import { waitTime } from '../../__tests__/lib.js'
+import { CommandExecutor } from '../commandExecutor.js'
 
 describe('CommandExecutor', () => {
 	const FUDGE_TIME = 50 // ms

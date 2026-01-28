@@ -8,9 +8,9 @@ import {
 	DeviceStatus,
 	TricasterDeviceTypes,
 } from 'timeline-state-resolver-types'
-import { WithContext, MappingsTriCaster, TriCasterState, TriCasterStateDiffer } from './triCasterStateDiffer'
-import { TriCasterCommandWithContext } from './triCasterCommands'
-import { TriCasterConnection } from './triCasterConnection'
+import { WithContext, MappingsTriCaster, TriCasterState, TriCasterStateDiffer } from './triCasterStateDiffer.js'
+import { TriCasterCommandWithContext } from './triCasterCommands.js'
+import { TriCasterConnection } from './triCasterConnection.js'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const DEFAULT_PORT = 5951

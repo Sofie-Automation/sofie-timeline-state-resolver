@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { mock } from 'jest-mock-extended'
-import { vMixActionsImpl } from '../vMixActionsImpl'
-import { VMixCommandSender } from '../connection'
+import { vMixActionsImpl } from '../vMixActionsImpl.js'
+import { VMixCommandSender } from '../connection.js'
 import { ActionExecutionResultCode } from 'timeline-state-resolver-types'
 
 const createTestee = () => {

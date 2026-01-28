@@ -1,9 +1,9 @@
 import { QuantelGateway } from 'tv-automation-quantel-gateway-client'
-import { QuantelManager } from '../connection'
-import { setupQuantelGatewayMock } from './quantelGatewayMock'
-import { QuantelCommandType } from '../types'
+import { QuantelManager } from '../connection.js'
+import { setupQuantelGatewayMock } from './quantelGatewayMock.js'
+import { QuantelCommandType } from '../types.js'
 import { QuantelControlMode } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
+import { MockTime } from '../../../__tests__/mockTime.js'
 
 describe('Quantel connection', () => {
 	const { quantelServer, onRequest } = setupQuantelGatewayMock()

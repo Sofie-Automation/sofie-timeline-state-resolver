@@ -1,6 +1,6 @@
 import { TSRTransitionOptions } from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
-import { Animator, LinearMovement, PhysicalAcceleration } from './animate'
+import { Animator, LinearMovement, PhysicalAcceleration } from './animate.js'
 
 export interface AnimatorType {
 	type: 'linear' | 'physical'

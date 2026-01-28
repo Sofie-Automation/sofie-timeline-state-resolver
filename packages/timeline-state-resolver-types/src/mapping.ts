@@ -1,5 +1,5 @@
-import { Content, ResolvedTimelineObjectInstance } from './superfly-timeline'
-import { DeviceType, TSRTimelineContent } from '.'
+import { Content, ResolvedTimelineObjectInstance } from './superfly-timeline/index.js'
+import { DeviceType, TSRTimelineContent } from './index.js'
 
 export interface Mappings<TOptions extends { mappingType: string } | unknown = unknown> {
 	[layerName: string]: Mapping<TOptions>

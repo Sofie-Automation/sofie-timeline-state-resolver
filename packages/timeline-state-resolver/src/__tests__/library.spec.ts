@@ -1,5 +1,6 @@
 // These imports are pointed to what external libraries will import
-import { Conductor, DeviceType, CasparCGDevice } from '../../dist/'
+// eslint-disable-next-line n/no-missing-import
+import { Conductor, DeviceType, CasparCGDevice } from '../../dist/index.js'
 import {
 	DeviceType as Types_DeviceType,
 	TSRTimeline,

@@ -1,6 +1,6 @@
 import { QuantelOutTransition } from 'timeline-state-resolver-types'
-import { QuantelCommandWithContext } from '.'
-import { QuantelCommand, QuantelCommandType, QuantelState, QuantelStatePort, QuantelStatePortClip } from './types'
+import { QuantelCommandWithContext } from './index.js'
+import { QuantelCommand, QuantelCommandType, QuantelState, QuantelStatePort, QuantelStatePortClip } from './types.js'
 import _ from 'underscore'
 
 const IDEAL_PREPARE_TIME = 1000

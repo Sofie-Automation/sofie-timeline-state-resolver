@@ -1,4 +1,4 @@
-import { waitTime } from './lib'
+import { waitTime } from './lib.js'
 
 export class MockTime {
 	private _now = 10000

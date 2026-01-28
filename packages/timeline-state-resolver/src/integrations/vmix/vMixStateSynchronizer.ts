@@ -1,5 +1,5 @@
-import { VMixInput, VMixState, VMixStateExtended } from './vMixStateDiffer'
-import { EnforceableVMixInputStateKeys } from '.'
+import { VMixInput, VMixState, VMixStateExtended } from './vMixStateDiffer.js'
+import { EnforceableVMixInputStateKeys } from './index.js'
 import { VMixInputOverlays, VMixLayers, VMixTransform } from 'timeline-state-resolver-types'
 
 /**

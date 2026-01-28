@@ -5,8 +5,8 @@ import {
 	SavePresetPayload,
 	VmixActionMethods,
 } from 'timeline-state-resolver-types'
-import { t } from '../../lib'
-import { VMixCommandSender } from './connection'
+import { t } from '../../lib.js'
+import { VMixCommandSender } from './connection.js'
 
 export class vMixActionsImpl implements VmixActionMethods {
 	constructor(private getVMixCommandSender: () => VMixCommandSender) {}

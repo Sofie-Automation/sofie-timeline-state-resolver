@@ -5,8 +5,8 @@ import {
 	GetPanTiltPositionResult,
 	GetZoomPositionResult,
 } from 'timeline-state-resolver-types'
-import * as ConnectionEnums from '../enums'
-import { PanTiltPosition } from '../commands/inquiry'
+import * as ConnectionEnums from '../enums.js'
+import { PanTiltPosition } from '../commands/inquiry/index.js'
 
 export class ViscaValueConverter {
 	// -- to --

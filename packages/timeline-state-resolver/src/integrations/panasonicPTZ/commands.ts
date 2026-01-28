@@ -1,6 +1,6 @@
 import { sprintf } from 'sprintf-js'
 import _ from 'underscore'
-import { PanasonicFocusMode } from './connection'
+import { PanasonicFocusMode } from './connection.js'
 
 export interface Command<TRes> {
 	serialize(): string

@@ -1,5 +1,5 @@
-import type { SlowSentCommandInfo, SlowFulfilledCommandInfo, CommandReport } from './commandReport'
-import type { FinishedTrace } from './trace'
+import type { SlowSentCommandInfo, SlowFulfilledCommandInfo, CommandReport } from './commandReport.js'
+import type { FinishedTrace } from './trace.js'
 import type {
 	Timeline,
 	TSRTimelineContent,

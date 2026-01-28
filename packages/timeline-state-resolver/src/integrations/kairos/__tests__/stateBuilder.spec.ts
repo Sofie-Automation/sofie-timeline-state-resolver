@@ -5,9 +5,9 @@ import {
 	SomeMappingKairos,
 	TimelineContentTypeKairos,
 } from 'timeline-state-resolver-types'
-import { KairosStateBuilder } from '../stateBuilder'
-import { EMPTY_STATE } from './lib'
-import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
+import { KairosStateBuilder } from '../stateBuilder.js'
+import { EMPTY_STATE } from './lib.js'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 import { refIpInput } from 'kairos-connection'
 
 describe('stateBuilder', () => {

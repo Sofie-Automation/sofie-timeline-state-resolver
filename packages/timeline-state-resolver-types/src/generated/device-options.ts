@@ -5,128 +5,128 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 
-import type { DeviceOptionsBase } from '../device'
-import type { AbstractOptions } from './abstract'
+import type { DeviceOptionsBase } from '../device.js'
+import type { AbstractOptions } from './abstract.js'
 export interface DeviceOptionsAbstract extends DeviceOptionsBase<AbstractOptions> {
 	type: DeviceType.ABSTRACT
 }
 
-import type { AtemOptions } from './atem'
+import type { AtemOptions } from './atem.js'
 export interface DeviceOptionsAtem extends DeviceOptionsBase<AtemOptions> {
 	type: DeviceType.ATEM
 }
 
-import type { CasparCGOptions } from './casparCG'
+import type { CasparCGOptions } from './casparCG.js'
 export interface DeviceOptionsCasparCG extends DeviceOptionsBase<CasparCGOptions> {
 	type: DeviceType.CASPARCG
 }
 
-import type { HttpSendOptions } from './httpSend'
+import type { HttpSendOptions } from './httpSend.js'
 export interface DeviceOptionsHttpSend extends DeviceOptionsBase<HttpSendOptions> {
 	type: DeviceType.HTTPSEND
 }
 
-import type { HttpWatcherOptions } from './httpWatcher'
+import type { HttpWatcherOptions } from './httpWatcher.js'
 export interface DeviceOptionsHttpWatcher extends DeviceOptionsBase<HttpWatcherOptions> {
 	type: DeviceType.HTTPWATCHER
 }
 
-import type { HyperdeckOptions } from './hyperdeck'
+import type { HyperdeckOptions } from './hyperdeck.js'
 export interface DeviceOptionsHyperdeck extends DeviceOptionsBase<HyperdeckOptions> {
 	type: DeviceType.HYPERDECK
 }
 
-import type { KairosOptions } from './kairos'
+import type { KairosOptions } from './kairos.js'
 export interface DeviceOptionsKairos extends DeviceOptionsBase<KairosOptions> {
 	type: DeviceType.KAIROS
 }
 
-import type { LawoOptions } from './lawo'
+import type { LawoOptions } from './lawo.js'
 export interface DeviceOptionsLawo extends DeviceOptionsBase<LawoOptions> {
 	type: DeviceType.LAWO
 }
 
-import type { MultiOscOptions } from './multiOsc'
+import type { MultiOscOptions } from './multiOsc.js'
 export interface DeviceOptionsMultiOsc extends DeviceOptionsBase<MultiOscOptions> {
 	type: DeviceType.MULTI_OSC
 }
 
-import type { ObsOptions } from './obs'
+import type { ObsOptions } from './obs.js'
 export interface DeviceOptionsObs extends DeviceOptionsBase<ObsOptions> {
 	type: DeviceType.OBS
 }
 
-import type { OscOptions } from './osc'
+import type { OscOptions } from './osc.js'
 export interface DeviceOptionsOsc extends DeviceOptionsBase<OscOptions> {
 	type: DeviceType.OSC
 }
 
-import type { PanasonicPTZOptions } from './panasonicPTZ'
+import type { PanasonicPTZOptions } from './panasonicPTZ.js'
 export interface DeviceOptionsPanasonicPTZ extends DeviceOptionsBase<PanasonicPTZOptions> {
 	type: DeviceType.PANASONIC_PTZ
 }
 
-import type { PharosOptions } from './pharos'
+import type { PharosOptions } from './pharos.js'
 export interface DeviceOptionsPharos extends DeviceOptionsBase<PharosOptions> {
 	type: DeviceType.PHAROS
 }
 
-import type { QuantelOptions } from './quantel'
+import type { QuantelOptions } from './quantel.js'
 export interface DeviceOptionsQuantel extends DeviceOptionsBase<QuantelOptions> {
 	type: DeviceType.QUANTEL
 }
 
-import type { ShotokuOptions } from './shotoku'
+import type { ShotokuOptions } from './shotoku.js'
 export interface DeviceOptionsShotoku extends DeviceOptionsBase<ShotokuOptions> {
 	type: DeviceType.SHOTOKU
 }
 
-import type { SingularLiveOptions } from './singularLive'
+import type { SingularLiveOptions } from './singularLive.js'
 export interface DeviceOptionsSingularLive extends DeviceOptionsBase<SingularLiveOptions> {
 	type: DeviceType.SINGULAR_LIVE
 }
 
-import type { SisyfosOptions } from './sisyfos'
+import type { SisyfosOptions } from './sisyfos.js'
 export interface DeviceOptionsSisyfos extends DeviceOptionsBase<SisyfosOptions> {
 	type: DeviceType.SISYFOS
 }
 
-import type { SofieChefOptions } from './sofieChef'
+import type { SofieChefOptions } from './sofieChef.js'
 export interface DeviceOptionsSofieChef extends DeviceOptionsBase<SofieChefOptions> {
 	type: DeviceType.SOFIE_CHEF
 }
 
-import type { TcpSendOptions } from './tcpSend'
+import type { TcpSendOptions } from './tcpSend.js'
 export interface DeviceOptionsTcpSend extends DeviceOptionsBase<TcpSendOptions> {
 	type: DeviceType.TCPSEND
 }
 
-import type { TelemetricsOptions } from './telemetrics'
+import type { TelemetricsOptions } from './telemetrics.js'
 export interface DeviceOptionsTelemetrics extends DeviceOptionsBase<TelemetricsOptions> {
 	type: DeviceType.TELEMETRICS
 }
 
-import type { TricasterOptions } from './tricaster'
+import type { TricasterOptions } from './tricaster.js'
 export interface DeviceOptionsTricaster extends DeviceOptionsBase<TricasterOptions> {
 	type: DeviceType.TRICASTER
 }
 
-import type { ViscaOverIPOptions } from './viscaOverIP'
+import type { ViscaOverIPOptions } from './viscaOverIP.js'
 export interface DeviceOptionsViscaOverIP extends DeviceOptionsBase<ViscaOverIPOptions> {
 	type: DeviceType.VISCA_OVER_IP
 }
 
-import type { VizMSEOptions } from './vizMSE'
+import type { VizMSEOptions } from './vizMSE.js'
 export interface DeviceOptionsVizMSE extends DeviceOptionsBase<VizMSEOptions> {
 	type: DeviceType.VIZMSE
 }
 
-import type { VmixOptions } from './vmix'
+import type { VmixOptions } from './vmix.js'
 export interface DeviceOptionsVmix extends DeviceOptionsBase<VmixOptions> {
 	type: DeviceType.VMIX
 }
 
-import type { WebsocketClientOptions } from './websocketClient'
+import type { WebsocketClientOptions } from './websocketClient.js'
 export interface DeviceOptionsWebsocketClient extends DeviceOptionsBase<WebsocketClientOptions> {
 	type: DeviceType.WEBSOCKET_CLIENT
 }
