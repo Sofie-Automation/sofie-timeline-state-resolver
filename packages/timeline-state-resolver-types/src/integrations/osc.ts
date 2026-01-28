@@ -1,4 +1,37 @@
 import { DeviceType } from '../generated/index.js'
+import { DeviceStatusError } from '../deviceError.js'
+
+/**
+ * Error codes for OSC device issues.
+ * These codes can be customized in blueprints via deviceErrorMessages.
+ */
+export const OSCErrorCode = {
+	TCP_DISCONNECTED: 'DEVICE_OSC_TCP_DISCONNECTED',
+} as const
+
+export type OSCErrorCode = (typeof OSCErrorCode)[keyof typeof OSCErrorCode]
+
+/**
+ * Context data for each OSC error type.
+ * These fields are available for message template interpolation.
+ */
+export interface OSCErrorContextMap {
+	[OSCErrorCode.TCP_DISCONNECTED]: {
+		deviceName: string
+		host: string
+		port: number
+	}
+}
+
+export type OSCError<T extends OSCErrorCode = OSCErrorCode> = DeviceStatusError<T, OSCErrorContextMap[T]>
+
+/**
+ * Default error message templates for OSC devices.
+ * Can be overridden in blueprints via deviceErrorMessages.
+ */
+export const OSCErrorMessages: Record<OSCErrorCode, string> = {
+	[OSCErrorCode.TCP_DISCONNECTED]: 'Disconnected',
+}
 
 // Note: This type is a loose referral to (a copy of) keyof typeof Easing in '../../easings', so that Easing structure won't be included in the types package
 export type OSCEasingType =
