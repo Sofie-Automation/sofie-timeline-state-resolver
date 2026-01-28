@@ -1,8 +1,8 @@
 import { ThreadedClass, threadedClass, ThreadedClassConfig, ThreadedClassManager } from 'threadedclass'
 import { DeviceType, DeviceOptionsBase, DeviceOptionsAny } from 'timeline-state-resolver-types'
 import { EventEmitter } from 'node:events'
-import { DeviceDetails, DeviceInstanceWrapper } from './DeviceInstance'
-import type { Device } from '../conductor'
+import { DeviceDetails, DeviceInstanceWrapper } from './DeviceInstance.js'
+import type { Device } from '../conductor.js'
 
 export type DeviceContainerEvents = {
 	error: [context: string, err: Error]

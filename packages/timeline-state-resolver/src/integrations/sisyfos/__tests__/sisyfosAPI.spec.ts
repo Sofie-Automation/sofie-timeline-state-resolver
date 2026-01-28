@@ -1,5 +1,5 @@
-import { SisyfosApi } from '../../../integrations/sisyfos/connection'
-import * as OSC from '../../../__mocks__/osc'
+import { SisyfosApi } from '../../../integrations/sisyfos/connection.js'
+import * as OSC from '../../../__mocks__/osc.js'
 const MockOSC = OSC.MockOSC
 
 const orgSetTimeout = setTimeout

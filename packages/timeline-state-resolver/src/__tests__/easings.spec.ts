@@ -1,4 +1,4 @@
-import { Easing } from '../devices/transitions/easings'
+import { Easing } from '../devices/transitions/easings.js'
 
 describe('easings', () => {
 	const easings = {

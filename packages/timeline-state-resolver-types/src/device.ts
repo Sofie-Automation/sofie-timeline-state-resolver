@@ -1,5 +1,5 @@
-import type { DeviceType } from '.'
-import type { DeviceCommonOptions } from './generated/common-options'
+import type { DeviceType } from './index.js'
+import type { DeviceCommonOptions } from './generated/common-options.js'
 
 export enum StatusCode {
 	UNKNOWN = 0, // Status unknown

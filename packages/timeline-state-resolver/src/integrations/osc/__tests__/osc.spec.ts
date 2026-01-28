@@ -7,8 +7,8 @@ import {
 	TimelineContentTypeOSC,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { OscCommandWithContext, OscDevice, OscDeviceState } from '..'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { OscCommandWithContext, OscDevice, OscDeviceState } from '../index.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const MOCKED_SOCKET_CONNECT = jest.fn()

@@ -26,7 +26,7 @@ import {
 	KairosMacroActiveState,
 	TimelineContentKairosMacroInfo,
 } from 'timeline-state-resolver-types'
-import { assertNever } from '../../lib'
+import { assertNever } from '../../lib.js'
 import {
 	AuxRef,
 	MediaClipRef,
@@ -45,7 +45,6 @@ import {
 	UpdateSceneSnapshotObject,
 	MacroRef,
 	refMacro,
-	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
 import { TimelineObjectInstance } from 'superfly-timeline'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'

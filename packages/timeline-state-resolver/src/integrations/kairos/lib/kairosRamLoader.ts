@@ -8,7 +8,7 @@ import {
 	pathToRef,
 	refToPath,
 } from 'kairos-connection'
-import { KairosDeviceState } from '../stateBuilder'
+import { KairosDeviceState } from '../stateBuilder.js'
 import { DeviceContextAPI } from 'timeline-state-resolver-api'
 
 export class KairosRamLoader {

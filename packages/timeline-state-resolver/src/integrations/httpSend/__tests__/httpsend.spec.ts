@@ -22,8 +22,8 @@ jest.mock('got', () => {
 })
 
 // note - this import should be below the got mock
-import { HTTPSendDevice, HttpSendDeviceCommand, HttpSendDeviceState } from '..'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { HTTPSendDevice, HttpSendDeviceCommand, HttpSendDeviceState } from '../index.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 
 async function getInitialisedHttpDevice(retries = false) {
 	const dev = new HTTPSendDevice(getDeviceContext())

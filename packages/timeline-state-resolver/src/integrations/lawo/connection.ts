@@ -1,9 +1,9 @@
 import { EmberClient, Model as EmberModel } from 'emberplus-connection'
 import { EventEmitter } from 'node:events'
-import { deferAsync } from '../../lib'
+import { deferAsync } from '../../lib.js'
 import { LawoDeviceMode, LawoOptions } from 'timeline-state-resolver-types'
 import _ from 'underscore'
-import { LawoFaderRampCommand, LawoSetValueCommand } from './diff'
+import { LawoFaderRampCommand, LawoSetValueCommand } from './diff.js'
 import { EmberValue } from 'emberplus-connection/dist/types'
 
 export class LawoConnection extends EventEmitter {

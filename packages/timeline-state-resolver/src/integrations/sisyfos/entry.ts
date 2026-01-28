@@ -1,5 +1,5 @@
 import { DeviceEntry } from 'timeline-state-resolver-api'
-import { SisyfosMessageDevice } from '.'
+import { SisyfosMessageDevice } from './index.js'
 
 export class SisyfosDeviceEntry implements DeviceEntry {
 	public readonly deviceClass = SisyfosMessageDevice

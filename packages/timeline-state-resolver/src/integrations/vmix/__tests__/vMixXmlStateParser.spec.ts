@@ -1,8 +1,8 @@
 import { VMixTransitionType } from 'timeline-state-resolver-types'
-import { VMixAudioBusesState, VMixState } from '../vMixStateDiffer'
-import { VMixXmlStateParser } from '../vMixXmlStateParser'
-import { makeMockVMixXmlState } from './vmixMock'
-import { prefixAddedInput } from './mockState'
+import { VMixAudioBusesState, VMixState } from '../vMixStateDiffer.js'
+import { VMixXmlStateParser } from '../vMixXmlStateParser.js'
+import { makeMockVMixXmlState } from './vmixMock.js'
+import { prefixAddedInput } from './mockState.js'
 
 describe('VMixXmlStateParser', () => {
 	it('parses incoming state', () => {

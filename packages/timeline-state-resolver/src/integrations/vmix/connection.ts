@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events'
 import { Socket } from 'net'
 import { MappingVmixAudioBus, VMixCommand } from 'timeline-state-resolver-types'
-import { VMixStateCommand } from './vMixCommands'
-import { Response, VMixResponseStreamReader } from './vMixResponseStreamReader'
+import { VMixStateCommand } from './vMixCommands.js'
+import { Response, VMixResponseStreamReader } from './vMixResponseStreamReader.js'
 
 const VMIX_DEFAULT_TCP_PORT = 8099
 

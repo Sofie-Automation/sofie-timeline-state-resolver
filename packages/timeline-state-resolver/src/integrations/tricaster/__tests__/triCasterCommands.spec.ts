@@ -1,4 +1,4 @@
-import { CommandName, serializeToWebSocketMessage } from '../triCasterCommands'
+import { CommandName, serializeToWebSocketMessage } from '../triCasterCommands.js'
 
 describe('serializeToWebSocketMessage', () => {
 	test('serializes command with numberic value', () => {

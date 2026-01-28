@@ -27,16 +27,16 @@ import {
 	fillStateFromDatastore,
 } from 'timeline-state-resolver-types'
 
-import { DoOnTime } from './devices/doOnTime'
-import { AsyncResolver } from './AsyncResolver'
-import { endTrace, startTrace } from './lib'
+import { DoOnTime } from './devices/doOnTime.js'
+import { AsyncResolver } from './AsyncResolver.js'
+import { endTrace, startTrace } from './lib.js'
 import type { FinishedTrace, CommandWithContext } from 'timeline-state-resolver-api'
 
-import { DeviceContainer } from './devices/deviceContainer'
+import { DeviceContainer } from './devices/deviceContainer.js'
 
-import { BaseRemoteDeviceIntegration } from './service/remoteDeviceInstance'
-import { ConnectionManager } from './service/ConnectionManager'
-import { DevicesRegistry } from './service/devicesRegistry'
+import { BaseRemoteDeviceIntegration } from './service/remoteDeviceInstance.js'
+import { ConnectionManager } from './service/ConnectionManager.js'
+import { DevicesRegistry } from './service/devicesRegistry.js'
 
 export { DeviceContainer }
 export { CommandWithContext }
@@ -51,7 +51,7 @@ const RESOLVE_LIMIT_TIME = 10 * 1000
 
 export type TimelineTriggerTimeResult = Array<{ id: string; time: number }>
 
-export { Device } from './devices/device'
+export { Device } from './devices/device.js'
 
 export interface ConductorOptions {
 	// devices: {

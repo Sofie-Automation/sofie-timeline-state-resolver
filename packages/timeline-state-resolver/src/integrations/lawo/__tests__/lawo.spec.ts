@@ -1,5 +1,5 @@
 /* eslint-disable jest/expect-expect */
-import { LawoDevice } from '..'
+import { LawoDevice } from '../index.js'
 import {
 	Mappings,
 	DeviceType,
@@ -9,12 +9,12 @@ import {
 	LawoDeviceMode,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
-import { getDeviceContext } from '../../../integrations/__tests__/testlib'
-import { LawoState } from '../state'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import { getDeviceContext } from '../../../integrations/__tests__/testlib.js'
+import { LawoState } from '../state.js'
 import { ParameterType } from 'emberplus-connection/dist/model'
-import { LawoCommandType, LawoCommandWithContext } from '../diff'
-import { EmberClient } from '../../../__mocks__/emberplus-connection'
+import { LawoCommandType, LawoCommandWithContext } from '../diff.js'
+import { EmberClient } from '../../../__mocks__/emberplus-connection.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 async function getInitialisedLawoDevice(clearMock?: jest.Mock) {

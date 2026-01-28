@@ -24,7 +24,7 @@ import type {
 } from 'timeline-state-resolver-api'
 import _ from 'underscore'
 import got, { OptionsOfTextResponseBody, RequestError } from 'got'
-import { t } from '../../lib'
+import { t } from '../../lib.js'
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import CacheableLookup from 'cacheable-lookup'
 

@@ -27,19 +27,11 @@ extendedRules.push({
 	},
 })
 
-// Very temporary rules, to allow gradual reconfigure
+// Scripts are looser with some rules
 extendedRules.push({
 	files: ['scripts/*'],
 	rules: {
 		'n/no-process-exit': 0,
-	},
-})
-extendedRules.push({
-	files: ['**/*.ts'],
-	rules: {
-		// nocommit Temporary disable rules
-		'n/file-extension-in-import': 0,
-		'n/no-missing-import': 0,
 	},
 })
 

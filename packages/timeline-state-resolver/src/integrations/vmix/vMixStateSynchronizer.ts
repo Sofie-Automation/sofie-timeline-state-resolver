@@ -1,5 +1,5 @@
-import { VMixInput, VMixState, VMixStateExtended } from './vMixStateDiffer'
-import { EnforceableVMixInputStateKeys } from '.'
+import { VMixInput, VMixState, VMixStateExtended } from './vMixStateDiffer.js'
+import type { EnforceableVMixInputStateKeys } from './index.js'
 
 /**
  * Applies selected properties from the real state to allow retrying to achieve the state

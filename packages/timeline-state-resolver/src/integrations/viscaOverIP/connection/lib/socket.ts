@@ -1,8 +1,8 @@
 import { createSocket, Socket } from 'dgram'
 import { EventEmitter } from 'events'
-import { AbstractCommand } from '../commands/index'
-import { ConnectionState, CommandType } from '../enums'
-import { ResetSequenceNumberCommand } from '../commands/control/resetSeqNumberCommand'
+import { AbstractCommand } from '../commands/index.js'
+import { ConnectionState, CommandType } from '../enums.js'
+import { ResetSequenceNumberCommand } from '../commands/control/resetSeqNumberCommand.js'
 
 interface QueuedCommand {
 	packetId: number

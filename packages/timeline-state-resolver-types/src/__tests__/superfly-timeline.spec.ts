@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import * as Original from 'superfly-timeline'
-import * as Local from '../superfly-timeline'
+import * as Local from '../superfly-timeline/index.js'
 
 const LocalEnums = {
 	EventType: Local.EventType,

@@ -1,4 +1,4 @@
-import { DeviceType, TemplateString } from '..'
+import { DeviceType, TemplateString } from '../index.js'
 
 export enum TimelineContentTypeCasparCg {
 	//  CasparCG-state

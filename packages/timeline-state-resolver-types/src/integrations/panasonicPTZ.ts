@@ -1,4 +1,4 @@
-import { DeviceType } from '..'
+import { DeviceType } from '../generated/index.js'
 
 export enum TimelineContentTypePanasonicPtz {
 	PRESET = 'presetMem',

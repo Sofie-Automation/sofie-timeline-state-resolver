@@ -1,12 +1,10 @@
 import type { SomeMappingKairos, Mappings } from 'timeline-state-resolver-types'
 import { KairosMacroActiveState } from 'timeline-state-resolver-types'
-import { KairosStateBuilder, type KairosDeviceState } from './stateBuilder'
-import type { KairosCommandWithContext } from '.'
-// eslint-disable-next-line node/no-missing-import
+import { KairosStateBuilder, type KairosDeviceState } from './stateBuilder.js'
+import type { KairosCommandWithContext } from './index.js'
 import { UpdateSceneLayerObject, UpdateSceneObject, UpdateAuxObject } from 'kairos-connection'
-
-import { diffMediaPlayers, diffMediaImageStore } from './diffState/media-players'
-import { diffObject, getAllKeysString } from './diffState/lib'
+import { diffMediaPlayers, diffMediaImageStore } from './diffState/media-players.js'
+import { diffObject, getAllKeysString } from './diffState/lib.js'
 
 export function diffKairosStates(
 	oldKairosState: KairosDeviceState | undefined,

@@ -1,8 +1,8 @@
 import type { DeviceOptionsAny } from 'timeline-state-resolver-types'
-import { ConnectionManager } from '../service/ConnectionManager'
-import { MockTime } from './mockTime'
-import type { DeviceOptionsVizMSEInternal } from '../integrations/vizMSE'
-import type { DeviceOptionsCasparCGInternal } from '../integrations/casparCG'
+import { ConnectionManager } from '../service/ConnectionManager.js'
+import { MockTime } from './mockTime.js'
+import type { DeviceOptionsVizMSEInternal } from '../integrations/vizMSE/index.js'
+import type { DeviceOptionsCasparCGInternal } from '../integrations/casparCG/index.js'
 
 export type DeviceOptionsAnyInternal = DeviceOptionsAny | DeviceOptionsVizMSEInternal | DeviceOptionsCasparCGInternal
 

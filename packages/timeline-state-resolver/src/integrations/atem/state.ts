@@ -4,10 +4,10 @@ import { DownstreamKeyer } from 'atem-connection/dist/state/video/downstreamKeye
 import { UpstreamKeyer } from 'atem-connection/dist/state/video/upstreamKeyers'
 import { State as DeviceState } from 'atem-state'
 import { resolveUpstreamKeyerState } from 'atem-state/dist/resolvers/upstreamKeyers'
-import { assertNever, deepMerge } from '../../lib'
+import { assertNever, deepMerge } from '../../lib.js'
 import { AtemStateUtil } from 'atem-connection'
 import * as _ from 'underscore'
-import { UpstreamKeyerDiffOptions } from './diffState'
+import { UpstreamKeyerDiffOptions } from './diffState.js'
 
 /**
  * This function converts a full device state into substates that can be addressed

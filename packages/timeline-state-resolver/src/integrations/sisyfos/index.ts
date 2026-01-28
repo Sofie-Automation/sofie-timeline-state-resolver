@@ -19,10 +19,11 @@ import {
 	StatusCode,
 } from 'timeline-state-resolver-types'
 
-import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection'
+import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection.js'
 import Debug from 'debug'
-import { t } from '../../lib'
+import { t } from '../../lib.js'
 import { CommandWithContext, Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+
 const debug = Debug('timeline-state-resolver:sisyfos')
 
 type Command = CommandWithContext<SisyfosCommand, string>

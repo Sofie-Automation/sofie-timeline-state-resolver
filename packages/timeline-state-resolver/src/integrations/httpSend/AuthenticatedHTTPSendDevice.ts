@@ -1,5 +1,5 @@
 import { ActionExecutionResult, HttpSendOptions, SendCommandResult } from 'timeline-state-resolver-types'
-import { HTTPSendDevice, HttpSendDeviceCommand } from '.'
+import { HTTPSendDevice, HttpSendDeviceCommand } from './index.js'
 import { AccessToken, ClientCredentials } from 'simple-oauth2'
 
 const TOKEN_REQUEST_RETRY_TIMEOUT_MS = 1000

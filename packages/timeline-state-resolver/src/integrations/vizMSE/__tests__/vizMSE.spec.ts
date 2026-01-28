@@ -1,4 +1,4 @@
-import { Conductor } from '../../../conductor'
+import { Conductor } from '../../../conductor.js'
 import {
 	Mappings,
 	DeviceType,
@@ -12,20 +12,20 @@ import {
 	ActivatePayload,
 	StatusCode,
 } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
+import { MockTime } from '../../../__tests__/mockTime.js'
 import { ThreadedClass } from 'threadedclass'
-import { addConnections, awaitNextRemoval, getMockCall } from '../../../__tests__/lib'
-import { VizMSEDevice } from '..'
-import * as vConnection from '../../../__mocks__/v-connection'
-import * as net from '../../../__mocks__/net'
+import { addConnections, awaitNextRemoval, getMockCall } from '../../../__tests__/lib.js'
+import { VizMSEDevice } from '../index.js'
+import * as vConnection from '../../../__mocks__/v-connection.js'
+import * as net from '../../../__mocks__/net.js'
 
 const getMockMSEs = vConnection.getMockMSEs
 type MSEMock = vConnection.MSEMock
 type VRundownMocked = vConnection.VRundownMocked
 import _ from 'underscore'
-import { MOCK_SHOWS } from '../../../__mocks__/v-connection'
-import { literal } from '../../../lib'
-import { ExpectedPlayoutItem } from '../../../expectedPlayoutItems'
+import { MOCK_SHOWS } from '../../../__mocks__/v-connection.js'
+import { literal } from '../../../lib.js'
+import { ExpectedPlayoutItem } from '../../../expectedPlayoutItems.js'
 
 async function setupDevice() {
 	let device: ThreadedClass<VizMSEDevice> = undefined as any

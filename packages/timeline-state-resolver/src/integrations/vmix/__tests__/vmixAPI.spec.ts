@@ -1,5 +1,5 @@
-import { setupVmixMock } from './vmixMock'
-import { VMixConnection } from '../connection'
+import { setupVmixMock } from './vmixMock.js'
+import { VMixConnection } from '../connection.js'
 
 const orgSetTimeout = setTimeout
 

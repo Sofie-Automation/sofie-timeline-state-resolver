@@ -1,7 +1,7 @@
 import { TimelineContentTypePanasonicPtz } from 'timeline-state-resolver-types'
 import _ from 'underscore'
 import type { CommandWithContext } from 'timeline-state-resolver-api'
-import { PanasonicPtzState } from './state'
+import { PanasonicPtzState } from './state.js'
 
 const COMMAND_PRIORITY: Record<PanasonicPtzCommand['type'], number> = {
 	presetSpeed: 0,

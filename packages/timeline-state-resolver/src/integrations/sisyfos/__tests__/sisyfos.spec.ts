@@ -9,13 +9,13 @@ import {
 	TimelineContentSisyfosAny,
 	Timeline,
 } from 'timeline-state-resolver-types'
-import * as OSC from '../../../__mocks__/osc'
+import * as OSC from '../../../__mocks__/osc.js'
 const MockOSC = OSC.MockOSC
-import { MockTime } from '../../../__tests__/mockTime'
-import { SisyfosMessageDevice } from '../../../integrations/sisyfos'
-import { waitUntil } from '../../../__tests__/lib'
-import { SisyfosCommandType, SisyfosState } from '../connection'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import { SisyfosMessageDevice } from '../../../integrations/sisyfos/index.js'
+import { waitUntil } from '../../../__tests__/lib.js'
+import { SisyfosCommandType, SisyfosState } from '../connection.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 import { DeviceContextAPI, DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 describe('Sisyfos', () => {

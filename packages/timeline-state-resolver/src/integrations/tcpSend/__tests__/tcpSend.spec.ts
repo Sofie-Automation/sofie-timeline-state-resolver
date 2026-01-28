@@ -1,9 +1,9 @@
 import { DeviceType, TimelineContentTCPSendAny } from 'timeline-state-resolver-types'
 import { Socket as OrgSocket } from 'net'
-import { Socket as MockSocket } from '../../../__mocks__/net'
-import { TcpSendDevice, TcpSendDeviceState } from '..'
-import { getDeviceContext } from '../../__tests__/testlib'
-import { literal } from '../../../lib'
+import { Socket as MockSocket } from '../../../__mocks__/net.js'
+import { TcpSendDevice, TcpSendDeviceState } from '../index.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
+import { literal } from '../../../lib.js'
 
 jest.mock('net')
 

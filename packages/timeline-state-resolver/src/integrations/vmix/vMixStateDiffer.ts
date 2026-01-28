@@ -10,9 +10,9 @@ import {
 	VMixImages,
 	MappingVmixAudioBus,
 } from 'timeline-state-resolver-types'
-import { CommandContext, VMixStateCommandWithContext } from './vMixCommands'
+import { CommandContext, VMixStateCommandWithContext } from './vMixCommands.js'
 import _ from 'underscore'
-import { VMixInputHandler } from './vMixInputHandler'
+import { VMixInputHandler } from './vMixInputHandler.js'
 
 /** Prefix of media input added by TSR. Only those with this prefix can be removed by this implementation */
 export const TSR_INPUT_PREFIX = 'TSR_MEDIA_'

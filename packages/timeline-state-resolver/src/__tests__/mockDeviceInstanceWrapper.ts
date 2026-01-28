@@ -8,8 +8,8 @@ import {
 	DeviceOptionsAny,
 } from 'timeline-state-resolver-types'
 import type { DeviceEvents } from 'timeline-state-resolver-api'
-import type { DeviceInstanceWrapper, DeviceDetails } from '../service/DeviceInstance'
-import type { ExpectedPlayoutItem } from '../expectedPlayoutItems'
+import type { DeviceInstanceWrapper, DeviceDetails } from '../service/DeviceInstance.js'
+import type { ExpectedPlayoutItem } from '../expectedPlayoutItems.js'
 
 export const ConstructedMockDevices: Record<string, MockDeviceInstanceWrapper> = {}
 export class MockDeviceInstanceWrapper

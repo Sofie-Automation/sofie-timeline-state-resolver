@@ -20,11 +20,11 @@ import {
 	StatusCode as ChefStatusCode,
 	StatusObject,
 	ReceiveWSMessageResponse,
-} from './api'
-import { t } from '../../lib'
+} from './api.js'
+import { t } from '../../lib.js'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { diffStates } from './diffStates'
-import { buildSofieChefState } from './stateBuilder'
+import { diffStates } from './diffStates.js'
+import { buildSofieChefState } from './stateBuilder.js'
 
 export type SofieChefCommandWithContext = CommandWithContext<ReceiveWSMessageAny, string>
 export interface SofieChefState {

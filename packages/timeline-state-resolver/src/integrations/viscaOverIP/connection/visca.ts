@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
-import { AbstractCommand } from './commands'
-import { ViscaUdpSocket } from './lib/socket'
+import { AbstractCommand } from './commands/index.js'
+import { ViscaUdpSocket } from './lib/socket.js'
 
 export class ViscaDevice extends EventEmitter {
 	private _address: string

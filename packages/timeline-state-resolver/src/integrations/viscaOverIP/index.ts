@@ -11,19 +11,19 @@ import {
 	ViscaOverIPOptions,
 } from 'timeline-state-resolver-types'
 
-import * as ConnectionEnums from './connection/enums'
-import { ViscaCommand, ViscaDevice, ViscaInquiryCommand } from './connection'
-import { PanTiltDriveCommand, PresetCommand, ZoomCommand } from './connection/commands/visca'
-import { FocusCommand } from './connection/commands/visca/focusCommand'
-import { FocusModeCommand } from './connection/commands/visca/focusModeCommand'
-import { FocusOnePushTriggerCommand } from './connection/commands/visca/focusOnePushTriggerCommand'
+import * as ConnectionEnums from './connection/enums.js'
+import { ViscaCommand, ViscaDevice, ViscaInquiryCommand } from './connection/index.js'
+import { PanTiltDriveCommand, PresetCommand, ZoomCommand } from './connection/commands/visca/index.js'
+import { FocusCommand } from './connection/commands/visca/focusCommand.js'
+import { FocusModeCommand } from './connection/commands/visca/focusModeCommand.js'
+import { FocusOnePushTriggerCommand } from './connection/commands/visca/focusOnePushTriggerCommand.js'
 import {
 	FocusModeInquiryCommand,
 	FocusPositionInquiryCommand,
 	PanTiltPositionInquiryCommand,
 	ZoomPositionInquiryCommand,
-} from './connection/commands/inquiry'
-import { ViscaValueConverter } from './connection/lib/ViscaValueConverter'
+} from './connection/commands/inquiry/index.js'
+import { ViscaValueConverter } from './connection/lib/ViscaValueConverter.js'
 
 export type ViscaDeviceState = DeviceTimelineState<TSRTimelineContent>
 

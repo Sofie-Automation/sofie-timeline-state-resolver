@@ -16,10 +16,10 @@ import {
 	FanSpeed,
 	Triggers,
 	Protocol,
-} from '../connection'
-import { getMockCall } from '../../../__tests__/lib'
-import WebSocket from '../../../__mocks__/ws'
-import got from '../../../__mocks__/got'
+} from '../connection.js'
+import { getMockCall } from '../../../__tests__/lib.js'
+import WebSocket from '../../../__mocks__/ws.js'
+import got from '../../../__mocks__/got.js'
 import { OptionsOfTextResponseBody, Response } from 'got'
 
 const orgSetTimeout = setTimeout

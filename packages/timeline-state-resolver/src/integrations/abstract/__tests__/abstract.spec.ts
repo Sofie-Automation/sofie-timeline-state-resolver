@@ -1,9 +1,9 @@
 /* eslint-disable jest/expect-expect */
 import { TSRTimelineContent, TimelineContentAbstractAny, DeviceType, StatusCode } from 'timeline-state-resolver-types'
-import { AbstractCommandWithContext, AbstractDevice, AbstractDeviceState } from '..'
-import { MockTime } from '../../../__tests__/mockTime'
-import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { AbstractCommandWithContext, AbstractDevice, AbstractDeviceState } from '../index.js'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 async function getInitialisedDevice() {

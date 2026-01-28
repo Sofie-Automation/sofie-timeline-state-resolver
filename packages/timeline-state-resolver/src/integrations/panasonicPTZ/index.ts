@@ -16,9 +16,9 @@ import {
 	PanasonicPTZActions,
 } from 'timeline-state-resolver-types'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { PanasonicPtzState, convertStateToPtz, getDefaultState } from './state'
-import { PanasonicPtzCommandWithContext, diffStates } from './diff'
-import { PanasonicFocusMode, PanasonicPtzHttpInterface } from './connection'
+import { PanasonicPtzState, convertStateToPtz, getDefaultState } from './state.js'
+import { PanasonicPtzCommandWithContext, diffStates } from './diff.js'
+import { PanasonicFocusMode, PanasonicPtzHttpInterface } from './connection.js'
 import {
 	AutoFocusOnOffControl,
 	AutoFocusOnOffQuery,
@@ -34,8 +34,8 @@ import {
 	ZoomPositionControl,
 	ZoomPositionQuery,
 	ZoomSpeedControl,
-} from './commands'
-import { t } from '../../lib'
+} from './commands.js'
+import { t } from '../../lib.js'
 
 const FOCUS_MODE_MAP = {
 	[FocusMode.AUTO]: PanasonicFocusMode.AUTO,

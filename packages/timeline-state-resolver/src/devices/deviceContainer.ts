@@ -1,7 +1,7 @@
 import { ThreadedClass, threadedClass, ThreadedClassConfig, ThreadedClassManager } from 'threadedclass'
-import { Device } from './device'
+import { Device } from './device.js'
 import { DeviceOptionsBase, DeviceType } from 'timeline-state-resolver-types'
-import { BaseRemoteDeviceIntegration, DeviceContainerEvents } from '../service/remoteDeviceInstance'
+import { BaseRemoteDeviceIntegration, DeviceContainerEvents } from '../service/remoteDeviceInstance.js'
 
 export { DeviceContainerEvents }
 
