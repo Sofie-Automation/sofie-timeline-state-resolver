@@ -42,6 +42,7 @@ export class StateHandler<
 > {
 	private stateQueue: StateChange<DeviceState, Command, AddressState>[] = []
 	private currentState: ExecutedStateChange<DeviceState, Command, AddressState> | undefined
+	private pendingState: StateChange<DeviceState, Command, AddressState> | undefined // the state that is becoming current, while commands are being sent out
 	/** Semaphore, to ensure that .executeNextStateChange() is only executed one at a time */
 	private _executingStateChange = false
 	private _commandExecutor: CommandExecutor<DeviceState, Command>
@@ -149,6 +150,13 @@ export class StateHandler<
 	}
 
 	/**
+	 * Returns what is considered to be the current device state (might be the state pending execution)
+	 **/
+	getCurrentState(): DeviceState | undefined {
+		return this.currentState?.deviceState ?? this.pendingState?.deviceState
+	}
+
+	/**
 	 * Sets the current state and makes sure the commands to get to the next state are still corrects
 	 **/
 	async setCurrentState(state: DeviceState | undefined) {
@@ -191,7 +199,7 @@ export class StateHandler<
 		this.stateQueue.unshift({
 			deviceState: 'deviceState' in deviceState ? deviceState.deviceState : deviceState,
 			addressStates: 'addressStates' in deviceState ? deviceState.addressStates : undefined,
-			state: this.currentState?.state || { time: this.context.getCurrentTime(), layers: {}, nextEvents: [] },
+			state: this.currentState?.state || { time: this.context.getCurrentTime(), objects: [] },
 			mappings: this.currentState?.mappings || {},
 		})
 
@@ -290,6 +298,7 @@ export class StateHandler<
 
 		newState.measurement?.executeState()
 
+		this.pendingState = newState
 		this.currentState = undefined
 
 		this._commandExecutor
@@ -323,6 +332,7 @@ export class StateHandler<
 		}
 
 		this.currentState = newState as ExecutedStateChange<DeviceState, Command, AddressState>
+		this.pendingState = undefined
 		this._executingStateChange = false
 
 		this.calculateNextStateChange().catch((e) => {

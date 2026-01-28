@@ -1,8 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceWithState } from './../../devices/device'
 import {
-	DeviceType,
-	DeviceOptionsSisyfos,
 	Mappings,
 	SisyfosOptions,
 	SomeMappingSisyfos,
@@ -12,149 +9,111 @@ import {
 	SisyfosChannelOptions,
 	MappingSisyfosChannel,
 	TSRTimelineContent,
-	Timeline,
-	ResolvedTimelineObjectInstanceExtended,
 	Mapping,
-	SisyfosActionMethods,
 	ActionExecutionResultCode,
+	SetSisyfosChannelStatePayload,
+	LoadMixerPresetPayload,
+	ActionExecutionResult,
 	SisyfosDeviceTypes,
-	SisyfosActions,
 	DeviceStatus,
 	StatusCode,
 } from 'timeline-state-resolver-types'
-import type { CommandWithContext } from 'timeline-state-resolver-api'
-
-import { DoOnTime, SendMode } from '../../devices/doOnTime'
 
 import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection'
 import Debug from 'debug'
-import { startTrace, endTrace, t } from '../../lib'
+import { t } from '../../lib'
+import { CommandWithContext, Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 const debug = Debug('timeline-state-resolver:sisyfos')
 
-export interface DeviceOptionsSisyfosInternal extends DeviceOptionsSisyfos {
-	commandReceiver?: CommandReceiver
-}
-export type CommandReceiver = (time: number, cmd: SisyfosCommand, context: any, timelineObjId: string) => Promise<any>
 type Command = CommandWithContext<SisyfosCommand, string>
 
-/**
- * This is a generic wrapper for any osc-enabled device.
- */
-export class SisyfosMessageDevice extends DeviceWithState<
-	SisyfosState,
-	SisyfosDeviceTypes,
-	DeviceOptionsSisyfosInternal
-> {
-	private _doOnTime: DoOnTime
+export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosState, Command> {
 	private _sisyfos: SisyfosApi
+	private _isResyncPending = false
+	private logger: DeviceContextAPI<SisyfosState>['logger']
 
-	private _commandReceiver: CommandReceiver = this._defaultCommandReceiver.bind(this)
-
-	private _resyncing = false
-
-	constructor(deviceId: string, deviceOptions: DeviceOptionsSisyfosInternal, getCurrentTime: () => Promise<number>) {
-		super(deviceId, deviceOptions, getCurrentTime)
-		if (deviceOptions.options) {
-			if (deviceOptions.commandReceiver) this._commandReceiver = deviceOptions.commandReceiver
-		}
+	constructor(protected context: DeviceContextAPI<SisyfosState>) {
+		this.logger = this.context.logger // just for convenience
 
 		this._sisyfos = new SisyfosApi()
-		this._sisyfos.on('error', (e) => this.emit('error', 'Sisyfos', e))
+		this._sisyfos.on('error', (e) => this.logger.error('error', e))
 		this._sisyfos.on('connected', () => {
 			this._connectionChanged()
 		})
 		this._sisyfos.on('disconnected', () => {
 			this._connectionChanged()
 		})
+		this._sisyfos.on('initialized', () => {
+			this._connectionChanged()
+		})
 		this._sisyfos.on('mixerOnlineChanged', () => {
 			this._connectionChanged()
 		})
-
-		this._doOnTime = new DoOnTime(
-			() => {
-				return this.getCurrentTime()
-			},
-			SendMode.BURST,
-			this._deviceOptions
-		)
-		this.handleDoOnTime(this._doOnTime, 'Sisyfos')
 	}
-	async init(initOptions: SisyfosOptions): Promise<boolean> {
+
+	public async reinit(): Promise<ActionExecutionResult<undefined>> {
+		return this._initialize()
+			.then(() => ({
+				result: ActionExecutionResultCode.Ok,
+			}))
+			.catch(() => ({
+				result: ActionExecutionResultCode.Error,
+			}))
+	}
+
+	public async setSisyfosChannelState(
+		payload: SetSisyfosChannelStatePayload
+	): Promise<ActionExecutionResult<undefined>> {
+		if (typeof payload?.channel !== 'number') {
+			return {
+				result: ActionExecutionResultCode.Error,
+			}
+		}
+		this._sisyfos.setSisyfosChannel(payload.channel + 1, { ...this._getDeviceState().channels[payload.channel] })
+		return {
+			result: ActionExecutionResultCode.Ok,
+		}
+	}
+
+	public async loadMixerPreset(payload: LoadMixerPresetPayload): Promise<ActionExecutionResult<undefined>> {
+		if (!payload?.name) {
+			return { result: ActionExecutionResultCode.Error, response: t('Missing name') }
+		}
+		if (!this._sisyfos.connected || !this._sisyfos.mixerOnline)
+			return {
+				result: ActionExecutionResultCode.Error,
+			}
+		this._sisyfos.send({
+			type: SisyfosCommandType.LOAD_MIXER_PRESET,
+			presetName: payload.name,
+		})
+		return {
+			result: ActionExecutionResultCode.Ok,
+		}
+	}
+
+	public readonly actions = this
+
+	public async init(initOptions: SisyfosOptions): Promise<boolean> {
 		this._sisyfos.once('initialized', () => {
-			this.setState(this.getDeviceState(false), this.getCurrentTime())
-			this.emit('resyncStates')
+			this.context
+				.resetToState(this._getDeviceState(false))
+				.catch((e) => this.context.logger.error('Failed to reset to full state', e))
 		})
 
 		this._sisyfos
 			.connect(initOptions.host, initOptions.port)
-			.catch((e) => this.emit('error', 'Failed to initialise Sisyfos connection', e))
+			.catch((e) => this.logger.error('Failed to initialise Sisyfos connection', e))
 
 		return true
 	}
-	/** Called by the Conductor a bit before a .handleState is called */
-	prepareForHandleState(newStateTime: number) {
-		// clear any queued commands later than this time:
-		this._doOnTime.clearQueueNowAndAfter(newStateTime)
-		this.cleanUpStates(0, newStateTime)
-	}
-	/**
-	 * Handles a new state such that the device will be in that state at a specific point
-	 * in time.
-	 * @param newState
-	 */
-	handleState(newState: Timeline.TimelineState<TSRTimelineContent>, newMappings: Mappings) {
-		super.onHandleState(newState, newMappings)
-		if (!this._sisyfos.state) {
-			this.emit('warning', 'Sisyfos State not initialized yet')
-			return
-		}
 
-		// Transform timeline states into device states
-		const convertTrace = startTrace(`device:convertState`, { deviceId: this.deviceId })
-		const previousStateTime = Math.max(this.getCurrentTime(), newState.time)
-		const oldSisyfosState: SisyfosState = (
-			this.getStateBefore(previousStateTime) || { state: { channels: {}, resync: false } }
-		).state
-		this.emit('timeTrace', endTrace(convertTrace))
-
-		const diffTrace = startTrace(`device:diffState`, { deviceId: this.deviceId })
-		const newSisyfosState = this.convertTimelineStateToDeviceState(newState, newMappings)
-		this.emit('timeTrace', endTrace(diffTrace))
-
-		this._handleStateInner(oldSisyfosState, newSisyfosState, previousStateTime, newState.time)
-	}
-
-	private _handleStateInner(
-		oldSisyfosState: SisyfosState,
-		newSisyfosState: SisyfosState,
-		previousStateTime: number,
-		newTime: number
-	) {
-		// Generate commands necessary to transition to the new state
-		const commandsToAchieveState: Array<Command> = this.diffStates(oldSisyfosState, newSisyfosState)
-
-		// clear any queued commands later than this time:
-		this._doOnTime.clearQueueNowAndAfter(previousStateTime)
-		// add the new commands to the queue:
-		this._addToQueue(commandsToAchieveState, newTime)
-
-		// store the new state, for later use:
-		this.setState(newSisyfosState, newTime)
-	}
-
-	/**
-	 * Clear any scheduled commands after this time
-	 * @param clearAfterTime
-	 */
-	clearFuture(clearAfterTime: number) {
-		this._doOnTime.clearQueueAfter(clearAfterTime)
-	}
-	async terminate() {
-		this._doOnTime.dispose()
+	public async terminate() {
 		this._sisyfos.dispose()
 		this._sisyfos.removeAllListeners()
 	}
-	getStatus(): DeviceStatus {
+
+	public getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
 		const messages: Array<string> = []
 
@@ -163,7 +122,7 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			messages.push('Not connected')
 		}
 
-		if (!this._sisyfos.state && !this._resyncing) {
+		if (!this._sisyfos.state && !this._isResyncPending) {
 			statusCode = StatusCode.BAD
 			messages.push(`Sisyfos device connection not initialized (restart required)`)
 		}
@@ -175,75 +134,42 @@ export class SisyfosMessageDevice extends DeviceWithState<
 		return {
 			statusCode: statusCode,
 			messages: messages,
-			active: this.isActive,
 		}
 	}
 
-	private async _makeReadyInner(resync?: boolean): Promise<void> {
-		if (resync) {
-			this._resyncing = true
-			// If state is still not reinitialised afer 5 seconds, we may have a problem.
-			setTimeout(() => (this._resyncing = false), 5000)
-		}
-
-		this._doOnTime.clearQueueNowAndAfter(this.getCurrentTime())
+	private async _initialize(): Promise<void> {
 		this._sisyfos.reInitialize()
 		this._sisyfos.once('initialized', () => {
-			if (resync) {
-				this._resyncing = false
-				const targetState = this.getState(this.getCurrentTime())
+			this.context
+				.resetToState(this._getDeviceState(false))
+				.catch((e) => this.context.logger.error('Failed to reset to state', e))
+		})
+	}
 
-				if (targetState) {
-					this._handleStateInner(this.getDeviceState(false), targetState.state, targetState.time, this.getCurrentTime())
-				}
-			} else {
-				this.setState(this.getDeviceState(false), this.getCurrentTime())
-				this.emit('resyncStates')
+	private async _resync(): Promise<void> {
+		if (this._isResyncPending) return
+		this._isResyncPending = true
+		// If state is still not reinitialised afer 5 seconds, we may have a problem.
+		setTimeout(() => (this._isResyncPending = false), 5000)
+
+		this._sisyfos.reInitialize()
+		this._sisyfos.once('initialized', () => {
+			this._isResyncPending = false
+			const targetState = this.context.getCurrentState()
+
+			if (targetState) {
+				this.context
+					.resetToState(this._getDeviceState(false))
+					.catch((e) => this.context.logger.error('Failed to reset to state while resyncing', e))
 			}
 		})
-
-		return Promise.resolve()
 	}
 
-	readonly actions: SisyfosActionMethods = {
-		[SisyfosActions.Reinit]: async () => {
-			return this._makeReadyInner()
-				.then(() => ({
-					result: ActionExecutionResultCode.Ok,
-				}))
-				.catch(() => ({
-					result: ActionExecutionResultCode.Error,
-				}))
-		},
-		[SisyfosActions.SetSisyfosChannelState]: async (payload) => {
-			if (typeof payload?.channel !== 'number') {
-				return {
-					result: ActionExecutionResultCode.Error,
-				}
-			}
-			this._sisyfos.setSisyfosChannel(payload.channel + 1, { ...this.getDeviceState().channels[payload.channel] })
-			return {
-				result: ActionExecutionResultCode.Ok,
-			}
-		},
-		[SisyfosActions.LoadMixerPreset]: async (payload) => {
-			if (!payload?.name) {
-				return {
-					result: ActionExecutionResultCode.Error,
-					response: t('Missing name'),
-				}
-			}
-			return this._handleLoadMixerPreset(payload.name)
-		},
-	}
-
-	get canConnect(): boolean {
-		return true
-	}
 	get connected(): boolean {
 		return this._sisyfos.connected
 	}
-	getDeviceState(isDefaultState = true, mappings?: Mappings): SisyfosState {
+
+	private _getDeviceState(isDefaultState = true, mappings?: Mappings): SisyfosState {
 		let deviceStateFromAPI = this._sisyfos.state
 		const deviceState: SisyfosState = {
 			channels: {},
@@ -276,7 +202,7 @@ export class SisyfosMessageDevice extends DeviceWithState<
 				// reset values for default state
 				channel = {
 					...channel,
-					...(ch.disableDefaults ? this.getBlankStateChannel() : this.getDefaultStateChannel()),
+					...(ch.disableDefaults ? this._getBlankStateChannel() : this._getDefaultStateChannel()),
 				}
 			}
 
@@ -286,7 +212,7 @@ export class SisyfosMessageDevice extends DeviceWithState<
 	}
 
 	/** Returns a channel with defaults */
-	getDefaultStateChannel(): SisyfosChannel {
+	private _getDefaultStateChannel(): SisyfosChannel {
 		return {
 			faderLevel: 0.75, // 0 dB
 			pgmOn: 0,
@@ -301,7 +227,7 @@ export class SisyfosMessageDevice extends DeviceWithState<
 	}
 
 	/** Returns a channel without defaults */
-	getBlankStateChannel(): SisyfosChannel {
+	private _getBlankStateChannel(): SisyfosChannel {
 		return {
 			label: '',
 			timelineObjIds: [],
@@ -315,16 +241,17 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			muteOn: undefined,
 		}
 	}
+
 	/**
 	 * Transform the timeline state into a device state, which is in this case also
 	 * a timeline state.
 	 * @param state
 	 */
-	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+	public convertTimelineStateToDeviceState(
+		state: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): SisyfosState {
-		const deviceState: SisyfosState = this.getDeviceState(true, mappings)
+		const deviceState: SisyfosState = this._getDeviceState(true, mappings)
 
 		// Set labels to layer names
 		for (const mapping of Object.values<Mapping<unknown>>(mappings)) {
@@ -339,7 +266,7 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			let channel = deviceState.channels[sisyfosMapping.options.channel] as SisyfosChannel | undefined
 
 			if (!channel) {
-				channel = sisyfosMapping.options.disableDefaults ? this.getBlankStateChannel() : this.getDefaultStateChannel()
+				channel = sisyfosMapping.options.disableDefaults ? this._getBlankStateChannel() : this._getDefaultStateChannel()
 			}
 
 			channel.label = sisyfosMapping.layerName
@@ -357,9 +284,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			disableDefaults?: boolean
 		} & SisyfosChannelOptions)[] = []
 
-		_.each(state.layers, (tlObject, layerName) => {
-			const layer = tlObject as ResolvedTimelineObjectInstanceExtended<any>
-			let foundMapping = mappings[layerName] as Mapping<SomeMappingSisyfos> | undefined
+		_.each(state.objects, (tlObject) => {
+			let foundMapping = mappings[tlObject.layer] as Mapping<SomeMappingSisyfos> | undefined
 
 			const content = tlObject.content as TimelineContentSisyfosAny
 
@@ -378,11 +304,11 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			}
 
 			// if the tlObj is specifies to load to PST the original Layer is used to resolve the mapping
-			if (!foundMapping && layer.isLookahead && layer.lookaheadForLayer) {
-				foundMapping = mappings[layer.lookaheadForLayer] as Mapping<SomeMappingSisyfos> | undefined
+			if (!foundMapping && tlObject.isLookahead && tlObject.lookaheadForLayer) {
+				foundMapping = mappings[tlObject.lookaheadForLayer] as Mapping<SomeMappingSisyfos> | undefined
 			}
 
-			if (foundMapping?.deviceId !== this.deviceId) return
+			if (!foundMapping) return
 
 			// @ts-ignore backwards-compatibility:
 			if (!foundMapping.mappingType) foundMapping.mappingType = MappingSisyfosType.CHANNEL
@@ -403,8 +329,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 					...content,
 					channel: foundMapping.options.channel,
 					overridePriority: content.overridePriority || 0,
-					isLookahead: layer.isLookahead || false,
-					timelineObjId: layer.id,
+					isLookahead: tlObject.isLookahead || false,
+					timelineObjId: tlObject.id,
 					triggerValue: content.triggerValue,
 					disableDefaults: foundMapping.options.disableDefaults,
 				})
@@ -421,8 +347,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 					...content,
 					channel: ch,
 					overridePriority: content.overridePriority || 0,
-					isLookahead: layer.isLookahead || false,
-					timelineObjId: layer.id,
+					isLookahead: tlObject.isLookahead || false,
+					timelineObjId: tlObject.id,
 					triggerValue: content.triggerValue,
 					disableDefaults: foundMapping.options.disableDefaults,
 				})
@@ -449,8 +375,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 						...channel,
 						channel: channelNumber,
 						overridePriority: content.overridePriority || 0,
-						isLookahead: layer.isLookahead || false,
-						timelineObjId: layer.id,
+						isLookahead: tlObject.isLookahead || false,
+						timelineObjId: tlObject.id,
 						triggerValue: content.triggerValue,
 						disableDefaults: foundMapping.options.disableDefaults,
 					})
@@ -465,8 +391,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			(newChannel) => {
 				if (!deviceState.channels[newChannel.channel]) {
 					deviceState.channels[newChannel.channel] = newChannel.disableDefaults
-						? this.getBlankStateChannel()
-						: this.getDefaultStateChannel()
+						? this._getBlankStateChannel()
+						: this._getDefaultStateChannel()
 				}
 				const channel = deviceState.channels[newChannel.channel]
 
@@ -492,39 +418,14 @@ export class SisyfosMessageDevice extends DeviceWithState<
 		)
 		return deviceState
 	}
-	get deviceType() {
-		return DeviceType.SISYFOS
-	}
-	get deviceName(): string {
-		return 'Sisyfos ' + this.deviceId
-	}
-	get queue() {
-		return this._doOnTime.getQueue()
-	}
-	/**
-	 * add the new commands to the queue:
-	 * @param commandsToAchieveState
-	 * @param time
-	 */
-	private _addToQueue(commandsToAchieveState: Array<Command>, time: number) {
-		_.each(commandsToAchieveState, (cmd: Command) => {
-			this._doOnTime.queue(
-				time,
-				undefined,
-				async (cmd: Command) => {
-					return this._commandReceiver(time, cmd.command, cmd.context, cmd.timelineObjId)
-				},
-				cmd
-			)
-		})
-	}
+
 	/**
 	 * Compares the new timeline-state with the old one, and generates commands to account for the difference
 	 */
-	diffStates(oldOscSendState: SisyfosState | undefined, newOscSendState: SisyfosState): Command[] {
+	public diffStates(oldSisyfosState: SisyfosState | undefined, newSisyfosState: SisyfosState): Command[] {
 		const commands: Command[] = []
 
-		if (newOscSendState.resync && !oldOscSendState?.resync) {
+		if (newSisyfosState.resync && !oldSisyfosState?.resync) {
 			commands.push({
 				context: `Resyncing with Sisyfos`,
 				command: {
@@ -534,10 +435,10 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			})
 		}
 
-		_.each(newOscSendState.channels, (newChannel: SisyfosChannel, index) => {
-			const oldChannel: SisyfosChannel | undefined = oldOscSendState?.channels[index]
+		_.each(newSisyfosState.channels, (newChannel: SisyfosChannel, index) => {
+			const oldChannel: SisyfosChannel | undefined = oldSisyfosState?.channels[index]
 
-			if (newOscSendState.triggerValue && newOscSendState.triggerValue !== oldOscSendState?.triggerValue) {
+			if (newSisyfosState.triggerValue && newSisyfosState.triggerValue !== oldSisyfosState?.triggerValue) {
 				// || (!oldChannel && Number(index) >= 0)) {
 				// push commands for everything
 				debug('reset channel ' + index)
@@ -686,24 +587,15 @@ export class SisyfosMessageDevice extends DeviceWithState<
 
 		return commands
 	}
-	private async _defaultCommandReceiver(
-		_time: number,
-		cmd: SisyfosCommand,
-		context: string,
-		timelineObjId: string
-	): Promise<any> {
-		const cwc: CommandWithContext<any, any> = {
-			context,
-			command: cmd,
-			timelineObjId,
-		}
-		this.emitDebug(cwc)
 
-		if (cmd.type === SisyfosCommandType.RESYNC) {
-			return this._makeReadyInner(true)
+	public async sendCommand(command: Command): Promise<void> {
+		this.logger.debug(command)
+
+		if (command.command.type === SisyfosCommandType.RESYNC) {
+			return this._resync()
 		} else {
 			try {
-				this._sisyfos.send(cmd)
+				this._sisyfos.send(command.command)
 
 				return Promise.resolve()
 			} catch (e) {
@@ -711,21 +603,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			}
 		}
 	}
-	private _connectionChanged() {
-		this.emit('connectionChanged', this.getStatus())
-	}
 
-	private _handleLoadMixerPreset(presetName: string) {
-		if (!this._sisyfos.connected || !this._sisyfos.mixerOnline)
-			return {
-				result: ActionExecutionResultCode.Error,
-			}
-		this._sisyfos.send({
-			type: SisyfosCommandType.LOAD_MIXER_PRESET,
-			presetName,
-		})
-		return {
-			result: ActionExecutionResultCode.Ok,
-		}
+	private _connectionChanged() {
+		this.context.connectionChanged(this.getStatus())
 	}
 }

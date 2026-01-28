@@ -20,6 +20,7 @@ import { TriCasterDevice } from '../integrations/tricaster'
 import { SingularLiveDevice } from '../integrations/singularLive'
 import { MultiOSCMessageDevice } from '../integrations/multiOsc'
 import { WebSocketClientDevice } from '../integrations/websocketClient'
+import { SisyfosDeviceEntry } from '../integrations/sisyfos/entry'
 
 export type ImplementedServiceDeviceTypes =
 	| DeviceType.ABSTRACT
@@ -35,6 +36,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.PHAROS
 	| DeviceType.SHOTOKU
 	| DeviceType.SINGULAR_LIVE
+	| DeviceType.SISYFOS
 	| DeviceType.SOFIE_CHEF
 	| DeviceType.TCPSEND
 	| DeviceType.TELEMETRICS
@@ -165,4 +167,5 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		deviceName: (deviceId: string) => 'WebSocket Client ' + deviceId,
 		executionMode: () => 'sequential',
 	},
+	[DeviceType.SISYFOS]: new SisyfosDeviceEntry(),
 }

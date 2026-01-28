@@ -347,6 +347,10 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			setAddressState: (address, state) => {
 				this._stateTracker?.updateState(address, state)
 			},
+
+			getCurrentState: () => {
+				return this._stateHandler.getCurrentState()
+			},
 		}
 	}
 
