@@ -708,7 +708,7 @@ export class SisyfosMessageDevice extends DeviceWithState<
 
 				return Promise.resolve()
 			} catch (e) {
-				return Promise.reject(e)
+				return Promise.reject(e as Error)
 			}
 		}
 	}

@@ -11,7 +11,7 @@ import {
 	MappingVmixAudioBus,
 } from 'timeline-state-resolver-types'
 import { CommandContext, VMixStateCommandWithContext } from './vMixCommands'
-import _ = require('underscore')
+import _ from 'underscore'
 import { VMixInputHandler } from './vMixInputHandler'
 
 /** Prefix of media input added by TSR. Only those with this prefix can be removed by this implementation */

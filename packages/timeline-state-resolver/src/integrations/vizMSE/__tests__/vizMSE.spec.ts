@@ -22,7 +22,7 @@ import * as net from '../../../__mocks__/net'
 const getMockMSEs = vConnection.getMockMSEs
 type MSEMock = vConnection.MSEMock
 type VRundownMocked = vConnection.VRundownMocked
-import _ = require('underscore')
+import _ from 'underscore'
 import { MOCK_SHOWS } from '../../../__mocks__/v-connection'
 import { literal } from '../../../lib'
 import { ExpectedPlayoutItem } from '../../../expectedPlayoutItems'

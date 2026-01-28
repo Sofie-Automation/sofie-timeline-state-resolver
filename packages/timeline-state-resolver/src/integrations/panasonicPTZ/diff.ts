@@ -1,5 +1,5 @@
 import { TimelineContentTypePanasonicPtz } from 'timeline-state-resolver-types'
-import _ = require('underscore')
+import _ from 'underscore'
 import type { CommandWithContext } from 'timeline-state-resolver-api'
 import { PanasonicPtzState } from './state'
 

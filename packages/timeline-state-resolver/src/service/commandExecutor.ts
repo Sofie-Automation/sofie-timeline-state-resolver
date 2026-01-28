@@ -82,7 +82,7 @@ export class CommandExecutor<DeviceState, Command extends CommandWithContext<any
 							measurement?.finishedCommandExecution(command)
 						}
 					}
-				} catch (e) {
+				} catch (_e) {
 					this.logger.error('CommandExecutor', new Error('Error in _executeCommandsSequential'))
 				}
 			})

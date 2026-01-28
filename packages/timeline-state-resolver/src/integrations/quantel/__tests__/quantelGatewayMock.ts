@@ -148,7 +148,7 @@ async function urlRoute(
 }
 async function handleRequest(
 	quantelServer: QuantelServerMockOptions,
-	triggerFcn: Function,
+	triggerFcn: (type: string, url: string) => void,
 	type: string,
 	options: any
 ) {

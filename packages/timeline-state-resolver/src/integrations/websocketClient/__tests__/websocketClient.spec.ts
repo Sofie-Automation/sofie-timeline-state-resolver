@@ -66,7 +66,7 @@ describe('WebSocketClientDevice', () => {
 		// Clean up to avoid race conditions
 		try {
 			await device.terminate()
-		} catch (e) {
+		} catch (_e) {
 			// Ignore termination errors during cleanup
 		}
 		jest.resetAllMocks()

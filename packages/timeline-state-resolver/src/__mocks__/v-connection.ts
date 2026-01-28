@@ -20,7 +20,7 @@ import {
 import { EventEmitter } from 'events'
 import { CommandResult } from '@tv2media/v-connection/dist/msehttp'
 import { PepResponse } from '@tv2media/v-connection/dist/peptalk'
-import _ = require('underscore')
+import _ from 'underscore'
 
 interface MockShow {
 	id: string

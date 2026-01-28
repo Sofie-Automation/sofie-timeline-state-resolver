@@ -1577,8 +1577,7 @@ describe('Quantel Device', () => {
 			getCurrentTime: () => Date.now(),
 		}
 		function getNewStateHandler(device: QuantelDevice): StateHandler<QuantelState, CommandWithContext<any, any>> {
-			// eslint-disable-next-line @typescript-eslint/unbound-method
-			const orgSendCommand = device.sendCommand
+			const orgSendCommand = device.sendCommand.bind(device)
 			device.sendCommand = async function mockFunction(...args) {
 				MOCK_SEND_COMMAND(...args)
 				return orgSendCommand.apply(device, args)

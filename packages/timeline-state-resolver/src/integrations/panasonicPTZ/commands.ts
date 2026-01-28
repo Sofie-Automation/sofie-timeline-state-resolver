@@ -1,5 +1,5 @@
 import { sprintf } from 'sprintf-js'
-import _ = require('underscore')
+import _ from 'underscore'
 import { PanasonicFocusMode } from './connection'
 
 export interface Command<TRes> {

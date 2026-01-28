@@ -1,4 +1,4 @@
-import _ = require('underscore')
+import _ from 'underscore'
 import { OBSCommandWithContext, OBSCommandWithContextTyped } from '.'
 import { OBSDeviceState, OBSScene, OBSSceneItem, OBSInputState } from './state'
 import { literal } from '../../lib'

@@ -2,7 +2,7 @@ import { EmberClient, Model as EmberModel } from 'emberplus-connection'
 import { EventEmitter } from 'node:events'
 import { deferAsync } from '../../lib'
 import { LawoDeviceMode, LawoOptions } from 'timeline-state-resolver-types'
-import _ = require('underscore')
+import _ from 'underscore'
 import { LawoFaderRampCommand, LawoSetValueCommand } from './diff'
 import { EmberValue } from 'emberplus-connection/dist/types'
 

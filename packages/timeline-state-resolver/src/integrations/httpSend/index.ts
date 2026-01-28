@@ -22,7 +22,7 @@ import type {
 	DeviceTimelineState,
 	DeviceTimelineStateObject,
 } from 'timeline-state-resolver-api'
-import _ = require('underscore')
+import _ from 'underscore'
 import got, { OptionsOfTextResponseBody, RequestError } from 'got'
 import { t } from '../../lib'
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'

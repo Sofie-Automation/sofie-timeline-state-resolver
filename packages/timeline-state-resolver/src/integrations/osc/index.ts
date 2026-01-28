@@ -14,7 +14,7 @@ import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState 
 import * as osc from 'osc'
 
 import Debug from 'debug'
-import _ = require('underscore')
+import _ from 'underscore'
 import { Easing } from '../../devices/transitions/easings'
 import { assertNever } from '../../lib'
 const debug = Debug('timeline-state-resolver:osc')
@@ -208,7 +208,7 @@ export class OscDevice implements Device<OscDeviceTypes, OscDeviceState, OscComm
 
 	readonly actions = null
 
-	private _oscSender(msg: osc.OscMessage, address?: string | undefined, port?: number | undefined): void {
+	private _oscSender(msg: osc.OscMessage, address?: string, port?: number): void {
 		this.context.logger.debug('sending ' + msg.address)
 		this._oscClient.send(msg, address, port)
 	}
