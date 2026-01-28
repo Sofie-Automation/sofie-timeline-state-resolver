@@ -61,6 +61,8 @@ exports[`index imports 1`] = `
   "OSCValueType",
   "OgrafActions",
   "PanasonicPTZActions",
+  "PanasonicPTZErrorCode",
+  "PanasonicPTZErrorMessages",
   "PharosErrorCode",
   "PharosErrorMessages",
   "QuantelActions",
