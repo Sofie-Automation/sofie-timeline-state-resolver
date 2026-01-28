@@ -14,6 +14,8 @@ import {
 	GetFocusPositionResult,
 	GetZoomPositionResult,
 	PanasonicPTZActions,
+	PanasonicPTZErrorCode,
+	PanasonicPTZErrorMessages,
 } from 'timeline-state-resolver-types'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { PanasonicPtzState, convertStateToPtz, getDefaultState } from './state.js'
@@ -36,6 +38,8 @@ import {
 	ZoomSpeedControl,
 } from './commands.js'
 import { t } from '../../lib.js'
+import { createPanasonicPTZError } from './errors.js'
+import { errorsToMessages } from '../../deviceErrorMessages.js'
 
 const FOCUS_MODE_MAP = {
 	[FocusMode.AUTO]: PanasonicFocusMode.AUTO,
@@ -48,12 +52,16 @@ export class PanasonicPtzDevice implements Device<
 	PanasonicPtzCommandWithContext
 > {
 	_device: PanasonicPtzHttpInterface | undefined = undefined
+	private _host: string | undefined
+	private _port: number | undefined
 
 	constructor(protected context: DeviceContextAPI<PanasonicPtzState>) {
 		// Nothing
 	}
 
 	async init(options: PanasonicPTZOptions): Promise<boolean> {
+		this._host = options.host
+		this._port = options.port
 		this._device = new PanasonicPtzHttpInterface(options.host, options.port, options.https)
 		this._device.init()
 		this._device.on('error', (e) => this.context.logger.error('Error in PanasonicPtzHttpInterface', e))
@@ -129,16 +137,25 @@ export class PanasonicPtzDevice implements Device<
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
+		let statusCode = StatusCode.GOOD
+		const errors: DeviceStatus['errors'] = []
+		const deviceName = 'Panasonic PTZ'
+
 		if (!this._device?.connected) {
-			return {
-				statusCode: StatusCode.GOOD,
-				messages: [],
-			}
-		} else {
-			return {
-				statusCode: StatusCode.BAD,
-				messages: ['Not connected'],
-			}
+			statusCode = StatusCode.BAD
+			errors.push(
+				createPanasonicPTZError(PanasonicPTZErrorCode.NOT_CONNECTED, {
+					deviceName,
+					host: this._host,
+					port: this._port,
+				})
+			)
+		}
+
+		return {
+			statusCode,
+			messages: errorsToMessages(errors, PanasonicPTZErrorMessages),
+			errors,
 		}
 	}
 

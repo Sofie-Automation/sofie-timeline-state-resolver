@@ -1,4 +1,40 @@
 import { DeviceType } from '../generated/index.js'
+import { DeviceStatusError } from '../deviceError.js'
+
+/**
+ * Error codes for Panasonic PTZ device issues.
+ * These codes can be customized in blueprints via deviceErrorMessages.
+ */
+export const PanasonicPTZErrorCode = {
+	NOT_CONNECTED: 'DEVICE_PANASONIC_PTZ_NOT_CONNECTED',
+} as const
+
+export type PanasonicPTZErrorCode = (typeof PanasonicPTZErrorCode)[keyof typeof PanasonicPTZErrorCode]
+
+/**
+ * Context data for each Panasonic PTZ error type.
+ * These fields are available for message template interpolation.
+ */
+export interface PanasonicPTZErrorContextMap {
+	[PanasonicPTZErrorCode.NOT_CONNECTED]: {
+		deviceName: string
+		host?: string
+		port?: number
+	}
+}
+
+export type PanasonicPTZError<T extends PanasonicPTZErrorCode = PanasonicPTZErrorCode> = DeviceStatusError<
+	T,
+	PanasonicPTZErrorContextMap[T]
+>
+
+/**
+ * Default error message templates for Panasonic PTZ devices.
+ * Can be overridden in blueprints via deviceErrorMessages.
+ */
+export const PanasonicPTZErrorMessages: Record<PanasonicPTZErrorCode, string> = {
+	[PanasonicPTZErrorCode.NOT_CONNECTED]: 'Not connected',
+}
 
 export enum TimelineContentTypePanasonicPtz {
 	PRESET = 'presetMem',
