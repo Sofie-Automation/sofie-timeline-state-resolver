@@ -23,7 +23,7 @@ import type { StateChangeReport } from './measure'
 import { StateTracker } from './stateTracker'
 
 type Config = DeviceOptionsAny
-type DeviceState = any
+type DeviceState = object
 type AddressState = any
 
 export interface DeviceDetails {
@@ -277,7 +277,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		return Date.now() + (this._tDiff ?? 0)
 	}
 
-	private _getDeviceContextAPI(): DeviceContextAPI<any> {
+	private _getDeviceContextAPI(): DeviceContextAPI<DeviceState, AddressState> {
 		return {
 			logger: {
 				error: (context: string, err: Error) => {
@@ -326,22 +326,22 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 				this.emit('timeTrace', trace)
 			},
 
-			resetState: async () => {
+			resetState: () => {
 				this._stateHandler.setCurrentState(undefined)
 				this._stateHandler.clearFutureStates()
 				this.emit('resyncStates')
 			},
-			setModifiedState: async (cb: (currentState: DeviceState) => DeviceState | false) => {
+			setModifiedState: (cb: (currentState: DeviceState | undefined) => DeviceState | false) => {
 				const currentState = cloneDeep(this._stateHandler.getCurrentState())
 				const newState = cb(currentState)
 
 				if (newState === false) return // false means no changes were made, and no resyncStates is necessary
 
-				await this._stateHandler.setCurrentState(newState)
-				await this._stateHandler.clearFutureStates()
+				this._stateHandler.setCurrentState(newState)
+				this._stateHandler.clearFutureStates()
 				this.emit('resyncStates')
 			},
-			resetToState: async (state: any) => {
+			resetToState: (state: DeviceState) => {
 				this._stateHandler.setCurrentState(state)
 				this._stateHandler.clearFutureStates()
 				this.emit('resyncStates')
@@ -353,10 +353,6 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 
 			setAddressState: (address, state) => {
 				this._stateTracker?.updateState(address, state)
-			},
-
-			getCurrentState: async () => {
-				return this._stateHandler.getCurrentState()
 			},
 		}
 	}

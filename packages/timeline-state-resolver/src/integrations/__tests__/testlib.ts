@@ -18,11 +18,10 @@ export function getDeviceContext(): DeviceContextAPI<any, any> {
 		updateMediaObject: jest.fn(),
 		clearMediaObjects: jest.fn(),
 		timeTrace: jest.fn(),
-		resetState: jest.fn(async () => Promise.resolve()),
-		resetToState: jest.fn(async () => Promise.resolve()),
+		resetState: jest.fn(),
+		resetToState: jest.fn(),
 		setModifiedState: jest.fn(),
 		recalcDiff: jest.fn(),
 		setAddressState: jest.fn(),
-		getCurrentState: jest.fn(() => undefined),
 	}
 }

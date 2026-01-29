@@ -93,12 +93,10 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 
 				// Do a state diff to get to the desired state
 				this._protocolVersion = this._atem.state.info.apiVersion
-				this.context
-					.resetToState(this._atem.state)
-					.catch((e) => this.context.logger.error('Error resetting atem state', new Error(e)))
+				this.context.resetToState(this._atem.state)
 			} else {
 				// Do a state diff to at least send all the commands we know about
-				this.context.resetState().catch((e) => this.context.logger.error('Error resetting atem state', new Error(e)))
+				this.context.resetState()
 			}
 		})
 

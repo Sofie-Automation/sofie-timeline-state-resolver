@@ -62,13 +62,7 @@ export class OscDevice implements Device<OscDeviceTypes, OscDeviceState, OscComm
 					// note - perhaps we could resend the commands every time we reconnect? or that could be a device option
 					firstConnect = false
 					this.context.connectionChanged(this.getStatus())
-					this.context
-						.resetToState({})
-						.catch((e) =>
-							this.context.logger.warning(
-								'Failed to reset to state after first connection, device may be in unknown state (reason: ' + e + ')'
-							)
-						)
+					this.context.resetToState({})
 				}
 			})
 			client.socket.on('close', () => {
@@ -86,13 +80,7 @@ export class OscDevice implements Device<OscDeviceTypes, OscDeviceState, OscComm
 				metadata: true,
 			})
 			this._oscClient.once('ready', () => {
-				this.context
-					.resetToState({})
-					.catch((e) =>
-						this.context.logger.warning(
-							'Failed to reset to state after first connection, device may be in unknown state (reason: ' + e + ')'
-						)
-					)
+				this.context.resetToState({})
 			})
 			this._oscClient.open()
 		} else {

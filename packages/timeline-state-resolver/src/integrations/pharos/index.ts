@@ -55,7 +55,7 @@ export class PharosDevice implements Device<PharosDeviceTypes, PharosState, Phar
 					.getProjectInfo()
 					.then((info) => {
 						this.context.logger.info(`Current project: ${info.name}`)
-						this.context.resetToState({}).catch((e) => this.context.logger.error('Failed to reset state', e))
+						this.context.resetToState({})
 					})
 					.catch((e) => this.context.logger.error('Failed to query project', e))
 			})

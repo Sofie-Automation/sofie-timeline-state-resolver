@@ -178,7 +178,7 @@ export class VMixDevice implements Device<VmixDeviceTypes, VMixStateExtended, VM
 	 */
 	private _setFullState(realState: VMixState) {
 		const fullState: VMixStateExtended = this._stateDiffer.getDefaultState(realState)
-		this.context.resetToState(fullState).catch((e) => this.context.logger.error('Failed to reset to full state', e))
+		this.context.resetToState(fullState)
 	}
 
 	/**
@@ -187,16 +187,14 @@ export class VMixDevice implements Device<VmixDeviceTypes, VMixStateExtended, VM
 	 * @param realState State as reported by vMix itself.
 	 */
 	private _setPartialInputState(realState: VMixState) {
-		const expectedState = this.context.getCurrentState() // what state handler believes is the state now
-		if (expectedState === undefined) {
-			this.logger.debug('Could not get current state')
-			return // we need full state to apply anything
-		}
-		const currentState = this._stateSynchronizer.applyRealState(expectedState, realState) // what state we should aim to get to
-
-		this.context
-			.resetToState(currentState) // TODO: this could probably use updateStateFromDeviceState in order to be less taxing
-			.catch((e) => this.context.logger.error('Failed to reset to partially updated state', e))
+		this.context.setModifiedState((expectedState: VMixStateExtended | undefined) => {
+			if (expectedState === undefined) {
+				this.logger.debug('Could not get current state')
+				return false // we need full state to apply anything
+			}
+			const currentState = this._stateSynchronizer.applyRealState(expectedState, realState)
+			return currentState
+		})
 	}
 
 	async terminate() {

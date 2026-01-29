@@ -157,7 +157,7 @@ export async function sendCommand(
 
 				await kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
 					// This is called after the RAM load is done
-					const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
+					const sceneLayer = currentState?.sceneLayers[command.sceneLayerId]
 					if (sceneLayer && isEqual(sceneLayer.state.sourceA, source)) {
 						// Only modify if it is the same source:
 						delete sceneLayer.state.sourceA
@@ -174,7 +174,7 @@ export async function sendCommand(
 
 				await kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
 					// This is called after the RAM load is done
-					const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
+					const sceneLayer = currentState?.sceneLayers[command.sceneLayerId]
 					if (sceneLayer && isEqual(sceneLayer.state.sourcePgm, source)) {
 						// Only modify if it is the same still:
 						delete sceneLayer.state.sourcePgm
@@ -191,7 +191,7 @@ export async function sendCommand(
 
 				await kairosRamLoader.ensureRAMLoaded(`sceneLayer_${command.sceneLayerId}`, source, (currentState) => {
 					// This is called after the RAM load is done
-					const sceneLayer = currentState.sceneLayers[command.sceneLayerId]
+					const sceneLayer = currentState?.sceneLayers[command.sceneLayerId]
 					if (sceneLayer && isEqual(sceneLayer.state.sourcePst, source)) {
 						// Only modify if it is the same still:
 						delete sceneLayer.state.sourcePst
@@ -343,7 +343,7 @@ export async function sendCommand(
 				await kairosRamLoader.ensureRAMLoaded(command.playerId, clip, (currentState) => {
 					// This is called after the RAM load is done,
 					//
-					const player = currentState.ramRecPlayers[command.playerId]
+					const player = currentState?.ramRecPlayers[command.playerId]
 					if (player && isEqual(player.state.content.clip, clip)) {
 						// Only modify if it is the same clip:
 						// delete player.state.content.clip
@@ -375,7 +375,7 @@ export async function sendCommand(
 					await kairosRamLoader.ensureRAMLoaded(command.playerId, clip, (currentState) => {
 						// This is called after the RAM load is done,
 						//
-						const player = currentState.imageStores[command.playerId]
+						const player = currentState?.imageStores[command.playerId]
 						if (player && isEqual(player.state.content.imageStore.clip, clip)) {
 							// Only modify if it is the same still
 							// player.state.content.imageStore.clip = null
