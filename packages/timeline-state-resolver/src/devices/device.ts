@@ -9,7 +9,7 @@ import {
 	TSRTimelineContent,
 	ActionExecutionResult,
 } from 'timeline-state-resolver-types'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo } from './doOnTime'
 import { ExpectedPlayoutItem } from '../expectedPlayoutItems'
 import { actionNotFoundMessage } from '../lib'

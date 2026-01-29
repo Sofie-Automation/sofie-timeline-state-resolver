@@ -28,6 +28,12 @@
 			"ui:title": "Disable Shared Hardware Control",
 			"ui:hint": "Some integrations provide a way to read back external state such that non-Sofie actors can control the device too, you can disable this in case the mechanism is causing issues.",
 			"default": false
+		},
+		"syncOnStartup": {
+			"type": "boolean",
+			"ui:title": "Sync the device after connecting",
+			"ui:hint": "Should the device be synced upon first connection. Defaults to true and can only be turned off if \"Shared Hardware Control\" is supported and enabled",
+			"default": true
 		}
 	},
 	"required": [],

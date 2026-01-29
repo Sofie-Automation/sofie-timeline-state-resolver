@@ -1,4 +1,4 @@
-import EventEmitter = require('eventemitter3')
+import { EventEmitter } from 'node:events'
 import { actionNotFoundMessage, cloneDeep } from '../lib'
 import type {
 	FinishedTrace,
@@ -106,15 +106,20 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._device = new deviceSpecs.deviceClass(this._getDeviceContextAPI())
 		this._deviceId = id
 		this._deviceType = config.type
+		this._logDebug = config.debug || false
+		this._logDebugStates = config.debugState || false
 		this._deviceName = deviceSpecs.deviceName(id, config)
 		this._instanceId = Math.floor(Math.random() * 10000)
 		this._startTime = time
 
+		this._logDebug = config.debug ?? this._logDebug
+
 		this._updateTimeSync()
 
 		if (!config.disableSharedHardwareControl && this._device.diffAddressStates && this._device.applyAddressState) {
-			this._stateTracker = new StateTracker((state1, state2) =>
-				this._device.diffAddressStates ? this._device.diffAddressStates(state1, state2) : false
+			this._stateTracker = new StateTracker(
+				(state1, state2) => (this._device.diffAddressStates ? this._device.diffAddressStates(state1, state2) : false),
+				config.syncOnStartup ?? true
 			)
 
 			// for now we just do some logging but in the future we could inform library users so they can react to a device changing
@@ -126,10 +131,18 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			})
 
 			// make sure the commands for the next state change are correct:
-			this._stateTracker.on('deviceUpdated', (ahead) => {
-				if (ahead) {
-					this._stateHandler.recalcDiff()
-				}
+			let doRecalc = false
+			this._stateTracker.on('deviceUpdated', (_addr, ahead) => {
+				if (doRecalc) return
+				doRecalc = true
+
+				// do a little debounce for multiple calls
+				setImmediate(() => {
+					doRecalc = false
+					if (ahead) {
+						this._stateHandler.recalcDiff()
+					}
+				})
 			})
 		}
 

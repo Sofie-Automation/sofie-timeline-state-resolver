@@ -188,7 +188,7 @@ jobs:
         env:
           CI: true
       - name: Generate docs
-        if: ${{ steps.do-publish.outputs.tag }} == 'latest'
+        if: ${{ steps.do-publish.outputs.tag == 'latest' }}
         run: |
           yarn docs
       - name: Publish docs

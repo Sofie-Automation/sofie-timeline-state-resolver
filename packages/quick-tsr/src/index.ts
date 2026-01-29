@@ -207,6 +207,7 @@ export interface Input {
 export interface TSRSettings {
 	multiThreading?: boolean
 	multiThreadedResolver?: boolean
+	logCommandReports?: boolean
 }
 
 // ------------

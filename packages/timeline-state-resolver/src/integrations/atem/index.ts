@@ -72,7 +72,10 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 			this._connectionChanged()
 		})
 		this._atem.on('error', (e) => this.context.logger.error('Atem', new Error(e)))
-		this._atem.on('stateChanged', (state) => {
+
+		this._atem.on('stateChanged', (state, changes) => {
+			if (changes.length === 1 && changes[0] === 'displayClock.currentTime') return
+
 			// the external device is communicating something changed, the tracker should be updated (and may fire a "blocked" event if the change is caused by someone else)
 			updateFromAtemState((addr, addrState) => this.context.setAddressState(addr, addrState), state) // note - improvement can be to update depending on the actual paths that changed
 
@@ -86,6 +89,8 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 			this._connectionChanged()
 
 			if (this._atem.state) {
+				updateFromAtemState((addr, addrState) => this.context.setAddressState(addr, addrState), this._atem.state)
+
 				// Do a state diff to get to the desired state
 				this._protocolVersion = this._atem.state.info.apiVersion
 				this.context
@@ -210,7 +215,7 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 	async sendCommand({ command, context, timelineObjId }: AtemCommandWithContext): Promise<void> {
 		const cwc: AtemCommandWithContext = {
 			context,
-			command,
+			command: command.map((c) => ({ name: c.constructor.name, ...c })),
 			timelineObjId,
 		}
 		this.context.logger.debug(cwc)
@@ -231,7 +236,9 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 	diffAddressStates(state1: AnyAddressState, state2: AnyAddressState): boolean {
 		return diffAddressStates(state1, state2)
 	}
-	addressStateReassertsControl(oldState: AnyAddressState | undefined, newState: AnyAddressState): boolean {
+	addressStateReassertsControl(oldState: AnyAddressState | undefined, newState: AnyAddressState | undefined): boolean {
+		if (!newState) return false // undefined incoming state should never reassert
+
 		return oldState?.controlValue !== newState.controlValue
 	}
 

@@ -1,15 +1,17 @@
 {
 	"extends": "@sofie-automation/code-standard-preset/ts/tsconfig.lib",
-	"include": ["src/**/*.ts", "src/integrations/**/*.json"],
+	"include": ["src/**/*.ts", "src/**/*.json"],
 	"exclude": ["node_modules/**", "src/**/*spec.ts", "src/**/__tests__/*", "src/**/__mocks__/*"],
 	"compilerOptions": {
 		"outDir": "./dist",
+		"rootDir": "./src",
 		"baseUrl": "./",
 		"paths": {
 			"*": ["./node_modules/*"],
 			"{{PACKAGE-NAME}}": ["./src/index.ts"]
 		},
 		"types": ["node"],
+		"composite": true,
 
 		"moduleResolution": "node16",
 		"esModuleInterop": true,
@@ -20,5 +22,9 @@
 
 		// include dom types for obs
 		"lib": ["dom", "es2020"]
-	}
+	},
+	"references": [
+		{ "path": "../timeline-state-resolver-types/tsconfig.build.json" },
+		{ "path": "../timeline-state-resolver-api/tsconfig.build.json" }
+	]
 }

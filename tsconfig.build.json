@@ -1,0 +1,8 @@
+{
+	"files": [],
+	"references": [
+		{ "path": "./packages/timeline-state-resolver/tsconfig.build.json" },
+		{ "path": "./packages/timeline-state-resolver-api/tsconfig.build.json" },
+		{ "path": "./packages/timeline-state-resolver-types/tsconfig.build.json" }
+	]
+}

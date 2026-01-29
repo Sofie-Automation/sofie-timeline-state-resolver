@@ -48,8 +48,6 @@
 		"test": "run lint && run unit",
 		"unit": "run -T jest",
 		"unitci": "run -T jest --coverage",
-		"build": "run -T rimraf dist && run build:main",
-		"build:main": "run -T tsc -p tsconfig.build.json",
 		"cov": "run -T jest --coverage && run cov-open",
 		"cov-open": "run -T open-cli coverage/lcov-report/index.html",
 		"validate:dependencies": "yarn npm  audit --environment production && yarn license-validate",

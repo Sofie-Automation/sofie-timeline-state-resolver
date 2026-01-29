@@ -1,6 +1,6 @@
 import { ThreadedClass, threadedClass, ThreadedClassConfig, ThreadedClassManager } from 'threadedclass'
 import { DeviceType, DeviceOptionsBase, DeviceOptionsAny } from 'timeline-state-resolver-types'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { DeviceDetails, DeviceInstanceWrapper } from './DeviceInstance'
 import type { Device } from '../conductor'
 

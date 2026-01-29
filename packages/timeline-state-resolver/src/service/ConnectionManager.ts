@@ -9,7 +9,7 @@ import { DeviceOptionsSisyfosInternal, SisyfosMessageDevice } from '../integrati
 import { DeviceOptionsVizMSEInternal, VizMSEDevice } from '../integrations/vizMSE'
 import { DeviceOptionsVMixInternal, VMixDevice } from '../integrations/vmix'
 import { ImplementedServiceDeviceTypes } from './devices'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { DeviceInstanceEvents } from './DeviceInstance'
 import { deferAsync } from '../lib'
 import { DevicesRegistry } from './devicesRegistry'

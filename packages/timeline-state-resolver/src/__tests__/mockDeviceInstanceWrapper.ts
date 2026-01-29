@@ -1,4 +1,4 @@
-import EventEmitter = require('eventemitter3')
+import { EventEmitter } from 'node:events'
 import {
 	ActionExecutionResult,
 	Timeline,
@@ -35,6 +35,9 @@ export class MockDeviceInstanceWrapper
 			| 'addListener'
 			| 'removeListener'
 			| 'removeAllListeners'
+			| 'setMaxListeners'
+			| 'prependListener'
+			| 'prependOnceListener'
 		>
 {
 	constructor(
