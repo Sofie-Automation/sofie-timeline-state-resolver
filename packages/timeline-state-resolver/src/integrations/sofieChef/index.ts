@@ -10,7 +10,7 @@ import {
 	SofieChefDeviceTypes,
 	SofieChefActions,
 } from 'timeline-state-resolver-types'
-import * as WebSocket from 'ws'
+import WebSocket from 'ws'
 import {
 	ReceiveWSMessageAny,
 	ReceiveWSMessageType,

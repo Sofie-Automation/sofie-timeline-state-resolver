@@ -21,6 +21,7 @@ import { SingularLiveDevice } from '../integrations/singularLive'
 import { MultiOSCMessageDevice } from '../integrations/multiOsc'
 import { WebSocketClientDevice } from '../integrations/websocketClient'
 import { vMixDeviceEntry } from '../integrations/vmix/vMixDeviceEntry'
+import { KairosDevice } from '../integrations/kairos'
 
 export type ImplementedServiceDeviceTypes =
 	| DeviceType.ABSTRACT
@@ -44,6 +45,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.VISCA_OVER_IP
 	| DeviceType.WEBSOCKET_CLIENT
 	| DeviceType.VMIX
+	| DeviceType.KAIROS
 
 // TODO - move all device implementations here and remove the old Device classes
 export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
@@ -76,6 +78,12 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		canConnect: true,
 		deviceName: (deviceId: string) => 'Hyperdeck ' + deviceId,
 		executionMode: () => 'salvo',
+	},
+	[DeviceType.KAIROS]: {
+		deviceClass: KairosDevice,
+		canConnect: true,
+		deviceName: (deviceId: string) => 'Kairos ' + deviceId,
+		executionMode: () => 'sequential',
 	},
 	[DeviceType.LAWO]: {
 		deviceClass: LawoDevice,

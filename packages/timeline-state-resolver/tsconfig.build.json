@@ -13,6 +13,9 @@
 		"types": ["node"],
 		"composite": true,
 
+		"moduleResolution": "node16",
+		"esModuleInterop": true,
+
 		// Temporary overrides, to allow for gradual migration project
 		"noImplicitAny": false,
 		"resolveJsonModule": true,

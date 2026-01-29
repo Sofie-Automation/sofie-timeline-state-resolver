@@ -19,7 +19,7 @@ import {
 	VMixState,
 	VMixStateExtended,
 } from './vMixStateDiffer'
-import * as deepMerge from 'deepmerge'
+import deepMerge from 'deepmerge'
 import _ = require('underscore')
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 

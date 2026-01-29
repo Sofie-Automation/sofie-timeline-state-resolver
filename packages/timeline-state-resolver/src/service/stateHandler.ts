@@ -162,6 +162,10 @@ export class StateHandler<
 		this.calculateNextStateChange()
 	}
 
+	getCurrentState(): DeviceState | undefined {
+		return this.currentState?.deviceState
+	}
+
 	/**
 	 * This takes in a DeviceState and then updates the commands such that the device
 	 * will be put back into its intended state as designated by the timeline
