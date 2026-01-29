@@ -20,7 +20,7 @@ import {
 	VMixState,
 	VMixStateExtended,
 } from './vMixStateDiffer'
-import * as deepMerge from 'deepmerge'
+import deepMerge from 'deepmerge'
 import _ = require('underscore')
 
 const mappingPriority: { [k in MappingVmixType]: number } = {

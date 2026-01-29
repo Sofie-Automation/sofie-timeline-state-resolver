@@ -20,6 +20,7 @@ export function getDeviceContext(): DeviceContextAPI<any, any> {
 		timeTrace: jest.fn(),
 		resetState: jest.fn(async () => Promise.resolve()),
 		resetToState: jest.fn(async () => Promise.resolve()),
+		setModifiedState: jest.fn(),
 		recalcDiff: jest.fn(),
 		setAddressState: jest.fn(),
 	}

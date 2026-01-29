@@ -7,6 +7,7 @@ import {
 	TimelineContentTriCasterME,
 	Mapping,
 	TSRTimelineContent,
+	TriCasterMixEffect,
 } from 'timeline-state-resolver-types'
 import { TriCasterDevice } from '..'
 import { TriCasterConnectionEvents, TriCasterConnection } from '../triCasterConnection'
@@ -82,7 +83,12 @@ describe('TriCasterDevice', () => {
 					content: {
 						deviceType: DeviceType.TRICASTER,
 						type: TimelineContentTypeTriCaster.ME,
-						me: { programInput: 'input2', previewInput: 'input3', transitionEffect: 5, transitionDuration: 20 } as any,
+						me: {
+							programInput: 'input2',
+							previewInput: 'input3',
+							transitionEffect: 5,
+							transitionDuration: 20,
+						} as TriCasterMixEffect,
 					},
 				}),
 			],

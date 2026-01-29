@@ -9,7 +9,7 @@ import {
 import { EventEmitter } from 'node:events'
 import { MemUsageReport, threadedClass, ThreadedClass, ThreadedClassManager } from 'threadedclass'
 import PQueue from 'p-queue'
-import * as PAll from 'p-all'
+import PAll from 'p-all'
 
 import {
 	Mappings,

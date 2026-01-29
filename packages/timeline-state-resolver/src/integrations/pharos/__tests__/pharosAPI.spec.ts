@@ -18,7 +18,7 @@ import {
 	Protocol,
 } from '../connection'
 import { getMockCall } from '../../../__tests__/lib'
-import * as WebSocket from '../../../__mocks__/ws'
+import WebSocket from '../../../__mocks__/ws'
 import got from '../../../__mocks__/got'
 import { OptionsOfTextResponseBody, Response } from 'got'
 

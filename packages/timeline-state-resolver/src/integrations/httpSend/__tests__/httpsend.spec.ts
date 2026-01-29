@@ -14,12 +14,10 @@ const MOCKED_SOCKET_DELETE = jest.fn()
 
 jest.mock('got', () => {
 	return {
-		default: {
-			get: MOCKED_SOCKET_GET,
-			post: MOCKED_SOCKET_POST,
-			put: MOCKED_SOCKET_PUT,
-			delete: MOCKED_SOCKET_DELETE,
-		},
+		get: MOCKED_SOCKET_GET,
+		post: MOCKED_SOCKET_POST,
+		put: MOCKED_SOCKET_PUT,
+		delete: MOCKED_SOCKET_DELETE,
 	}
 })
 
