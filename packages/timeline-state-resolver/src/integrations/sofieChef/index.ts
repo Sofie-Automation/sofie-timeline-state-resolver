@@ -91,7 +91,7 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 		this._setupWSConnection()
 			.then(() => {
 				// assume empty state on start (would be nice if we could get the url for each window on connection)
-				this.context.resetToState({ windows: {} }).catch((e) => this.context.logger.error('Failed to reset state', e))
+				this.context.resetToState({ windows: {} })
 			})
 			.catch((e) => this.context.logger.error('Failed to initialise Sofie Chef connection', e))
 
@@ -163,7 +163,7 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 					urlTimelineObjId: 'N/A',
 				}
 			}
-			await this.context.resetToState(state)
+			this.context.resetToState(state)
 		}
 	}
 	async terminate() {

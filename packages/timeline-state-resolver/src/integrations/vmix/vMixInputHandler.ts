@@ -29,7 +29,7 @@ export class VMixInputHandler extends EventEmitter {
 	constructor(
 		private _vmix: {
 			getCurrentTime: () => number
-			addToQueue: (commandsToAchieveState: Array<VMixStateCommandWithContext>, time: number) => void
+			addToQueue: (commandsToAchieveState: Array<VMixStateCommandWithContext>) => void
 		}
 	) {
 		super()
@@ -88,7 +88,7 @@ export class VMixInputHandler extends EventEmitter {
 							input: input.name,
 						},
 						context: CommandContext.None,
-						timelineId: '',
+						timelineObjId: '',
 					})
 				}
 				this._inputs.delete(key)
@@ -102,7 +102,7 @@ export class VMixInputHandler extends EventEmitter {
 							value: `${input.type}|${actualName}`,
 						},
 						context: CommandContext.None,
-						timelineId: '',
+						timelineObjId: '',
 					})
 					commands.push({
 						command: {
@@ -111,7 +111,7 @@ export class VMixInputHandler extends EventEmitter {
 							value: key,
 						},
 						context: CommandContext.None,
-						timelineId: '',
+						timelineObjId: '',
 					})
 
 					input.addedCommandSent = true
@@ -123,7 +123,7 @@ export class VMixInputHandler extends EventEmitter {
 			}
 		}
 
-		this._vmix.addToQueue(commands, now)
+		this._vmix.addToQueue(commands)
 
 		const timeToNextTimeout = nextTimeout - now
 		if (timeToNextTimeout > 0 && timeToNextTimeout !== Infinity) {

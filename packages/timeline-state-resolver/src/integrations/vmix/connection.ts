@@ -157,6 +157,10 @@ export class VMixConnection extends EventEmitter<ConnectionEvents> {
 export class VMixCommandSender {
 	constructor(private vMixConnection: VMixConnection) {}
 
+	public get connected() {
+		return this.vMixConnection.connected
+	}
+
 	public async sendCommand(command: VMixStateCommand): Promise<any> {
 		switch (command.command) {
 			case VMixCommand.PREVIEW_INPUT:

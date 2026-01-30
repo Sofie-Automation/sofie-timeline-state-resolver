@@ -1,3 +1,4 @@
+import { CommandWithContext } from 'timeline-state-resolver-api'
 import { MappingVmixAudioBus, VMixCommand } from 'timeline-state-resolver-types'
 
 export interface VMixStateCommandBase {
@@ -301,8 +302,4 @@ export enum CommandContext {
 	None = 'none',
 	Retry = 'retry',
 }
-export interface VMixStateCommandWithContext {
-	command: VMixStateCommand
-	context: CommandContext
-	timelineId: string
-}
+export type VMixStateCommandWithContext = CommandWithContext<VMixStateCommand, CommandContext>

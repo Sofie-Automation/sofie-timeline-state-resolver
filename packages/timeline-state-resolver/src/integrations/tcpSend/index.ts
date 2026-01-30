@@ -44,13 +44,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 	async init(options: TcpSendOptions): Promise<boolean> {
 		this.tcpConnection.once('connectionChanged', (connected) => {
 			if (connected) {
-				this.context
-					.resetState()
-					.catch((e) =>
-						this.context.logger.warning(
-							'Failed to reset state after first connection, device may be in unknown state (reason: ' + e + ')'
-						)
-					)
+				this.context.resetState()
 			}
 		})
 		this.tcpConnection.activate(options)
@@ -78,7 +72,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 			return { result: ActionExecutionResultCode.Ok }
 		},
 		[TcpSendActions.ResetState]: async () => {
-			await this.actionResetState()
+			this.actionResetState()
 			return { result: ActionExecutionResultCode.Ok }
 		},
 		[TcpSendActions.SendTcpCommand]: async (payload) => {
@@ -200,9 +194,9 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 
 		return { result: ActionExecutionResultCode.Ok }
 	}
-	private async actionResetState() {
+	private actionResetState() {
 		this.activeLayers.clear()
-		await this.context.resetState()
+		this.context.resetState()
 	}
 	private getActiveLayersHash(command: TcpSendDeviceCommand['command']): string {
 		return JSON.stringify(command.content)
