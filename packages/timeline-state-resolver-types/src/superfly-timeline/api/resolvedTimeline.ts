@@ -26,11 +26,8 @@ export interface ResolvedTimeline<TContent extends Content = Content> {
 	nextEvents: Array<NextEvent>
 
 	statistics: {
-		/** Number of objects that were unable to resolve */
-		unresolvedCount: number
-		/** Number of objects that were resolved */
-		resolvedCount: number
-
+		/** Number of timeline objects (including keyframes) in the timeline */
+		totalCount: number
 		/** Number of resolved instances */
 		resolvedInstanceCount: number
 		/** Number of resolved objects */
@@ -39,9 +36,17 @@ export interface ResolvedTimeline<TContent extends Content = Content> {
 		resolvedGroupCount: number
 		/** Number of resolved keyframes */
 		resolvedKeyframeCount: number
-
-		/** How many objects that was actually resolved (is affected when using cache) */
+		/** How many objects (including keyframes) where actually resolved (is affected when using cache) */
+		resolvingObjectCount: number
+		/**
+		 * How many times the objects where resolved.
+		 * If there are deep/recursive references in the timline,
+		 * the resolver might resolve an object multiple times in order to fully resolve the timeline.
+		 * (is affected when using cache)
+		 */
 		resolvingCount: number
+		/** If traceResolving option is enabled, will contain a trace of the steps the resolver did while resolving */
+		resolveTrace: string[]
 	}
 }
 export interface ResolvedTimelineObjects<TContent extends Content = Content> {
