@@ -27,6 +27,7 @@ import {
 	StatusCode,
 	VizMSEErrorCode,
 	VizMSEErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 
 import { createMSE, MSE } from '@tv2media/v-connection'
@@ -38,7 +39,6 @@ import { endTrace, startTrace, t, literal } from '../../lib'
 import { HTTPClientError, HTTPServerError } from '@tv2media/v-connection/dist/msehttp'
 import { VizMSEManager } from './vizMSEManager'
 import { createVizMSEError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
 import {
 	VizMSECommand,
 	VizMSEState,

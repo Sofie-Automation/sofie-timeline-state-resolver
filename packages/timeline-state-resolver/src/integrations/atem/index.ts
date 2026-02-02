@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import {
 	AtemOptions,
+	errorsToMessages,
 	Mappings,
 	ActionExecutionResult,
 	ActionExecutionResultCode,
@@ -40,7 +41,6 @@ import {
 	updateFromAtemState,
 } from './state'
 import { createAtemError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
 
 export type AtemCommandWithContext = CommandWithContext<AtemCommands.ISerializableCommand[], string>
 

@@ -23,6 +23,7 @@ import {
 	StatusCode,
 	SisyfosErrorCode,
 	SisyfosErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import type { CommandWithContext } from 'timeline-state-resolver-api'
 
@@ -30,7 +31,6 @@ import { DoOnTime, SendMode } from '../../devices/doOnTime'
 
 import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection'
 import { createSisyfosError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
 import Debug from 'debug'
 import { startTrace, endTrace, t } from '../../lib'
 const debug = Debug('timeline-state-resolver:sisyfos')

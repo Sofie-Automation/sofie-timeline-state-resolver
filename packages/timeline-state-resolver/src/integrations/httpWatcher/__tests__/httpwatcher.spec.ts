@@ -230,7 +230,7 @@ describe('HTTP-Watcher', () => {
 				messages: ['Error: Bad Gateway'],
 				errors: [
 					{
-						code: 'HTTPWATCHER_REQUEST_ERROR',
+						code: 'DEVICE_HTTPWATCHER_REQUEST_ERROR',
 						context: {
 							error: 'Error: Bad Gateway',
 							uri: 'http://localhost',
@@ -263,7 +263,7 @@ describe('HTTP-Watcher', () => {
 				messages: ['Expected keyword "bad keyword" not found'],
 				errors: [
 					{
-						code: 'HTTPWATCHER_KEYWORD_NOT_FOUND',
+						code: 'DEVICE_HTTPWATCHER_KEYWORD_NOT_FOUND',
 						context: {
 							body: 'this is my keyword and its really nice',
 							keyword: 'bad keyword',
@@ -301,7 +301,7 @@ describe('HTTP-Watcher', () => {
 				messages: ['Expected status code 200, got 201'],
 				errors: [
 					{
-						code: 'HTTPWATCHER_UNEXPECTED_STATUS_CODE',
+						code: 'DEVICE_HTTPWATCHER_UNEXPECTED_STATUS_CODE',
 						context: {
 							actual: 201,
 							body: '',

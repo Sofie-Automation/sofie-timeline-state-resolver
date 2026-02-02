@@ -8,6 +8,7 @@ import {
 	PharosError,
 	PharosErrorCode,
 	PharosErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import { Pharos } from './connection'
 import type {
@@ -19,7 +20,6 @@ import type {
 } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates'
 import { createPharosError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
 
 export type PharosCommandWithContext = CommandWithContext<CommandContent, string>
 export type PharosState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>

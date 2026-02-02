@@ -12,11 +12,11 @@ import {
 	ShotokuError,
 	ShotokuErrorCode,
 	ShotokuErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { ShotokuAPI, ShotokuCommand, ShotokuCommandType } from './connection'
 import { createShotokuError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
 
 export interface ShotokuDeviceState {
 	shots: Record<string, ShotokuCommandContent & { fromTlObject: string }>

@@ -1,5 +1,4 @@
-import { DeviceStatusError } from 'timeline-state-resolver-types'
-import { errorsToMessages } from '../deviceErrorMessages'
+import { DeviceStatusError, errorsToMessages } from 'timeline-state-resolver-types'
 import { createAtemError } from '../integrations/atem/errors'
 
 // Example device-local error definitions (mimicking what each device would export)

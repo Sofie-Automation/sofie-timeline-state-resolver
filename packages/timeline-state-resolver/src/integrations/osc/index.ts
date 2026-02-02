@@ -11,6 +11,7 @@ import {
 	TSRTimelineContent,
 	OSCErrorCode,
 	OSCErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import * as osc from 'osc'
@@ -20,7 +21,6 @@ import _ = require('underscore')
 import { Easing } from '../../devices/transitions/easings'
 import { assertNever } from '../../lib'
 import { createOSCError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
 const debug = Debug('timeline-state-resolver:osc')
 
 export interface OscDeviceState {
