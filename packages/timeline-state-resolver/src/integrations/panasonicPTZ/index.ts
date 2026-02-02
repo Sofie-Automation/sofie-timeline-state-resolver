@@ -16,6 +16,7 @@ import {
 	PanasonicPTZActions,
 	PanasonicPTZErrorCode,
 	PanasonicPTZErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { PanasonicPtzState, convertStateToPtz, getDefaultState } from './state.js'
@@ -39,7 +40,6 @@ import {
 } from './commands.js'
 import { t } from '../../lib.js'
 import { createPanasonicPTZError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 
 const FOCUS_MODE_MAP = {
 	[FocusMode.AUTO]: PanasonicFocusMode.AUTO,

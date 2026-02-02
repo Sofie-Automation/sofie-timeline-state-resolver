@@ -8,11 +8,11 @@ import {
 	HTTPWatcherError,
 	HTTPWatcherErrorCode,
 	HTTPWatcherErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import got, { Headers, Response } from 'got'
 import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
-import { createHTTPWatcherError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
+import { createHTTPWatcherError } from './errors.js'
 
 type HTTPWatcherDeviceState = Record<string, never>
 
@@ -22,9 +22,11 @@ type HTTPWatcherCommandWithContext = CommandWithContext<never, never>
  * This is a HTTPWatcherDevice, requests a uri on a regular interval and watches
  * it's response.
  */
-export class HTTPWatcherDevice
-	implements Device<HttpWatcherDeviceTypes, HTTPWatcherDeviceState, HTTPWatcherCommandWithContext>
-{
+export class HTTPWatcherDevice implements Device<
+	HttpWatcherDeviceTypes,
+	HTTPWatcherDeviceState,
+	HTTPWatcherCommandWithContext
+> {
 	readonly actions = null
 
 	private uri?: string

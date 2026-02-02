@@ -11,6 +11,7 @@ import {
 	StatusCode,
 	HyperdeckErrorCode,
 	HyperdeckErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import {
 	Hyperdeck,
@@ -23,7 +24,6 @@ import { deferAsync } from '../../lib.js'
 import { HyperdeckCommandWithContext, diffHyperdeckStates } from './diffState.js'
 import { HyperdeckDeviceState, convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from './stateBuilder.js'
 import { createHyperdeckError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 /**

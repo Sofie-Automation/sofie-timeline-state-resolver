@@ -19,11 +19,11 @@ import {
 	StatusCode,
 	SisyfosErrorCode,
 	SisyfosErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 
 import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection.js'
 import { createSisyfosError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 import Debug from 'debug'
 import { t } from '../../lib.js'
 import { CommandWithContext, Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
@@ -126,7 +126,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 			statusCode = StatusCode.BAD
 			errors.push(
 				createSisyfosError(SisyfosErrorCode.NOT_CONNECTED, {
-					deviceName: this.deviceName,
+					deviceName: this.context.deviceName,
 					host: this._initOptions?.host ?? '',
 					port: this._initOptions?.port ?? 0,
 				})
@@ -137,7 +137,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 			statusCode = StatusCode.BAD
 			errors.push(
 				createSisyfosError(SisyfosErrorCode.NOT_INITIALIZED, {
-					deviceName: this.deviceName,
+					deviceName: this.context.deviceName,
 				})
 			)
 		}
@@ -146,7 +146,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 			statusCode = StatusCode.BAD
 			errors.push(
 				createSisyfosError(SisyfosErrorCode.NO_MIXER_CONNECTION, {
-					deviceName: this.deviceName,
+					deviceName: this.context.deviceName,
 				})
 			)
 		}

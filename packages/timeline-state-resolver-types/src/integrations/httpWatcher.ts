@@ -1,4 +1,4 @@
-import { DeviceStatusError } from '../deviceError'
+import { DeviceStatusError } from '../deviceError.js'
 
 export const HTTPWatcherErrorCode = {
 	URI_NOT_SET: 'DEVICE_HTTPWATCHER_URI_NOT_SET',

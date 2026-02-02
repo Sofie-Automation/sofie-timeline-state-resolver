@@ -33,9 +33,9 @@ import {
 	StatusCode,
 	CasparCGErrorCode,
 	CasparCGErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
-import { createCasparCGError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
+import { createCasparCGError } from './errors.js'
 
 import {
 	CasparCGState,

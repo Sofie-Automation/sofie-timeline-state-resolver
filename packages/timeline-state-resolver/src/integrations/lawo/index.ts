@@ -4,6 +4,7 @@ import {
 	LawoError,
 	LawoErrorCode,
 	LawoErrorMessages,
+	errorsToMessages,
 	LawoOptions,
 	Mappings,
 	SomeMappingLawo,
@@ -17,7 +18,6 @@ import { convertTimelineStateToLawoState, LawoState } from './state.js'
 import { LawoCommandWithContext, diffLawoStates, LawoCommandType } from './diff.js'
 import { LawoConnection } from './connection.js'
 import { createLawoError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 const debug = Debug('timeline-state-resolver:lawo')
 
 export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoCommandWithContext> {

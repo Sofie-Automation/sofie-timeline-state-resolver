@@ -1,5 +1,6 @@
 import {
 	DeviceType,
+	errorsToMessages,
 	TriCasterOptions,
 	SomeMappingTricaster,
 	TSRTimelineContent,
@@ -15,8 +16,7 @@ import { WithContext, MappingsTriCaster, TriCasterState, TriCasterStateDiffer } 
 import { TriCasterCommandWithContext } from './triCasterCommands.js'
 import { TriCasterConnection } from './triCasterConnection.js'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { createTriCasterError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
+import { createTriCasterError } from './errors.js'
 
 const DEFAULT_PORT = 5951
 

@@ -1,5 +1,5 @@
 import { DeviceType, TemplateString } from '../index.js'
-import { DeviceStatusError } from '../deviceError'
+import { DeviceStatusError } from '../deviceError.js'
 
 /**
  * Error codes for CasparCG device issues.

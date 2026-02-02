@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import {
 	AtemOptions,
+	errorsToMessages,
 	Mappings,
 	ActionExecutionResult,
 	ActionExecutionResultCode,
@@ -38,9 +39,8 @@ import {
 	atemStateToAddressStates,
 	diffAddressStates,
 	updateFromAtemState,
-} from './state'
+} from './state.js'
 import { createAtemError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 
 export type AtemCommandWithContext = CommandWithContext<AtemCommands.ISerializableCommand[], string>
 
