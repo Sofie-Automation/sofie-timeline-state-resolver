@@ -1,6 +1,7 @@
 import WebSocket from 'ws'
 import {
 	DeviceStatus,
+	errorsToMessages,
 	StatusCode,
 	WebsocketClientOptions,
 	WebSocketClientError,
@@ -8,7 +9,6 @@ import {
 	WebSocketClientErrorMessages,
 } from 'timeline-state-resolver-types'
 import { createWebSocketClientError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
 
 export class WebSocketConnection {
 	private ws?: WebSocket

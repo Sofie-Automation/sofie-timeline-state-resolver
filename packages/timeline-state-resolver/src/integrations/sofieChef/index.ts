@@ -11,6 +11,7 @@ import {
 	SofieChefActions,
 	SofieChefErrorCode,
 	SofieChefErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import WebSocket from 'ws'
 import {
@@ -28,7 +29,6 @@ import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState 
 import { diffStates } from './diffStates.js'
 import { buildSofieChefState } from './stateBuilder.js'
 import { createSofieChefError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 
 export type SofieChefCommandWithContext = CommandWithContext<ReceiveWSMessageAny, string>
 export interface SofieChefState {

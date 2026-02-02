@@ -9,6 +9,7 @@ import {
 	QuantelError,
 	QuantelErrorCode,
 	QuantelErrorMessages,
+	errorsToMessages,
 	QuantelOptions,
 	SomeMappingQuantel,
 	StatusCode,
@@ -23,7 +24,6 @@ import { QuantelManager } from './connection.js'
 import { convertTimelineStateToQuantelState, getMappedPorts } from './state.js'
 import { diffStates } from './diff.js'
 import { createQuantelError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 const debug = Debug('timeline-state-resolver:quantel')
 
 export interface OscDeviceState {

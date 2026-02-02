@@ -26,6 +26,7 @@ import {
 	DeviceTimelineState,
 	VizMSEErrorCode,
 	VizMSEErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 
 import { createMSE, MSE } from '@tv2media/v-connection'
@@ -37,7 +38,6 @@ import { endTrace, startTrace, t, literal } from '../../lib.js'
 import { HTTPClientError, HTTPServerError } from '@tv2media/v-connection/dist/msehttp'
 import { VizMSEManager } from './vizMSEManager.js'
 import { createVizMSEError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 import {
 	VizMSECommand,
 	VizMSEState,

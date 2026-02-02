@@ -19,11 +19,11 @@ import {
 	StatusCode,
 	SisyfosErrorCode,
 	SisyfosErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 
 import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection.js'
 import { createSisyfosError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 import Debug from 'debug'
 import { t } from '../../lib.js'
 import { CommandWithContext, Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'

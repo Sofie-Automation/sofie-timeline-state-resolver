@@ -1,6 +1,7 @@
 import { VMixCommandSender, VMixConnection } from './connection.js'
 import {
 	DeviceStatus,
+	errorsToMessages,
 	Mappings,
 	StatusCode,
 	TSRTimelineContent,
@@ -11,7 +12,6 @@ import {
 	VMixErrorMessages,
 } from 'timeline-state-resolver-types'
 import { createVMixError } from './errors.js'
-import { errorsToMessages } from '../../deviceErrorMessages.js'
 import { VMixState, VMixStateDiffer, VMixStateExtended } from './vMixStateDiffer.js'
 import { VMixStateCommandWithContext } from './vMixCommands.js'
 import { MappingsVmix, VMixTimelineStateConverter } from './vMixTimelineStateConverter.js'

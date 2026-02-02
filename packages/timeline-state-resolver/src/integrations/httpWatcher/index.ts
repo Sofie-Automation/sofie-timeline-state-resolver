@@ -8,11 +8,11 @@ import {
 	HTTPWatcherError,
 	HTTPWatcherErrorCode,
 	HTTPWatcherErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import got, { Headers, Response } from 'got'
 import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 import { createHTTPWatcherError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
 
 type HTTPWatcherDeviceState = Record<string, never>
 

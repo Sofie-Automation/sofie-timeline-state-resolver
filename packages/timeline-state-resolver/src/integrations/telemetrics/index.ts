@@ -8,11 +8,11 @@ import {
 	TSRTimelineContent,
 	TelemetricsErrorCode,
 	TelemetricsErrorMessages,
+	errorsToMessages,
 } from 'timeline-state-resolver-types'
 import { Socket } from 'net'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { createTelemetricsError } from './errors'
-import { errorsToMessages } from '../../deviceErrorMessages'
 
 const TELEMETRICS_COMMAND_PREFIX = 'P0C'
 const DEFAULT_SOCKET_PORT = 5000
