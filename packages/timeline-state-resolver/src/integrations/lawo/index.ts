@@ -29,9 +29,7 @@ export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoComman
 		this._lawo.on('connected', (firstConnection) => {
 			if (firstConnection) {
 				// reset state
-				this.context
-					.resetToState({ faders: [], nodes: [] })
-					.catch((e) => this.context.logger.error('Lawo: Error when resetting state', e))
+				this.context.resetToState({ faders: [], nodes: [] })
 			}
 			this.context.connectionChanged(this.getStatus())
 		})

@@ -87,15 +87,7 @@ export class QuantelDevice implements Device<QuantelDeviceTypes, QuantelState, Q
 					} else if (connected === true) {
 						if (!this._disconnectedSince) {
 							// this must be our first time connecting, so let's resend any commands we missed
-							this.context
-								.resetToState({ time: 0, port: {} })
-								.catch((e) =>
-									this.context.logger.warning(
-										'Failed to reset to state after first connection, device may be in unknown state (reason: ' +
-											e +
-											')'
-									)
-								)
+							this.context.resetToState({ time: 0, port: {} })
 						}
 
 						this._disconnectedSince = undefined

@@ -13,6 +13,10 @@ export interface VmixOptions {
 	 * How often, in milliseconds, for when we should poll vMix to query its actual state. Used to know when to re-send certain failed commands. Values <= 0 disables the polling. Defaults to 10000ms.
 	 */
 	pollInterval?: number
+	/**
+	 * Whether the state received from vMix as XML should be included in the logs, if debug logging is enabled
+	 */
+	debugXml?: boolean
 }
 
 export interface MappingVmixProgram {

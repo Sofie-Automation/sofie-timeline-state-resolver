@@ -58,9 +58,7 @@ export class TriCasterDevice
 		}
 
 		const state = this._stateDiffer.shortcutStateConverter.getTriCasterStateFromShortcutState(shortcutStateXml)
-		this.context.resetToState(state).catch((e) => {
-			this.context.logger.error('Error setting initial TriCaster state', e)
-		})
+		this.context.resetToState(state)
 	}
 
 	private _setConnected(connected: boolean): void {

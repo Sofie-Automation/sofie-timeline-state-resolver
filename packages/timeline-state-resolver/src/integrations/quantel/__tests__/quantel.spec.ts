@@ -1660,7 +1660,7 @@ describe('Quantel Device', () => {
 			// Handle state at time 0 (nothing is playing)
 			{
 				const state = getResolvedState(resolved, now)
-				await stateHandler.handleState(state, mappings)
+				stateHandler.handleState(state, mappings)
 
 				// Give QuantelManager some time to process the commands
 				await sleep(200)
@@ -1699,7 +1699,7 @@ describe('Quantel Device', () => {
 			// Handle state at time 1000 (myClip0 starts to play)
 			{
 				const state = getResolvedState(resolved, now + 100)
-				await stateHandler.handleState(state, mappings)
+				stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
 				await sleep(200)
 
@@ -1749,7 +1749,7 @@ describe('Quantel Device', () => {
 			// Handle state at time 2000 (myClip0 should stop (but is delayed due to outTransition))
 			{
 				const state = getResolvedState(resolved, now + 200)
-				await stateHandler.handleState(state, mappings)
+				stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
 				await sleep(100)
 
@@ -1783,7 +1783,7 @@ describe('Quantel Device', () => {
 			// Handle state at time 2100 (myClip1 starts playing)
 			{
 				const state = getResolvedState(resolved, now + 210)
-				await stateHandler.handleState(state, mappings)
+				stateHandler.handleState(state, mappings)
 
 				// Wait enough time to ensure that the outTransition from previous clip would have finished (had it not been cancelled)
 				await sleep(100)
@@ -1912,7 +1912,7 @@ describe('Quantel Device', () => {
 			// Handle state at time 0 (nothing is playing)
 			{
 				const state = getResolvedState(resolved, now)
-				await stateHandler.handleState(state, mappings)
+				stateHandler.handleState(state, mappings)
 
 				// Give QuantelManager some time to process the commands
 				await waitUntil(() => {
@@ -1951,7 +1951,7 @@ describe('Quantel Device', () => {
 			// Handle state at time 1000 (myClip0 starts to play)
 			{
 				const state = getResolvedState(resolved, now + 100)
-				await stateHandler.handleState(state, mappings)
+				stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
 				await waitUntil(() => {
 					expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(3)
@@ -2000,7 +2000,7 @@ describe('Quantel Device', () => {
 			// Handle state at time 2000 (myClip0 should stop (but is delayed due to outTransition))
 			{
 				const state = getResolvedState(resolved, now + 200)
-				await stateHandler.handleState(state, mappings)
+				stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
 				await waitUntil(() => {
 					expect(MOCK_SEND_COMMAND).toHaveBeenCalledTimes(2)
@@ -2038,7 +2038,7 @@ describe('Quantel Device', () => {
 			// Handle state at time 2500 (myClip1 starts playing)
 			{
 				const state = getResolvedState(resolved, now + 250)
-				await stateHandler.handleState(state, mappings)
+				stateHandler.handleState(state, mappings)
 
 				// Wait enough time to ensure that the outTransition from previous clip would have finished (had it not been cancelled)
 				await waitUntil(() => {

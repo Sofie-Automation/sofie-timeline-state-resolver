@@ -64,7 +64,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 			this._connectionChanged()
 
 			// Do a state diff to at least send all the commands we know about
-			this.context.resetState().catch((e) => this.context.logger.error('Error resetting kairos state', new Error(e)))
+			this.context.resetState()
 		})
 
 		this._monitorState = options.monitorState
