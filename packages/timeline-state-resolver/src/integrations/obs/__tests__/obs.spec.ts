@@ -4,7 +4,6 @@ import {
 	MappingObsType,
 	Mappings,
 	SomeMappingObs,
-	Timeline,
 	TimelineContentOBSAny,
 	TimelineContentTypeOBS,
 	TSRTimelineContent,
@@ -14,6 +13,7 @@ import { getDeviceContext } from '../../__tests__/testlib'
 import { getDefaultState, OBSDeviceState } from '../state'
 import { OBSRequestName } from '../diff'
 import '../../../__mocks__/ws'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 async function getInitialisedObsDevice() {
 	const dev = new OBSDevice(getDeviceContext())
@@ -23,7 +23,7 @@ async function getInitialisedObsDevice() {
 
 describe('OBS Device', () => {
 	describe('convertTimelineStateToDeviceState', () => {
-		async function convertState(tlState: Timeline.TimelineState<TSRTimelineContent>, expDevState: OBSDeviceState) {
+		async function convertState(tlState: DeviceTimelineState<TSRTimelineContent>, expDevState: OBSDeviceState) {
 			const device = await getInitialisedObsDevice()
 
 			const actualState = device.convertTimelineStateToDeviceState(tlState, DEFAULT_MAPPINGS)
@@ -40,6 +40,7 @@ describe('OBS Device', () => {
 				createTimelineState({
 					currentScene: {
 						id: 'currentScene0',
+						layer: 'currentScene',
 						content: {
 							deviceType: DeviceType.OBS,
 							type: TimelineContentTypeOBS.CURRENT_SCENE,
@@ -49,6 +50,7 @@ describe('OBS Device', () => {
 					},
 					currentTransition: {
 						id: 'currentTransition0',
+						layer: 'currentTransition',
 						content: {
 							deviceType: DeviceType.OBS,
 							type: TimelineContentTypeOBS.CURRENT_TRANSITION,
@@ -58,6 +60,7 @@ describe('OBS Device', () => {
 					},
 					recording: {
 						id: 'recording0',
+						layer: 'recording',
 						content: {
 							deviceType: DeviceType.OBS,
 							type: TimelineContentTypeOBS.RECORDING,
@@ -67,6 +70,7 @@ describe('OBS Device', () => {
 					},
 					streaming: {
 						id: 'streaming0',
+						layer: 'streaming',
 						content: {
 							deviceType: DeviceType.OBS,
 							type: TimelineContentTypeOBS.STREAMING,
@@ -76,6 +80,7 @@ describe('OBS Device', () => {
 					},
 					sceneItem: {
 						id: 'sceneItem0',
+						layer: 'sceneItem',
 						content: {
 							deviceType: DeviceType.OBS,
 							type: TimelineContentTypeOBS.SCENE_ITEM,
@@ -87,6 +92,7 @@ describe('OBS Device', () => {
 					},
 					inputAudio: {
 						id: 'inputAudio0',
+						layer: 'inputAudio',
 						content: {
 							deviceType: DeviceType.OBS,
 							type: TimelineContentTypeOBS.INPUT_AUDIO,
@@ -96,6 +102,7 @@ describe('OBS Device', () => {
 					},
 					inputSettings: {
 						id: 'inputSettings0',
+						layer: 'inputSettings',
 						content: {
 							deviceType: DeviceType.OBS,
 							type: TimelineContentTypeOBS.INPUT_SETTINGS,
@@ -108,6 +115,7 @@ describe('OBS Device', () => {
 					},
 					inputMedia: {
 						id: 'inputMedia0',
+						layer: 'inputMedia',
 						content: {
 							deviceType: DeviceType.OBS,
 							type: TimelineContentTypeOBS.INPUT_MEDIA,
@@ -365,12 +373,11 @@ describe('OBS Device', () => {
 })
 
 function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentOBSAny }>
-): Timeline.TimelineState<TSRTimelineContent> {
+	objs: Record<string, { id: string; layer: string; content: TimelineContentOBSAny }>
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
-		layers: objs as any,
-		nextEvents: [],
+		objects: Object.values<any>(objs),
 	}
 }
 const DEFAULT_MAPPINGS: Mappings<SomeMappingObs> = {

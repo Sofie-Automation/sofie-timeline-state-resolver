@@ -1,4 +1,5 @@
 import { Commands as HyperdeckCommands, TransportStatus } from 'hyperdeck-connection'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 import {
 	DeviceType,
 	Mapping,
@@ -6,7 +7,6 @@ import {
 	Mappings,
 	SomeMappingHyperdeck,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentTypeHyperdeck,
 } from 'timeline-state-resolver-types'
 
@@ -54,20 +54,16 @@ export function getDefaultHyperdeckState(): HyperdeckDeviceState {
 }
 
 export function convertTimelineStateToHyperdeckState(
-	state: Timeline.StateInTime<TSRTimelineContent>,
+	state: DeviceTimelineState<TSRTimelineContent>,
 	mappings: Mappings
 ): HyperdeckDeviceState {
 	// Convert the timeline state into something we can use easier:
 	const deviceState = getDefaultHyperdeckState()
 
-	const sortedLayers = Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(state)
-		.map(([layerName, tlObject]) => ({ layerName, tlObject }))
-		.sort((a, b) => a.layerName.localeCompare(b.layerName))
-
-	for (const { tlObject, layerName } of sortedLayers) {
+	for (const tlObject of state.objects) {
 		const content = tlObject.content
 
-		const mapping = mappings[layerName] as Mapping<SomeMappingHyperdeck>
+		const mapping = mappings[tlObject.layer] as Mapping<SomeMappingHyperdeck>
 		if (!mapping || content.deviceType !== DeviceType.HYPERDECK) continue
 
 		if (

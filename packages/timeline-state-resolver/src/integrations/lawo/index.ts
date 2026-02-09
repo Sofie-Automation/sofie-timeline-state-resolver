@@ -1,14 +1,13 @@
 import {
-	ActionExecutionResult,
 	DeviceStatus,
+	LawoDeviceTypes,
 	LawoOptions,
 	Mappings,
 	SomeMappingLawo,
 	StatusCode,
-	Timeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { Device } from '../../service/device'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 import Debug from 'debug'
 import { convertTimelineStateToLawoState, LawoState } from './state'
@@ -16,8 +15,12 @@ import { LawoCommandWithContext, diffLawoStates, LawoCommandType } from './diff'
 import { LawoConnection } from './connection'
 const debug = Debug('timeline-state-resolver:lawo')
 
-export class LawoDevice extends Device<LawoOptions, LawoState, LawoCommandWithContext> {
+export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoCommandWithContext> {
 	private _lawo: LawoConnection | undefined
+
+	constructor(protected context: DeviceContextAPI<LawoState>) {
+		// Nothing
+	}
 
 	async init(options: LawoOptions): Promise<boolean> {
 		this._lawo = new LawoConnection(options, this.context.getCurrentTime)
@@ -26,9 +29,7 @@ export class LawoDevice extends Device<LawoOptions, LawoState, LawoCommandWithCo
 		this._lawo.on('connected', (firstConnection) => {
 			if (firstConnection) {
 				// reset state
-				this.context
-					.resetToState({ faders: [], nodes: [] })
-					.catch((e) => this.context.logger.error('Lawo: Error when resetting state', e))
+				this.context.resetToState({ faders: [], nodes: [] })
 			}
 			this.context.connectionChanged(this.getStatus())
 		})
@@ -43,7 +44,7 @@ export class LawoDevice extends Device<LawoOptions, LawoState, LawoCommandWithCo
 	}
 
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings<SomeMappingLawo>
 	): LawoState {
 		return convertTimelineStateToLawoState(timelineState, mappings)
@@ -93,7 +94,5 @@ export class LawoDevice extends Device<LawoOptions, LawoState, LawoCommandWithCo
 		}
 	}
 
-	readonly actions: {
-		[id: string]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {}
+	readonly actions = null
 }

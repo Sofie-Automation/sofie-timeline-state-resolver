@@ -1,13 +1,13 @@
 import * as _ from 'underscore'
-import { BaseDeviceAPI, CommandWithContext } from './device'
+import type { BaseDeviceAPI, CommandWithContext } from 'timeline-state-resolver-api'
 import { Measurement } from './measure'
 import { StateHandlerContext } from './stateHandler'
 
-export class CommandExecutor<DeviceState, Command extends CommandWithContext> {
+export class CommandExecutor<DeviceState, Command extends CommandWithContext<any, any>> {
 	constructor(
 		private logger: StateHandlerContext['logger'],
 		private mode: 'salvo' | 'sequential',
-		private sendCommand: BaseDeviceAPI<DeviceState, Command>['sendCommand']
+		private sendCommand: BaseDeviceAPI<DeviceState, void, Command>['sendCommand']
 	) {}
 
 	async executeCommands(commands: Command[], measurement?: Measurement): Promise<void> {

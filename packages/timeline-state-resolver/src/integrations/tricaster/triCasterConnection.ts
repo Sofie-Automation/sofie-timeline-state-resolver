@@ -1,13 +1,13 @@
 import got from 'got'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import WebSocket = require('ws')
 import { TriCasterInfoParser, TriCasterProductInfo, TriCasterSwitcherInfo } from './triCasterInfoParser'
 import { serializeToWebSocketMessage, TriCasterCommand } from './triCasterCommands'
 
-export interface TriCasterConnectionEvents {
-	connected: (info: TriCasterInfo, shortcutStateXml: string) => void
-	disconnected: (reason: string) => void
-	error: (reason: any) => void
+export type TriCasterConnectionEvents = {
+	connected: [info: TriCasterInfo, shortcutStateXml: string]
+	disconnected: [reason: string]
+	error: [reason: any]
 }
 
 export interface TriCasterInfo extends TriCasterSwitcherInfo, TriCasterProductInfo {}

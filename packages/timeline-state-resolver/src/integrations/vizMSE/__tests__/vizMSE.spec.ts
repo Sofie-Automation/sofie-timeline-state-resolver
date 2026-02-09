@@ -7,9 +7,10 @@ import {
 	SomeMappingVizMSE,
 	TimelineContentTypeVizMSE,
 	VIZMSETransitionType,
-	VIZMSEPlayoutItemContentExternal,
-	VIZMSEPlayoutItemContentInternal,
 	VizMSEOptions,
+	VizMSEActions,
+	ActivatePayload,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 import { MockTime } from '../../../__tests__/mockTime'
 import { ThreadedClass } from 'threadedclass'
@@ -17,26 +18,18 @@ import { addConnections, awaitNextRemoval, getMockCall } from '../../../__tests_
 import { VizMSEDevice } from '..'
 import * as vConnection from '../../../__mocks__/v-connection'
 import * as net from '../../../__mocks__/net'
-import { Socket } from '../../../__mocks__/net'
+
 const getMockMSEs = vConnection.getMockMSEs
 type MSEMock = vConnection.MSEMock
 type VRundownMocked = vConnection.VRundownMocked
 import _ = require('underscore')
-import { StatusCode } from '../../../devices/device'
 import { MOCK_SHOWS } from '../../../__mocks__/v-connection'
 import { literal } from '../../../lib'
-
-const orgSetTimeout = setTimeout
-
-async function wait(time = 1) {
-	return new Promise((resolve) => {
-		orgSetTimeout(resolve, time)
-	})
-}
+import { ExpectedPlayoutItem } from '../../../expectedPlayoutItems'
 
 async function setupDevice() {
-	let device: any = undefined
-	const commandReceiver0 = jest.fn((...args) => {
+	let device: ThreadedClass<VizMSEDevice> = undefined as any
+	const commandReceiver0 = jest.fn<Promise<any>, Parameters<typeof device._defaultCommandReceiver>>(async (...args) => {
 		return device._defaultCommandReceiver(...args)
 	})
 
@@ -315,13 +308,17 @@ describe('vizMSE', () => {
 		expect(rundown).toBeTruthy()
 
 		expect(await device.supportsExpectedPlayoutItems).toEqual(true)
-		const expectedItem1: VIZMSEPlayoutItemContentExternal = {
+		const expectedItem1: ExpectedPlayoutItem = {
 			vcpid: 1337,
 			channel: 'FULL1',
+			rundownId: 'rundownId',
+			playlistId: 'playlistId',
 		}
-		const expectedItem2: VIZMSEPlayoutItemContentExternal = {
+		const expectedItem2: ExpectedPlayoutItem = {
 			vcpid: 1336,
 			channel: 'FULL1',
+			rundownId: 'rundownId',
+			playlistId: 'playlistId',
 		}
 		await device.handleExpectedPlayoutItems([expectedItem1, expectedItem2])
 		await mockTime.advanceTimeTicks(100)
@@ -331,7 +328,10 @@ describe('vizMSE', () => {
 		expect(rundown.createElement).toHaveBeenNthCalledWith(2, expectedItem2)
 		rundown.createElement.mockClear()
 
-		await myConductor.devicesMakeReady(true)
+		await device.executeAction(VizMSEActions.Activate, {
+			activeRundownPlaylistId: 'playlistId',
+			clearAll: true,
+		} satisfies ActivatePayload)
 		await mockTime.advanceTimeTicks(10)
 
 		expect(rundown.activate).toHaveBeenCalledTimes(2)
@@ -435,9 +435,11 @@ describe('vizMSE', () => {
 		rundown.createElement.mockClear()
 		rundown.initialize.mockClear()
 
-		const expectedItem3: VIZMSEPlayoutItemContentExternal = {
+		const expectedItem3: ExpectedPlayoutItem = {
 			vcpid: 9999,
 			channel: 'FULL1',
+			rundownId: 'rundownId',
+			playlistId: 'playlistId',
 		}
 
 		await device.handleExpectedPlayoutItems([expectedItem1, expectedItem2, expectedItem3])
@@ -479,7 +481,7 @@ describe('vizMSE', () => {
 		expect(rundown.initialize).toHaveBeenNthCalledWith(1, expectedItem3)
 
 		expect(rundown.deactivate).toHaveBeenCalledTimes(0)
-		await myConductor.devicesStandDown(true)
+		await device.executeAction(VizMSEActions.StandDown, {})
 		expect(rundown.deactivate).toHaveBeenCalledTimes(1)
 
 		expect(onError).toHaveBeenCalledTimes(0)
@@ -841,7 +843,10 @@ describe('vizMSE', () => {
 		const { device, myConductor, onError, commandReceiver0 } = await setupDevice()
 		await mockTime.advanceTimeToTicks(10100)
 		await device.ignoreWaitsInTests()
-		await myConductor.devicesMakeReady(true)
+		await device.executeAction(VizMSEActions.Activate, {
+			activeRundownPlaylistId: 'playlistId',
+			clearAll: true,
+		} satisfies ActivatePayload)
 
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
@@ -923,7 +928,10 @@ describe('vizMSE', () => {
 	test('re-initializes show for incoming elements during TimelineObjVIZMSEInitializeShows', async () => {
 		const { device, myConductor, onError } = await setupDevice()
 		await device.ignoreWaitsInTests()
-		await myConductor.devicesMakeReady(true)
+		await device.executeAction(VizMSEActions.Activate, {
+			activeRundownPlaylistId: 'playlistId',
+			clearAll: true,
+		} satisfies ActivatePayload)
 
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
@@ -951,8 +959,10 @@ describe('vizMSE', () => {
 		])
 
 		await device.handleExpectedPlayoutItems(
-			literal<VIZMSEPlayoutItemContentInternal[]>([
+			literal<ExpectedPlayoutItem[]>([
 				{
+					rundownId: 'rundownId',
+					playlistId: 'playlistId',
 					templateName: 'bund',
 					showName: MOCK_SHOWS[0].name,
 				},
@@ -963,20 +973,28 @@ describe('vizMSE', () => {
 
 		rundown.initializeShow.mockClear()
 		await device.handleExpectedPlayoutItems(
-			literal<VIZMSEPlayoutItemContentInternal[]>([
+			literal<ExpectedPlayoutItem[]>([
 				{
+					rundownId: 'rundownId',
+					playlistId: 'playlistId',
 					templateName: 'bund',
 					showName: MOCK_SHOWS[0].name,
 				},
 				{
+					rundownId: 'rundownId',
+					playlistId: 'playlistId',
 					templateName: 'bund',
 					showName: MOCK_SHOWS[1].name,
 				},
 				{
+					rundownId: 'rundownId',
+					playlistId: 'playlistId',
 					templateName: 'ident',
 					showName: MOCK_SHOWS[2].name,
 				},
 				{
+					rundownId: 'rundownId',
+					playlistId: 'playlistId',
 					templateName: 'tlf',
 					showName: MOCK_SHOWS[1].name,
 				},
@@ -993,11 +1011,14 @@ describe('vizMSE', () => {
 		expect(onError).toHaveBeenCalledTimes(0)
 	})
 	test('creates and deletes internal elements', async () => {
-		const { device, myConductor, onError } = await setupDevice()
+		const { device, onError } = await setupDevice()
 		await mockTime.advanceTimeToTicks(10100)
 
 		await device.ignoreWaitsInTests()
-		await myConductor.devicesMakeReady(true)
+		await device.executeAction(VizMSEActions.Activate, {
+			activeRundownPlaylistId: 'playlistId',
+			clearAll: true,
+		} satisfies ActivatePayload)
 
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
@@ -1010,8 +1031,10 @@ describe('vizMSE', () => {
 
 		await mockTime.advanceTimeToTicks(20500)
 		await device.handleExpectedPlayoutItems(
-			literal<VIZMSEPlayoutItemContentInternal[]>([
+			literal<ExpectedPlayoutItem[]>([
 				{
+					rundownId: 'rundownId',
+					playlistId: 'playlistId',
 					templateName: 'bund',
 					showName: MOCK_SHOWS[1].name,
 					templateData: ['foo', 'bar'],
@@ -1031,7 +1054,7 @@ describe('vizMSE', () => {
 			'my_channel'
 		)
 
-		await device.handleExpectedPlayoutItems(literal<VIZMSEPlayoutItemContentInternal[]>([]))
+		await device.handleExpectedPlayoutItems(literal<ExpectedPlayoutItem[]>([]))
 
 		await mockTime.advanceTimeToTicks(39500)
 		expect(rundown.deleteElement).toHaveBeenCalledTimes(0)
@@ -1046,156 +1069,5 @@ describe('vizMSE', () => {
 		)
 
 		expect(onError).toHaveBeenCalledTimes(0)
-	})
-	test('vizMSE: clear all elements on makeReady when clearAllOnMakeReady is true', async () => {
-		const CLEAR_COMMAND = 'RENDERER*FRONT_LAYER SET_OBJECT'
-		const PROFILE_NAME = 'mockProfile'
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
-		await myConductor.init()
-		await addConnections(myConductor.connectionManager, {
-			myViz: {
-				type: DeviceType.VIZMSE,
-				options: {
-					host: '127.0.0.1',
-					preloadAllElements: true,
-					playlistID: 'my-super-playlist-id',
-					profile: PROFILE_NAME,
-					clearAllOnMakeReady: true,
-					clearAllTemplateName: 'clear_all_of_them',
-					clearAllCommands: [CLEAR_COMMAND],
-				},
-			},
-		})
-
-		const deviceContainer = myConductor.connectionManager.getConnection('myViz')
-		const device = deviceContainer!.device as ThreadedClass<VizMSEDevice>
-		await device.ignoreWaitsInTests()
-
-		const mse = _.last(getMockMSEs()) as MSEMock
-		expect(mse).toBeTruthy()
-		mse.mockCreateProfile(PROFILE_NAME, {
-			Channel1: {
-				entry: {
-					viz: {
-						value: 'Engine1',
-					},
-				},
-			},
-		})
-		mse.mockSetEngines([
-			{
-				mode: 'mockData',
-				status: 'mockData',
-				type: 'viz',
-				name: 'Engine1',
-				encoding: {
-					value: 'mockData',
-				},
-				state: 'mockData',
-				renderer: {
-					localhost: {},
-				},
-				publishing_point_uri: 'mockData',
-				publishing_point_atom_id: 'mockData',
-				info: 'mockData',
-			},
-		])
-
-		let netSocket: Socket
-
-		const writeBuffer = await Promise.all([
-			new Promise((resolve) => {
-				Socket.mockOnNextSocket((mockSocket: Socket) => {
-					netSocket = mockSocket
-					netSocket.onWrite = (buffer) => {
-						resolve(buffer.toString())
-					}
-				})
-			}),
-			device.makeReady(true, 'someDummyId'),
-		])
-
-		expect(writeBuffer[0]).toMatch(CLEAR_COMMAND)
-	})
-	test("vizMSE: don't clear engines when clearAllOnMakeReady is set to false", async () => {
-		const CLEAR_COMMAND = 'RENDERER*FRONT_LAYER SET_OBJECT'
-		const PROFILE_NAME = 'mockProfile'
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
-		await myConductor.init()
-		await addConnections(myConductor.connectionManager, {
-			myViz: {
-				type: DeviceType.VIZMSE,
-				options: {
-					host: '127.0.0.1',
-					preloadAllElements: true,
-					playlistID: 'my-super-playlist-id',
-					profile: PROFILE_NAME,
-					clearAllOnMakeReady: false,
-					clearAllTemplateName: 'clear_all_of_them',
-					clearAllCommands: [CLEAR_COMMAND],
-				},
-			},
-		})
-
-		const deviceContainer = myConductor.connectionManager.getConnection('myViz')
-		const device = deviceContainer!.device as ThreadedClass<VizMSEDevice>
-		await device.ignoreWaitsInTests()
-
-		const mse = _.last(getMockMSEs()) as MSEMock
-		expect(mse).toBeTruthy()
-		mse.mockCreateProfile(PROFILE_NAME, {
-			Channel1: {
-				entry: {
-					viz: {
-						value: 'Engine1',
-					},
-				},
-			},
-		})
-		mse.mockSetEngines([
-			{
-				mode: 'mockData',
-				status: 'mockData',
-				type: 'viz',
-				name: 'Engine1',
-				encoding: {
-					value: 'mockData',
-				},
-				state: 'mockData',
-				renderer: {
-					localhost: {},
-				},
-				publishing_point_uri: 'mockData',
-				publishing_point_atom_id: 'mockData',
-				info: 'mockData',
-			},
-		])
-
-		let netSocket: Socket
-
-		const promiseRaceResult = await Promise.all([
-			Promise.race([
-				new Promise((resolve) => {
-					Socket.mockOnNextSocket((mockSocket: Socket) => {
-						netSocket = mockSocket
-						netSocket.onWrite = (buffer) => {
-							resolve(buffer.toString())
-						}
-					})
-				}),
-				(async () => {
-					await wait(100)
-					return 'timeout'
-				})(),
-			]),
-			device.makeReady(true, 'someDummyId'),
-		])
-		expect(promiseRaceResult[0]).toBe('timeout')
 	})
 })

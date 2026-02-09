@@ -1,22 +1,24 @@
-import { CommandWithContext, DeviceStatus, StatusCode } from './../../devices/device'
 import {
 	AbstractOptions,
-	Timeline,
 	TSRTimelineContent,
-	ActionExecutionResult,
-	DeviceOptionsAbstract,
-	AbstractActions,
+	AbstractActionMethods,
 	ActionExecutionResultCode,
+	AbstractDeviceTypes,
+	AbstractActions,
+	StatusCode,
+	DeviceStatus,
 } from 'timeline-state-resolver-types'
-import { Device } from '../../service/device'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 
-export interface AbstractCommandWithContext extends CommandWithContext {
-	command: string
-}
+export type AbstractCommandWithContext = CommandWithContext<string, string>
 
-export type DeviceOptionsAbstractInternal = DeviceOptionsAbstract
-
-export type AbstractDeviceState = Timeline.TimelineState<TSRTimelineContent>
+export type AbstractDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
 /*
 	This is a wrapper for an "Abstract" device
@@ -24,10 +26,8 @@ export type AbstractDeviceState = Timeline.TimelineState<TSRTimelineContent>
 	An abstract device is just a test-device that doesn't really do anything, but can be used
 	as a preliminary mock
 */
-export class AbstractDevice extends Device<AbstractOptions, AbstractDeviceState, AbstractCommandWithContext> {
-	readonly actions: {
-		[id in AbstractActions]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {
+export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDeviceState, AbstractCommandWithContext> {
+	readonly actions: AbstractActionMethods = {
 		[AbstractActions.TestAction]: async () => {
 			// noop
 			return { result: ActionExecutionResultCode.Ok }
@@ -35,6 +35,10 @@ export class AbstractDevice extends Device<AbstractOptions, AbstractDeviceState,
 	}
 
 	public readonly connected = false
+
+	constructor(protected context: DeviceContextAPI<AbstractDeviceState>) {
+		// Nothing
+	}
 
 	/**
 	 * Initiates the connection with CasparCG through the ccg-connection lib.
@@ -55,8 +59,11 @@ export class AbstractDevice extends Device<AbstractOptions, AbstractDeviceState,
 	 * converts the timeline state into something we can use
 	 * @param state
 	 */
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>) {
-		return state
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>) {
+		return state.objects.reduce((acc, obj) => {
+			acc[obj.layer] = obj
+			return acc
+		}, {} as AbstractDeviceState)
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
@@ -76,10 +83,8 @@ export class AbstractDevice extends Device<AbstractOptions, AbstractDeviceState,
 
 		const commands: Array<AbstractCommandWithContext> = []
 
-		for (const [layerKey, newLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<any>>(
-			newAbstractState.layers
-		)) {
-			const oldLayer = oldAbstractState?.layers[layerKey]
+		for (const [layerKey, newLayer] of Object.entries<DeviceTimelineStateObject<any>>(newAbstractState)) {
+			const oldLayer = oldAbstractState?.[layerKey]
 			if (!oldLayer) {
 				// added!
 				commands.push({
@@ -101,10 +106,8 @@ export class AbstractDevice extends Device<AbstractOptions, AbstractDeviceState,
 		}
 
 		// removed
-		for (const [layerKey, oldLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<any>>(
-			oldAbstractState?.layers || {}
-		)) {
-			const newLayer = newAbstractState.layers[layerKey]
+		for (const [layerKey, oldLayer] of Object.entries<DeviceTimelineStateObject<any>>(oldAbstractState || {})) {
+			const newLayer = newAbstractState[layerKey]
 			if (!newLayer) {
 				// removed!
 				commands.push({

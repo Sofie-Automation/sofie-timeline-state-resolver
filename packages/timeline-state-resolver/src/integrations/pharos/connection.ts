@@ -1,4 +1,4 @@
-import * as WebSocket from 'ws'
+import WebSocket from 'ws'
 import { EventEmitter } from 'events'
 import got, { GotRequestFunction } from 'got'
 import * as _ from 'underscore'
@@ -220,7 +220,7 @@ export class Pharos extends EventEmitter {
 	private _options!: Options
 	private _connected = false
 
-	private _webSocketKeepAliveTimeout: NodeJS.Timer | null = null
+	private _webSocketKeepAliveTimeout: NodeJS.Timeout | null = null
 
 	// constructor () {}
 	async connect(options: Options): Promise<void> {

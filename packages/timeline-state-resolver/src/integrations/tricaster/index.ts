@@ -1,39 +1,34 @@
 import {
 	DeviceType,
-	Mappings,
 	TriCasterOptions,
-	DeviceOptionsTriCaster,
 	SomeMappingTricaster,
-	Timeline,
 	TSRTimelineContent,
 	Mapping,
-	ActionExecutionResult,
 	StatusCode,
 	DeviceStatus,
+	TricasterDeviceTypes,
 } from 'timeline-state-resolver-types'
 import { WithContext, MappingsTriCaster, TriCasterState, TriCasterStateDiffer } from './triCasterStateDiffer'
 import { TriCasterCommandWithContext } from './triCasterCommands'
 import { TriCasterConnection } from './triCasterConnection'
-import { Device } from '../../service/device'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const DEFAULT_PORT = 5951
 
-export type DeviceOptionsTriCasterInternal = DeviceOptionsTriCaster
-
-export class TriCasterDevice extends Device<
-	TriCasterOptions,
-	WithContext<TriCasterState>,
-	TriCasterCommandWithContext
-> {
-	readonly actions: {
-		[id: string]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {}
+export class TriCasterDevice
+	implements Device<TricasterDeviceTypes, WithContext<TriCasterState>, TriCasterCommandWithContext>
+{
+	readonly actions = null
 
 	private _connected = false
 	private _initialized = false
 	private _isTerminating = false
 	private _connection?: TriCasterConnection
 	private _stateDiffer?: TriCasterStateDiffer
+
+	constructor(protected context: DeviceContextAPI<WithContext<TriCasterState>>) {
+		// Nothing
+	}
 
 	async init(options: TriCasterOptions): Promise<boolean> {
 		this._connection = new TriCasterConnection(options.host, options.port ?? DEFAULT_PORT)
@@ -63,9 +58,7 @@ export class TriCasterDevice extends Device<
 		}
 
 		const state = this._stateDiffer.shortcutStateConverter.getTriCasterStateFromShortcutState(shortcutStateXml)
-		this.context.resetToState(state).catch((e) => {
-			this.context.logger.error('Error setting initial TriCaster state', e)
-		})
+		this.context.resetToState(state)
 	}
 
 	private _setConnected(connected: boolean): void {
@@ -80,8 +73,8 @@ export class TriCasterDevice extends Device<
 	 * @param timelineState The state to be converted
 	 */
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
-		mappings: Mappings
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
+		mappings: Record<string, Mapping<SomeMappingTricaster>>
 	): WithContext<TriCasterState> {
 		if (!this._initialized || !this._stateDiffer) {
 			// before it's initialized don't do anything
@@ -101,7 +94,7 @@ export class TriCasterDevice extends Device<
 	diffStates(
 		oldTriCasterState: WithContext<TriCasterState> | undefined,
 		newTriCasterState: WithContext<TriCasterState>,
-		_mappings: Mappings
+		_mappings: Record<string, Mapping<SomeMappingTricaster>>
 	): Array<TriCasterCommandWithContext> {
 		if (!this._initialized || !this._stateDiffer) {
 			// before it's initialized don't do anything
@@ -112,11 +105,11 @@ export class TriCasterDevice extends Device<
 		return this._stateDiffer.getCommandsToAchieveState(newTriCasterState, oldTriCasterState)
 	}
 
-	private filterTriCasterMappings(newMappings: Mappings): MappingsTriCaster {
-		return Object.entries<Mapping<unknown>>(newMappings).reduce<MappingsTriCaster>(
+	private filterTriCasterMappings(newMappings: Record<string, Mapping<SomeMappingTricaster>>): MappingsTriCaster {
+		return Object.entries<Mapping<SomeMappingTricaster>>(newMappings).reduce<MappingsTriCaster>(
 			(accumulator, [layerName, mapping]) => {
 				if (mapping.device === DeviceType.TRICASTER) {
-					accumulator[layerName] = mapping as Mapping<SomeMappingTricaster>
+					accumulator[layerName] = mapping
 				}
 				return accumulator
 			},

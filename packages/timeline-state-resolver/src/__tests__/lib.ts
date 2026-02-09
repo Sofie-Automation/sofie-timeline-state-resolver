@@ -1,6 +1,15 @@
-import { DeviceOptionsAnyInternal } from '../conductor'
+import type { DeviceOptionsAny } from 'timeline-state-resolver-types'
 import { ConnectionManager } from '../service/ConnectionManager'
 import { MockTime } from './mockTime'
+import type { DeviceOptionsSisyfosInternal } from '../integrations/sisyfos'
+import type { DeviceOptionsVizMSEInternal } from '../integrations/vizMSE'
+import type { DeviceOptionsCasparCGInternal } from '../integrations/casparCG'
+
+export type DeviceOptionsAnyInternal =
+	| DeviceOptionsAny
+	| DeviceOptionsSisyfosInternal
+	| DeviceOptionsVizMSEInternal
+	| DeviceOptionsCasparCGInternal
 
 /**
  * Just a wrapper to :any type, to be used in tests only
@@ -43,7 +52,7 @@ export async function addConnections(
 
 export async function removeConnections(
 	connManager: ConnectionManager,
-	connections: Record<string, DeviceOptionsAnyInternal>,
+	connections: Record<string, DeviceOptionsAny>,
 	toBeRemoved: string[]
 ): Promise<void> {
 	const addedConns: string[] = []
@@ -86,11 +95,9 @@ declare global {
 		}
 	}
 }
-/** setTimeout (not affected by jest.fakeTimers) */
-const setTimeoutOrg = setTimeout
 /** Sleep for a  */
 export async function waitTime(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeoutOrg(resolve, ms))
+	return new Promise((resolve) => jest.requireActual('timers').setTimeout(resolve, ms))
 }
 
 /** The current time, not affected by jest.fakeTimers */

@@ -1,10 +1,27 @@
 {
-	"$schema": "../../../$schemas/action-schema.json",
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/action-schema.json",
 	"actions": [
 		{
 			"id": "resync",
 			"name": "Resync Atem",
 			"destructive": false
+		},
+		{
+			"id": "runMacro",
+			"name": "Run Macro",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"macroIndex": {
+						"type": "number"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"macroIndex"
+				]
+			},
 		}
 	]
 }

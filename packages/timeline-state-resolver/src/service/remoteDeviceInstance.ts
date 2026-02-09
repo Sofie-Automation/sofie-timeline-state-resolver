@@ -1,8 +1,8 @@
 import { ThreadedClass, threadedClass, ThreadedClassConfig, ThreadedClassManager } from 'threadedclass'
-import { DeviceType, DeviceOptionsBase } from 'timeline-state-resolver-types'
-import { EventEmitter } from 'eventemitter3'
+import { DeviceType, DeviceOptionsBase, DeviceOptionsAny } from 'timeline-state-resolver-types'
+import { EventEmitter } from 'node:events'
 import { DeviceDetails, DeviceInstanceWrapper } from './DeviceInstance'
-import type { Device, DeviceOptionsAnyInternal } from '../conductor'
+import type { Device } from '../conductor'
 
 export type DeviceContainerEvents = {
 	error: [context: string, err: Error]
@@ -13,7 +13,7 @@ export abstract class BaseRemoteDeviceIntegration<
 > extends EventEmitter<DeviceContainerEvents> {
 	public abstract onChildClose: (() => void) | undefined
 
-	protected abstract _device: ThreadedClass<DeviceInstanceWrapper> | ThreadedClass<Device<TOptions>>
+	protected abstract _device: ThreadedClass<DeviceInstanceWrapper> | ThreadedClass<Device<any, TOptions>>
 	protected _details: DeviceDetails = {
 		deviceId: 'N/A',
 		deviceType: DeviceType.ABSTRACT,
@@ -61,7 +61,7 @@ export abstract class BaseRemoteDeviceIntegration<
 		await this._device.setDebugState(debug)
 	}
 
-	public get device(): ThreadedClass<DeviceInstanceWrapper> | ThreadedClass<Device<TOptions>> {
+	public get device(): ThreadedClass<DeviceInstanceWrapper> | ThreadedClass<Device<any, TOptions>> {
 		return this._device
 	}
 	public get deviceId(): string {
@@ -115,6 +115,7 @@ export class RemoteDeviceInstance<
 	}
 
 	static async create<TOptions extends DeviceOptionsBase<unknown>>(
+		pluginPath: string | null,
 		deviceId: string,
 		deviceOptions: TOptions,
 		getCurrentTime: () => number,
@@ -125,7 +126,7 @@ export class RemoteDeviceInstance<
 		container._device = await threadedClass<DeviceInstanceWrapper, typeof DeviceInstanceWrapper>(
 			'../../dist/service/DeviceInstance.js',
 			'DeviceInstanceWrapper',
-			[deviceId, getCurrentTime(), deviceOptions as DeviceOptionsAnyInternal, getCurrentTime as any], // any because callbacks can't be casted
+			[deviceId, getCurrentTime(), pluginPath, deviceOptions as DeviceOptionsAny, getCurrentTime as any], // any because callbacks can't be casted
 			threadConfig
 		)
 

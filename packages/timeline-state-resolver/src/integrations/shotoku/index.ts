@@ -1,19 +1,16 @@
 import {
-	ActionExecutionResult,
 	DeviceStatus,
 	DeviceType,
 	StatusCode,
-	Timeline,
 	TimelineContentShotokuSequence,
 	ShotokuCommandContent,
 	TSRTimelineContent,
 	TimelineContentTypeShotoku,
 	ShotokuTransitionType,
 	ShotokuOptions,
+	ShotokuDeviceTypes,
 } from 'timeline-state-resolver-types'
-import { CommandWithContext, Device } from '../../service/device'
-
-import _ = require('underscore')
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { ShotokuAPI, ShotokuCommand, ShotokuCommandType } from './connection'
 
 export interface ShotokuDeviceState {
@@ -25,12 +22,14 @@ interface ShotokuSequence {
 	shots: TimelineContentShotokuSequence['shots']
 }
 
-export interface ShotokuCommandWithContext extends CommandWithContext {
-	command: ShotokuCommand // todo
-}
+export type ShotokuCommandWithContext = CommandWithContext<ShotokuCommand, string>
 
-export class ShotokuDevice extends Device<ShotokuOptions, ShotokuDeviceState, ShotokuCommandWithContext> {
+export class ShotokuDevice implements Device<ShotokuDeviceTypes, ShotokuDeviceState, ShotokuCommandWithContext> {
 	private readonly _shotoku = new ShotokuAPI()
+
+	constructor(protected context: DeviceContextAPI<ShotokuDeviceState>) {
+		// Nothing
+	}
 
 	async init(options: ShotokuOptions): Promise<boolean> {
 		this._shotoku.on('error', (info, error) => this.context.logger.error(info, error))
@@ -47,13 +46,7 @@ export class ShotokuDevice extends Device<ShotokuOptions, ShotokuDeviceState, Sh
 		this._shotoku
 			.connect(options.host, options.port)
 			.then(() => {
-				this.context
-					.resetToState({ shots: {}, sequences: {} })
-					.catch((e) =>
-						this.context.logger.warning(
-							'Failed to reset to state after first connection, device may be in unknown state (reason: ' + e + ')'
-						)
-					)
+				this.context.resetToState({ shots: {}, sequences: {} })
 			})
 			.catch((e) => this.context.logger.debug('Shotoku device failed initial connection attempt', e))
 
@@ -63,33 +56,33 @@ export class ShotokuDevice extends Device<ShotokuOptions, ShotokuDeviceState, Sh
 		await this._shotoku.dispose()
 	}
 
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>): ShotokuDeviceState {
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): ShotokuDeviceState {
 		const deviceState: ShotokuDeviceState = {
 			shots: {},
 			sequences: {},
 		}
 
-		_.each(state.layers, (layer) => {
-			const content = layer.content
+		for (const tlObject of state.objects) {
+			const content = tlObject.content
 
 			if (content.deviceType === DeviceType.SHOTOKU) {
 				if (content.type === TimelineContentTypeShotoku.SHOT) {
 					const show = content.show || 1
 
-					if (!content.shot) return
+					if (!content.shot) continue
 
 					deviceState.shots[show + '.' + content.shot] = {
 						...content,
-						fromTlObject: layer.id,
+						fromTlObject: tlObject.id,
 					}
 				} else {
 					deviceState.sequences[content.sequenceId] = {
 						shots: content.shots.filter((s) => !!s.shot),
-						fromTlObject: layer.id,
+						fromTlObject: tlObject.id,
 					}
 				}
 			}
-		})
+		}
 
 		return deviceState
 	}
@@ -146,17 +139,17 @@ export class ShotokuDevice extends Device<ShotokuOptions, ShotokuDeviceState, Sh
 
 		return commands
 	}
-	async sendCommand({ command, context, timelineObjId }: ShotokuCommandWithContext): Promise<void> {
-		this.context.logger.debug({ command, context, timelineObjId })
+	async sendCommand(cwc: ShotokuCommandWithContext): Promise<void> {
+		this.context.logger.debug(cwc)
 
 		try {
 			if (this._shotoku.connected) {
-				await this._shotoku.executeCommand(command)
+				await this._shotoku.executeCommand(cwc.command)
 			}
 
 			return
 		} catch (e) {
-			this.context.commandError(e as Error, { command, context, timelineObjId })
+			this.context.commandError(e as Error, cwc)
 			return
 		}
 	}
@@ -173,5 +166,5 @@ export class ShotokuDevice extends Device<ShotokuOptions, ShotokuDeviceState, Sh
 		}
 	}
 
-	readonly actions: Record<string, (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>> = {}
+	readonly actions = null
 }

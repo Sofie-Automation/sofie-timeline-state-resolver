@@ -1,15 +1,14 @@
 import {
-	ActionExecutionResult,
 	DeviceStatus,
 	Mappings,
 	StatusCode,
+	TelemetricsDeviceTypes,
 	TelemetricsOptions,
-	Timeline,
 	TimelineContentTelemetrics,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
 import { Socket } from 'net'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const TELEMETRICS_COMMAND_PREFIX = 'P0C'
 const DEFAULT_SOCKET_PORT = 5000
@@ -19,24 +18,26 @@ interface TelemetricsState {
 	presetShotIdentifiers: number[]
 }
 
-interface TelemetricsCommandWithContext extends CommandWithContext {
-	command: { presetShotIdentifier: number }
-}
+type TelemetricsCommandWithContext = CommandWithContext<{ presetShotIdentifier: number }, string>
 
 /**
  * Connects to a Telemetrics Device on port 5000 using a TCP socket.
  * This class uses a fire and forget approach.
  */
-export class TelemetricsDevice extends Device<TelemetricsOptions, TelemetricsState, TelemetricsCommandWithContext> {
-	readonly actions: {
-		[id: string]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {}
+export class TelemetricsDevice
+	implements Device<TelemetricsDeviceTypes, TelemetricsState, TelemetricsCommandWithContext>
+{
+	readonly actions = null
 
 	private socket: Socket | undefined
 	private statusCode: StatusCode = StatusCode.UNKNOWN
 	private errorMessage: string | undefined
 
-	private retryConnectionTimer: NodeJS.Timer | undefined
+	private retryConnectionTimer: NodeJS.Timeout | undefined
+
+	constructor(protected context: DeviceContextAPI<TelemetricsState>) {
+		// Nothing
+	}
 
 	get connected(): boolean {
 		return this.statusCode === StatusCode.GOOD
@@ -87,13 +88,13 @@ export class TelemetricsDevice extends Device<TelemetricsOptions, TelemetricsSta
 	}
 
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		_newMappings: Mappings<unknown>
 	): TelemetricsState {
 		const newTelemetricsState: TelemetricsState = { presetShotIdentifiers: [] }
 
-		newTelemetricsState.presetShotIdentifiers = Object.entries<Timeline.ResolvedTimelineObjectInstance>(state.layers)
-			.map(([_layerName, timelineObject]) => {
+		newTelemetricsState.presetShotIdentifiers = state.objects
+			.map((timelineObject) => {
 				const telemetricsContent = timelineObject.content as TimelineContentTelemetrics
 				return telemetricsContent.presetShotIdentifiers
 			})
@@ -102,18 +103,13 @@ export class TelemetricsDevice extends Device<TelemetricsOptions, TelemetricsSta
 		return newTelemetricsState
 	}
 
-	async sendCommand({ command, context, timelineObjId }: TelemetricsCommandWithContext): Promise<void> {
-		const cwc: CommandWithContext = {
-			context,
-			command,
-			timelineObjId,
-		}
+	async sendCommand(cwc: TelemetricsCommandWithContext): Promise<void> {
 		this.context.logger.debug(cwc)
 
 		// Skip attempting send if not connected
 		if (!this.socket) return
 
-		const commandStr = `${TELEMETRICS_COMMAND_PREFIX}${command.presetShotIdentifier}\r`
+		const commandStr = `${TELEMETRICS_COMMAND_PREFIX}${cwc.command.presetShotIdentifier}\r`
 		this.socket.write(commandStr)
 	}
 

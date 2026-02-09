@@ -1,2 +1,3 @@
 package.json
 packages/*/package.json
+/.nx/workspace-data

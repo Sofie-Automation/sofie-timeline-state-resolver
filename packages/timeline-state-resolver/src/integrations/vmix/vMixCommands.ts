@@ -1,10 +1,16 @@
-import { VMixCommand } from 'timeline-state-resolver-types'
+import { CommandWithContext } from 'timeline-state-resolver-api'
+import { MappingVmixAudioBus, VMixCommand } from 'timeline-state-resolver-types'
 
 export interface VMixStateCommandBase {
 	command: VMixCommand
 }
 export interface VMixStateCommandPreviewInput extends VMixStateCommandBase {
 	command: VMixCommand.PREVIEW_INPUT
+	input: number | string
+	mix: number
+}
+export interface VMixStateCommandActiveInput extends VMixStateCommandBase {
+	command: VMixCommand.ACTIVE_INPUT
 	input: number | string
 	mix: number
 }
@@ -51,6 +57,19 @@ export interface VMixStateCommandAudioBusOff extends VMixStateCommandBase {
 	command: VMixCommand.AUDIO_BUS_OFF
 	input: number | string
 	value: string
+}
+export interface VMixStateCommandBusAudioOn extends VMixStateCommandBase {
+	command: VMixCommand.BUS_AUDIO_ON
+	bus: MappingVmixAudioBus['index']
+}
+export interface VMixStateCommandBusAudioOff extends VMixStateCommandBase {
+	command: VMixCommand.BUS_AUDIO_OFF
+	bus: MappingVmixAudioBus['index']
+}
+export interface VMixStateCommandBusVolume extends VMixStateCommandBase {
+	command: VMixCommand.BUS_VOLUME
+	bus: MappingVmixAudioBus['index']
+	value: number
 }
 export interface VMixStateCommandFader extends VMixStateCommandBase {
 	command: VMixCommand.FADER
@@ -227,6 +246,7 @@ export interface VMixStateCommandSetImage extends VMixStateCommandBase {
 }
 export type VMixStateCommand =
 	| VMixStateCommandPreviewInput
+	| VMixStateCommandActiveInput
 	| VMixStateCommandTransition
 	| VMixStateCommandAudio
 	| VMixStateCommandAudioBalance
@@ -236,6 +256,9 @@ export type VMixStateCommand =
 	| VMixStateCommandAudioAutoOff
 	| VMixStateCommandAudioBusOn
 	| VMixStateCommandAudioBusOff
+	| VMixStateCommandBusAudioOn
+	| VMixStateCommandBusAudioOff
+	| VMixStateCommandBusVolume
 	| VMixStateCommandFader
 	| VMixStateCommandSetZoom
 	| VMixStateCommandSetPanX
@@ -279,8 +302,4 @@ export enum CommandContext {
 	None = 'none',
 	Retry = 'retry',
 }
-export interface VMixStateCommandWithContext {
-	command: VMixStateCommand
-	context: CommandContext
-	timelineId: string
-}
+export type VMixStateCommandWithContext = CommandWithContext<VMixStateCommand, CommandContext>

@@ -1,17 +1,17 @@
 import {
-	ActionExecutionResult,
 	ActionExecutionResultCode,
 	DeviceStatus,
 	Mappings,
 	OSCMessageCommandContent,
+	QuantelActionMethods,
 	QuantelActions,
+	QuantelDeviceTypes,
 	QuantelOptions,
 	SomeMappingQuantel,
 	StatusCode,
-	Timeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 import Debug from 'debug'
 import { QuantelCommand, QuantelCommandType, QuantelState } from './types'
@@ -28,12 +28,9 @@ interface OSCDeviceStateContent extends OSCMessageCommandContent {
 	fromTlObject: string
 }
 
-export interface QuantelCommandWithContext extends CommandWithContext {
-	command: QuantelCommand
-	context: string
-}
+export type QuantelCommandWithContext = CommandWithContext<QuantelCommand, string>
 
-export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelCommandWithContext> {
+export class QuantelDevice implements Device<QuantelDeviceTypes, QuantelState, QuantelCommandWithContext> {
 	/** Setup in init */
 	private _quantel!: QuantelGateway
 	/** Setup in init */
@@ -42,6 +39,10 @@ export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelC
 	private options!: QuantelOptions
 
 	private _disconnectedSince: number | undefined = undefined
+
+	constructor(protected context: DeviceContextAPI<QuantelState>) {
+		// Nothing
+	}
 
 	async init(options: QuantelOptions): Promise<boolean> {
 		this.options = options
@@ -86,15 +87,7 @@ export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelC
 					} else if (connected === true) {
 						if (!this._disconnectedSince) {
 							// this must be our first time connecting, so let's resend any commands we missed
-							this.context
-								.resetToState({ time: 0, port: {} })
-								.catch((e) =>
-									this.context.logger.warning(
-										'Failed to reset to state after first connection, device may be in unknown state (reason: ' +
-											e +
-											')'
-									)
-								)
+							this.context.resetToState({ time: 0, port: {} })
 						}
 
 						this._disconnectedSince = undefined
@@ -112,7 +105,7 @@ export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelC
 	}
 
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings<SomeMappingQuantel>
 	): QuantelState {
 		return convertTimelineStateToQuantelState(timelineState, mappings)
@@ -127,13 +120,9 @@ export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelC
 
 		return diffStates(oldState, newState, currentTime)
 	}
-	async sendCommand({ command, context, timelineObjId }: QuantelCommandWithContext): Promise<any> {
-		const cwc: CommandWithContext = {
-			context: context,
-			command: command,
-			timelineObjId: timelineObjId,
-		}
+	async sendCommand(cwc: QuantelCommandWithContext): Promise<any> {
 		this.context.logger.debug(cwc)
+		const { command } = cwc
 		debug(command)
 
 		try {
@@ -194,9 +183,7 @@ export class QuantelDevice extends Device<QuantelOptions, QuantelState, QuantelC
 		}
 	}
 
-	readonly actions: {
-		[id in QuantelActions]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {
+	readonly actions: QuantelActionMethods = {
 		[QuantelActions.ClearStates]: async () => {
 			this.context.resetResolver()
 			return {

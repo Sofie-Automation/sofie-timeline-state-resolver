@@ -1,4 +1,4 @@
-import { AtemStateUtil, Enums, MacroState, VideoState } from 'atem-connection'
+import { AtemState, AtemStateUtil, Enums, MacroState, VideoState } from 'atem-connection'
 import {
 	Mapping,
 	SomeMappingAtem,
@@ -7,7 +7,6 @@ import {
 	TimelineContentTypeAtem,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	AtemTransitionStyle,
 	TimelineContentAtemME,
 	MappingAtemMixEffect,
@@ -29,50 +28,73 @@ import {
 	TimelineContentAtemAudioRouting,
 	MappingAtemColorGenerator,
 	TimelineContentAtemColorGenerator,
+	MappingAtemUpStreamKeyer,
+	TimelineContentAtemUSK,
 } from 'timeline-state-resolver-types'
 import _ = require('underscore')
 import { Defaults, State as DeviceState, Defaults as StateDefault } from 'atem-state'
 import { assertNever, cloneDeep, deepMerge, literal } from '../../lib'
 import { PartialDeep } from 'type-fest'
+import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
+
+let _legacyUSKWarningIssued = false
+
+export type InternalAtemConnectionState = AtemState & { controlValues?: Record<string, string> }
 
 export class AtemStateBuilder {
 	// Start out with default state:
-	readonly #deviceState = AtemStateUtil.Create()
+	readonly #deviceState: InternalAtemConnectionState = AtemStateUtil.Create()
 
-	public static fromTimeline(timelineState: Timeline.StateInTime<TSRTimelineContent>, mappings: Mappings): DeviceState {
+	// Track legacy USK usage and conflicts
+	private _conflictWarnings = new Set<string>()
+	private _newStyleUSKs = new Set<string>()
+	private _legacyUSKPaths = new Set<string>()
+
+	public static fromTimeline(
+		sortedLayers: DeviceTimelineStateObject<TSRTimelineContent>[],
+		mappings: Mappings
+	): DeviceState {
 		const builder = new AtemStateBuilder()
 
-		// Sort layer based on Layer name
-		const sortedLayers = _.map(timelineState, (tlObject, layerName) => ({ layerName, tlObject })).sort((a, b) =>
-			a.layerName.localeCompare(b.layerName)
-		)
-
 		// For every layer, augment the state
-		_.each(sortedLayers, ({ tlObject, layerName }) => {
+		_.each(sortedLayers, (tlObject) => {
 			const content = tlObject.content
 
-			const mapping = mappings[layerName] as Mapping<SomeMappingAtem> | undefined
+			const mapping = mappings[tlObject.layer] as Mapping<SomeMappingAtem> | undefined
 
 			if (mapping && content.deviceType === DeviceType.ATEM) {
 				switch (mapping.options.mappingType) {
 					case MappingAtemType.MixEffect:
 						if (content.type === TimelineContentTypeAtem.ME) {
 							builder._applyMixEffect(mapping.options, content)
+							builder._setControlValue(builder._getMixEffectAddressesFromTlObject(mapping.options, content), tlObject)
+						}
+						break
+					case MappingAtemType.UpStreamKeyer:
+						if (content.type === TimelineContentTypeAtem.USK) {
+							builder._applyUpstreamKeyer(mapping.options, content)
+							builder._setControlValue(
+								[`video.mixEffects.${mapping.options.me}.keyer.${mapping.options.usk}`],
+								tlObject
+							)
 						}
 						break
 					case MappingAtemType.DownStreamKeyer:
 						if (content.type === TimelineContentTypeAtem.DSK) {
 							builder._applyDownStreamKeyer(mapping.options, content)
+							builder._setControlValue(['video.dsk.' + mapping.options.index], tlObject)
 						}
 						break
 					case MappingAtemType.SuperSourceBox:
 						if (content.type === TimelineContentTypeAtem.SSRC) {
 							builder._applySuperSourceBox(mapping.options, content)
+							builder._setControlValue(['video.superSource.' + mapping.options.index], tlObject)
 						}
 						break
 					case MappingAtemType.SuperSourceProperties:
 						if (content.type === TimelineContentTypeAtem.SSRCPROPS) {
 							builder._applySuperSourceProperties(mapping.options, content)
+							builder._setControlValue(['video.superSource.' + mapping.options.index], tlObject)
 						}
 						break
 					case MappingAtemType.Auxilliary:
@@ -104,6 +126,8 @@ export class AtemStateBuilder {
 						if (content.type === TimelineContentTypeAtem.COLORGENERATOR) {
 							builder._applyColorGenerator(mapping.options, content)
 						}
+						break
+					case MappingAtemType.ControlValue:
 						break
 					default:
 						assertNever(mapping.options)
@@ -146,7 +170,33 @@ export class AtemStateBuilder {
 
 		const objectKeyers = content.me.upstreamKeyers
 		if (objectKeyers) {
+			// Legacy USK handling - issue warning once
+			if (!_legacyUSKWarningIssued) {
+				console.warn(
+					'AtemDevice: Legacy upstream keyer control via M/E timeline objects is deprecated. ' +
+						'Please migrate to using separate USK layers (MappingAtemType.UpStreamKeyer). ' +
+						'Legacy support will be removed in a future version.'
+				)
+				_legacyUSKWarningIssued = true
+			}
+
 			for (const objKeyer of objectKeyers) {
+				// Check for conflicts with new-style USK
+				const conflictKey = `me${mapping.index}_usk${objKeyer.upstreamKeyerId}`
+				if (this._newStyleUSKs.has(conflictKey)) {
+					if (!this._conflictWarnings.has(conflictKey)) {
+						console.error(
+							`AtemDevice: Conflict detected! M/E ${mapping.index} USK ${objKeyer.upstreamKeyerId} ` +
+								'is being controlled by both legacy (M/E embedded) and new (separate layer) methods. ' +
+								'Only one method should be used. The later timeline object will override the earlier one.'
+						)
+						this._conflictWarnings.add(conflictKey)
+					}
+				}
+
+				// Track this legacy USK
+				this._legacyUSKPaths.add(conflictKey)
+
 				const fixedObjKeyer: PartialDeep<VideoState.USK.UpstreamKeyer> = {
 					...objKeyer,
 					flyKeyframes: [undefined, undefined],
@@ -184,6 +234,100 @@ export class AtemStateBuilder {
 							...objKeyer.flyKeyframes[1],
 						})
 					}
+				}
+			}
+		}
+	}
+
+	private _applyUpstreamKeyer(mapping: MappingAtemUpStreamKeyer, content: TimelineContentAtemUSK): void {
+		const objKeyer = content.usk
+		const fixedObjKeyer: PartialDeep<VideoState.USK.UpstreamKeyer> = {
+			...objKeyer,
+			chromaSettings: undefined,
+			flyKeyframes: [undefined, undefined],
+			flyProperties: undefined,
+		}
+		delete fixedObjKeyer.flyProperties
+		delete fixedObjKeyer.flyKeyframes
+		delete fixedObjKeyer.chromaSettings
+
+		if (objKeyer.flyProperties) {
+			fixedObjKeyer.flyProperties = {
+				isASet: false,
+				isBSet: false,
+				isAtKeyFrame: objKeyer.flyProperties.isAtKeyFrame as number,
+				runToInfiniteIndex: objKeyer.flyProperties.runToInfiniteIndex,
+			}
+		}
+		if (typeof mapping.me !== 'number' || mapping.me < 0) return
+		if (typeof mapping.usk !== 'number' || mapping.usk < 0) return
+
+		// Track that this ME/USK combo is using new-style control
+		const conflictKey = `me${mapping.me}_usk${mapping.usk}`
+		this._newStyleUSKs.add(conflictKey)
+
+		// Check for conflicts with legacy USK
+		if (this._legacyUSKPaths.has(conflictKey)) {
+			if (!this._conflictWarnings.has(conflictKey)) {
+				console.error(
+					`AtemDevice: Conflict detected! M/E ${mapping.me} USK ${mapping.usk} ` +
+						'is being controlled by both legacy (M/E embedded) and new (separate layer) methods. ' +
+						'Only one method should be used. The later timeline object will override the earlier one.'
+				)
+				this._conflictWarnings.add(conflictKey)
+			}
+		}
+
+		const stateMixEffect = AtemStateUtil.getMixEffect(this.#deviceState, mapping.me)
+		// if (!stateMixEffect.upstreamKeyers) stateMixEffect.upstreamKeyers = {}
+
+		stateMixEffect.upstreamKeyers[mapping.usk] = deepMerge<VideoState.USK.UpstreamKeyer>(
+			AtemStateUtil.getUpstreamKeyer(stateMixEffect, mapping.usk),
+			fixedObjKeyer
+		)
+
+		const keyer = stateMixEffect.upstreamKeyers[mapping.usk]
+		if (objKeyer.flyKeyframes && keyer) {
+			keyer.flyKeyframes = [keyer.flyKeyframes[0] ?? undefined, keyer.flyKeyframes[1] ?? undefined]
+			if (objKeyer.flyKeyframes[0]) {
+				keyer.flyKeyframes[0] = literal<VideoState.USK.UpstreamKeyerFlyKeyframe>({
+					...StateDefault.Video.flyKeyframe(0),
+					...objKeyer.flyKeyframes[0],
+				})
+			}
+			if (objKeyer.flyKeyframes[1]) {
+				keyer.flyKeyframes[1] = literal<VideoState.USK.UpstreamKeyerFlyKeyframe>({
+					...StateDefault.Video.flyKeyframe(1),
+					...objKeyer.flyKeyframes[1],
+				})
+			}
+		}
+
+		if (objKeyer.chromaSettings && keyer) {
+			const chromaSettings = { ...objKeyer.chromaSettings }
+			delete chromaSettings.classic
+			delete chromaSettings.sample
+
+			keyer.advancedChromaSettings = {
+				properties: {
+					...StateDefault.Video.UpstreamKeyerAdvancedChromaProperties,
+					...chromaSettings,
+				},
+				// Always define the sample
+				sample: { ...StateDefault.Video.UpstreamKeyerAdvancedChromaSample },
+			}
+
+			if (objKeyer.chromaSettings.sample && keyer.advancedChromaSettings.sample) {
+				keyer.advancedChromaSettings.sample.sampledY = objKeyer.chromaSettings.sample.y
+				keyer.advancedChromaSettings.sample.sampledCb = objKeyer.chromaSettings.sample.cb
+				keyer.advancedChromaSettings.sample.sampledCr = objKeyer.chromaSettings.sample.cr
+			}
+
+			// Handle simple keyer settings if provided
+			if (objKeyer.chromaSettings.classic) {
+				keyer.chromaSettings = {
+					...StateDefault.Video.UpstreamKeyerChromaSettings,
+					...objKeyer.chromaSettings.classic,
 				}
 			}
 		}
@@ -309,5 +453,46 @@ export class AtemStateBuilder {
 			...this.#deviceState.colorGenerators[mapping.index],
 			...content.colorGenerator,
 		}
+	}
+
+	private _setControlValue(addresses: string[], tlObject: DeviceTimelineStateObject<TSRTimelineContent>) {
+		if (!this.#deviceState.controlValues) this.#deviceState.controlValues = {}
+
+		for (const a of addresses) {
+			const oldValue = this.#deviceState[a]
+			this.#deviceState.controlValues[a] =
+				Math.max(
+					tlObject.instance.start,
+					tlObject.instance.originalStart ?? 0,
+					tlObject.lastModified ?? 0,
+					oldValue ?? 0
+				) + ''
+		}
+	}
+
+	private _getMixEffectAddressesFromTlObject(mapping: MappingAtemMixEffect, content: TimelineContentAtemME): string[] {
+		const addresses: string[] = []
+
+		if ('input' in content.me || 'programInput' in content.me) {
+			addresses.push('video.mixEffects.' + mapping.index + '.pgm')
+		}
+
+		if ('previewInput' in content.me || 'transition' in content.me) {
+			addresses.push('video.mixEffects.' + mapping.index + '.base')
+		}
+
+		if ('transitionSettings' in content.me) {
+			addresses.push('video.mixEffects.' + mapping.index + '.transitionSettings')
+		}
+
+		if (content.me.upstreamKeyers) {
+			addresses.push(
+				...content.me.upstreamKeyers
+					.filter((usk) => !!usk)
+					.map((usk) => 'video.mixEffects.' + mapping.index + '.usk.' + usk.upstreamKeyerId)
+			)
+		}
+
+		return addresses
 	}
 }

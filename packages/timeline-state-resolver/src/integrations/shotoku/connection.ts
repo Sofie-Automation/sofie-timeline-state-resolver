@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { Socket } from 'net'
 
 const TIMEOUT = 3000 // ms
@@ -16,7 +16,7 @@ export class ShotokuAPI extends EventEmitter<ShotokuAPIEvents> {
 	private _host: string | undefined
 	private _port: number | undefined
 	private _setDisconnected = false // set to true if disconnect() has been called (then do not trye to reconnect)
-	private _retryConnectTimeout: NodeJS.Timer | undefined
+	private _retryConnectTimeout: NodeJS.Timeout | undefined
 
 	/**
 	 * Connnects to the OSC server.

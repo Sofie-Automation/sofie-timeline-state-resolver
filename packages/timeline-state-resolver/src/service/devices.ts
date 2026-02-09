@@ -1,6 +1,6 @@
 import { OscDevice } from '../integrations/osc'
 import { DeviceType } from 'timeline-state-resolver-types'
-import { Device, DeviceContextAPI } from './device'
+import type { DeviceEntry } from 'timeline-state-resolver-api'
 import { AuthenticatedHTTPSendDevice } from '../integrations/httpSend/AuthenticatedHTTPSendDevice'
 import { ShotokuDevice } from '../integrations/shotoku'
 import { HTTPWatcherDevice } from '../integrations/httpWatcher'
@@ -19,13 +19,9 @@ import { TelemetricsDevice } from '../integrations/telemetrics'
 import { TriCasterDevice } from '../integrations/tricaster'
 import { SingularLiveDevice } from '../integrations/singularLive'
 import { MultiOSCMessageDevice } from '../integrations/multiOsc'
-
-export interface DeviceEntry {
-	deviceClass: new (context: DeviceContextAPI<any>) => Device<any, any, any>
-	canConnect: boolean
-	deviceName: (deviceId: string, options: any) => string
-	executionMode: (options: any) => 'salvo' | 'sequential'
-}
+import { WebSocketClientDevice } from '../integrations/websocketClient'
+import { vMixDeviceEntry } from '../integrations/vmix/vMixDeviceEntry'
+import { KairosDevice } from '../integrations/kairos'
 
 export type ImplementedServiceDeviceTypes =
 	| DeviceType.ABSTRACT
@@ -47,6 +43,9 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.TRICASTER
 	| DeviceType.QUANTEL
 	| DeviceType.VISCA_OVER_IP
+	| DeviceType.WEBSOCKET_CLIENT
+	| DeviceType.VMIX
+	| DeviceType.KAIROS
 
 // TODO - move all device implementations here and remove the old Device classes
 export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
@@ -79,6 +78,12 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		canConnect: true,
 		deviceName: (deviceId: string) => 'Hyperdeck ' + deviceId,
 		executionMode: () => 'salvo',
+	},
+	[DeviceType.KAIROS]: {
+		deviceClass: KairosDevice,
+		canConnect: true,
+		deviceName: (deviceId: string) => 'Kairos ' + deviceId,
+		executionMode: () => 'sequential',
 	},
 	[DeviceType.LAWO]: {
 		deviceClass: LawoDevice,
@@ -164,4 +169,11 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		deviceName: (deviceId: string) => 'VISCAOverIP ' + deviceId,
 		executionMode: () => 'sequential',
 	},
+	[DeviceType.WEBSOCKET_CLIENT]: {
+		deviceClass: WebSocketClientDevice,
+		canConnect: true,
+		deviceName: (deviceId: string) => 'WebSocket Client ' + deviceId,
+		executionMode: () => 'sequential',
+	},
+	[DeviceType.VMIX]: new vMixDeviceEntry(),
 }

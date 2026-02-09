@@ -61,11 +61,6 @@
 			"ui:title": "Clear-All template name",
 			"description": "It is a common practice to have an element which only purpose is to \"clear all graphics\" on the vizEngine.\nTo use this in TSR, set a reference to that here"
 		},
-		"clearAllOnMakeReady": {
-			"type": "boolean",
-			"ui:title": "Clear-All on make-ready (activate rundown)",
-			"description": "Whether to trigger a clear all templates upon makeReady"
-		},
 		"dontDeactivateOnStandDown": {
 			"type": "boolean",
 			"ui:title": "Don't deactivate on stand-down (deactivate rundown)",

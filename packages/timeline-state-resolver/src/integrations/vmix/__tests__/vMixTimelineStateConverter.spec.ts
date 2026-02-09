@@ -3,13 +3,14 @@ import {
 	Mapping,
 	MappingVmixType,
 	SomeMappingVmix,
-	TSRTimelineContent,
 	Timeline,
 	TimelineContentTypeVMix,
 	TimelineContentVMixAny,
+	TSRTimelineContent,
 	VMixInputType,
 	VMixTransitionType,
 } from 'timeline-state-resolver-types'
+import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 import { VMixTimelineStateConverter } from '../vMixTimelineStateConverter'
 import { VMixOutput, VMixStateDiffer } from '../vMixStateDiffer'
 import { prefixAddedInput } from './mockState'
@@ -21,33 +22,30 @@ function createTestee(): VMixTimelineStateConverter {
 			//
 		}
 	) // should those be mocks? or should this be taken from somewhere else? this is now more of an integration test, and maybe that's fine?
-	return new VMixTimelineStateConverter(
-		() => stateDiffer.getDefaultState(),
-		(inputNumber) => stateDiffer.getDefaultInputState(inputNumber),
-		(inputNumber) => stateDiffer.getDefaultInputAudioState(inputNumber)
-	)
+	return new VMixTimelineStateConverter(stateDiffer)
 }
 
-function wrapInTimelineState(
-	layers: Timeline.StateInTime<TimelineContentVMixAny>
-): Timeline.TimelineState<TSRTimelineContent> {
+function wrapInTimelineState(layers: Record<string, TimelineContentVMixAny>): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: Date.now(),
-		layers,
-		nextEvents: [],
+		objects: Object.entries<TimelineContentVMixAny>(layers).map(([layer, content]) =>
+			wrapInTimelineObject(layer, content)
+		),
 	}
 }
 
 function wrapInTimelineObject(
 	layer: string,
 	content: TimelineContentVMixAny
-): Timeline.ResolvedTimelineObjectInstance<TimelineContentVMixAny> {
+): DeviceTimelineStateObject<TimelineContentVMixAny> {
 	return {
 		id: '',
 		enable: { while: '1' },
+		priority: 1,
 		content,
 		layer,
-	} as Timeline.ResolvedTimelineObjectInstance<TimelineContentVMixAny>
+		instance: { id: '@0', start: 0, end: null, references: [] } as Timeline.TimelineObjectInstance,
+	} as DeviceTimelineStateObject<TimelineContentVMixAny>
 }
 
 function wrapInMapping(options: SomeMappingVmix): Mapping<SomeMappingVmix> {
@@ -120,12 +118,12 @@ describe('VMixTimelineStateConverter', () => {
 			const filePath = 'C:\\someFile.mp4'
 			const result = converter.getVMixStateFromTimelineState(
 				wrapInTimelineState({
-					inp0: wrapInTimelineObject('inp0', {
+					inp0: {
 						deviceType: DeviceType.VMIX,
 						filePath: 'C:\\someFile.mp4',
 						type: TimelineContentTypeVMix.INPUT,
 						inputType: VMixInputType.Video,
-					}),
+					},
 				}),
 				{
 					inp0: wrapInMapping({
@@ -142,11 +140,11 @@ describe('VMixTimelineStateConverter', () => {
 			const text = { 'myTitle.Text': 'SomeValue', 'myTitle.Foo': 'Bar' }
 			const result = converter.getVMixStateFromTimelineState(
 				wrapInTimelineState({
-					inp0: wrapInTimelineObject('inp0', {
+					inp0: {
 						deviceType: DeviceType.VMIX,
 						text,
 						type: TimelineContentTypeVMix.INPUT,
-					}),
+					},
 				}),
 				{
 					inp0: wrapInMapping({
@@ -162,19 +160,19 @@ describe('VMixTimelineStateConverter', () => {
 			const converter = createTestee()
 			const result = converter.getVMixStateFromTimelineState(
 				wrapInTimelineState({
-					pgm0: wrapInTimelineObject('pgm0', {
+					pgm0: {
 						deviceType: DeviceType.VMIX,
 						type: TimelineContentTypeVMix.PROGRAM,
 						input: 2,
-					}),
-					pgm1: wrapInTimelineObject('pgm1', {
+					},
+					pgm1: {
 						deviceType: DeviceType.VMIX,
 						type: TimelineContentTypeVMix.PROGRAM,
 						transition: {
 							duration: 500,
 							effect: VMixTransitionType.Fade,
 						},
-					}),
+					},
 				}),
 				{
 					pgm0: wrapInMapping({
@@ -196,19 +194,19 @@ describe('VMixTimelineStateConverter', () => {
 			const converter = createTestee()
 			const result = converter.getVMixStateFromTimelineState(
 				wrapInTimelineState({
-					pgm0: wrapInTimelineObject('pgm0', {
+					pgm0: {
 						deviceType: DeviceType.VMIX,
 						type: TimelineContentTypeVMix.PROGRAM,
 						transition: {
 							duration: 500,
 							effect: VMixTransitionType.Fade,
 						},
-					}),
-					pgm1: wrapInTimelineObject('pgm1', {
+					},
+					pgm1: {
 						deviceType: DeviceType.VMIX,
 						type: TimelineContentTypeVMix.PROGRAM,
 						input: 2,
-					}),
+					},
 				}),
 				{
 					pgm0: wrapInMapping({
@@ -230,11 +228,11 @@ describe('VMixTimelineStateConverter', () => {
 			const url = 'https://example.com'
 			const result = converter.getVMixStateFromTimelineState(
 				wrapInTimelineState({
-					inp0: wrapInTimelineObject('inp0', {
+					inp0: {
 						deviceType: DeviceType.VMIX,
 						url,
 						type: TimelineContentTypeVMix.INPUT,
-					}),
+					},
 				}),
 				{
 					inp0: wrapInMapping({
@@ -250,11 +248,11 @@ describe('VMixTimelineStateConverter', () => {
 			const index = 3
 			const result = converter.getVMixStateFromTimelineState(
 				wrapInTimelineState({
-					inp0: wrapInTimelineObject('inp0', {
+					inp0: {
 						deviceType: DeviceType.VMIX,
 						index,
 						type: TimelineContentTypeVMix.INPUT,
-					}),
+					},
 				}),
 				{
 					inp0: wrapInMapping({
@@ -271,11 +269,11 @@ describe('VMixTimelineStateConverter', () => {
 			const images = { 'myImage1.Source': 'foo.png', 'myImage2.Source': 'bar.jpg' }
 			const result = converter.getVMixStateFromTimelineState(
 				wrapInTimelineState({
-					inp0: wrapInTimelineObject('inp0', {
+					inp0: {
 						deviceType: DeviceType.VMIX,
 						images,
 						type: TimelineContentTypeVMix.INPUT,
-					}),
+					},
 				}),
 				{
 					inp0: wrapInMapping({
@@ -287,18 +285,39 @@ describe('VMixTimelineStateConverter', () => {
 			expect(result.reportedState.existingInputs['1'].images).toEqual(images)
 		})
 
+		it('supports audio buses', () => {
+			const converter = createTestee()
+			const bus = { muted: false, volume: 50 }
+			const result = converter.getVMixStateFromTimelineState(
+				wrapInTimelineState({
+					inp0: {
+						deviceType: DeviceType.VMIX,
+						...bus,
+						type: TimelineContentTypeVMix.AUDIO_BUS,
+					},
+				}),
+				{
+					inp0: wrapInMapping({
+						mappingType: MappingVmixType.AudioBus,
+						index: 'B',
+					}),
+				}
+			)
+			expect(result.reportedState.audioBuses.B).toEqual(bus)
+		})
+
 		// TODO: maybe we can't trust the defaults when adding an input? Make this test pass eventually
 		// it('tracks audio state for mapped inputs added by us', () => {
 		// 	const converter = createTestee()
 		// 	const filePath = 'C:\\someFile.mp4'
 		// 	const result = converter.getVMixStateFromTimelineState(
 		// 		wrapInTimelineState({
-		// 			inp0: wrapInTimelineObject('inp0', {
+		// 			inp0: {
 		// 				deviceType: DeviceType.VMIX,
 		// 				filePath: 'C:\\someFile.mp4',
 		// 				type: TimelineContentTypeVMix.INPUT,
 		// 				inputType: VMixInputType.Video,
-		// 			}),
+		// 			},
 		// 		}),
 		// 		{
 		// 			inp0: wrapInMapping({

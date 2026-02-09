@@ -5,17 +5,16 @@ import {
 	MediaObject,
 	DeviceOptionsBase,
 	DeviceStatus,
-	StatusCode,
 	Timeline,
 	TSRTimelineContent,
 	ActionExecutionResult,
-	ActionExecutionResultCode,
 } from 'timeline-state-resolver-types'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo } from './doOnTime'
 import { ExpectedPlayoutItem } from '../expectedPlayoutItems'
-import { FinishedTrace, t } from '../lib'
-import { DeviceEvents, CommandWithContext as ServiceCommandWithContext } from '../service/device'
+import { actionNotFoundMessage } from '../lib'
+import type { FinishedTrace } from 'timeline-state-resolver-api'
+import type { CommandWithContext, DeviceEvents } from 'timeline-state-resolver-api'
 
 // =================================================================================================
 // =================================================================================================
@@ -40,10 +39,6 @@ export interface DeviceCommandContainer {
 	commands: Array<DeviceCommand>
 }
 
-export type CommandWithContext = ServiceCommandWithContext
-
-export { DeviceStatus, StatusCode }
-
 /**
  * These are the old Device events, emitted by the devices and listened to by conductor.
  * @deprecated
@@ -67,7 +62,7 @@ export type DeviceEventsOLD = {
 	slowFulfilledCommand: [info: SlowFulfilledCommandInfo]
 
 	/** Something went wrong when executing a command  */
-	commandError: [error: Error, context: CommandWithContext]
+	commandError: [error: Error, context: CommandWithContext<any, any>]
 	/** Update a MediaObject  */
 	updateMediaObject: [collectionId: string, docId: string, doc: MediaObject | null]
 	/** Clear a MediaObjects collection */
@@ -88,8 +83,6 @@ export interface IDevice<TOptions extends DeviceOptionsBase<any>> {
 	canConnect: boolean
 	connected: boolean
 
-	makeReady: (_okToDestroyStuff?: boolean, activeRundownId?: string) => Promise<void>
-	standDown: (_okToDestroyStuff?: boolean) => Promise<void>
 	getStatus: () => DeviceStatus
 
 	deviceId: string
@@ -104,7 +97,10 @@ export interface IDevice<TOptions extends DeviceOptionsBase<any>> {
  * Base class for all Devices to inherit from. Defines the API that the conductor
  * class will use.
  */
-export abstract class Device<TOptions extends DeviceOptionsBase<any>>
+export abstract class Device<
+		DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> }, // TODO: This type is not used as much as it should be, but as this class is deprecated it is not worth the effort to fix it
+		TOptions extends DeviceOptionsBase<DeviceTypes['Options']>
+	>
 	extends EventEmitter<DeviceEvents>
 	implements IDevice<TOptions>
 {
@@ -192,25 +188,6 @@ export abstract class Device<TOptions extends DeviceOptionsBase<any>>
 	abstract get canConnect(): boolean
 	abstract get connected(): boolean
 
-	/**
-	 * The makeReady method could be triggered at a time before broadcast
-	 * Whenever we know that the user want's to make sure things are ready for broadcast
-	 * The exact implementation differ between different devices
-	 * @param okToDestroyStuff If true, the device may do things that might affect the output (temporarily)
-	 */
-	async makeReady(_okToDestroyStuff?: boolean, _activeRundownId?: string): Promise<void> {
-		// This method should be overwritten by child
-		return Promise.resolve()
-	}
-	/**
-	 * The standDown event could be triggered at a time after broadcast
-	 * The exact implementation differ between different devices
-	 * @param okToDestroyStuff If true, the device may do things that might affect the output (temporarily)
-	 */
-	async standDown(_okToDestroyStuff?: boolean): Promise<void> {
-		// This method should be overwritten by child
-		return Promise.resolve()
-	}
 	abstract getStatus(): DeviceStatus
 
 	setDebugLogging(debug: boolean) {
@@ -255,11 +232,16 @@ export abstract class Device<TOptions extends DeviceOptionsBase<any>>
 		return this._isActive
 	}
 
-	async executeAction(_actionId: string, _payload?: Record<string, any>): Promise<ActionExecutionResult<any>> {
-		return {
-			result: ActionExecutionResultCode.Error,
-			response: t('Device does not implement an action handler'),
+	abstract readonly actions: DeviceTypes['Actions']
+
+	async executeAction(id: string, payload: Record<string, any>): Promise<ActionExecutionResult<any>> {
+		const action = this.actions[id]
+
+		if (!action) {
+			return actionNotFoundMessage(id as never)
 		}
+
+		return action(payload)
 	}
 
 	private _updateCurrentTime() {
@@ -335,7 +317,11 @@ export abstract class Device<TOptions extends DeviceOptionsBase<any>>
  * extra convenience methods for tracking state while inheriting all other methods
  * from the Device class.
  */
-export abstract class DeviceWithState<TState, TOptions extends DeviceOptionsBase<any>> extends Device<TOptions> {
+export abstract class DeviceWithState<
+	TState,
+	DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> },
+	TOptions extends DeviceOptionsBase<DeviceTypes['Options']>
+> extends Device<DeviceTypes, TOptions> {
 	private _states: { [time: string]: TState } = {}
 	private _setStateCount = 0
 

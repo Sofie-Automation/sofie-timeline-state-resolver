@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`index imports 1`] = `
 [
@@ -18,6 +18,7 @@ exports[`index imports 1`] = `
   "Device",
   "DeviceContainer",
   "DeviceType",
+  "DevicesRegistry",
   "Direction",
   "DoOnTime",
   "Ease",
@@ -29,6 +30,8 @@ exports[`index imports 1`] = `
   "HttpSendActions",
   "HyperdeckActions",
   "HyperdeckDevice",
+  "KairosActions",
+  "KairosMacroActiveState",
   "LOOKAHEADTIME",
   "LawoDeviceMode",
   "MINTIMEUNIT",
@@ -36,6 +39,7 @@ exports[`index imports 1`] = `
   "MappingAtemType",
   "MappingCasparCGType",
   "MappingHyperdeckType",
+  "MappingKairosType",
   "MappingLawoType",
   "MappingMultiOscType",
   "MappingObsType",
@@ -70,6 +74,7 @@ exports[`index imports 1`] = `
   "TimelineContentTypeHTTP",
   "TimelineContentTypeHTTPParamType",
   "TimelineContentTypeHyperdeck",
+  "TimelineContentTypeKairos",
   "TimelineContentTypeLawo",
   "TimelineContentTypeMultiOSC",
   "TimelineContentTypeOBS",
@@ -83,6 +88,7 @@ exports[`index imports 1`] = `
   "TimelineContentTypeTriCaster",
   "TimelineContentTypeVMix",
   "TimelineContentTypeVizMSE",
+  "TimelineContentTypeWebSocketClient",
   "Transition",
   "TranslationsBundleType",
   "TransportStatus",
@@ -95,6 +101,9 @@ exports[`index imports 1`] = `
   "VizMSEActions",
   "VizMSEDevice",
   "VmixActions",
-  "manifest",
+  "WebsocketClientActions",
+  "fillStateFromDatastore",
+  "interpolateTemplateString",
+  "interpolateTemplateStringIfNeeded",
 ]
 `;

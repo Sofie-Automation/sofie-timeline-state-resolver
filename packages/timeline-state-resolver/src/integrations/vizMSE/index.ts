@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { CommandWithContext, DeviceStatus, DeviceWithState, StatusCode } from './../../devices/device'
+import { DeviceWithState } from './../../devices/device'
 
 import {
 	ActionExecutionResult,
@@ -16,13 +16,15 @@ import {
 	TSRTimelineContent,
 	VizMSEOptions,
 	VIZMSETransitionType,
-	VizMSEActions,
+	VizMSEActionMethods,
 	SomeMappingVizMSE,
 	TimelineContentVIZMSEElementPilot,
 	TimelineContentVIZMSEElementInternal,
-	VizMSEActionExecutionPayload,
-	VizMSEActionExecutionResult,
 	VizResetPayload,
+	VizMSEDeviceTypes,
+	VizMSEActions,
+	DeviceStatus,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 
 import { createMSE, MSE } from '@tv2media/v-connection'
@@ -30,7 +32,7 @@ import { createMSE, MSE } from '@tv2media/v-connection'
 import { DoOnTime, SendMode } from '../../devices/doOnTime'
 
 import { ExpectedPlayoutItem } from '../../expectedPlayoutItems'
-import { actionNotFoundMessage, endTrace, startTrace, t, literal } from '../../lib'
+import { endTrace, startTrace, t, literal } from '../../lib'
 import { HTTPClientError, HTTPServerError } from '@tv2media/v-connection/dist/msehttp'
 import { VizMSEManager } from './vizMSEManager'
 import {
@@ -59,6 +61,7 @@ import {
 	VizMSECommandClearAllElements,
 	VizMSECommandClearAllEngines,
 } from './types'
+import type { CommandWithContext } from 'timeline-state-resolver-api'
 
 /** The ideal time to prepare elements before going on air */
 const IDEAL_PREPARE_TIME = 1000
@@ -74,7 +77,7 @@ export type CommandReceiver = (time: number, cmd: VizMSECommand, context: string
  * This class is used to interface with a vizRT Media Sequence Editor, through the v-connection library.
  * It features playing both "internal" graphics element and vizPilot elements.
  */
-export class VizMSEDevice extends DeviceWithState<VizMSEState, DeviceOptionsVizMSEInternal> {
+export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes, DeviceOptionsVizMSEInternal> {
 	private _vizMSE?: MSE
 	private _vizmseManager?: VizMSEManager
 
@@ -284,27 +287,25 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, DeviceOptionsVizM
 		this.emit('resetResolver')
 	}
 
-	async executeAction<A extends VizMSEActions>(
-		actionId: A,
-		payload: VizMSEActionExecutionPayload<A>
-	): Promise<VizMSEActionExecutionResult<A>> {
-		switch (actionId) {
-			case VizMSEActions.PurgeRundown:
-				await this.purgeRundown(true)
-				return { result: ActionExecutionResultCode.Ok }
-			case VizMSEActions.Activate:
-				return this.activate(payload) as Promise<VizMSEActionExecutionResult<A>>
-			case VizMSEActions.StandDown:
-				return this.executeStandDown() as Promise<VizMSEActionExecutionResult<A>>
-			case VizMSEActions.ClearAllEngines:
-				await this.clearEngines()
-				return { result: ActionExecutionResultCode.Ok }
-			case VizMSEActions.VizReset:
-				await this.resetViz(payload ?? {})
-				return { result: ActionExecutionResultCode.Ok }
-			default:
-				return actionNotFoundMessage(actionId)
-		}
+	readonly actions: VizMSEActionMethods = {
+		[VizMSEActions.PurgeRundown]: async () => {
+			await this.purgeRundown(true)
+			return { result: ActionExecutionResultCode.Ok }
+		},
+		[VizMSEActions.Activate]: async (payload) => {
+			return this.activate(payload)
+		},
+		[VizMSEActions.StandDown]: async () => {
+			return this.executeStandDown()
+		},
+		[VizMSEActions.ClearAllEngines]: async () => {
+			await this.clearEngines()
+			return { result: ActionExecutionResultCode.Ok }
+		},
+		[VizMSEActions.VizReset]: async (payload) => {
+			await this.resetViz(payload)
+			return { result: ActionExecutionResultCode.Ok }
+		},
 	}
 
 	get deviceType() {
@@ -506,40 +507,6 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, DeviceOptionsVizM
 		return undefined
 	}
 
-	/**
-	 * Prepares the physical device for playout.
-	 * @param okToDestroyStuff Whether it is OK to do things that affects playout visibly
-	 */
-	async makeReady(okToDestroyStuff?: boolean, activeRundownPlaylistId?: string): Promise<void> {
-		const previousPlaylistId = this._vizmseManager?.activeRundownPlaylistId
-		if (this._vizmseManager) {
-			await this._vizmseManager.cleanupAllShows()
-			await this._vizmseManager.activate(activeRundownPlaylistId)
-		} else throw new Error(`Unable to activate vizMSE, not initialized yet!`)
-
-		if (okToDestroyStuff) {
-			// reset our own state(s):
-			this.clearStates()
-
-			if (this._vizmseManager) {
-				if (this._initOptions && activeRundownPlaylistId !== previousPlaylistId) {
-					if (
-						this._initOptions.clearAllOnMakeReady &&
-						this._initOptions.clearAllCommands &&
-						this._initOptions.clearAllCommands.length
-					) {
-						await this._vizmseManager.clearEngines({
-							type: VizMSECommandType.CLEAR_ALL_ENGINES,
-							time: this.getCurrentTime(),
-							timelineObjId: 'makeReady',
-							channels: 'all',
-							commands: this._initOptions.clearAllCommands,
-						})
-					}
-				}
-			} else throw new Error(`Unable to activate vizMSE, not initialized yet!`)
-		}
-	}
 	async executeStandDown(): Promise<ActionExecutionResult> {
 		if (this._vizmseManager) {
 			if (!this._initOptions || !this._initOptions.dontDeactivateOnStandDown) {
@@ -551,15 +518,6 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, DeviceOptionsVizM
 
 		return {
 			result: ActionExecutionResultCode.Ok,
-		}
-	}
-	/**
-	 * The standDown event could be triggered at a time after broadcast
-	 * @param okToDestroyStuff If true, the device may do things that might affect the visible output
-	 */
-	async standDown(okToDestroyStuff?: boolean): Promise<void> {
-		if (okToDestroyStuff) {
-			return this.executeStandDown().then(() => undefined)
 		}
 	}
 	getStatus(): DeviceStatus {
@@ -936,13 +894,13 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, DeviceOptionsVizM
 	 * @param time deprecated
 	 * @param cmd Command to execute
 	 */
-	private async _defaultCommandReceiver(
+	public async _defaultCommandReceiver(
 		_time: number,
 		cmd: VizMSECommand,
 		context: string,
 		timelineObjId: string
 	): Promise<any> {
-		const cwc: CommandWithContext = {
+		const cwc: CommandWithContext<any, any> = {
 			context: context,
 			timelineObjId: timelineObjId,
 			command: cmd,

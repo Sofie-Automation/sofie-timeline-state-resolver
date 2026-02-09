@@ -11,14 +11,14 @@ import {
 	AtemOptions,
 	AtemTransitionStyle,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentAtemME,
 	StatusCode,
 } from 'timeline-state-resolver-types'
 import { literal } from '../../../lib'
-import { makeTimelineObjectResolved } from '../../../__mocks__/objects'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
 import { compareAtemCommands, createDevice, extractAllCommands, waitForConnection } from './util'
 import { getDeviceContext } from '../../__tests__/testlib'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 describe('Atem', () => {
 	const mockTime = new MockTime()
@@ -114,15 +114,14 @@ describe('Atem', () => {
 	})
 
 	test('Full state diff flow: Ensure clean initial state', async () => {
-		const mockState: Timeline.TimelineState<TSRTimelineContent> = {
+		const mockState: DeviceTimelineState<TSRTimelineContent> = {
 			time: mockTime.now + 50,
-			layers: {},
-			nextEvents: [],
+			objects: [],
 		}
 
 		const device = await createDevice()
 
-		const deviceState = device.convertTimelineStateToDeviceState(mockState, {})
+		const { deviceState } = device.convertTimelineStateToDeviceState(mockState, {})
 
 		const commands = device.diffStates(undefined, deviceState, {})
 
@@ -132,10 +131,10 @@ describe('Atem', () => {
 	test('Full state diff flow: Switch input', async () => {
 		const { device, myLayerMapping } = await createTestee()
 
-		const mockState1: Timeline.TimelineState<TSRTimelineContent> = {
+		const mockState1: DeviceTimelineState<TSRTimelineContent> = {
 			time: mockTime.now,
-			layers: {
-				myLayer0: makeTimelineObjectResolved({
+			objects: [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: mockTime.now - 1000, // 1 seconds ago
@@ -151,10 +150,9 @@ describe('Atem', () => {
 						},
 					},
 				}),
-			},
-			nextEvents: [],
+			],
 		}
-		const deviceState1 = device.convertTimelineStateToDeviceState(mockState1, myLayerMapping)
+		const { deviceState: deviceState1 } = device.convertTimelineStateToDeviceState(mockState1, myLayerMapping)
 		expect(deviceState1.video.mixEffects[0]).toMatchObject({
 			input: 2,
 			transition: AtemTransitionStyle.CUT,
@@ -169,10 +167,10 @@ describe('Atem', () => {
 			compareAtemCommands(allCommands[1], new AtemConnection.Commands.CutCommand(0))
 		}
 
-		const mockState2: Timeline.TimelineState<TSRTimelineContent> = {
+		const mockState2: DeviceTimelineState<TSRTimelineContent> = {
 			time: mockTime.now + 2000,
-			layers: {
-				myLayer0: makeTimelineObjectResolved({
+			objects: [
+				makeDeviceTimelineStateObject({
 					id: 'obj1',
 					enable: {
 						start: mockTime.now + 1000, // 1 seconds ago
@@ -188,10 +186,9 @@ describe('Atem', () => {
 						},
 					},
 				}),
-			},
-			nextEvents: [],
+			],
 		}
-		const deviceState2 = device.convertTimelineStateToDeviceState(mockState2, myLayerMapping)
+		const { deviceState: deviceState2 } = device.convertTimelineStateToDeviceState(mockState2, myLayerMapping)
 		expect(deviceState2.video.mixEffects[0]).toMatchObject({
 			input: 3,
 			transition: AtemTransitionStyle.CUT,
@@ -210,10 +207,10 @@ describe('Atem', () => {
 	test('Full state diff flow: same state', async () => {
 		const { device, myLayerMapping } = await createTestee()
 
-		const mockState: Timeline.TimelineState<TSRTimelineContent> = {
+		const mockState: DeviceTimelineState<TSRTimelineContent> = {
 			time: mockTime.now + 50,
-			layers: {
-				myLayer0: makeTimelineObjectResolved<TimelineContentAtemME>({
+			objects: [
+				makeDeviceTimelineStateObject<TimelineContentAtemME>({
 					id: 'obj0',
 					enable: {
 						start: mockTime.now - 1000, // 1 seconds ago
@@ -229,11 +226,10 @@ describe('Atem', () => {
 						},
 					},
 				}),
-			},
-			nextEvents: [],
+			],
 		}
 
-		const deviceState = device.convertTimelineStateToDeviceState(mockState, myLayerMapping)
+		const { deviceState } = device.convertTimelineStateToDeviceState(mockState, myLayerMapping)
 		expect(deviceState.video.mixEffects[0]).toMatchObject({
 			input: 4,
 			transition: AtemTransitionStyle.CUT,
@@ -252,10 +248,10 @@ describe('Atem', () => {
 	test('Atem: sends TransitionPropertiesCommand for DIP', async () => {
 		const { device, myLayerMapping } = await createTestee()
 
-		const mockState1: Timeline.TimelineState<TSRTimelineContent> = {
+		const mockState1: DeviceTimelineState<TSRTimelineContent> = {
 			time: mockTime.now,
-			layers: {
-				myLayer0: makeTimelineObjectResolved<TimelineContentAtemME>({
+			objects: [
+				makeDeviceTimelineStateObject<TimelineContentAtemME>({
 					id: 'obj0',
 					enable: {
 						start: mockTime.now - 1000, // 1 seconds ago
@@ -271,11 +267,10 @@ describe('Atem', () => {
 						},
 					},
 				}),
-			},
-			nextEvents: [],
+			],
 		}
 
-		const deviceState1 = device.convertTimelineStateToDeviceState(mockState1, myLayerMapping)
+		const { deviceState: deviceState1 } = device.convertTimelineStateToDeviceState(mockState1, myLayerMapping)
 		expect(deviceState1.video.mixEffects[0]).toMatchObject({
 			input: 2,
 			transition: AtemTransitionStyle.CUT,
@@ -290,10 +285,10 @@ describe('Atem', () => {
 			compareAtemCommands(allCommands[1], new AtemConnection.Commands.CutCommand(0))
 		}
 
-		const mockState2: Timeline.TimelineState<TSRTimelineContent> = {
+		const mockState2: DeviceTimelineState<TSRTimelineContent> = {
 			time: mockTime.now,
-			layers: {
-				myLayer0: makeTimelineObjectResolved<TimelineContentAtemME>({
+			objects: [
+				makeDeviceTimelineStateObject<TimelineContentAtemME>({
 					id: 'obj1',
 					enable: {
 						start: mockTime.now + 1000, // 1 seconds ago
@@ -309,10 +304,9 @@ describe('Atem', () => {
 						},
 					},
 				}),
-			},
-			nextEvents: [],
+			],
 		}
-		const deviceState2 = device.convertTimelineStateToDeviceState(mockState2, myLayerMapping)
+		const { deviceState: deviceState2 } = device.convertTimelineStateToDeviceState(mockState2, myLayerMapping)
 		expect(deviceState2.video.mixEffects[0]).toMatchObject({
 			input: 3,
 			transition: AtemTransitionStyle.DIP,

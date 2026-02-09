@@ -1,5 +1,13 @@
-import EventEmitter = require('eventemitter3')
-import { actionNotFoundMessage, FinishedTrace } from '../lib'
+import { EventEmitter } from 'node:events'
+import { actionNotFoundMessage, cloneDeep } from '../lib'
+import type {
+	FinishedTrace,
+	DeviceEntry,
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceEvents,
+} from 'timeline-state-resolver-api'
 import {
 	type DeviceStatus,
 	type DeviceType,
@@ -8,14 +16,15 @@ import {
 	type Timeline,
 	type TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import type { CommandWithContext, Device, DeviceContextAPI, DeviceEvents } from './device'
 import { StateHandler } from './stateHandler'
-import { DeviceEntry, DevicesDict } from './devices'
-import type { DeviceOptionsAnyInternal, ExpectedPlayoutItem } from '..'
+import { DevicesDict } from './devices'
+import type { DeviceOptionsAny, ExpectedPlayoutItem } from '..'
 import type { StateChangeReport } from './measure'
+import { StateTracker } from './stateTracker'
 
-type Config = DeviceOptionsAnyInternal
-type DeviceState = any
+type Config = DeviceOptionsAny
+type DeviceState = object
+type AddressState = any
 
 export interface DeviceDetails {
 	deviceId: string
@@ -33,12 +42,38 @@ export interface DeviceInstanceEvents extends Omit<DeviceEvents, 'connectionChan
 	connectionChanged: [status: DeviceStatus]
 }
 
+// Future: it would be nice for this to be async, so that we can support proper ESM, but that isnt compatible with calling this in the constructor.
+function loadDeviceIntegration(pluginPath: string | null, deviceType: DeviceType): DeviceEntry | undefined {
+	if (!pluginPath) {
+		// No pluginPath means this is a builtin
+		return DevicesDict[deviceType]
+	}
+
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
+		const plugin = require(pluginPath)
+
+		const pluginDevices = plugin.Devices
+		if (!pluginDevices || typeof pluginDevices !== 'object')
+			throw new Error(`Plugin at path "${pluginPath}" does not export a Devices object`)
+
+		const deviceSpecs = pluginDevices[deviceType]
+		if (deviceSpecs) return deviceSpecs
+	} catch (e) {
+		console.warn(`Error loading device integrations from: ${pluginPath}`, e)
+	}
+
+	return undefined
+}
+
 /**
  * Top level container for setting up and interacting with any device integrations
  */
 export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
-	private _device: Device<any, DeviceState, CommandWithContext>
-	private _stateHandler: StateHandler<DeviceState, CommandWithContext>
+	private _device: Device<any, DeviceState, CommandWithContext<any, any>>
+	private _stateHandler: StateHandler<DeviceState, CommandWithContext<any, any>, AddressState>
+	private _deviceSpecs: DeviceEntry
+	private _stateTracker?: StateTracker<AddressState>
 
 	private _deviceId: string
 	private _deviceType: DeviceType
@@ -53,23 +88,63 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	private _lastUpdateCurrentTime: number | undefined
 	private _tDiff: number | undefined
 
-	constructor(id: string, time: number, private config: Config, private getRemoteCurrentTime: () => Promise<number>) {
+	constructor(
+		id: string,
+		time: number,
+		pluginPath: string | null,
+		private config: Config,
+		private getRemoteCurrentTime: () => Promise<number>
+	) {
 		super()
 
-		const deviceSpecs: DeviceEntry = DevicesDict[config.type]
-
+		const deviceSpecs = loadDeviceIntegration(pluginPath, config.type)
 		if (!deviceSpecs) {
 			throw new Error('Could not find device of type ' + config.type)
 		}
 
+		this._deviceSpecs = deviceSpecs
 		this._device = new deviceSpecs.deviceClass(this._getDeviceContextAPI())
 		this._deviceId = id
 		this._deviceType = config.type
+		this._logDebug = config.debug || false
+		this._logDebugStates = config.debugState || false
 		this._deviceName = deviceSpecs.deviceName(id, config)
 		this._instanceId = Math.floor(Math.random() * 10000)
 		this._startTime = time
 
+		this._logDebug = config.debug ?? this._logDebug
+
 		this._updateTimeSync()
+
+		if (!config.disableSharedHardwareControl && this._device.diffAddressStates && this._device.applyAddressState) {
+			this._stateTracker = new StateTracker(
+				(state1, state2) => (this._device.diffAddressStates ? this._device.diffAddressStates(state1, state2) : false),
+				config.syncOnStartup ?? true
+			)
+
+			// for now we just do some logging but in the future we could inform library users so they can react to a device changing
+			this._stateTracker.on('deviceAhead', (a) => {
+				this.emit('debug', 'Device ahead for: ' + a)
+			})
+			this._stateTracker.on('deviceUnderControl', (a) => {
+				this.emit('debug', 'Reasserted control over device for: ' + a)
+			})
+
+			// make sure the commands for the next state change are correct:
+			let doRecalc = false
+			this._stateTracker.on('deviceUpdated', (_addr, ahead) => {
+				if (doRecalc) return
+				doRecalc = true
+
+				// do a little debounce for multiple calls
+				setImmediate(() => {
+					doRecalc = false
+					if (ahead) {
+						this._stateHandler.recalcDiff()
+					}
+				})
+			})
+		}
 
 		this._stateHandler = new StateHandler(
 			{
@@ -124,7 +199,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			{
 				executionType: deviceSpecs.executionMode(config.options),
 			},
-			this._device
+			this._device,
+			this._stateTracker
 		)
 	}
 
@@ -136,23 +212,14 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		return this._device.terminate()
 	}
 
-	async executeAction(id: string, payload?: Record<string, any>) {
-		const action = this._device.actions[id]
+	async executeAction(id: string, payload: Record<string, any>) {
+		const action = this._device.actions?.[id]
 
 		if (!action) {
 			return actionNotFoundMessage(id as never)
 		}
 
-		return action(id, payload)
-	}
-
-	async makeReady(okToDestroyStuff?: boolean): Promise<void> {
-		return this._device.makeReady(okToDestroyStuff)
-	}
-	async standDown(): Promise<void> {
-		if (this._device.standDown) {
-			return this._device.standDown()
-		}
+		return action.call(this._device.actions, payload)
 	}
 
 	/** @deprecated - just here for API compatiblity with the old class */
@@ -161,9 +228,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	}
 
 	handleState(newState: Timeline.TimelineState<TSRTimelineContent>, newMappings: Mappings) {
-		this._stateHandler.handleState(newState, newMappings).catch((e) => {
-			this.emit('error', 'Error while handling state', e)
-		})
+		this._stateHandler.handleState(newState, newMappings)
 
 		this._isActive = Object.keys(newMappings).length > 0
 	}
@@ -181,7 +246,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			startTime: this._startTime,
 
 			supportsExpectedPlayoutItems: false,
-			canConnect: DevicesDict[this.config.type].canConnect,
+			canConnect: this._deviceSpecs.canConnect,
 		}
 	}
 
@@ -212,7 +277,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		return Date.now() + (this._tDiff ?? 0)
 	}
 
-	private _getDeviceContextAPI(): DeviceContextAPI<any> {
+	private _getDeviceContextAPI(): DeviceContextAPI<DeviceState, AddressState> {
 		return {
 			logger: {
 				error: (context: string, err: Error) => {
@@ -247,7 +312,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 				this.emit('resetResolver')
 			},
 
-			commandError: (error: Error, context: CommandWithContext) => {
+			commandError: (error: Error, context: CommandWithContext<any, any>) => {
 				this.emit('commandError', error, context)
 			},
 			updateMediaObject: (collectionId: string, docId: string, doc: MediaObject | null) => {
@@ -261,16 +326,33 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 				this.emit('timeTrace', trace)
 			},
 
-			resetState: async () => {
-				await this._stateHandler.setCurrentState(undefined)
-				await this._stateHandler.clearFutureStates()
+			resetState: () => {
+				this._stateHandler.setCurrentState(undefined)
+				this._stateHandler.clearFutureStates()
+				this.emit('resyncStates')
+			},
+			setModifiedState: (cb: (currentState: DeviceState | undefined) => DeviceState | false) => {
+				const currentState = cloneDeep(this._stateHandler.getCurrentState())
+				const newState = cb(currentState)
+
+				if (newState === false) return // false means no changes were made, and no resyncStates is necessary
+
+				this._stateHandler.setCurrentState(newState)
+				this._stateHandler.clearFutureStates()
+				this.emit('resyncStates')
+			},
+			resetToState: (state: DeviceState) => {
+				this._stateHandler.setCurrentState(state)
+				this._stateHandler.clearFutureStates()
 				this.emit('resyncStates')
 			},
 
-			resetToState: async (state: any) => {
-				await this._stateHandler.setCurrentState(state)
-				await this._stateHandler.clearFutureStates()
-				this.emit('resyncStates')
+			recalcDiff: () => {
+				this._stateHandler.recalcDiff()
+			},
+
+			setAddressState: (address, state) => {
+				this._stateTracker?.updateState(address, state)
 			},
 		}
 	}

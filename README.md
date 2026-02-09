@@ -21,8 +21,8 @@ Using this input, it resolves the expected state, diffs the state against curren
 - **Blackmagic Design ATEM** vision mixers - using the [atem-connection](https://github.com/Sofie-Automation/sofie-atem-connection) library
 - **Blackmagic Design Hyperdeck** record/playback devices - using the [hyperdeck-connection](https://github.com/Sofie-Automation/sofie-hyperdeck-connection) library
 - **Lawo** audio mixers - using the [emberplus](https://github.com/Sofie-Automation/sofie-emberplus-connection) library
-- **[OBS Studio](https://obsproject.com/)** live video production software (currently not supporting v29)
-- **Panasoniz PTZ** cameras
+- **[OBS Studio](https://obsproject.com/)** live video production software
+- **Panasonic PTZ** cameras
 - **Pharos** light control devices
 - **[Sisyfos](https://github.com/olzzon/sisyfos-audio-controller)** audio controller
 - **Quantel** video server
@@ -32,11 +32,12 @@ Using this input, it resolves the expected state, diffs the state against curren
 - **Singular Live Graphics**
 - **[Sofie Chef](https://github.com/Sofie-Automation/sofie-chef)**
 - **Telemetrics** camera robotics
-- **Newtek Tricaster** video mixers
+- **VizRT/Newtek Tricaster** video mixers
 - **[VISCA over IP](https://en.wikipedia.org/wiki/VISCA_Protocol)** camera control
 - Arbitrary [OSC](https://en.wikipedia.org/wiki/Open_Sound_Control) compatible devices
 - Arbitrary HTTP (REST) compatible devices
 - Arbitrary TCP-socket compatible devices
+- Arbitrary WebSocket servers
 
 ## Installation and Usage
 
@@ -44,6 +45,18 @@ This is a mono-repo containing the TSR library, and a separate typings-only libr
 Contrary to what your editor might say, the typings-only library cannot use dependencies from the main library.
 
 Check the main [timeline-state-resolver](/packages/timeline-state-resolver) package for instructions on using the library and more information
+
+If you are using a TSR plugin in your own project, you can easily extend the TSR types to include your own device by adding a file into your project like `tsr-extend.d.ts`:
+
+```ts
+import type { FakeDeviceType, TimelineContentFakeAny } from './test-types.js'
+
+declare module 'timeline-state-resolver-types' {
+	interface TimelineContentMap {
+		[FakeDeviceType]: TimelineContentFakeAny
+	}
+}
+```
 
 ## Development
 

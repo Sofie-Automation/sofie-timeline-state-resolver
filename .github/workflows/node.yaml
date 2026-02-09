@@ -18,7 +18,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lib-name: [timeline-state-resolver, timeline-state-resolver-types, quick-tsr]
+        lib-name:
+          - timeline-state-resolver
+          - timeline-state-resolver-types
+          - timeline-state-resolver-api
+          - quick-tsr
 
     steps:
       - uses: actions/checkout@v6
@@ -30,6 +34,7 @@ jobs:
           node-version-file: '.node-version'
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/lint-${{ matrix.lib-name }}-cache
           yarn install
           yarn build
@@ -58,6 +63,7 @@ jobs:
           node-version-file: '.node-version'
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/docs-cache
           yarn install
           yarn build
@@ -77,8 +83,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [14.x, 16.x, 18.x, 20.x]
-        lib-name: [timeline-state-resolver, timeline-state-resolver-types]
+        node-version: [20.x, 22.x, 24.x]
+        lib-name:
+          - timeline-state-resolver
+          - timeline-state-resolver-types
+          # - timeline-state-resolver-api
 
     steps:
       - uses: actions/checkout@v6
@@ -90,6 +99,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/test-${{ matrix.lib-name }}-${{ matrix.node-version }}-cache
           yarn install
           yarn build
@@ -178,7 +188,7 @@ jobs:
         env:
           CI: true
       - name: Generate docs
-        if: ${{ steps.do-publish.outputs.tag }} == 'latest'
+        if: ${{ steps.do-publish.outputs.tag == 'latest' }}
         run: |
           yarn docs
       - name: Publish docs
@@ -196,7 +206,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lib-name: [timeline-state-resolver, timeline-state-resolver-types]
+        lib-name:
+          - timeline-state-resolver
+          - timeline-state-resolver-types
+          - timeline-state-resolver-api
 
     steps:
       - uses: actions/checkout@v6
@@ -208,6 +221,7 @@ jobs:
           node-version-file: '.node-version'
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/validate-deps-${{ matrix.lib-name }}-cache
           yarn install
         env:
@@ -232,7 +246,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lib-name: [timeline-state-resolver, timeline-state-resolver-types]
+        lib-name:
+          - timeline-state-resolver
+          - timeline-state-resolver-types
+          - timeline-state-resolver-api
 
     steps:
       - uses: actions/checkout@v6
@@ -244,6 +261,7 @@ jobs:
           node-version-file: '.node-version'
       - name: Prepare Environment
         run: |
+          corepack enable
           yarn config set cacheFolder /home/runner/validate-all-deps-${{ matrix.lib-name }}-cache
           yarn install
         env:

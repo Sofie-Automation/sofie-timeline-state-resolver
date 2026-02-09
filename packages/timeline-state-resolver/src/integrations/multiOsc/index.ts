@@ -3,20 +3,17 @@ import {
 	DeviceType,
 	OSCMessageCommandContent,
 	Mappings,
-	Timeline,
 	TSRTimelineContent,
-	MultiOSCOptions,
+	MultiOscOptions,
 	SomeMappingMultiOsc,
 	Mapping,
 	DeviceStatus,
 	StatusCode,
-	ActionExecutionResult,
+	MultiOscDeviceTypes,
 } from 'timeline-state-resolver-types'
-import { Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { OSCConnection } from './deviceConnection'
-import { ResolvedTimelineObjectInstance } from 'superfly-timeline'
 import * as osc from 'osc'
-import { CommandWithContext } from '../..'
 
 export interface MultiOscInitTestOptions {
 	oscSenders?: Record<string, (msg: osc.OscMessage, address?: string | undefined, port?: number | undefined) => void>
@@ -34,15 +31,15 @@ interface OSCDeviceStateContent extends OSCMessageCommandContent {
 	fromTlObject: string
 }
 
-export interface MultiOscCommandWithContext extends CommandWithContext {
-	command: OSCDeviceStateContent
-}
+export type MultiOscCommandWithContext = CommandWithContext<OSCDeviceStateContent, string>
 
 /**
  * This is a generic wrapper for any osc-enabled device.
  */
-export class MultiOSCMessageDevice extends Device<MultiOSCOptions, MultiOSCDeviceState, MultiOscCommandWithContext> {
-	readonly actions: Record<string, (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>> = {}
+export class MultiOSCMessageDevice
+	implements Device<MultiOscDeviceTypes, MultiOSCDeviceState, MultiOscCommandWithContext>
+{
+	readonly actions = null
 
 	private _connections: Record<string, OSCConnection> = {}
 	private _commandQueue: Array<MultiOscCommandWithContext> = []
@@ -50,7 +47,11 @@ export class MultiOSCMessageDevice extends Device<MultiOSCOptions, MultiOSCDevic
 
 	private _timeBetweenCommands: number | undefined
 
-	async init(initOptions: MultiOSCOptions, testOptions?: MultiOscInitTestOptions): Promise<boolean> {
+	constructor(protected context: DeviceContextAPI<MultiOSCDeviceState>) {
+		// Nothing
+	}
+
+	async init(initOptions: MultiOscOptions, testOptions?: MultiOscInitTestOptions): Promise<boolean> {
 		this._timeBetweenCommands = initOptions.timeBetweenCommands
 
 		for (const connOptions of initOptions.connections) {
@@ -76,9 +77,7 @@ export class MultiOSCMessageDevice extends Device<MultiOSCOptions, MultiOSCDevic
 		}
 
 		// note - we reset here but might still be missing some connections from tcp devices, not worth fixing right now
-		this.context
-			.resetToState(Object.fromEntries(Object.keys(this._connections).map((id) => [id, {}])))
-			.catch((e) => this.context.logger.warning('Failed to reset state: ' + e))
+		this.context.resetToState(Object.fromEntries(Object.keys(this._connections).map((id) => [id, {}])))
 
 		return true
 	}
@@ -114,7 +113,7 @@ export class MultiOSCMessageDevice extends Device<MultiOSCOptions, MultiOSCDevic
 	 * @param state
 	 */
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): MultiOSCDeviceState {
 		const addrToOSCMessage: MultiOSCDeviceState = Object.fromEntries(
@@ -124,26 +123,26 @@ export class MultiOSCMessageDevice extends Device<MultiOSCOptions, MultiOSCDevic
 			Object.keys(this._connections).map((id) => [id, {}])
 		)
 
-		for (const layer of Object.values<ResolvedTimelineObjectInstance<TSRTimelineContent>>(state.layers)) {
-			const mapping = mappings[layer.layer] as Mapping<SomeMappingMultiOsc> | undefined
+		for (const tlObject of state.objects) {
+			const mapping = mappings[tlObject.layer] as Mapping<SomeMappingMultiOsc> | undefined
 			if (!mapping) continue
 
 			const connectionState = addrToOSCMessage[mapping.options.connectionId]
 			if (!connectionState) continue
 
-			if (layer.content.deviceType === DeviceType.OSC) {
+			if (tlObject.content.deviceType === DeviceType.OSC) {
 				const content: OSCDeviceStateContent = {
-					...layer.content,
+					...tlObject.content,
 					connectionId: mapping.options.connectionId,
-					fromTlObject: layer.id,
+					fromTlObject: tlObject.id,
 				}
 				if (
 					(connectionState[content.path] &&
-						addrToPriority[mapping.options.connectionId][content.path] <= (layer.priority || 0)) ||
+						addrToPriority[mapping.options.connectionId][content.path] <= (tlObject.priority || 0)) ||
 					!connectionState[content.path]
 				) {
 					connectionState[content.path] = content
-					addrToPriority[mapping.options.connectionId][content.path] = layer.priority || 0
+					addrToPriority[mapping.options.connectionId][content.path] = tlObject.priority || 0
 				}
 			}
 		}

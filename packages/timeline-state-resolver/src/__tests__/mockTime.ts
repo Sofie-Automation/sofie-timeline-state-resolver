@@ -1,3 +1,5 @@
+import { waitTime } from './lib'
+
 export class MockTime {
 	private _now = 10000
 	private _hasBeeninit = false
@@ -53,6 +55,8 @@ export class MockTime {
 			jest.advanceTimersByTime(advanceChunk)
 		}
 		await this.tick()
+
+		await waitTime(1) // Do an extra setTimeout here, so that any waiting timers are executed
 	}
 	advanceTimeToTicks = async (time: number) => {
 		const advance = time - this._now

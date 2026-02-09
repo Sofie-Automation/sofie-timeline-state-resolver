@@ -1,14 +1,15 @@
 import * as _ from 'underscore'
-import { DeviceStatus, StatusCode } from './../../devices/device'
 import {
 	AtemOptions,
 	Mappings,
-	Timeline,
-	TSRTimelineContent,
 	ActionExecutionResult,
 	ActionExecutionResultCode,
-	AtemActions,
 	SomeMappingAtem,
+	RunMacroPayload,
+	AtemDeviceTypes,
+	AtemActionMethods,
+	AtemActions,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 import { AtemState, State as DeviceState } from 'atem-state'
 import {
@@ -18,25 +19,33 @@ import {
 	AtemStateUtil,
 	Enums as ConnectionEnums,
 } from 'atem-connection'
-import { CommandWithContext, Device } from '../../service/device'
+import type {
+	Device,
+	DeviceStatus,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+} from 'timeline-state-resolver-api'
 import { AtemStateBuilder } from './stateBuilder'
 import { createDiffOptions } from './diffState'
+import {
+	AnyAddressState,
+	applyAddressStateToAtemState,
+	AtemDeviceState,
+	atemStateToAddressStates,
+	diffAddressStates,
+	updateFromAtemState,
+} from './state'
 
-export interface AtemCommandWithContext extends CommandWithContext {
-	command: AtemCommands.ISerializableCommand[]
-	context: string
-}
-
-type AtemDeviceState = DeviceState
+export type AtemCommandWithContext = CommandWithContext<AtemCommands.ISerializableCommand[], string>
 
 /**
  * This is a wrapper for the Atem Device. Commands to any and all atem devices will be sent through here.
  */
-export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommandWithContext> {
-	readonly actions: {
-		[id in AtemActions]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {
+export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, AtemCommandWithContext, AnyAddressState> {
+	readonly actions: AtemActionMethods = {
 		[AtemActions.Resync]: this.resyncState.bind(this),
+		[AtemActions.RunMacro]: this.runMacro.bind(this),
 	}
 
 	private readonly _atem = new BasicAtem()
@@ -49,6 +58,10 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 		psus: [],
 	}
 
+	constructor(protected context: DeviceContextAPI<AtemDeviceState, AnyAddressState>) {
+		// Nothing
+	}
+
 	/**
 	 * Initiates the connection with the ATEM through the atem-connection lib
 	 * and initiates Atem State lib.
@@ -59,7 +72,16 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 			this._connectionChanged()
 		})
 		this._atem.on('error', (e) => this.context.logger.error('Atem', new Error(e)))
-		this._atem.on('stateChanged', (state) => this._onAtemStateChanged(state))
+
+		this._atem.on('stateChanged', (state, changes) => {
+			if (changes.length === 1 && changes[0] === 'displayClock.currentTime') return
+
+			// the external device is communicating something changed, the tracker should be updated (and may fire a "blocked" event if the change is caused by someone else)
+			updateFromAtemState((addr, addrState) => this.context.setAddressState(addr, addrState), state) // note - improvement can be to update depending on the actual paths that changed
+
+			// old stuff for connection statuses/events:
+			this._onAtemStateChanged(state)
+		})
 
 		this._atem.on('connected', () => {
 			this._connected = true
@@ -67,14 +89,14 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 			this._connectionChanged()
 
 			if (this._atem.state) {
+				updateFromAtemState((addr, addrState) => this.context.setAddressState(addr, addrState), this._atem.state)
+
 				// Do a state diff to get to the desired state
 				this._protocolVersion = this._atem.state.info.apiVersion
-				this.context
-					.resetToState(this._atem.state)
-					.catch((e) => this.context.logger.error('Error resetting atem state', new Error(e)))
+				this.context.resetToState(this._atem.state)
 			} else {
 				// Do a state diff to at least send all the commands we know about
-				this.context.resetState().catch((e) => this.context.logger.error('Error resetting atem state', new Error(e)))
+				this.context.resetState()
 			}
 		})
 
@@ -100,6 +122,15 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 			result: ActionExecutionResultCode.Ok,
 		}
 	}
+	private async runMacro(payload: RunMacroPayload): Promise<ActionExecutionResult> {
+		await this._atem.sendCommand(
+			new AtemCommands.MacroActionCommand(payload.macroIndex, ConnectionEnums.MacroAction.Run)
+		)
+
+		return {
+			result: ActionExecutionResultCode.Ok,
+		}
+	}
 
 	get connected(): boolean {
 		return this._connected
@@ -110,10 +141,13 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 	 * @param timelineState The state to be converted
 	 */
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState,
 		mappings: Mappings
-	): AtemDeviceState {
-		return AtemStateBuilder.fromTimeline(timelineState.layers, mappings)
+	): { deviceState: AtemDeviceState; addressStates: Record<string, AnyAddressState> } {
+		const deviceState = AtemStateBuilder.fromTimeline(timelineState.objects, mappings) as AtemDeviceState
+		const addressStates = atemStateToAddressStates(deviceState)
+
+		return { deviceState, addressStates }
 	}
 
 	/**
@@ -177,9 +211,9 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 	}
 
 	async sendCommand({ command, context, timelineObjId }: AtemCommandWithContext): Promise<void> {
-		const cwc: CommandWithContext = {
+		const cwc: AtemCommandWithContext = {
 			context,
-			command,
+			command: command.map((c) => ({ name: c.constructor.name, ...c })),
 			timelineObjId,
 		}
 		this.context.logger.debug(cwc)
@@ -193,6 +227,19 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 			this.context.commandError(error, cwc)
 		}
 	}
+
+	applyAddressState(state: DeviceState, _address: string, addressState: AnyAddressState): void {
+		applyAddressStateToAtemState(state, addressState)
+	}
+	diffAddressStates(state1: AnyAddressState, state2: AnyAddressState): boolean {
+		return diffAddressStates(state1, state2)
+	}
+	addressStateReassertsControl(oldState: AnyAddressState | undefined, newState: AnyAddressState | undefined): boolean {
+		if (!newState) return false // undefined incoming state should never reassert
+
+		return oldState?.controlValue !== newState.controlValue
+	}
+
 	private _onAtemStateChanged(newState: Readonly<NativeAtemState>) {
 		const psus = newState.info.power || []
 

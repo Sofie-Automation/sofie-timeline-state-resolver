@@ -16,6 +16,7 @@ export interface Mapping<TOptions extends { mappingType: string } | unknown, TTy
 	options: TOptions
 }
 
+/** @deprecated */
 export interface ResolvedTimelineObjectInstanceExtended<TContent extends Content = TSRTimelineContent>
 	extends ResolvedTimelineObjectInstance<TContent>,
 		TSRTimelineObjProps {}
@@ -25,4 +26,6 @@ export interface TSRTimelineObjProps {
 	isLookahead?: boolean
 	/** Only valid when isLookahead is true. Set so that a lookahead object knows what layer it belongs to */
 	lookaheadForLayer?: string | number
+	/** Only valid when isLookahead is true. If the nature of the content represented by the timeline object has a mutable timing dimension, present the content in a state it should be in after `lookaheadOffset` of it's contents has been played. */
+	lookaheadOffset?: number
 }

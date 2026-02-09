@@ -3,6 +3,7 @@ import { DeviceInstanceWrapper } from '../DeviceInstance'
 import { ActionExecutionResultCode } from 'timeline-state-resolver-types'
 import { t } from '../../lib'
 import { DevicesDict } from '../devices'
+import { waitTime } from '../../__tests__/lib'
 
 const StateHandler = {
 	terminate: jest.fn(),
@@ -52,9 +53,52 @@ jest.mock('../../integrations/abstract/index', () => ({
 		on = AbstractDeviceMock.on
 	},
 }))
+const AtemDeviceMock = {
+	init: jest.fn(),
+	terminate: jest.fn(),
+	action: jest.fn(),
+	convertTimelineStateToDeviceState: jest.fn(),
+	getStatus: jest.fn(),
+	diffStates: jest.fn(),
+	sendCommand: jest.fn(),
+	on: jest.fn(),
+	applyAddressState: jest.fn(),
+	diffAddressStates: jest.fn(),
+	addressStateReassertsControl: jest.fn(),
+}
+jest.mock('../../integrations/atem/index', () => ({
+	AtemDevice: class AtemDevice {
+		actions = {
+			action: AtemDeviceMock.action,
+		}
+		init = AtemDeviceMock.init
+		terminate = AtemDeviceMock.terminate
+		convertTimelineStateToDeviceState = AtemDeviceMock.convertTimelineStateToDeviceState
+		getStatus = () => {
+			AtemDeviceMock.getStatus()
+			return { statusCode: StatusCode.GOOD, messages: [] }
+		}
+		diffStates = AtemDeviceMock.diffStates
+		sendCommand = AtemDeviceMock.sendCommand
+		on = AtemDeviceMock.on
+		applyAddressState = AtemDeviceMock.applyAddressState
+		diffAddressStates = AtemDeviceMock.diffAddressStates
+		addressStateReassertsControl = AtemDeviceMock.addressStateReassertsControl
+	},
+}))
+// jest.mock('../StateTracker', () => ({ StateTracker: jest.fn().mockImplementation(() => ({})) }))
 
 function getDeviceInstance(getTime = async () => Date.now()): DeviceInstanceWrapper {
-	return new DeviceInstanceWrapper('wrapper0', Date.now(), { type: DeviceType.ABSTRACT }, getTime)
+	return new DeviceInstanceWrapper('wrapper0', Date.now(), null, { type: DeviceType.ABSTRACT }, getTime)
+}
+function getDeviceInstanceWithTracker(getTime = async () => Date.now(), disable = false): DeviceInstanceWrapper {
+	return new DeviceInstanceWrapper(
+		'wrapper0',
+		Date.now(),
+		null,
+		{ type: DeviceType.ATEM, disableSharedHardwareControl: disable },
+		getTime
+	)
 }
 
 describe('DeviceInstance', () => {
@@ -70,6 +114,8 @@ describe('DeviceInstance', () => {
 		expect(dev._stateHandler).toBeTruthy()
 		// @ts-expect-error
 		expect(dev._device).toBeTruthy()
+		// @ts-expect-error
+		expect(dev._stateTracker).toBeUndefined()
 	})
 
 	test('initDevice', async () => {
@@ -91,7 +137,7 @@ describe('DeviceInstance', () => {
 			const dev = getDeviceInstance()
 			await dev.executeAction('action', { payload: 1 })
 
-			expect(AbstractDeviceMock.action).toHaveBeenCalledWith('action', { payload: 1 })
+			expect(AbstractDeviceMock.action).toHaveBeenCalledWith({ payload: 1 })
 		})
 
 		test('unknown id', async () => {
@@ -162,25 +208,45 @@ describe('DeviceInstance', () => {
 	})
 
 	test('getCurrentTime', async () => {
-		const getRemoteTime = jest.fn(async () => Date.now() - 10)
+		const TIME_DIFF = -100
+		const getRemoteTime = jest.fn(async () => Date.now() + TIME_DIFF)
 		const dev = getDeviceInstance(getRemoteTime) // simulate 10ms ipc delay
-		// wait for the first sync to happen
-		await new Promise<void>((r) => setTimeout(() => r(), 10))
-		expect(getRemoteTime).toHaveBeenCalledTimes(1)
 
-		const t = dev.getCurrentTime()
-		// it may be a bit delayed
-		expect(t).toBeGreaterThanOrEqual(Date.now() - 12)
-		// it should never be faster
-		expect(t).toBeLessThanOrEqual(Date.now() - 10)
+		{
+			// wait for the first sync to happen
+			await waitTime(10)
+			expect(getRemoteTime).toHaveBeenCalledTimes(1)
 
-		// check that this still works after a bit of delay
-		await new Promise<void>((r) => setTimeout(() => r(), 250))
-		expect(getRemoteTime).toHaveBeenCalledTimes(1)
+			const t = dev.getCurrentTime()
+			const expectedTime = Date.now() + TIME_DIFF
 
-		const t2 = dev.getCurrentTime()
-		expect(t2).toBeGreaterThanOrEqual(Date.now() - 12)
-		expect(t2).toBeLessThanOrEqual(Date.now() - 10)
+			// it may be a bit delayed
+			expect(t).toBeGreaterThanOrEqual(expectedTime - 10)
+			// it should never be faster
+			expect(t).toBeLessThanOrEqual(expectedTime + 10)
+		}
+		{
+			// check that this still works after a bit of delay
+			await waitTime(250)
+			expect(getRemoteTime).toHaveBeenCalledTimes(1)
+
+			const t = dev.getCurrentTime()
+			const expectedTime = Date.now() + TIME_DIFF
+
+			expect(t).toBeGreaterThanOrEqual(expectedTime - 10)
+			expect(t).toBeLessThanOrEqual(expectedTime + 10)
+		}
+	})
+
+	test('init device with shared hardware control', async () => {
+		const dev = getDeviceInstanceWithTracker()
+		// @ts-expect-error
+		expect(dev._stateTracker).toBeTruthy()
+	})
+	test('init device with explicitly disabled shared hardware control', async () => {
+		const dev = getDeviceInstanceWithTracker(undefined, true)
+		// @ts-expect-error
+		expect(dev._stateTracker).toBeUndefined()
 	})
 
 	// todo - test event handlers

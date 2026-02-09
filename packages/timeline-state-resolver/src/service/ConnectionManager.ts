@@ -1,18 +1,17 @@
-import { DeviceOptionsBase, DeviceType } from 'timeline-state-resolver-types'
+import { DeviceOptionsAny, DeviceOptionsBase, DeviceType } from 'timeline-state-resolver-types'
 import { BaseRemoteDeviceIntegration, RemoteDeviceInstance } from './remoteDeviceInstance'
 import _ = require('underscore')
 import { ThreadedClassConfig } from 'threadedclass'
-import { DeviceOptionsAnyInternal } from '../conductor'
 import { DeviceContainer } from '..//devices/deviceContainer'
 import { assertNever } from 'atem-connection/dist/lib/atemUtil'
 import { CasparCGDevice, DeviceOptionsCasparCGInternal } from '../integrations/casparCG'
 import { DeviceOptionsSisyfosInternal, SisyfosMessageDevice } from '../integrations/sisyfos'
 import { DeviceOptionsVizMSEInternal, VizMSEDevice } from '../integrations/vizMSE'
-import { DeviceOptionsVMixInternal, VMixDevice } from '../integrations/vmix'
 import { ImplementedServiceDeviceTypes } from './devices'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { DeviceInstanceEvents } from './DeviceInstance'
 import { deferAsync } from '../lib'
+import { DevicesRegistry } from './devicesRegistry'
 
 interface Operation {
 	operation: 'create' | 'update' | 'delete' | 'setDebug'
@@ -37,17 +36,25 @@ export type MappedDeviceEvents = {
 }
 
 export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
-	private _config: Map<string, DeviceOptionsAnyInternal> = new Map()
-	private _connections: Map<string, BaseRemoteDeviceIntegration<DeviceOptionsAnyInternal>> = new Map()
+	private _devicesRegistry: DevicesRegistry
+
+	private _config: Map<string, DeviceOptionsAny> = new Map()
+	private _connections: Map<string, BaseRemoteDeviceIntegration<DeviceOptionsAny>> = new Map()
 	private _updating = false
 
 	private _connectionAttempts = new Map<string, { last: number; next: number }>()
 	private _nextAttempt: NodeJS.Timeout | undefined
 
+	constructor(devicesRegistry: DevicesRegistry) {
+		super()
+
+		this._devicesRegistry = devicesRegistry
+	}
+
 	/**
 	 * Set the config options for all connections
 	 */
-	public setConnections(connectionsConfig: Record<string, DeviceOptionsAnyInternal>) {
+	public setConnections(connectionsConfig: Record<string, DeviceOptionsAny>) {
 		// run through and see if we need to reset any of the counters
 		this._config.forEach((conf, id) => {
 			const newConf = connectionsConfig[id]
@@ -57,7 +64,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 			}
 		})
 
-		this._config = new Map(Object.entries<DeviceOptionsAnyInternal>(connectionsConfig))
+		this._config = new Map(Object.entries<DeviceOptionsAny>(connectionsConfig))
 		this._updateConnections()
 	}
 
@@ -214,40 +221,21 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 			freezeLimit: FREEZE_LIMIT,
 		}
 
-		const container = await createContainer(deviceOptions, id, () => Date.now(), threadedClassOptions) // we rely on threadedclass to timeout if this fails
+		try {
+			const pluginPath = this._devicesRegistry.getPluginPathForDeviceIntergration(deviceOptions.type)
 
-		if (!container) {
-			this.emit('warning', 'Failed to create container for ' + id)
-			return
-		}
+			const container = await createContainer(pluginPath, deviceOptions, id, () => Date.now(), threadedClassOptions) // we rely on threadedclass to timeout if this fails
 
-		// set up event handlers
-		await this._setupDeviceListeners(id, container)
+			if (!container) {
+				this.emit('warning', 'Failed to create container for ' + id)
+				return
+			}
 
-		container.onChildClose = () => {
-			this.emit('error', 'Connection ' + id + ' closed')
-			this._connections.delete(id)
-			this.emit('connectionRemoved', id)
+			// set up event handlers
+			await this._setupDeviceListeners(id, container)
 
-			container
-				.terminate()
-				.catch((e) => this.emit('warning', `Failed to initialise ${id} (${e})`))
-				.finally(() => {
-					this._updateConnections()
-				})
-		}
-
-		this._connections.set(id, container)
-		this.emit('connectionAdded', id, container)
-
-		// trigger connection init
-		this._handleConnectionInitialisation(id, container)
-			.then(() => {
-				this._connectionAttempts.delete(id)
-				this.emit('connectionInitialised', id)
-			})
-			.catch((e) => {
-				this.emit('error', 'Connection ' + id + ' failed to initialise', e)
+			container.onChildClose = () => {
+				this.emit('error', 'Connection ' + id + ' closed')
 				this._connections.delete(id)
 				this.emit('connectionRemoved', id)
 
@@ -257,7 +245,32 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 					.finally(() => {
 						this._updateConnections()
 					})
-			})
+			}
+
+			this._connections.set(id, container)
+			this.emit('connectionAdded', id, container)
+
+			// trigger connection init
+			this._handleConnectionInitialisation(id, container)
+				.then(() => {
+					this._connectionAttempts.delete(id)
+					this.emit('connectionInitialised', id)
+				})
+				.catch((e) => {
+					this.emit('error', 'Connection ' + id + ' failed to initialise', e)
+					this._connections.delete(id)
+					this.emit('connectionRemoved', id)
+
+					container
+						.terminate()
+						.catch((e) => this.emit('warning', `Failed to initialise ${id} (${e})`))
+						.finally(() => {
+							this._updateConnections()
+						})
+				})
+		} catch (e) {
+			this.emit('warning', 'Failed to create connection for ' + id + ': ' + e)
+		}
 	}
 
 	private async deleteConnection(id: string): Promise<void> {
@@ -311,10 +324,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 		}
 	}
 
-	private async _handleConnectionInitialisation(
-		id: string,
-		container: BaseRemoteDeviceIntegration<DeviceOptionsAnyInternal>
-	) {
+	private async _handleConnectionInitialisation(id: string, container: BaseRemoteDeviceIntegration<DeviceOptionsAny>) {
 		const deviceOptions = this._config.get(id)
 		if (!deviceOptions) return // if the config has been removed, the connection should be removed as well so no need to init
 
@@ -329,7 +339,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 
 	private async _setupDeviceListeners(
 		id: string,
-		container: BaseRemoteDeviceIntegration<DeviceOptionsAnyInternal>
+		container: BaseRemoteDeviceIntegration<DeviceOptionsAny>
 	): Promise<void> {
 		const passEvent = <T extends keyof DeviceInstanceEvents>(ev: T) => {
 			const evHandler: any = (...args: DeviceInstanceEvents[T]) =>
@@ -376,7 +386,8 @@ function configHasChanged(oldConfig: DeviceOptionsBase<any>, config: DeviceOptio
 }
 
 function createContainer(
-	deviceOptions: DeviceOptionsAnyInternal,
+	pluginPath: string | null,
+	deviceOptions: DeviceOptionsAny,
 	deviceId: string,
 	getCurrentTime: () => number,
 	threadedClassOptions: ThreadedClassConfig
@@ -410,14 +421,6 @@ function createContainer(
 				threadedClassOptions
 			)
 		case DeviceType.VMIX:
-			return DeviceContainer.create<DeviceOptionsVMixInternal, typeof VMixDevice>(
-				'../../dist/integrations/vmix/index.js',
-				'VMixDevice',
-				deviceId,
-				deviceOptions,
-				getCurrentTime,
-				threadedClassOptions
-			)
 		case DeviceType.SINGULAR_LIVE:
 		case DeviceType.TELEMETRICS:
 		case DeviceType.PHAROS:
@@ -436,15 +439,19 @@ function createContainer(
 		case DeviceType.TCPSEND:
 		case DeviceType.TRICASTER:
 		case DeviceType.VISCA_OVER_IP:
+		case DeviceType.WEBSOCKET_CLIENT:
+		case DeviceType.KAIROS:
 		case DeviceType.QUANTEL: {
 			ensureIsImplementedAsService(deviceOptions.type)
 
 			// presumably this device is implemented in the new service handler
-			return RemoteDeviceInstance.create(deviceId, deviceOptions, getCurrentTime, threadedClassOptions)
+			return RemoteDeviceInstance.create(pluginPath, deviceId, deviceOptions, getCurrentTime, threadedClassOptions)
 		}
 		default:
 			assertNever(deviceOptions)
-			return null
+
+			// this is a custom device
+			return RemoteDeviceInstance.create(pluginPath, deviceId, deviceOptions, getCurrentTime, threadedClassOptions)
 	}
 }
 

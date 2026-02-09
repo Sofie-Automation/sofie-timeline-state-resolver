@@ -7,6 +7,9 @@ import {
 	SomeMappingSisyfos,
 	TimelineContentTypeSisyfos,
 	MappingSisyfosType,
+	Timeline,
+	TSRTimelineContent,
+	TimelineContentSisyfosAny,
 } from 'timeline-state-resolver-types'
 import * as OSC from '../../../__mocks__/osc'
 const MockOSC = OSC.MockOSC
@@ -14,6 +17,7 @@ import { MockTime } from '../../../__tests__/mockTime'
 import { ThreadedClass } from 'threadedclass'
 import { SisyfosMessageDevice } from '../../../integrations/sisyfos'
 import { addConnections, getMockCall, waitUntil } from '../../../__tests__/lib'
+import { SisyfosCommandType, SisyfosState } from '../connection'
 
 describe('Sisyfos', () => {
 	jest.mock('osc', () => OSC)
@@ -258,6 +262,7 @@ describe('Sisyfos', () => {
 			channel: 0,
 			value: false,
 		})
+		await myConductor.destroy()
 	})
 	test('Sisyfos: set ch1: pgm & ch2: lookahead and then ch1: vo, ch2: pgm', async () => {
 		const commandReceiver0: any = jest.fn(async () => {
@@ -485,6 +490,7 @@ describe('Sisyfos', () => {
 			channel: 0,
 			value: false,
 		})
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: set lookahead and take to pgm, with lookahead still on', async () => {
@@ -629,6 +635,7 @@ describe('Sisyfos', () => {
 			channel: 1,
 			values: [0],
 		})
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using CHANNELS', async () => {
@@ -849,6 +856,8 @@ describe('Sisyfos', () => {
 		})
 
 		commandReceiver0.mockClear()
+
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using global triggerValue', async () => {
@@ -1057,6 +1066,8 @@ describe('Sisyfos', () => {
 		})
 
 		commandReceiver0.mockClear()
+
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using per-channel triggerValue - initially defined', async () => {
@@ -1209,6 +1220,8 @@ describe('Sisyfos', () => {
 		})
 
 		commandReceiver0.mockClear()
+
+		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using per-channel triggerValue - initially undefined', async () => {
@@ -1347,6 +1360,8 @@ describe('Sisyfos', () => {
 		expect(commandReceiver0.mock.calls.length).toEqual(0)
 
 		commandReceiver0.mockClear()
+
+		await myConductor.destroy()
 	})
 
 	test('Connection status', async () => {
@@ -1413,5 +1428,385 @@ describe('Sisyfos', () => {
 
 		expect(await device.connected).toEqual(true)
 		expect(onConnectionChanged.mock.calls.length).toBeGreaterThanOrEqual(1)
+		await myConductor.destroy()
+	})
+
+	describe('convertTimelineStateToDeviceState', () => {
+		async function convertState(
+			tlState: Timeline.TimelineState<TSRTimelineContent>,
+			mappings: Mappings<SomeMappingSisyfos>
+		) {
+			const device = await getSisyfosDevice()
+
+			return device.convertTimelineStateToDeviceState(tlState, mappings)
+		}
+
+		test('convert empty state', async () => {
+			expect(await convertState(createTimelineState({}), {})).toEqual({ channels: {}, resync: false })
+		})
+
+		it('applies mapping defaults for channel when disableDefaults!==true', async () => {
+			expect(
+				await convertState(createTimelineState({}), {
+					channel0: {
+						device: DeviceType.SISYFOS,
+						deviceId: 'sisyfos0',
+						options: {
+							channel: 0,
+							mappingType: MappingSisyfosType.Channel,
+						},
+					},
+				})
+			).toEqual({
+				channels: {
+					0: {
+						faderLevel: 0.75,
+						inputGain: 0.75,
+						inputSelector: 1,
+						muteOn: false,
+						label: '',
+						pgmOn: 0,
+						pstOn: 0,
+						timelineObjIds: [],
+						visible: true,
+					},
+				},
+				resync: false,
+			})
+		})
+
+		it('applies mapping defaults for channels when theit disableDefaults!==true', async () => {
+			expect(
+				await convertState(
+					createTimelineState({
+						channels: {
+							id: 'channelsTlObj',
+							content: {
+								deviceType: DeviceType.SISYFOS,
+								type: TimelineContentTypeSisyfos.CHANNELS,
+								channels: [{ mappedLayer: 'channel0' }, { mappedLayer: 'channel1' }],
+							},
+						},
+					}),
+					{
+						channel0: {
+							device: DeviceType.SISYFOS,
+							deviceId: 'sisyfos0',
+							options: {
+								channel: 0,
+								mappingType: MappingSisyfosType.Channel,
+							},
+						},
+						channel1: {
+							device: DeviceType.SISYFOS,
+							deviceId: 'sisyfos0',
+							options: {
+								channel: 1,
+								mappingType: MappingSisyfosType.Channel,
+							},
+						},
+						channels: {
+							device: DeviceType.SISYFOS,
+							deviceId: 'sisyfos0',
+							options: {
+								mappingType: MappingSisyfosType.Channels,
+							},
+						},
+					}
+				)
+			).toEqual({
+				channels: {
+					0: {
+						faderLevel: 0.75,
+						inputGain: 0.75,
+						inputSelector: 1,
+						muteOn: false,
+						label: '',
+						pgmOn: 0,
+						pstOn: 0,
+						timelineObjIds: ['channelsTlObj'],
+						visible: true,
+					},
+					1: {
+						faderLevel: 0.75,
+						inputGain: 0.75,
+						inputSelector: 1,
+						muteOn: false,
+						label: '',
+						pgmOn: 0,
+						pstOn: 0,
+						timelineObjIds: ['channelsTlObj'],
+						visible: true,
+					},
+				},
+				resync: false,
+			})
+		})
+
+		it('does not apply mapping defaults for channel when disableDefaults===true', async () => {
+			expect(
+				await convertState(createTimelineState({}), {
+					channel0: {
+						device: DeviceType.SISYFOS,
+						deviceId: 'sisyfos0',
+						options: {
+							channel: 0,
+							mappingType: MappingSisyfosType.Channel,
+							disableDefaults: true,
+						},
+					},
+				})
+			).toEqual({
+				channels: {
+					0: {
+						faderLevel: undefined,
+						label: '',
+						inputGain: undefined,
+						inputSelector: undefined,
+						muteOn: undefined,
+						pgmOn: undefined,
+						pstOn: undefined,
+						timelineObjIds: [],
+						visible: undefined,
+					},
+				},
+				resync: false,
+			})
+		})
+
+		it('only applies properties present in the timeline object when disableDefaults===true', async () => {
+			expect(
+				await convertState(
+					createTimelineState({
+						channel0: {
+							id: 'channelTlObj',
+							content: {
+								deviceType: DeviceType.SISYFOS,
+								type: TimelineContentTypeSisyfos.CHANNEL,
+								isPgm: 2,
+							},
+						},
+					}),
+					{
+						channel0: {
+							device: DeviceType.SISYFOS,
+							deviceId: 'sisyfos0',
+							options: {
+								channel: 0,
+								mappingType: MappingSisyfosType.Channel,
+								disableDefaults: true,
+							},
+						},
+					}
+				)
+			).toEqual({
+				channels: {
+					0: {
+						faderLevel: undefined,
+						label: '',
+						pgmOn: 2,
+						inputGain: undefined,
+						inputSelector: undefined,
+						muteOn: undefined,
+						pstOn: undefined,
+						timelineObjIds: ['channelTlObj'],
+						visible: undefined,
+					},
+				},
+				resync: false,
+			})
+		})
+
+		it('does not apply mapping defaults for mapped channels when their disableDefaults===true', async () => {
+			expect(
+				await convertState(
+					createTimelineState({
+						channels: {
+							id: 'channelsTlObj',
+							content: {
+								deviceType: DeviceType.SISYFOS,
+								type: TimelineContentTypeSisyfos.CHANNELS,
+								channels: [{ mappedLayer: 'channel0' }, { mappedLayer: 'channel1' }],
+							},
+						},
+					}),
+					{
+						channel0: {
+							device: DeviceType.SISYFOS,
+							deviceId: 'sisyfos0',
+							options: {
+								channel: 0,
+								mappingType: MappingSisyfosType.Channel,
+								disableDefaults: true,
+							},
+						},
+						channel1: {
+							device: DeviceType.SISYFOS,
+							deviceId: 'sisyfos0',
+							options: {
+								channel: 1,
+								mappingType: MappingSisyfosType.Channel,
+								disableDefaults: true,
+							},
+						},
+						channels: {
+							device: DeviceType.SISYFOS,
+							deviceId: 'sisyfos0',
+							options: {
+								mappingType: MappingSisyfosType.Channels,
+							},
+						},
+					}
+				)
+			).toEqual({
+				channels: {
+					0: {
+						faderLevel: undefined,
+						label: '',
+						inputGain: undefined,
+						inputSelector: undefined,
+						muteOn: undefined,
+						pgmOn: undefined,
+						pstOn: undefined,
+						timelineObjIds: ['channelsTlObj'],
+						visible: undefined,
+					},
+					1: {
+						faderLevel: undefined,
+						label: '',
+						inputGain: undefined,
+						inputSelector: undefined,
+						muteOn: undefined,
+						pgmOn: undefined,
+						pstOn: undefined,
+						timelineObjIds: ['channelsTlObj'],
+						visible: undefined,
+					},
+				},
+				resync: false,
+			})
+		})
+	})
+
+	describe('diffState', () => {
+		async function compareStates(oldDevState: SisyfosState | undefined, newDevState: SisyfosState) {
+			const device = await getSisyfosDevice()
+			return device.diffStates(oldDevState, newDevState)
+		}
+
+		test('From undefined', async () => {
+			expect(await compareStates(undefined, { channels: {}, resync: false })).toEqual([])
+		})
+
+		it('sends commands only for defined properties', async () => {
+			expect(
+				await compareStates(
+					{
+						channels: {
+							0: {
+								faderLevel: undefined,
+								label: '',
+								timelineObjIds: [],
+								pgmOn: undefined,
+								pstOn: undefined,
+								visible: undefined,
+								inputGain: undefined,
+								inputSelector: undefined,
+								muteOn: undefined,
+							},
+						},
+						resync: false,
+					},
+					{
+						channels: {
+							0: {
+								faderLevel: undefined,
+								label: '',
+								timelineObjIds: [],
+								pgmOn: 2,
+								pstOn: undefined,
+								visible: undefined,
+								inputGain: undefined,
+								inputSelector: undefined,
+								muteOn: undefined,
+							},
+						},
+						resync: false,
+					}
+				)
+			).toEqual([
+				expect.objectContaining({
+					command: {
+						channel: 0,
+						type: SisyfosCommandType.TOGGLE_PGM,
+						values: [2],
+					},
+				}),
+			])
+		})
+
+		it("doesn't emit commands for empty `label` string", async () => {
+			expect(
+				await compareStates(
+					{
+						channels: {
+							0: {
+								faderLevel: undefined,
+								label: 'asfdadf asdfadsf',
+								timelineObjIds: [],
+								pgmOn: undefined,
+								pstOn: undefined,
+								visible: undefined,
+								inputGain: undefined,
+								inputSelector: undefined,
+								muteOn: undefined,
+							},
+						},
+						resync: false,
+					},
+					{
+						channels: {
+							0: {
+								faderLevel: undefined,
+								label: '',
+								timelineObjIds: [],
+								pgmOn: undefined,
+								pstOn: undefined,
+								visible: undefined,
+								inputGain: undefined,
+								inputSelector: undefined,
+								muteOn: undefined,
+							},
+						},
+						resync: false,
+					}
+				)
+			).toHaveLength(0)
+		})
 	})
 })
+
+async function getSisyfosDevice() {
+	const dev = new SisyfosMessageDevice(
+		'sisyfos0',
+		{
+			type: DeviceType.SISYFOS,
+			options: {
+				host: 'localhost',
+				port: 8900,
+			},
+		},
+		async () => Promise.resolve(Date.now())
+	)
+	return dev
+}
+
+function createTimelineState(
+	objs: Record<string, { id: string; content: TimelineContentSisyfosAny }>
+): Timeline.TimelineState<TSRTimelineContent> {
+	return {
+		time: 10,
+		layers: objs as any,
+		nextEvents: [],
+	}
+}

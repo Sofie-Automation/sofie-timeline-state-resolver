@@ -1,12 +1,14 @@
-import { CommandWithContext, DeviceStatus, StatusCode } from '../../devices/device'
 import {
 	HyperdeckOptions,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
-	HyperdeckActions,
+	HyperdeckActionMethods,
 	ActionExecutionResult,
 	ActionExecutionResultCode,
+	HyperdeckDeviceTypes,
+	HyperdeckActions,
+	DeviceStatus,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 import {
 	Hyperdeck,
@@ -18,15 +20,15 @@ import {
 import { deferAsync } from '../../lib'
 import { HyperdeckCommandWithContext, diffHyperdeckStates } from './diffState'
 import { HyperdeckDeviceState, convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from './stateBuilder'
-import { Device } from '../../service/device'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 /**
  * This is a wrapper for the Hyperdeck Device. Commands to any and all hyperdeck devices will be sent through here.
  */
-export class HyperdeckDevice extends Device<HyperdeckOptions, HyperdeckDeviceState, HyperdeckCommandWithContext> {
-	readonly actions: {
-		[id in HyperdeckActions]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {
+export class HyperdeckDevice
+	implements Device<HyperdeckDeviceTypes, HyperdeckDeviceState, HyperdeckCommandWithContext>
+{
+	readonly actions: HyperdeckActionMethods = {
 		[HyperdeckActions.FormatDisks]: this.formatDisks.bind(this),
 		[HyperdeckActions.Resync]: this.resyncState.bind(this),
 	}
@@ -36,12 +38,16 @@ export class HyperdeckDevice extends Device<HyperdeckOptions, HyperdeckDeviceSta
 
 	private _recordingTime = 0
 	private _minRecordingTime = 0 // 15 minutes
-	private _recTimePollTimer: NodeJS.Timer | undefined
+	private _recTimePollTimer: NodeJS.Timeout | undefined
 	private _slotCount = 0
 	private _slotStatus: Record<number, HyperdeckCommands.SlotInfoCommandResponse> = {}
 	private _transportStatus: TransportStatus | undefined
 	private _expectedTransportStatus: TransportStatus | undefined
 	private _suppressEmptySlotWarnings = false
+
+	constructor(protected context: DeviceContextAPI<HyperdeckDeviceState>) {
+		// Nothing
+	}
 
 	/**
 	 * Initiates the connection with the Hyperdeck through the hyperdeck-connection lib.
@@ -64,9 +70,7 @@ export class HyperdeckDevice extends Device<HyperdeckOptions, HyperdeckDeviceSta
 							this._connected = true
 							this._connectionChanged()
 
-							this.context
-								.resetToState(state)
-								.catch((e) => this.context.logger.error('Error resetting hyperdeck state', new Error(e)))
+							this.context.resetToState(state)
 						})
 						.catch((e) => this.context.logger.error('Hyperdeck.on("connected")', e))
 
@@ -138,7 +142,7 @@ export class HyperdeckDevice extends Device<HyperdeckOptions, HyperdeckDeviceSta
 			// TODO - could this being slow/offline be a problem?
 			const state = await this._queryCurrentState()
 
-			await this.context.resetToState(state)
+			this.context.resetToState(state)
 		} catch (e) {
 			this.context.resetResolver()
 		}
@@ -203,13 +207,9 @@ export class HyperdeckDevice extends Device<HyperdeckOptions, HyperdeckDeviceSta
 		})
 	}
 
-	async sendCommand({ command, context, timelineObjId }: HyperdeckCommandWithContext): Promise<void> {
-		const cwc: CommandWithContext = {
-			context,
-			command,
-			timelineObjId,
-		}
+	async sendCommand(cwc: HyperdeckCommandWithContext): Promise<void> {
 		this.context.logger.debug(cwc)
+		const { command } = cwc
 
 		// TODO: is this a good idea?
 		// Track what we expect the TransportStatus to be, only Commands we may send need to be considered
@@ -242,10 +242,10 @@ export class HyperdeckDevice extends Device<HyperdeckOptions, HyperdeckDeviceSta
 	 * @param timelineState The state to be converted
 	 */
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): HyperdeckDeviceState {
-		return convertTimelineStateToHyperdeckState(timelineState.layers, mappings)
+		return convertTimelineStateToHyperdeckState(timelineState, mappings)
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {

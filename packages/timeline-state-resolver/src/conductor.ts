@@ -6,11 +6,10 @@ import {
 	TimelineObject,
 	TimelineState,
 } from 'superfly-timeline'
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { MemUsageReport, threadedClass, ThreadedClass, ThreadedClassManager } from 'threadedclass'
 import PQueue from 'p-queue'
-import * as PAll from 'p-all'
-import PTimeout from 'p-timeout'
+import PAll from 'p-all'
 
 import {
 	Mappings,
@@ -19,46 +18,25 @@ import {
 	ResolvedTimelineObjectInstanceExtended,
 	DeviceOptionsBase,
 	Datastore,
-	DeviceOptionsTelemetrics,
 	TSRTimelineObj,
 	TSRTimeline,
 	Timeline,
 	TSRTimelineContent,
 	TimelineDatastoreReferencesContent,
-	DeviceOptionsMultiOSC,
 	TimelineDatastoreReferences,
-	DeviceOptionsOBS,
-	DeviceOptionsOSC,
-	DeviceOptionsShotoku,
-	DeviceOptionsHTTPSend,
-	DeviceOptionsHTTPWatcher,
-	DeviceOptionsAbstract,
-	DeviceOptionsAtem,
-	DeviceOptionsTCPSend,
-	DeviceOptionsQuantel,
-	DeviceOptionsHyperdeck,
-	DeviceOptionsPanasonicPTZ,
-	DeviceOptionsLawo,
-	DeviceOptionsSofieChef,
-	DeviceOptionsPharos,
-	DeviceOptionsViscaOverIP,
-	DeviceOptionsTriCaster,
-	DeviceOptionsSingularLive,
+	fillStateFromDatastore,
 } from 'timeline-state-resolver-types'
 
 import { DoOnTime } from './devices/doOnTime'
 import { AsyncResolver } from './AsyncResolver'
-import { endTrace, fillStateFromDatastore, FinishedTrace, startTrace } from './lib'
+import { endTrace, startTrace } from './lib'
+import type { FinishedTrace, CommandWithContext } from 'timeline-state-resolver-api'
 
-import { CommandWithContext } from './devices/device'
 import { DeviceContainer } from './devices/deviceContainer'
 
-import { DeviceOptionsCasparCGInternal } from './integrations/casparCG'
-import { DeviceOptionsSisyfosInternal } from './integrations/sisyfos'
-import { DeviceOptionsVMixInternal } from './integrations/vmix'
-import { DeviceOptionsVizMSEInternal } from './integrations/vizMSE'
 import { BaseRemoteDeviceIntegration } from './service/remoteDeviceInstance'
 import { ConnectionManager } from './service/ConnectionManager'
+import { DevicesRegistry } from './service/devicesRegistry'
 
 export { DeviceContainer }
 export { CommandWithContext }
@@ -90,6 +68,8 @@ export interface ConductorOptions {
 	proActiveResolve?: boolean
 	/** If set, multiplies the estimated resolve time (default: 1) */
 	estimateResolveTimeMultiplier?: number
+
+	devicesRegistry?: DevicesRegistry
 }
 interface TimelineCallback {
 	time: number
@@ -173,7 +153,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 	private _options: ConductorOptions
 
-	public readonly connectionManager = new ConnectionManager()
+	public readonly connectionManager: ConnectionManager
 
 	private _getCurrentTime?: () => number
 
@@ -189,7 +169,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		resolveTime: 0,
 		validTo: 0,
 	}
-	private _resolveTimelineTrigger: NodeJS.Timer | undefined
+	private _resolveTimelineTrigger: NodeJS.Timeout | undefined
 	private _isInitialized = false
 	private _doOnTime: DoOnTime
 	private _multiThreadedResolver = false
@@ -197,7 +177,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	private _estimateResolveTimeMultiplier = 1
 
 	private _callbackInstances = new Map<string, CallbackInstance>() // key = instanceId
-	private _triggerSendStartStopCallbacksTimeout: NodeJS.Timer | null = null
+	private _triggerSendStartStopCallbacksTimeout: NodeJS.Timeout | null = null
 	private _sentCallbacks: TimelineCallbacks = {}
 
 	private _actionQueue: PQueue = new PQueue({
@@ -210,13 +190,15 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 	private _resolver!: ThreadedClass<AsyncResolver>
 
-	private _interval: NodeJS.Timer
+	private _interval: NodeJS.Timeout
 	private _timelineHash: string | undefined
 	private activationId: string | undefined
 
 	constructor(options: ConductorOptions = {}) {
 		super()
 		this._options = options
+
+		this.connectionManager = new ConnectionManager(options?.devicesRegistry || new DevicesRegistry())
 
 		this._multiThreadedResolver = !!options.multiThreadedResolver
 		this._useCacheWhenResolving = !!options.useCacheWhenResolving
@@ -373,59 +355,6 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			})
 
 		this._triggerResolveTimeline()
-	}
-
-	/**
-	 * Send a makeReady-trigger to all devices
-	 *
-	 * @deprecated replace by TSR actions
-	 */
-	public async devicesMakeReady(okToDestroyStuff?: boolean, activationId?: string): Promise<void> {
-		this.activationId = activationId
-		this.emit(
-			'debug',
-			`devicesMakeReady, ${okToDestroyStuff ? 'okToDestroyStuff' : 'undefined'}, ${
-				activationId ? activationId : 'undefined'
-			}`
-		)
-		await this._actionQueue.add(async () => {
-			await this._mapAllConnections(false, async (d) =>
-				PTimeout(
-					(async () => {
-						const trace = startTrace('conductor:makeReady:' + d.deviceId)
-						await d.device.makeReady(okToDestroyStuff, activationId)
-						this.emit('timeTrace', endTrace(trace))
-					})(),
-					10000,
-					`makeReady for "${d.deviceId}" timed out`
-				)
-			)
-
-			this._triggerResolveTimeline()
-		})
-	}
-
-	/**
-	 * Send a standDown-trigger to all devices
-	 *
-	 * @deprecated replaced by TSR actions
-	 */
-	public async devicesStandDown(okToDestroyStuff?: boolean): Promise<void> {
-		this.activationId = undefined
-		this.emit('debug', `devicesStandDown, ${okToDestroyStuff ? 'okToDestroyStuff' : 'undefined'}`)
-		await this._actionQueue.add(async () => {
-			await this._mapAllConnections(false, async (d) =>
-				PTimeout(
-					(async () => {
-						const trace = startTrace('conductor:standDown:' + d.deviceId)
-						await d.device.standDown(okToDestroyStuff)
-						this.emit('timeTrace', endTrace(trace))
-					})(),
-					10000,
-					`standDown for "${d.deviceId}" timed out`
-				)
-			)
-		})
 	}
 
 	public async getThreadsMemoryUsage(): Promise<{ [childId: string]: MemUsageReport }> {
@@ -1194,30 +1123,6 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		}
 	}
 }
-export type DeviceOptionsAnyInternal =
-	| DeviceOptionsAbstract
-	| DeviceOptionsCasparCGInternal
-	| DeviceOptionsAtem
-	| DeviceOptionsLawo
-	| DeviceOptionsHTTPSend
-	| DeviceOptionsHTTPWatcher
-	| DeviceOptionsPanasonicPTZ
-	| DeviceOptionsTCPSend
-	| DeviceOptionsHyperdeck
-	| DeviceOptionsPharos
-	| DeviceOptionsOBS
-	| DeviceOptionsOSC
-	| DeviceOptionsMultiOSC
-	| DeviceOptionsSisyfosInternal
-	| DeviceOptionsSofieChef
-	| DeviceOptionsQuantel
-	| DeviceOptionsSingularLive
-	| DeviceOptionsVMixInternal
-	| DeviceOptionsShotoku
-	| DeviceOptionsVizMSEInternal
-	| DeviceOptionsTelemetrics
-	| DeviceOptionsTriCaster
-	| DeviceOptionsViscaOverIP
 
 function removeParentFromState(
 	o: Timeline.TimelineState<TSRTimelineContent>

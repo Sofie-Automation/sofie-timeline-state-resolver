@@ -3,13 +3,12 @@ import {
 	MappingQuantelPort,
 	Mappings,
 	QuantelControlMode,
-	ResolvedTimelineObjectInstanceExtended,
 	SomeMappingQuantel,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentQuantelClip,
 } from 'timeline-state-resolver-types'
 import { MappedPorts, QuantelState, QuantelStatePort } from './types'
+import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 export function getMappedPorts(mappings: Mappings<SomeMappingQuantel>): MappedPorts {
 	const ports: MappedPorts = {}
@@ -37,7 +36,7 @@ export function getMappedPorts(mappings: Mappings<SomeMappingQuantel>): MappedPo
 }
 
 export function convertTimelineStateToQuantelState(
-	timelineState: Timeline.TimelineState<TSRTimelineContent>,
+	timelineState: DeviceTimelineState<TSRTimelineContent>,
 	mappings: Mappings<SomeMappingQuantel>
 ): QuantelState {
 	const state: QuantelState = {
@@ -49,10 +48,8 @@ export function convertTimelineStateToQuantelState(
 	createPortsFromMappings(state, getMappedPorts(mappings))
 
 	// merge timeline layer states into port states
-	for (const [layerName, layer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
-		timelineState.layers
-	)) {
-		const { foundMapping, isLookahead } = getMappingForLayer(layer, mappings, layerName)
+	for (const tlObject of timelineState.objects) {
+		const { foundMapping, isLookahead } = getMappingForLayer(tlObject, mappings)
 
 		if (foundMapping && 'portId' in foundMapping.options && 'channelId' in foundMapping.options) {
 			// mapping exists
@@ -60,10 +57,10 @@ export function convertTimelineStateToQuantelState(
 			if (!port) throw new Error(`Port "${foundMapping.options.portId}" not found`)
 			// port exists
 
-			const content = layer.content as TimelineContentQuantelClip
+			const content = tlObject.content as TimelineContentQuantelClip
 			if (content && (content.title || content.guid)) {
 				// content exists and has title or guid
-				setPortStateFromLayer(port, isLookahead, content, layer)
+				setPortStateFromLayer(port, isLookahead, content, tlObject)
 			}
 		}
 	}
@@ -85,14 +82,13 @@ function createPortsFromMappings(state: QuantelState, mappedPorts: MappedPorts) 
 
 /** finds the correct mapping for a layer state and if the state is for a lookahead */
 function getMappingForLayer(
-	layerExt: ResolvedTimelineObjectInstanceExtended,
-	mappings: Mappings<SomeMappingQuantel>,
-	layerName: string
+	layerExt: DeviceTimelineStateObject,
+	mappings: Mappings<SomeMappingQuantel>
 ): {
 	foundMapping: Mapping<MappingQuantelPort> | undefined
 	isLookahead: boolean
 } {
-	let foundMapping = mappings[layerName]
+	let foundMapping = mappings[layerExt.layer]
 
 	let isLookahead = false
 	if (!foundMapping && layerExt.isLookahead && layerExt.lookaheadForLayer) {
@@ -108,7 +104,7 @@ function setPortStateFromLayer(
 	port: QuantelStatePort,
 	isLookahead: boolean,
 	content: TimelineContentQuantelClip,
-	layer: ResolvedTimelineObjectInstanceExtended
+	layer: DeviceTimelineStateObject
 ) {
 	// Note on lookaheads:
 	// If there is ONLY a lookahead on a port, it'll be treated as a "paused (real) clip"
@@ -128,6 +124,11 @@ function setPortStateFromLayer(
 	} else {
 		const startTime = layer.instance.originalStart || layer.instance.start
 
+		const inPointSeekOffsetByLookahead =
+			content.inPoint !== undefined && layer.lookaheadOffset !== undefined
+				? content.inPoint + layer.lookaheadOffset
+				: content.inPoint ?? layer.lookaheadOffset
+
 		port.timelineObjId = layer.id
 		port.notOnAir = content.notOnAir || isLookahead
 		port.outTransition = content.outTransition
@@ -141,7 +142,7 @@ function setPortStateFromLayer(
 			pauseTime: content.pauseTime,
 			playing: isLookahead ? false : content.playing ?? true,
 
-			inPoint: content.inPoint,
+			inPoint: !isLookahead ? content.inPoint : inPointSeekOffsetByLookahead,
 			length: content.length,
 
 			playTime: (content.noStarttime || isLookahead ? null : startTime) || null,

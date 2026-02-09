@@ -8,7 +8,6 @@ import {
 	MappingMultiOscLayer,
 	Mapping,
 	MappingMultiOscType,
-	Timeline,
 	SomeOSCValue,
 } from 'timeline-state-resolver-types'
 import { MockTime } from '../../../__tests__/mockTime'
@@ -16,6 +15,7 @@ import { getMockCall } from '../../../__tests__/lib'
 import { MultiOSCMessageDevice } from '..'
 import { getDeviceContext } from '../../__tests__/testlib'
 import { TSRTimelineContent } from 'timeline-state-resolver-types/src'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 // let nowActual = Date.now()
 describe('MultiOSC-Message', () => {
@@ -143,10 +143,9 @@ describe('MultiOSC-Message', () => {
 
 function createTimelineState(
 	objs: Record<string, { id: string; layer: string; content: TimelineContentOSCMessage }>
-): Timeline.TimelineState<TSRTimelineContent> {
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
-		layers: objs as any,
-		nextEvents: [],
+		objects: Object.values<any>(objs),
 	}
 }

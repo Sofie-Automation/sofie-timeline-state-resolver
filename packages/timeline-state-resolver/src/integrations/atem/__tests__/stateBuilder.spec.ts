@@ -17,23 +17,22 @@ import {
 	Mappings,
 	MediaSourceType,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentAtemAUX,
 	TimelineContentAtemAudioChannel,
 	TimelineContentAtemAudioRouting,
 	TimelineContentAtemColorGenerator,
 	TimelineContentAtemDSK,
-	TimelineContentAtemMacroPlayer,
 	TimelineContentAtemMediaPlayer,
 	TimelineContentAtemSsrc,
 	TimelineContentAtemSsrcProps,
 	TimelineContentTypeAtem,
 } from 'timeline-state-resolver-types'
-import { makeTimelineObjectResolved } from '../../../__mocks__/objects'
-import { AtemStateBuilder } from '../stateBuilder'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
+import { AtemStateBuilder, InternalAtemConnectionState } from '../stateBuilder'
 import { SuperSourceArtOption } from 'atem-connection/dist/enums'
 import { cloneDeep } from '../../../lib'
 import { Defaults } from 'atem-state'
+import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 describe('AtemStateBuilder', () => {
 	describe('MixEffect', () => {
@@ -50,8 +49,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Cut Input', async () => {
-			const mockState1: Timeline.StateInTime<TSRTimelineContent> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -67,21 +66,23 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
-			const expectedState = AtemConnection.AtemStateUtil.Create()
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
 			Object.assign(AtemConnection.AtemStateUtil.getMixEffect(expectedState, 0), {
 				input: 2,
 				transition: AtemTransitionStyle.CUT,
 			})
+
+			expectedState.controlValues = { 'video.mixEffects.0.base': '0', 'video.mixEffects.0.pgm': '0' }
 
 			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMapping)
 			expect(deviceState1).toEqual(expectedState)
 		})
 
 		test('Wipe Input', async () => {
-			const mockState1: Timeline.StateInTime<TSRTimelineContent> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -97,9 +98,9 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
-			const expectedState = AtemConnection.AtemStateUtil.Create()
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
 			const expectedMixEffect = AtemConnection.AtemStateUtil.getMixEffect(expectedState, 0)
 			Object.assign(expectedMixEffect, {
 				input: 2,
@@ -107,13 +108,15 @@ describe('AtemStateBuilder', () => {
 			})
 			expectedMixEffect.transitionProperties.nextStyle = AtemConnection.Enums.TransitionStyle.WIPE
 
+			expectedState.controlValues = { 'video.mixEffects.0.base': '0', 'video.mixEffects.0.pgm': '0' }
+
 			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMapping)
 			expect(deviceState1).toEqual(expectedState)
 		})
 
-		test('Upstream keyer', async () => {
-			const mockState1: Timeline.StateInTime<TSRTimelineContent> = {
-				myLayer0: makeTimelineObjectResolved({
+		test('Upstream keyer (legacy)', async () => {
+			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -139,9 +142,9 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
-			const expectedState = AtemConnection.AtemStateUtil.Create()
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
 			const expectedMixEffect = AtemConnection.AtemStateUtil.getMixEffect(expectedState, 0)
 			AtemConnection.AtemStateUtil.getUpstreamKeyer(expectedMixEffect, 0).lumaSettings = {
 				preMultiplied: false,
@@ -150,13 +153,15 @@ describe('AtemStateBuilder', () => {
 				invert: true,
 			}
 
+			expectedState['controlValues'] = { 'video.mixEffects.0.usk.0': '0' }
+
 			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMapping)
 			expect(deviceState1).toEqual(expectedState)
 		})
 
-		test('Upstream keyer: Uses upstreamKeyerId as index', async () => {
-			const mockState1: Timeline.StateInTime<TSRTimelineContent> = {
-				myLayer0: makeTimelineObjectResolved({
+		test('Upstream keyer: Uses upstreamKeyerId as index (legacy)', async () => {
+			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -182,9 +187,9 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
-			const expectedState = AtemConnection.AtemStateUtil.Create()
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
 			const expectedMixEffect = AtemConnection.AtemStateUtil.getMixEffect(expectedState, 0)
 			AtemConnection.AtemStateUtil.getUpstreamKeyer(expectedMixEffect, 2).lumaSettings = {
 				preMultiplied: false,
@@ -194,7 +199,112 @@ describe('AtemStateBuilder', () => {
 			}
 			expect(expectedMixEffect.upstreamKeyers).toHaveLength(3)
 
+			expectedState.controlValues = { 'video.mixEffects.0.usk.2': '0' }
+
 			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMapping)
+			expect(deviceState1).toEqual(expectedState)
+		})
+
+		test('Upstream keyer (new)', async () => {
+			const myLayerMappingUSK: Mappings = {
+				myLayer0: {
+					device: DeviceType.ATEM,
+					deviceId: 'myAtem',
+					options: {
+						mappingType: MappingAtemType.UpStreamKeyer,
+						me: 0,
+						usk: 0,
+					},
+				},
+			}
+
+			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
+					id: 'obj0',
+					enable: {
+						start: -1000, // 1 seconds ago
+						duration: 2000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.ATEM,
+						type: TimelineContentTypeAtem.USK,
+						usk: {
+							lumaSettings: {
+								preMultiplied: false,
+								clip: 300,
+								gain: 2,
+								invert: true,
+							},
+						},
+					},
+				}),
+			]
+
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
+			const expectedMixEffect = AtemConnection.AtemStateUtil.getMixEffect(expectedState, 0)
+			AtemConnection.AtemStateUtil.getUpstreamKeyer(expectedMixEffect, 0).lumaSettings = {
+				preMultiplied: false,
+				clip: 300,
+				gain: 2,
+				invert: true,
+			}
+
+			expectedState['controlValues'] = { 'video.mixEffects.0.keyer.0': '0' }
+
+			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMappingUSK)
+			expect(deviceState1).toEqual(expectedState)
+		})
+
+		test('Upstream keyer: Uses usk index from mapping (new)', async () => {
+			const myLayerMappingUSK: Mappings = {
+				myLayer0: {
+					device: DeviceType.ATEM,
+					deviceId: 'myAtem',
+					options: {
+						mappingType: MappingAtemType.UpStreamKeyer,
+						me: 0,
+						usk: 2,
+					},
+				},
+			}
+
+			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
+					id: 'obj0',
+					enable: {
+						start: -1000, // 1 seconds ago
+						duration: 2000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.ATEM,
+						type: TimelineContentTypeAtem.USK,
+						usk: {
+							lumaSettings: {
+								preMultiplied: false,
+								clip: 300,
+								gain: 2,
+								invert: true,
+							},
+						},
+					},
+				}),
+			]
+
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
+			const expectedMixEffect = AtemConnection.AtemStateUtil.getMixEffect(expectedState, 0)
+			AtemConnection.AtemStateUtil.getUpstreamKeyer(expectedMixEffect, 2).lumaSettings = {
+				preMultiplied: false,
+				clip: 300,
+				gain: 2,
+				invert: true,
+			}
+			expect(expectedMixEffect.upstreamKeyers).toHaveLength(3)
+
+			expectedState.controlValues = { 'video.mixEffects.0.keyer.2': '0' }
+
+			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMappingUSK)
 			expect(deviceState1).toEqual(expectedState)
 		})
 	})
@@ -213,8 +323,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Basic', async () => {
-			const mockState1: Timeline.StateInTime<TimelineContentAtemDSK> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TimelineContentAtemDSK>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -244,9 +354,9 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
-			const expectedState = AtemConnection.AtemStateUtil.Create()
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
 			const expectedDSK = AtemConnection.AtemStateUtil.getDownstreamKeyer(expectedState, 0)
 			expectedDSK.onAir = true
 			expectedDSK.properties = {
@@ -265,6 +375,8 @@ describe('AtemStateBuilder', () => {
 				},
 			}
 			expect(expectedState.video.downstreamKeyers).toHaveLength(1)
+
+			expectedState.controlValues = { 'video.dsk.0': '0' }
 
 			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMapping)
 			expect(deviceState1).toEqual(expectedState)
@@ -285,8 +397,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Basic', async () => {
-			const mockState1: Timeline.StateInTime<TimelineContentAtemSsrc> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TimelineContentAtemSsrc>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -314,9 +426,9 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
-			const expectedState = AtemConnection.AtemStateUtil.Create()
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
 			const expectedSuperSource = AtemConnection.AtemStateUtil.getSuperSource(expectedState, 0)
 			expectedSuperSource.boxes[0] = {
 				enabled: true,
@@ -331,6 +443,8 @@ describe('AtemStateBuilder', () => {
 				cropRight: 10,
 			}
 			expect(expectedState.video.superSources).toHaveLength(1)
+
+			expectedState.controlValues = { 'video.superSource.0': '0' }
 
 			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMapping)
 			expect(deviceState1).toEqual(expectedState)
@@ -351,8 +465,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Basic', async () => {
-			const mockState1: Timeline.StateInTime<TimelineContentAtemSsrcProps> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TimelineContentAtemSsrcProps>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -374,9 +488,10 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
-			const expectedState = AtemConnection.AtemStateUtil.Create()
+			const expectedState = AtemConnection.AtemStateUtil.Create() as InternalAtemConnectionState
+
 			const expectedSuperSource = AtemConnection.AtemStateUtil.getSuperSource(expectedState, 0)
 			expectedSuperSource.properties = {
 				artFillSource: 1,
@@ -389,6 +504,10 @@ describe('AtemStateBuilder', () => {
 			}
 			expectedSuperSource.border = cloneDeep(Defaults.Video.SuperSourceBorder)
 			expect(expectedState.video.superSources).toHaveLength(1)
+
+			expectedState.controlValues = {
+				'video.superSource.0': '0',
+			}
 
 			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMapping)
 			expect(deviceState1).toEqual(expectedState)
@@ -409,8 +528,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Basic', async () => {
-			const mockState1: Timeline.StateInTime<TimelineContentAtemAUX> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TimelineContentAtemAUX>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -425,7 +544,7 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
 			const expectedState = AtemConnection.AtemStateUtil.Create()
 			expectedState.video.auxilliaries[2] = 5
@@ -449,8 +568,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Basic', async () => {
-			const mockState1: Timeline.StateInTime<TimelineContentAtemMediaPlayer> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TimelineContentAtemMediaPlayer>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -472,7 +591,7 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
 			const expectedState = AtemConnection.AtemStateUtil.Create()
 			const expectedMediaPlayer = AtemConnection.AtemStateUtil.getMediaPlayer(expectedState, 1)
@@ -507,8 +626,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Basic', async () => {
-			const mockState1: Timeline.StateInTime<TimelineContentAtemAudioChannel> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TimelineContentAtemAudioChannel>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -525,7 +644,7 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
 			const expectedState = AtemConnection.AtemStateUtil.Create()
 			expect(expectedState.audio?.channels).toBeFalsy()
@@ -556,8 +675,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Basic', async () => {
-			const mockState1: Timeline.StateInTime<TimelineContentAtemAudioRouting> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TimelineContentAtemAudioRouting>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -572,7 +691,7 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
 			const expectedState = AtemConnection.AtemStateUtil.Create()
 			expectedState.fairlight = {
@@ -612,8 +731,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Basic', async () => {
-			const mockState1: Timeline.StateInTime<TimelineContentAtemMacroPlayer> = {
-				myLayer0: makeTimelineObjectResolved({
+			const mockState1: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -630,7 +749,7 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
 			const expectedState = AtemConnection.AtemStateUtil.Create()
 			expectedState.macro.macroPlayer = {
@@ -659,8 +778,8 @@ describe('AtemStateBuilder', () => {
 		}
 
 		test('Basic', async () => {
-			const mockState1: Timeline.StateInTime<TimelineContentAtemColorGenerator> = {
-				myLayer0: makeTimelineObjectResolved<TimelineContentAtemColorGenerator>({
+			const mockState1: DeviceTimelineStateObject<TimelineContentAtemColorGenerator>[] = [
+				makeDeviceTimelineStateObject<TimelineContentAtemColorGenerator>({
 					id: 'obj0',
 					enable: {
 						start: -1000, // 1 seconds ago
@@ -677,7 +796,7 @@ describe('AtemStateBuilder', () => {
 						},
 					},
 				}),
-			}
+			]
 
 			const expectedState = AtemConnection.AtemStateUtil.Create()
 			expectedState.colorGenerators = {
@@ -690,6 +809,79 @@ describe('AtemStateBuilder', () => {
 
 			const deviceState1 = AtemStateBuilder.fromTimeline(mockState1, myLayerMapping)
 			expect(deviceState1).toEqual(expectedState)
+		})
+	})
+
+	describe('USK Conflict Detection', () => {
+		test('Detects conflict when both legacy and new USK control are used', async () => {
+			const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+
+			const myLayerMapping: Mappings = {
+				legacyLayer: {
+					device: DeviceType.ATEM,
+					deviceId: 'myAtem',
+					options: {
+						mappingType: MappingAtemType.MixEffect,
+						index: 0,
+					},
+				},
+				newLayer: {
+					device: DeviceType.ATEM,
+					deviceId: 'myAtem',
+					options: {
+						mappingType: MappingAtemType.UpStreamKeyer,
+						me: 0,
+						usk: 0,
+					},
+				},
+			}
+
+			const mockState: DeviceTimelineStateObject<TSRTimelineContent>[] = [
+				makeDeviceTimelineStateObject({
+					id: 'legacyObj',
+					enable: {
+						start: 0,
+						duration: 2000,
+					},
+					layer: 'legacyLayer',
+					content: {
+						deviceType: DeviceType.ATEM,
+						type: TimelineContentTypeAtem.ME,
+						me: {
+							upstreamKeyers: [
+								{
+									upstreamKeyerId: 0,
+									onAir: true,
+								},
+							],
+						},
+					},
+				}),
+				makeDeviceTimelineStateObject({
+					id: 'newObj',
+					enable: {
+						start: 0,
+						duration: 2000,
+					},
+					layer: 'newLayer',
+					content: {
+						deviceType: DeviceType.ATEM,
+						type: TimelineContentTypeAtem.USK,
+						usk: {
+							onAir: true,
+						},
+					},
+				}),
+			]
+
+			AtemStateBuilder.fromTimeline(mockState, myLayerMapping)
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Conflict detected! M/E 0 USK 0'))
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				expect.stringContaining('both legacy (M/E embedded) and new (separate layer) methods')
+			)
+
+			consoleErrorSpy.mockRestore()
 		})
 	})
 })

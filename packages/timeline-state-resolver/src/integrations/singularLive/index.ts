@@ -7,15 +7,14 @@ import {
 	SingularCompositionControlNode,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	Mapping,
 	DeviceStatus,
 	StatusCode,
-	ActionExecutionResult,
+	SingularLiveDeviceTypes,
 } from 'timeline-state-resolver-types'
 import got from 'got'
 import { literal } from '../../lib'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 export interface SingularLiveControlNodeCommandContent extends SingularLiveCommandContent {
 	state?: string
@@ -26,9 +25,7 @@ export interface SingularLiveCommandContent {
 	subCompositionName: string
 }
 
-export interface SingularLiveCommandContext extends CommandWithContext {
-	command: Command
-}
+export type SingularLiveCommandContext = CommandWithContext<Command, string>
 
 interface Command {
 	commandName: 'added' | 'changed' | 'removed'
@@ -52,12 +49,16 @@ const SINGULAR_LIVE_API = 'https://app.singular.live/apiv2/controlapps/'
 /**
  * This is a Singular.Live device, it talks to a Singular.Live App Instance using an Access Token
  */
-export class SingularLiveDevice extends Device<SingularLiveOptions, SingularLiveState, SingularLiveCommandContext> {
-	readonly actions: {
-		[id: string]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {}
+export class SingularLiveDevice
+	implements Device<SingularLiveDeviceTypes, SingularLiveState, SingularLiveCommandContext>
+{
+	readonly actions = null
 
 	private _accessToken: string | undefined
+
+	constructor(protected context: DeviceContextAPI<SingularLiveState>) {
+		// Nothing
+	}
 
 	async init(initOptions: SingularLiveOptions): Promise<boolean> {
 		this._accessToken = initOptions.accessToken || ''
@@ -93,15 +94,15 @@ export class SingularLiveDevice extends Device<SingularLiveOptions, SingularLive
 	}
 
 	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		newMappings: Mappings<unknown>
 	): SingularLiveState {
 		// convert the timeline state into something we can use
 		// (won't even use this.mapping)
 		const singularState: SingularLiveState = this._getDefaultState()
 
-		_.each(state.layers, (tlObject, layerName: string) => {
-			const mapping = newMappings[layerName] as Mapping<SomeMappingSingularLive>
+		for (const tlObject of state.objects) {
+			const mapping = newMappings[tlObject.layer] as Mapping<SomeMappingSingularLive>
 			if (
 				mapping &&
 				mapping.device === DeviceType.SINGULAR_LIVE &&
@@ -116,7 +117,7 @@ export class SingularLiveDevice extends Device<SingularLiveOptions, SingularLive
 					}
 				}
 			}
-		})
+		}
 
 		return singularState
 	}
@@ -202,13 +203,9 @@ export class SingularLiveDevice extends Device<SingularLiveOptions, SingularLive
 			.sort((a, b) => a.command.layer.localeCompare(b.command.layer))
 	}
 
-	async sendCommand({ command, context, timelineObjId }: SingularLiveCommandContext): Promise<any> {
-		const cwc: CommandWithContext = {
-			context,
-			command,
-			timelineObjId,
-		}
+	async sendCommand(cwc: SingularLiveCommandContext): Promise<any> {
 		this.context.logger.debug(cwc)
+		const { command, context } = cwc
 
 		const url = SINGULAR_LIVE_API + this._accessToken + '/control'
 

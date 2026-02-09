@@ -3,14 +3,14 @@ import {
 	SofieChefOptions,
 	Mappings,
 	TSRTimelineContent,
-	Timeline,
 	ActionExecutionResultCode,
-	SofieChefActions,
-	ActionExecutionResult,
+	SofieChefActionMethods,
 	StatusCode,
 	DeviceStatus,
+	SofieChefDeviceTypes,
+	SofieChefActions,
 } from 'timeline-state-resolver-types'
-import * as WebSocket from 'ws'
+import WebSocket from 'ws'
 import {
 	ReceiveWSMessageAny,
 	ReceiveWSMessageType,
@@ -22,13 +22,11 @@ import {
 	ReceiveWSMessageResponse,
 } from './api'
 import { t } from '../../lib'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates'
 import { buildSofieChefState } from './stateBuilder'
 
-export interface SofieChefCommandWithContext extends CommandWithContext {
-	command: ReceiveWSMessageAny
-}
+export type SofieChefCommandWithContext = CommandWithContext<ReceiveWSMessageAny, string>
 export interface SofieChefState {
 	windows: {
 		[windowId: string]: {
@@ -46,17 +44,15 @@ const RECONNECT_WAIT_TIME = 5000
  * This is a wrapper for a SofieChef-devices,
  * https://github.com/Sofie-Automation/sofie-chef
  */
-export class SofieChefDevice extends Device<SofieChefOptions, SofieChefState, SofieChefCommandWithContext> {
-	readonly actions: {
-		[id in SofieChefActions]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {
+export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefState, SofieChefCommandWithContext> {
+	readonly actions: SofieChefActionMethods = {
 		[SofieChefActions.RestartAllWindows]: async () =>
 			this.restartAllWindows()
 				.then(() => ({
 					result: ActionExecutionResultCode.Ok,
 				}))
 				.catch(() => ({ result: ActionExecutionResultCode.Error })),
-		[SofieChefActions.RestartWindow]: async (_id, payload) => {
+		[SofieChefActions.RestartWindow]: async (payload) => {
 			if (!payload?.windowId) {
 				return { result: ActionExecutionResultCode.Error, response: t('Missing window id') }
 			}
@@ -81,6 +77,10 @@ export class SofieChefDevice extends Device<SofieChefOptions, SofieChefState, So
 	private initOptions?: SofieChefOptions
 	private msgId = 0
 
+	constructor(protected context: DeviceContextAPI<SofieChefState>) {
+		// Nothing
+	}
+
 	/**
 	 * Initiates the connection with SofieChed through a websocket connection.
 	 */
@@ -91,7 +91,7 @@ export class SofieChefDevice extends Device<SofieChefOptions, SofieChefState, So
 		this._setupWSConnection()
 			.then(() => {
 				// assume empty state on start (would be nice if we could get the url for each window on connection)
-				this.context.resetToState({ windows: {} }).catch((e) => this.context.logger.error('Failed to reset state', e))
+				this.context.resetToState({ windows: {} })
 			})
 			.catch((e) => this.context.logger.error('Failed to initialise Sofie Chef connection', e))
 
@@ -132,7 +132,7 @@ export class SofieChefDevice extends Device<SofieChefOptions, SofieChefState, So
 		})
 	}
 
-	private reconnectTimeout?: NodeJS.Timer
+	private reconnectTimeout?: NodeJS.Timeout
 	private tryReconnect() {
 		if (this.reconnectTimeout) return
 		this.reconnectTimeout = setTimeout(() => {
@@ -163,7 +163,7 @@ export class SofieChefDevice extends Device<SofieChefOptions, SofieChefState, So
 					urlTimelineObjId: 'N/A',
 				}
 			}
-			await this.context.resetToState(state)
+			this.context.resetToState(state)
 		}
 	}
 	async terminate() {
@@ -176,7 +176,7 @@ export class SofieChefDevice extends Device<SofieChefOptions, SofieChefState, So
 	}
 
 	convertTimelineStateToDeviceState(
-		timelineState: Timeline.TimelineState<TSRTimelineContent>,
+		timelineState: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings
 	): SofieChefState {
 		return buildSofieChefState(timelineState, mappings)
@@ -247,18 +247,13 @@ export class SofieChefDevice extends Device<SofieChefOptions, SofieChefState, So
 		return diffStates(oldSofieChefState, newSofieChefState, mappings)
 	}
 
-	public async sendCommand({ command, context, timelineObjId }: SofieChefCommandWithContext): Promise<any> {
+	public async sendCommand(cwc: SofieChefCommandWithContext): Promise<any> {
 		// emit the command to debug:
-		const cwc: CommandWithContext = {
-			context,
-			command,
-			timelineObjId,
-		}
 		this.context.logger.debug(cwc)
 
 		// execute the command here
 		try {
-			await this._sendMessage(command)
+			await this._sendMessage(cwc.command)
 		} catch (e) {
 			this.context.commandError(e as Error, cwc)
 		}

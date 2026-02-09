@@ -1,6 +1,5 @@
 import * as Timeline from './superfly-timeline'
 import { TSRTimelineObjProps } from './mapping'
-import { ITranslatableMessage } from './translations'
 import { Content } from './superfly-timeline'
 
 import { TimelineContentTelemetricsAny } from './integrations/telemetrics'
@@ -23,12 +22,16 @@ import { TimelineContentSingularLiveAny } from './integrations/singularLive'
 import { TimelineContentVMixAny } from './integrations/vmix'
 import { TimelineContentOBSAny } from './integrations/obs'
 import { TimelineContentTriCasterAny } from './integrations/tricaster'
+import { TimelineContentWebSocketClientAny } from './integrations/websocketClient'
+import { TimelineContentKairosAny } from './integrations/kairos'
+import { DeviceType } from './generated'
 
 export * from './integrations/abstract'
 export * from './integrations/atem'
 export * from './integrations/casparcg'
 export * from './integrations/httpSend'
 export * from './integrations/hyperdeck'
+export * from './integrations/kairos'
 export * from './integrations/lawo'
 export * from './integrations/osc'
 export * from './integrations/pharos'
@@ -46,49 +49,19 @@ export * from './integrations/tricaster'
 export * from './integrations/telemetrics'
 export * from './integrations/multiOsc'
 export * from './integrations/viscaOverIP'
+export * from './integrations/websocketClient'
 
+export * from './actions'
+export * from './datastore'
 export * from './device'
-export * from './mapping'
-
-export { Timeline }
-export * from './mapping'
 export * from './expectedPlayoutItems'
+export * from './mapping'
 export * from './mediaObject'
+export * from './templateString'
 export * from './translations'
 
 export * from './generated'
-
-/**
- * An identifier of a particular device class
- *
- * @export
- * @enum {string}
- */
-export enum DeviceType {
-	ABSTRACT = 'ABSTRACT',
-	CASPARCG = 'CASPARCG',
-	ATEM = 'ATEM',
-	LAWO = 'LAWO',
-	HTTPSEND = 'HTTPSEND',
-	PANASONIC_PTZ = 'PANASONIC_PTZ',
-	TCPSEND = 'TCPSEND',
-	HYPERDECK = 'HYPERDECK',
-	PHAROS = 'PHAROS',
-	OSC = 'OSC',
-	HTTPWATCHER = 'HTTPWATCHER',
-	SISYFOS = 'SISYFOS',
-	QUANTEL = 'QUANTEL',
-	VIZMSE = 'VIZMSE',
-	SINGULAR_LIVE = 'SINGULAR_LIVE',
-	SHOTOKU = 'SHOTOKU',
-	VMIX = 'VMIX',
-	OBS = 'OBS',
-	SOFIE_CHEF = 'SOFIE_CHEF',
-	TELEMETRICS = 'TELEMETRICS',
-	TRICASTER = 'TRICASTER',
-	MULTI_OSC = 'MULTI_OSC',
-	VISCA_OVER_IP = 'VISCA_OVER_IP',
-}
+export { Timeline }
 
 export interface TSRTimelineKeyframe<TContent> extends Omit<Timeline.TimelineKeyframe, 'content'> {
 	content: TContent
@@ -116,7 +89,7 @@ export interface TimelineDatastoreReferencesContent {
 
 export type TSRTimeline = TSRTimelineObj<TSRTimelineContent>[]
 
-export interface TSRTimelineObj<TContent extends { deviceType: DeviceType }>
+export interface TSRTimelineObj<TContent extends { deviceType: DeviceTypeExt }>
 	extends Omit<Timeline.TimelineObject<TContent & TimelineDatastoreReferencesContent>, 'children'>,
 		TSRTimelineObjProps {
 	children?: TSRTimelineObj<TSRTimelineContent>[]
@@ -127,28 +100,36 @@ export interface TimelineContentEmpty extends Content {
 	type: 'empty'
 }
 
-export type TSRTimelineContent =
-	| TimelineContentEmpty
-	| TimelineContentAbstractAny
-	| TimelineContentAtemAny
-	| TimelineContentCasparCGAny
-	| TimelineContentHTTPSendAny
-	| TimelineContentTCPSendAny
-	| TimelineContentHyperdeckAny
-	| TimelineContentLawoAny
-	| TimelineContentOBSAny
-	| TimelineContentOSCAny
-	| TimelineContentPharosAny
-	| TimelineContentPanasonicPtzAny
-	| TimelineContentQuantelAny
-	| TimelineContentShotoku
-	| TimelineContentSisyfosAny
-	| TimelineContentSofieChefAny
-	| TimelineContentSingularLiveAny
-	| TimelineContentVMixAny
-	| TimelineContentVIZMSEAny
-	| TimelineContentTelemetricsAny
-	| TimelineContentTriCasterAny
+// An extended DeviceType that also includes string keys for TSR plugins
+export type DeviceTypeExt = DeviceType | keyof TimelineContentMap
+
+// A map of the known Content types. TSR plugins can be injected here when needed
+export interface TimelineContentMap {
+	[DeviceType.ABSTRACT]: TimelineContentAbstractAny | TimelineContentEmpty
+	[DeviceType.ATEM]: TimelineContentAtemAny
+	[DeviceType.CASPARCG]: TimelineContentCasparCGAny
+	[DeviceType.HTTPSEND]: TimelineContentHTTPSendAny
+	[DeviceType.TCPSEND]: TimelineContentTCPSendAny
+	[DeviceType.HYPERDECK]: TimelineContentHyperdeckAny
+	[DeviceType.KAIROS]: TimelineContentKairosAny
+	[DeviceType.LAWO]: TimelineContentLawoAny
+	[DeviceType.OBS]: TimelineContentOBSAny
+	[DeviceType.OSC]: TimelineContentOSCAny
+	[DeviceType.PHAROS]: TimelineContentPharosAny
+	[DeviceType.PANASONIC_PTZ]: TimelineContentPanasonicPtzAny
+	[DeviceType.QUANTEL]: TimelineContentQuantelAny
+	[DeviceType.SHOTOKU]: TimelineContentShotoku
+	[DeviceType.SISYFOS]: TimelineContentSisyfosAny
+	[DeviceType.SOFIE_CHEF]: TimelineContentSofieChefAny
+	[DeviceType.SINGULAR_LIVE]: TimelineContentSingularLiveAny
+	[DeviceType.VMIX]: TimelineContentVMixAny
+	[DeviceType.VIZMSE]: TimelineContentVIZMSEAny
+	[DeviceType.TELEMETRICS]: TimelineContentTelemetricsAny
+	[DeviceType.TRICASTER]: TimelineContentTriCasterAny
+	[DeviceType.WEBSOCKET_CLIENT]: TimelineContentWebSocketClientAny
+}
+
+export type TSRTimelineContent = TimelineContentMap[keyof TimelineContentMap]
 
 /**
  * A simple key value store that can be referred to from the timeline objects
@@ -159,29 +140,5 @@ export interface Datastore {
 		value: any
 		/** A unix-Timestamp of when the value was set. (Note that this must not be set a value in the future.) */
 		modified: number
-	}
-}
-
-export interface ActionExecutionResult<ResultData = undefined> {
-	result: ActionExecutionResultCode
-	/** Response message, intended to be displayed to a user */
-	response?: ITranslatableMessage
-	/** Response data */
-	resultData?: ResultData
-}
-
-export enum ActionExecutionResultCode {
-	Error = 'ERROR',
-	IgnoredNotRelevant = 'IGNORED',
-	Ok = 'OK',
-}
-
-/** This resolves to a string, where parts can be defined by the datastore */
-export interface TemplateString {
-	/** The string template. Example: "http://google.com?q={{searchString}}" */
-	key: string
-	/** Values for the arguments in the key string. Example: { searchString: "TSR" } */
-	args?: {
-		[k: string]: any
 	}
 }

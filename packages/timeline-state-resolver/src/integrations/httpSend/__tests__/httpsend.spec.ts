@@ -2,11 +2,9 @@
 import {
 	ActionExecutionResultCode,
 	DeviceType,
-	HttpSendActions,
 	TimelineContentTypeHTTP,
 	TimelineContentHTTPSendAny,
-	Timeline,
-	TSRTimelineContent,
+	HttpSendActions,
 } from 'timeline-state-resolver-types'
 
 const MOCKED_SOCKET_GET = jest.fn()
@@ -16,12 +14,10 @@ const MOCKED_SOCKET_DELETE = jest.fn()
 
 jest.mock('got', () => {
 	return {
-		default: {
-			get: MOCKED_SOCKET_GET,
-			post: MOCKED_SOCKET_POST,
-			put: MOCKED_SOCKET_PUT,
-			delete: MOCKED_SOCKET_DELETE,
-		},
+		get: MOCKED_SOCKET_GET,
+		post: MOCKED_SOCKET_POST,
+		put: MOCKED_SOCKET_PUT,
+		delete: MOCKED_SOCKET_DELETE,
 	}
 })
 
@@ -64,15 +60,7 @@ describe('HTTP-Send', () => {
 		}
 
 		test('From undefined', async () => {
-			await compareStates(
-				undefined,
-				{
-					time: 20,
-					nextEvents: [],
-					layers: {},
-				},
-				[]
-			)
+			await compareStates(undefined, {}, [])
 		})
 
 		test('empty states', async () => {
@@ -91,6 +79,7 @@ describe('HTTP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				}),
@@ -119,12 +108,14 @@ describe('HTTP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				}),
 				createTimelineState({
 					layer0: {
 						id: 'obj1',
+						layer: 'layer0',
 						content: {
 							...content,
 							params: {
@@ -163,6 +154,7 @@ describe('HTTP-Send', () => {
 				createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				}),
@@ -316,6 +308,7 @@ describe('HTTP-Send', () => {
 				aStart: createTimelineState({
 					layer0: {
 						id: 'obj0',
+						layer: 'layer0',
 						content,
 					},
 				}),
@@ -323,6 +316,7 @@ describe('HTTP-Send', () => {
 				bStart: createTimelineState({
 					layer0: {
 						id: 'obj1',
+						layer: 'layer0',
 						content,
 					},
 				}),
@@ -374,7 +368,7 @@ describe('HTTP-Send', () => {
 		test('Send action', async () => {
 			const device = await getInitialisedHttpDevice()
 
-			const result = await device.actions[HttpSendActions.SendCommand](HttpSendActions.SendCommand, {
+			const result = await device.actions[HttpSendActions.SendCommand]({
 				...DEFAULT_TL_CONTENT,
 				type: TimelineContentTypeHTTP.GET,
 				url: 'http://testurl',
@@ -390,13 +384,9 @@ describe('HTTP-Send', () => {
 })
 
 function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentHTTPSendAny }>
-): Timeline.TimelineState<TSRTimelineContent> {
-	return {
-		time: 10,
-		layers: objs as any,
-		nextEvents: [],
-	}
+	objs: Record<string, { id: string; layer: string; content: TimelineContentHTTPSendAny }>
+): HttpSendDeviceState {
+	return objs as any
 }
 const DEFAULT_TL_CONTENT: {
 	deviceType: DeviceType.HTTPSEND

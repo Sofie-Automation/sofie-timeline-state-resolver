@@ -3,7 +3,6 @@ import {
 	DeviceType,
 	Mappings,
 	StatusCode,
-	Timeline,
 	TimelineContentTelemetrics,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
@@ -11,6 +10,7 @@ import { Socket } from 'net'
 import { DoOrderFunctionNothing } from '../../../devices/doOnTime'
 import { literal } from '../../../lib'
 import { getDeviceContext } from '../../__tests__/testlib'
+import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 const SERVER_PORT = 5000
 const SERVER_HOST = '1.1.1.1'
@@ -132,7 +132,7 @@ describe('telemetrics', () => {
 
 	function handleState(
 		device: TelemetricsDevice,
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		mappings: Mappings<unknown>
 	) {
 		const deviceState = device.convertTimelineStateToDeviceState(state, mappings)
@@ -187,13 +187,14 @@ describe('telemetrics', () => {
 			device = createInitializedTelemetricsDevice()
 
 			const timelineState = createTimelineState(1)
-			timelineState.layers['randomLayer'] = {
+			timelineState.objects.push({
 				id: 'random_layer_id',
+				layer: 'randomLayer',
 				content: literal<TimelineContentTelemetrics>({
 					deviceType: DeviceType.TELEMETRICS,
 					presetShotIdentifiers: [3],
 				}),
-			} as unknown as Timeline.ResolvedTimelineObjectInstance<any>
+			} as unknown as DeviceTimelineStateObject<any>)
 
 			handleState(device, timelineState, {})
 
@@ -225,19 +226,19 @@ function createInitializedTelemetricsDevice(): TelemetricsDevice {
 	return device
 }
 
-function createTimelineState(preset: number | number[]): Timeline.TimelineState<TSRTimelineContent> {
+function createTimelineState(preset: number | number[]): DeviceTimelineState<TSRTimelineContent> {
 	const presetIdentifiers: number[] = Array.isArray(preset) ? preset : [preset]
 	return {
 		time: 10,
-		layers: {
-			telemetrics_layer: {
+		objects: [
+			{
 				id: `telemetrics_layer_id_${Math.random() * 1000}`,
+				layer: 'telemetrics_layer',
 				content: literal<TimelineContentTelemetrics>({
 					deviceType: DeviceType.TELEMETRICS,
 					presetShotIdentifiers: presetIdentifiers,
 				}),
-			} as unknown as Timeline.ResolvedTimelineObjectInstance<any>,
-		},
-		nextEvents: [],
+			} as unknown as DeviceTimelineStateObject<any>,
+		],
 	}
 }

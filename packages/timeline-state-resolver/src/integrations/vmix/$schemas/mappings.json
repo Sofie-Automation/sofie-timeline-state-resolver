@@ -1,5 +1,5 @@
 {
-	"$schema": "../../../$schemas/mapping-schema.json",
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/mapping-schema.json",
 	"default": "program",
 	"mappings": {
 		"program": {
@@ -9,8 +9,8 @@
 					"type": "integer",
 					"ui:title": "Index",
 					"ui:summaryTitle": "Index",
-					"description": "Number of the mix (1 is the main mix, 2-4 are optional Mix Inputs)",
-					"enum": [1, 2, 3, 4]
+					"description": "Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)",
+					"enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 				}
 			},
 			"required": [],
@@ -23,8 +23,8 @@
 					"type": "integer",
 					"ui:title": "Index",
 					"ui:summaryTitle": "Index",
-					"description": "Number of the mix (1 is the main mix, 2-4 are optional Mix Inputs)",
-					"enum": [1, 2, 3, 4]
+					"description": "Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)",
+					"enum": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
 				}
 			},
 			"required": [],
@@ -63,6 +63,20 @@
 				}
 			},
 			"required": [],
+			"additionalProperties": false
+		},
+		"audioBus": {
+			"type": "object",
+			"properties": {
+				"index": {
+					"type": "string",
+					"ui:title": "Index",
+					"ui:summaryTitle": "Index",
+					"description": "Name (letter) of the bus",
+					"enum": ["M", "A", "B", "C", "D", "E", "F", "G"]
+				}
+			},
+			"required": ["index"],
 			"additionalProperties": false
 		},
 		"output": {

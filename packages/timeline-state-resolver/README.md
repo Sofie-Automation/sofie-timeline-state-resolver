@@ -115,8 +115,44 @@ Cut to source 2 on ME1
 		}
 	}
 }
-
 ```
+
+### Upstream Keyer (USK)
+
+Turn on Upstream Keyer 1 on ME1 (M/E 0 in 0-indexed TSR)
+
+```typescript
+// Mapping:
+{
+	myLayerUSK1: {
+		device: DeviceType.ATEM,
+		deviceId: 'myAtem',
+		mappingType: MappingAtemType.UpStreamKeyer,
+		me: 0,  // ME1 (0-indexed)
+		keyer: 0  // USK1 (0-indexed)
+	}
+}
+// Timeline:
+{
+	id: 'usk1_on',
+	enable: {
+		start: 'now',
+		duration: 10000
+	},
+	layer: 'myLayerUSK1',
+	content: {
+		deviceType: DeviceType.ATEM,
+		type: TimelineContentTypeAtem.USK,
+		usk: {
+			onAir: true,
+			fillSource: 3,
+			cutSource: 4
+		}
+	}
+}
+```
+
+**Note:** Each USK should have its own layer with a dedicated `UpStreamKeyer` mapping. The legacy method of controlling USKs via the M/E timeline object's `upstreamKeyers` property is deprecated and will be removed in a future version.
 
 ## Blackmagic Design Hyperdeck
 

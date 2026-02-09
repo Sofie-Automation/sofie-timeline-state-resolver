@@ -1,7 +1,9 @@
 import { DeviceType } from '..'
 
 export enum TimelineContentTypeAtem { //  Atem-state
+	ControlValue = 'controlValue',
 	ME = 'me',
+	USK = 'usk',
 	DSK = 'dsk',
 	AUX = 'aux',
 	SSRC = 'ssrc',
@@ -119,7 +121,9 @@ export interface AtemTransitionSettings {
 }
 
 export type TimelineContentAtemAny =
+	| TimelineContentAtemControlValue
 	| TimelineContentAtemME
+	| TimelineContentAtemUSK
 	| TimelineContentAtemDSK
 	| TimelineContentAtemAUX
 	| TimelineContentAtemSsrc
@@ -133,6 +137,12 @@ export type TimelineContentAtemAny =
 export interface TimelineContentAtemBase {
 	deviceType: DeviceType.ATEM
 	type: TimelineContentTypeAtem
+}
+
+export interface TimelineContentAtemControlValue extends TimelineContentAtemBase {
+	type: TimelineContentTypeAtem.ControlValue
+
+	controlValue: string
 }
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
@@ -172,6 +182,11 @@ export interface TimelineContentAtemME extends TimelineContentAtemBase {
 		/** Settings for mix rate, wipe style */
 		transitionSettings?: AtemTransitionSettings
 
+		/**
+		 * @deprecated Upstream Keyers should now be controlled using separate timeline objects
+		 * with `type: TimelineContentTypeAtem.USK` and `MappingAtemType.UpStreamKeyer` mappings.
+		 * This legacy method of controlling USKs via M/E properties will be removed in a future version.
+		 */
 		upstreamKeyers?: {
 			readonly upstreamKeyerId: number
 			onAir?: boolean
@@ -213,6 +228,49 @@ export interface TimelineContentAtemME extends TimelineContentAtemBase {
 				invert?: boolean
 			}
 		}[]
+	}
+}
+export interface TimelineContentAtemUSK extends TimelineContentAtemBase {
+	type: TimelineContentTypeAtem.USK
+	usk: {
+		onAir?: boolean
+		/** 0: Luma, 1: Chroma, 2: Pattern, 3: DVE */
+		mixEffectKeyType?: number
+		/** Use flying key */
+		flyEnabled?: boolean
+		/** Fill */
+		fillSource?: number
+		/** Key */
+		cutSource?: number
+		/** Mask keyer */
+		maskEnabled?: boolean
+		/** -9000 -> 9000 */
+		maskTop?: number
+		/** -9000 -> 9000 */
+		maskBottom?: number
+		/** -16000 -> 16000 */
+		maskLeft?: number
+		/** -16000 -> 16000 */
+		maskRight?: number
+
+		dveSettings?: AtemDVESettings
+		chromaSettings?: AtemUpstreamChromaKeyerSettings
+		// patternSettings: UpstreamKeyerPatternSettings;
+		flyKeyframes?: [AtemFlyKeyframe | undefined, AtemFlyKeyframe | undefined]
+		flyProperties?: {
+			isAtKeyFrame?: FlyKeyKeyFrame
+			runToInfiniteIndex?: FlyKeyDirection
+		}
+		lumaSettings?: {
+			/** Premultiply key */
+			preMultiplied?: boolean
+			/** 0-1000 */
+			clip?: number
+			/** 0-1000 */
+			gain?: number
+			/** Invert key */
+			invert?: boolean
+		}
 	}
 }
 export interface TimelineContentAtemDSK extends TimelineContentAtemBase {
@@ -385,6 +443,53 @@ interface AtemDVEBaseSettings {
 	maskRight?: number
 }
 type AtemFlyKeyframe = Omit<AtemDVEBaseSettings, 'maskEnabled'>
+
+export interface AtemUpstreamChromaKeyerSettings {
+	/** 0 - 1000 */
+	foregroundLevel?: number
+	/** 0 - 1000 */
+	backgroundLevel?: number
+	/** 0 - 1000 */
+	keyEdge?: number
+	/** 0 - 1000 */
+	spillSuppression?: number
+	/** 0 - 1000 */
+	flareSuppression?: number
+	/** -1000 - 1000 */
+	brightness?: number
+	/** -1000 - 1000 */
+	contrast?: number
+	/** 0 - 2000 */
+	saturation?: number
+	/** -1000 - 1000 */
+	red?: number
+	/** -1000 - 1000 */
+	green?: number
+	/** -1000 - 1000 */
+	blue?: number
+
+	sample?: {
+		/** 0 - 10000 */
+		y: number
+		/** 0 - 10000 */
+		cb: number
+		/** 0 - 10000 */
+		cr: number
+	}
+
+	/** Older ATEM models (before the Constellation 8K) use a simpler Chroma keyer */
+	classic?: {
+		/** 0 - 3599 */
+		hue?: number
+		/** 0 - 1000 */
+		gain?: number
+		/** 0 - 1000 */
+		ySuppress?: number
+		/** 0 - 1000 */
+		lift?: number
+		narrow?: boolean
+	}
+}
 
 export interface TimelineContentAtemSsrcProps extends TimelineContentAtemBase {
 	type: TimelineContentTypeAtem.SSRCPROPS

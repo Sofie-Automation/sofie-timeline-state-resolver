@@ -6,7 +6,6 @@ import {
 	SomeMappingLawo,
 	MappingLawoType,
 	LawoDeviceMode,
-	Timeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
 import { MockTime } from '../../../__tests__/mockTime'
@@ -15,6 +14,7 @@ import { LawoState } from '../state'
 import { ParameterType } from 'emberplus-connection/dist/model'
 import { LawoCommandType, LawoCommandWithContext } from '../diff'
 import { EmberClient } from '../../../__mocks__/emberplus-connection'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 async function getInitialisedLawoDevice(clearMock?: jest.Mock) {
 	const dev = new LawoDevice(getDeviceContext())
@@ -42,7 +42,7 @@ describe('Lawo', () => {
 
 	describe('convertTimelineStateToDeviceState', () => {
 		async function convertState(
-			tlState: Timeline.TimelineState<TSRTimelineContent>,
+			tlState: DeviceTimelineState<TSRTimelineContent>,
 			mappings: Mappings<SomeMappingLawo>,
 			expDevState: LawoState
 		) {
@@ -54,15 +54,15 @@ describe('Lawo', () => {
 		}
 
 		test('convert empty state', async () => {
-			await convertState({ time: 10, layers: {}, nextEvents: [] }, {}, { faders: [], nodes: [] })
+			await convertState({ time: 10, objects: [] }, {}, { faders: [], nodes: [] })
 		})
 
 		test('Volume - 1 source', async () => {
 			await convertState(
 				{
 					time: 10,
-					layers: {
-						layer0_source: {
+					objects: [
+						{
 							id: 'object0',
 							layer: 'layer0_source',
 							content: {
@@ -72,8 +72,7 @@ describe('Lawo', () => {
 								faderValue: 12,
 							},
 						},
-					} as any,
-					nextEvents: [],
+					] as any,
 				},
 				MAPPINGS,
 				{
@@ -94,8 +93,8 @@ describe('Lawo', () => {
 			await convertState(
 				{
 					time: 10,
-					layers: {
-						layer1_sources: {
+					objects: [
+						{
 							id: 'object0',
 							layer: 'layer1_sources',
 							content: {
@@ -110,8 +109,7 @@ describe('Lawo', () => {
 								],
 							},
 						} as any,
-					},
-					nextEvents: [],
+					],
 				},
 				MAPPINGS,
 				{
@@ -132,8 +130,8 @@ describe('Lawo', () => {
 			await convertState(
 				{
 					time: 10,
-					layers: {
-						layer2_source: {
+					objects: [
+						{
 							id: 'object0',
 							layer: 'layer2_source',
 							content: {
@@ -144,7 +142,7 @@ describe('Lawo', () => {
 								overridePriority: 10, // this is really for ordering commands though?
 							},
 						} as any,
-						layer1_sources: {
+						{
 							id: 'object1',
 							layer: 'layer1_sources',
 							content: {
@@ -159,8 +157,7 @@ describe('Lawo', () => {
 								],
 							},
 						} as any,
-					},
-					nextEvents: [],
+					],
 				},
 				MAPPINGS,
 				{
@@ -187,8 +184,8 @@ describe('Lawo', () => {
 			await convertState(
 				{
 					time: 10,
-					layers: {
-						layer3_property: {
+					objects: [
+						{
 							id: 'object0',
 							layer: 'layer3_property',
 							content: {
@@ -197,9 +194,8 @@ describe('Lawo', () => {
 
 								value: 12,
 							},
-						},
-					} as any,
-					nextEvents: [],
+						} as any,
+					],
 				},
 				MAPPINGS,
 				{
@@ -221,8 +217,8 @@ describe('Lawo', () => {
 			await convertState(
 				{
 					time: 10,
-					layers: {
-						layer4_trigger_value: {
+					objects: [
+						{
 							id: 'object0',
 							layer: 'layer4_trigger_value',
 							content: {
@@ -231,9 +227,8 @@ describe('Lawo', () => {
 
 								triggerValue: 'abc',
 							},
-						},
-					} as any,
-					nextEvents: [],
+						} as any,
+					],
 				},
 				MAPPINGS,
 				{

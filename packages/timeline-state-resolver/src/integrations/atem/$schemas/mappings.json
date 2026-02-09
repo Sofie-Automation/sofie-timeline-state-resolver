@@ -1,7 +1,13 @@
 {
-	"$schema": "../../../$schemas/mapping-schema.json",
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/mapping-schema.json",
 	"default": "auxilliary",
 	"mappings": {
+		"controlValue": {
+			"type": "object",
+			"properties": {},
+			"required": [],
+			"additionalProperties": false
+		},
 		"mixEffect": {
 			"type": "object",
 			"properties": {
@@ -15,6 +21,29 @@
 				}
 			},
 			"required": ["index"],
+			"additionalProperties": false
+		},
+		"upStreamKeyer": {
+			"type": "object",
+			"properties": {
+				"me": {
+					"type": "integer",
+					"ui:title": "Index",
+					"ui:summaryTitle": "USK",
+					"default": 0,
+					"min": 0,
+					"ui:zeroBased": true
+				},
+				"usk": {
+					"type": "integer",
+					"ui:title": "Index",
+					"ui:summaryTitle": "USK",
+					"default": 0,
+					"min": 0,
+					"ui:zeroBased": true
+				}
+			},
+			"required": ["me", "usk"],
 			"additionalProperties": false
 		},
 		"downStreamKeyer": {

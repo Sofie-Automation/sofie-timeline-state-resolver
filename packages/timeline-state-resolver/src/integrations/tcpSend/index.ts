@@ -1,44 +1,50 @@
-import { CommandWithContext, Device } from '../../service/device'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
 	DeviceStatus,
 	StatusCode,
 	TSRTimelineContent,
-	Timeline,
 	TcpSendCommandContent,
-	TCPSendOptions,
+	TcpSendOptions,
+	TcpSendActionMethods,
+	TcpSendDeviceTypes,
 	TcpSendActions,
 } from 'timeline-state-resolver-types'
 import { t } from '../../lib'
 import _ = require('underscore')
 import { TcpConnection } from './tcpConnection'
 
-export type TcpSendDeviceState = Timeline.TimelineState<TSRTimelineContent>
+export type TcpSendDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
-export interface TcpSendDeviceCommand extends CommandWithContext {
-	command: {
+export type TcpSendDeviceCommand = CommandWithContext<
+	{
 		commandName: 'added' | 'changed' | 'removed' | 'manual'
 		content: TcpSendCommandContent
 		layer: string
-	}
-}
-export class TcpSendDevice extends Device<TCPSendOptions, TcpSendDeviceState, TcpSendDeviceCommand> {
+	},
+	string
+>
+export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceState, TcpSendDeviceCommand> {
 	private activeLayers = new Map<string, string>()
 	private _terminated = false
 
 	private tcpConnection = new TcpConnection()
 
-	async init(options: TCPSendOptions): Promise<boolean> {
+	constructor(protected context: DeviceContextAPI<TcpSendDeviceState>) {
+		// Nothing
+	}
+
+	async init(options: TcpSendOptions): Promise<boolean> {
 		this.tcpConnection.once('connectionChanged', (connected) => {
 			if (connected) {
-				this.context
-					.resetState()
-					.catch((e) =>
-						this.context.logger.warning(
-							'Failed to reset state after first connection, device may be in unknown state (reason: ' + e + ')'
-						)
-					)
+				this.context.resetState()
 			}
 		})
 		this.tcpConnection.activate(options)
@@ -60,32 +66,31 @@ export class TcpSendDevice extends Device<TCPSendOptions, TcpSendDeviceState, Tc
 		}
 	}
 
-	readonly actions: {
-		[id in TcpSendActions]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>
-	} = {
+	readonly actions: TcpSendActionMethods = {
 		[TcpSendActions.Reconnect]: async () => {
 			await this.tcpConnection.reconnect()
 			return { result: ActionExecutionResultCode.Ok }
 		},
 		[TcpSendActions.ResetState]: async () => {
-			await this.actionResetState()
+			this.actionResetState()
 			return { result: ActionExecutionResultCode.Ok }
 		},
-		[TcpSendActions.SendTcpCommand]: async (_id: string, payload?: Record<string, any>) => {
-			return this.actionSendTcpCommand(payload as TcpSendCommandContent | undefined)
+		[TcpSendActions.SendTcpCommand]: async (payload) => {
+			return this.actionSendTcpCommand(payload)
 		},
 	}
 
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>): TcpSendDeviceState {
-		return state
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): TcpSendDeviceState {
+		return state.objects.reduce((acc, obj) => {
+			if (obj.layer) acc[obj.layer] = obj
+			return acc
+		}, {} as TcpSendDeviceState)
 	}
 	diffStates(oldState: TcpSendDeviceState | undefined, newState: TcpSendDeviceState): Array<TcpSendDeviceCommand> {
 		const commands: Array<TcpSendDeviceCommand> = []
 
-		for (const [layerKey, newLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
-			newState.layers
-		)) {
-			const oldLayer = oldState?.layers[layerKey]
+		for (const [layerKey, newLayer] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(newState)) {
+			const oldLayer = oldState?.[layerKey]
 			// added/changed
 			if (newLayer.content) {
 				if (!oldLayer) {
@@ -117,10 +122,8 @@ export class TcpSendDevice extends Device<TCPSendOptions, TcpSendDeviceState, Tc
 			}
 		}
 		// removed
-		for (const [layerKey, oldLayer] of Object.entries<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
-			oldState?.layers ?? {}
-		)) {
-			const newLayer = newState.layers[layerKey]
+		for (const [layerKey, oldLayer] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(oldState ?? {})) {
+			const newLayer = newState[layerKey]
 			if (!newLayer) {
 				// removed!
 				commands.push({
@@ -191,9 +194,9 @@ export class TcpSendDevice extends Device<TCPSendOptions, TcpSendDeviceState, Tc
 
 		return { result: ActionExecutionResultCode.Ok }
 	}
-	private async actionResetState() {
+	private actionResetState() {
 		this.activeLayers.clear()
-		await this.context.resetState()
+		this.context.resetState()
 	}
 	private getActiveLayersHash(command: TcpSendDeviceCommand['command']): string {
 		return JSON.stringify(command.content)

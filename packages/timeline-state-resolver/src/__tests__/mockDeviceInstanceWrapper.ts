@@ -1,14 +1,14 @@
-import EventEmitter = require('eventemitter3')
+import { EventEmitter } from 'node:events'
 import {
 	ActionExecutionResult,
 	Timeline,
 	TSRTimelineContent,
 	Mappings,
 	DeviceStatus,
+	DeviceOptionsAny,
 } from 'timeline-state-resolver-types'
-import type { DeviceEvents } from '../service/device'
+import type { DeviceEvents } from 'timeline-state-resolver-api'
 import type { DeviceInstanceWrapper, DeviceDetails } from '../service/DeviceInstance'
-import type { DeviceOptionsAnyInternal } from '../conductor'
 import type { ExpectedPlayoutItem } from '../expectedPlayoutItems'
 
 export const ConstructedMockDevices: Record<string, MockDeviceInstanceWrapper> = {}
@@ -35,9 +35,17 @@ export class MockDeviceInstanceWrapper
 			| 'addListener'
 			| 'removeListener'
 			| 'removeAllListeners'
+			| 'setMaxListeners'
+			| 'prependListener'
+			| 'prependOnceListener'
 		>
 {
-	constructor(public readonly deviceId: string, _startTime: string, public readonly config: DeviceOptionsAnyInternal) {
+	constructor(
+		public readonly deviceId: string,
+		_startTime: string,
+		public readonly pluginPath,
+		public readonly config: DeviceOptionsAny
+	) {
 		super()
 
 		// const deviceSpecs = DevicesDict[config.type]
@@ -67,12 +75,6 @@ export class MockDeviceInstanceWrapper
 			throw new Error('Method not implemented.')
 		}
 	)
-	makeReady = jest.fn(async (_okToDestroyStuff?: boolean | undefined): Promise<void> => {
-		throw new Error('Method not implemented.')
-	})
-	standDown = jest.fn(async (): Promise<void> => {
-		throw new Error('Method not implemented.')
-	})
 
 	/** @deprecated - just here for API compatiblity with the old class */
 	prepareForHandleState(): void {

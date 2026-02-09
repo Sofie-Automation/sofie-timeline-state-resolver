@@ -1,6 +1,6 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import { Socket } from 'net'
-import { VMixCommand } from 'timeline-state-resolver-types'
+import { MappingVmixAudioBus, VMixCommand } from 'timeline-state-resolver-types'
 import { VMixStateCommand } from './vMixCommands'
 import { Response, VMixResponseStreamReader } from './vMixResponseStreamReader'
 
@@ -84,8 +84,8 @@ export class VMixConnection extends EventEmitter<ConnectionEvents> {
 		return this._sendCommand(command)
 	}
 
-	private async _sendCommand(cmd: string): Promise<Error | undefined> {
-		return new Promise<Error | undefined>((resolve) => {
+	private async _sendCommand(cmd: string): Promise<Error | null | undefined> {
+		return new Promise<Error | null | undefined>((resolve) => {
 			this._socket?.write(cmd + '\r\n', (err) => resolve(err))
 		})
 	}
@@ -157,10 +157,16 @@ export class VMixConnection extends EventEmitter<ConnectionEvents> {
 export class VMixCommandSender {
 	constructor(private vMixConnection: VMixConnection) {}
 
+	public get connected() {
+		return this.vMixConnection.connected
+	}
+
 	public async sendCommand(command: VMixStateCommand): Promise<any> {
 		switch (command.command) {
 			case VMixCommand.PREVIEW_INPUT:
 				return this.setPreviewInput(command.input, command.mix)
+			case VMixCommand.ACTIVE_INPUT:
+				return this.setActiveInput(command.input, command.mix)
 			case VMixCommand.TRANSITION:
 				return this.transition(command.input, command.effect, command.duration, command.mix)
 			case VMixCommand.AUDIO_VOLUME:
@@ -179,6 +185,12 @@ export class VMixCommandSender {
 				return this.setAudioBusOn(command.input, command.value)
 			case VMixCommand.AUDIO_BUS_OFF:
 				return this.setAudioBusOff(command.input, command.value)
+			case VMixCommand.BUS_AUDIO_ON:
+				return this.setBusAudioOn(command.bus)
+			case VMixCommand.BUS_AUDIO_OFF:
+				return this.setBusAudioOff(command.bus)
+			case VMixCommand.BUS_VOLUME:
+				return this.setBusVolume(command.bus, command.value)
 			case VMixCommand.FADER:
 				return this.setFader(command.value)
 			case VMixCommand.START_RECORDING:
@@ -271,6 +283,10 @@ export class VMixCommandSender {
 		return this.sendCommandFunction('PreviewInput', { input, mix })
 	}
 
+	public async setActiveInput(input: number | string, mix: number): Promise<any> {
+		return this.sendCommandFunction('ActiveInput', { input, mix })
+	}
+
 	public async transition(input: number | string, effect: string, duration: number, mix: number): Promise<any> {
 		return this.sendCommandFunction(effect, { input, duration, mix })
 	}
@@ -309,6 +325,25 @@ export class VMixCommandSender {
 
 	public async setAudioBusOff(input: number | string, value: string): Promise<any> {
 		return this.sendCommandFunction(`AudioBusOff`, { input, value })
+	}
+
+	public async setBusAudioOn(bus: MappingVmixAudioBus['index']): Promise<any> {
+		return this.sendCommandFunction(`${this.busLetterToName(bus)}AudioOn`, {})
+	}
+
+	public async setBusAudioOff(bus: MappingVmixAudioBus['index']): Promise<any> {
+		return this.sendCommandFunction(`${this.busLetterToName(bus)}AudioOff`, {})
+	}
+
+	public async setBusVolume(bus: MappingVmixAudioBus['index'], volume: number): Promise<any> {
+		return this.sendCommandFunction(`Set${this.busLetterToName(bus)}Volume`, {
+			value: Math.min(Math.max(volume, 0), 100),
+		})
+	}
+
+	private busLetterToName(bus: MappingVmixAudioBus['index']): string {
+		if (bus === 'M') return 'Master'
+		return `Bus${bus}`
 	}
 
 	public async setFader(position: number): Promise<any> {

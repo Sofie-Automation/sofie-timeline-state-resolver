@@ -5,7 +5,6 @@ import {
 	Mapping,
 	SomeMappingPanasonicPTZ,
 	MappingPanasonicPTZType,
-	Timeline,
 	TSRTimelineContent,
 	TimelineContentPanasonicPtzAny,
 	TimelineContentTypePanasonicPtz,
@@ -16,6 +15,7 @@ import { Response } from 'got'
 import { PanasonicPtzState } from '../state'
 import { getDeviceContext } from '../../__tests__/testlib'
 import { PanasonicPtzCommandWithContext } from '../diff'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const orgSetTimeout = setTimeout
 
@@ -50,7 +50,7 @@ describe('Panasonic PTZ', () => {
 	})
 
 	describe('convertTimelineStateToDeviceState', () => {
-		async function compareState(tlState: Timeline.TimelineState<TSRTimelineContent>, expDevState: PanasonicPtzState) {
+		async function compareState(tlState: DeviceTimelineState<TSRTimelineContent>, expDevState: PanasonicPtzState) {
 			const device = await getInitialisedDevice()
 
 			const actualState = device.convertTimelineStateToDeviceState(tlState, myChannelMapping)
@@ -72,6 +72,7 @@ describe('Panasonic PTZ', () => {
 				createTimelineState({
 					ptz_k1: {
 						id: 'ptz_k1_0',
+						layer: 'ptz_k1',
 						content: {
 							deviceType: DeviceType.PANASONIC_PTZ,
 							type: TimelineContentTypePanasonicPtz.PRESET,
@@ -81,6 +82,7 @@ describe('Panasonic PTZ', () => {
 					},
 					ptz_k1_s: {
 						id: 'ptz_k1_s_0',
+						layer: 'ptz_k1_s',
 						content: {
 							deviceType: DeviceType.PANASONIC_PTZ,
 							type: TimelineContentTypePanasonicPtz.SPEED,
@@ -90,6 +92,7 @@ describe('Panasonic PTZ', () => {
 					},
 					ptz_k1_z: {
 						id: 'ptz_k1_z_0',
+						layer: 'ptz_k1_z',
 						content: {
 							deviceType: DeviceType.PANASONIC_PTZ,
 							type: TimelineContentTypePanasonicPtz.ZOOM,
@@ -99,6 +102,7 @@ describe('Panasonic PTZ', () => {
 					},
 					ptz_k1_zs: {
 						id: 'ptz_k1_zs_0',
+						layer: 'ptz_k1_zs',
 						content: {
 							deviceType: DeviceType.PANASONIC_PTZ,
 							type: TimelineContentTypePanasonicPtz.ZOOM_SPEED,
@@ -271,11 +275,10 @@ const myChannelMapping: Mappings = {
 }
 
 function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentPanasonicPtzAny }>
-): Timeline.TimelineState<TSRTimelineContent> {
+	objs: Record<string, { id: string; layer: string; content: TimelineContentPanasonicPtzAny }>
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
-		layers: objs as any,
-		nextEvents: [],
+		objects: Object.values<any>(objs),
 	}
 }

@@ -1,6 +1,5 @@
-import { HttpMethod, HTTPWatcherOptions } from 'timeline-state-resolver-types'
+import { HttpMethod, HttpWatcherOptions, StatusCode } from 'timeline-state-resolver-types'
 import { MockTime } from '../../../__tests__/mockTime'
-import { StatusCode } from '../../../devices/device'
 
 const MOCKED_SOCKET_GET = jest.fn()
 const MOCKED_SOCKET_POST = jest.fn()
@@ -9,12 +8,10 @@ const MOCKED_SOCKET_DELETE = jest.fn()
 
 jest.mock('got', () => {
 	return {
-		default: {
-			get: MOCKED_SOCKET_GET,
-			post: MOCKED_SOCKET_POST,
-			put: MOCKED_SOCKET_PUT,
-			delete: MOCKED_SOCKET_DELETE,
-		},
+		get: MOCKED_SOCKET_GET,
+		post: MOCKED_SOCKET_POST,
+		put: MOCKED_SOCKET_PUT,
+		delete: MOCKED_SOCKET_DELETE,
 	}
 })
 
@@ -22,7 +19,7 @@ jest.mock('got', () => {
 import { HTTPWatcherDevice } from '..'
 import { getDeviceContext } from '../../__tests__/testlib'
 
-async function getInitialisedDevice(options: HTTPWatcherOptions) {
+async function getInitialisedDevice(options: HttpWatcherOptions) {
 	const dev = new HTTPWatcherDevice(getDeviceContext())
 	await dev.init(options)
 	return dev

@@ -1,44 +1,57 @@
-import { CommandWithContext, Device } from '../../service/device'
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
-	DeviceStatus,
 	HTTPSendCommandContent,
 	HTTPSendCommandContentExt,
-	HTTPSendOptions,
-	HttpSendActions,
+	HttpSendOptions,
 	SendCommandResult,
 	StatusCode,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentTypeHTTP,
 	TimelineContentTypeHTTPParamType,
+	interpolateTemplateStringIfNeeded,
+	HttpSendDeviceTypes,
+	HttpSendActionMethods,
+	HttpSendActions,
+	DeviceStatus,
 } from 'timeline-state-resolver-types'
+import type {
+	Device,
+	CommandWithContext,
+	DeviceContextAPI,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 import _ = require('underscore')
 import got, { OptionsOfTextResponseBody, RequestError } from 'got'
-import { interpolateTemplateStringIfNeeded, t } from '../../lib'
+import { t } from '../../lib'
 import { HttpProxyAgent, HttpsProxyAgent } from 'hpagent'
 import CacheableLookup from 'cacheable-lookup'
 
-export type HttpSendDeviceState = Timeline.TimelineState<TSRTimelineContent>
+export type HttpSendDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
-export interface HttpSendDeviceCommand extends CommandWithContext {
-	command: {
+export type HttpSendDeviceCommand = CommandWithContext<
+	{
 		commandName: 'added' | 'changed' | 'removed' | 'retry' | 'manual'
 		content: HTTPSendCommandContentExt
 		layer: string
-	}
-}
+	},
+	string
+>
 
-export class HTTPSendDevice extends Device<HTTPSendOptions, HttpSendDeviceState, HttpSendDeviceCommand> {
+export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDeviceState, HttpSendDeviceCommand> {
 	/** Setup in init */
-	protected options!: HTTPSendOptions
+	protected options!: HttpSendOptions
 	/** Maps layers -> sent command-hashes */
 	protected trackedState = new Map<string, string>()
 	protected readonly cacheable = new CacheableLookup()
 	protected _terminated = false
 
-	async init(options: HTTPSendOptions): Promise<boolean> {
+	constructor(protected context: DeviceContextAPI<HttpSendDeviceState>) {
+		// Nothing
+	}
+
+	async init(options: HttpSendOptions): Promise<boolean> {
 		this.options = options
 		return true
 	}
@@ -56,12 +69,9 @@ export class HTTPSendDevice extends Device<HTTPSendOptions, HttpSendDeviceState,
 			messages: [],
 		}
 	}
-	readonly actions: {
-		[id in HttpSendActions]: (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult<any>>
-	} = {
-		[HttpSendActions.Resync]: async (_id) => this.executeResyncAction(),
-		[HttpSendActions.SendCommand]: async (_id: string, payload?: Record<string, any>) =>
-			this.executeSendCommandAction(payload as HTTPSendCommandContent | undefined),
+	readonly actions: HttpSendActionMethods = {
+		[HttpSendActions.Resync]: async () => this.executeResyncAction(),
+		[HttpSendActions.SendCommand]: async (payload) => this.executeSendCommandAction(payload),
 	}
 
 	private async executeResyncAction(): Promise<ActionExecutionResult<undefined>> {
@@ -119,14 +129,17 @@ export class HTTPSendDevice extends Device<HTTPSendOptions, HttpSendDeviceState,
 		)
 	}
 
-	convertTimelineStateToDeviceState(state: Timeline.TimelineState<TSRTimelineContent>): HttpSendDeviceState {
-		return state
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): HttpSendDeviceState {
+		return state.objects.reduce((acc, obj) => {
+			acc[obj.layer] = obj
+			return acc
+		}, {} as HttpSendDeviceState)
 	}
 	diffStates(oldState: HttpSendDeviceState | undefined, newState: HttpSendDeviceState): Array<HttpSendDeviceCommand> {
 		const commands: Array<HttpSendDeviceCommand> = []
 
-		_.each(newState.layers, (newLayer, layerKey: string) => {
-			const oldLayer = oldState?.layers[layerKey]
+		_.each(newState, (newLayer, layerKey: string) => {
+			const oldLayer = oldState?.[layerKey]
 			if (!oldLayer) {
 				// added!
 				commands.push({
@@ -157,8 +170,8 @@ export class HTTPSendDevice extends Device<HTTPSendOptions, HttpSendDeviceState,
 			}
 		})
 		// removed
-		_.each(oldState?.layers ?? {}, (oldLayer, layerKey) => {
-			const newLayer = newState.layers[layerKey]
+		_.each(oldState ?? {}, (oldLayer, layerKey) => {
+			const newLayer = newState[layerKey]
 			if (!newLayer) {
 				// removed!
 				commands.push({
@@ -207,11 +220,6 @@ export class HTTPSendDevice extends Device<HTTPSendOptions, HttpSendDeviceState,
 			}
 		}
 
-		const cwc: CommandWithContext = {
-			context,
-			command,
-			timelineObjId,
-		}
 		this.context.logger.debug({ context, timelineObjId, command })
 
 		const t = Date.now()
@@ -285,7 +293,11 @@ export class HTTPSendDevice extends Device<HTTPSendOptions, HttpSendDeviceState,
 				`HTTPSend.response error on ${command.content.type} "${command.content.url}" (${context})`,
 				err
 			)
-			this.context.commandError(err, cwc)
+			this.context.commandError(err, {
+				context,
+				command,
+				timelineObjId,
+			})
 
 			if ('code' in err) {
 				const retryCodes = [

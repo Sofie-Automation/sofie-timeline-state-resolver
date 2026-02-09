@@ -1,3 +1,4 @@
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 import {
 	DeviceType,
 	Mapping,
@@ -5,10 +6,8 @@ import {
 	Mappings,
 	SomeMappingPanasonicPTZ,
 	TSRTimelineContent,
-	Timeline,
 	TimelineContentTypePanasonicPtz,
 } from 'timeline-state-resolver-types'
-import _ = require('underscore')
 
 export interface PanasonicPtzState {
 	speed?: {
@@ -30,14 +29,14 @@ export interface PanasonicPtzState {
 }
 
 export function convertStateToPtz(
-	state: Timeline.TimelineState<TSRTimelineContent>,
+	state: DeviceTimelineState<TSRTimelineContent>,
 	mappings: Mappings
 ): PanasonicPtzState {
 	// convert the timeline state into something we can use
 	const ptzState: PanasonicPtzState = getDefaultState()
 
-	_.each(state.layers, (tlObject, layerName: string) => {
-		const mapping = mappings[layerName] as Mapping<SomeMappingPanasonicPTZ> | undefined
+	for (const tlObject of state.objects) {
+		const mapping = mappings[tlObject.layer] as Mapping<SomeMappingPanasonicPTZ> | undefined
 		if (
 			mapping &&
 			mapping.device === DeviceType.PANASONIC_PTZ &&
@@ -78,7 +77,7 @@ export function convertStateToPtz(
 				}
 			}
 		}
-	})
+	}
 
 	return ptzState
 }

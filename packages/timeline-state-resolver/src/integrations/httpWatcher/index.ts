@@ -1,21 +1,25 @@
 import {
 	TimelineContentTypeHTTP,
-	HTTPWatcherOptions,
-	ActionExecutionResult,
+	HttpWatcherOptions,
 	StatusCode,
 	DeviceStatus,
+	HttpWatcherDeviceTypes,
 } from 'timeline-state-resolver-types'
 import got, { Headers, Response } from 'got'
-import { CommandWithContext, Device } from '../../service/device'
+import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
 
 type HTTPWatcherDeviceState = Record<string, never>
+
+type HTTPWatcherCommandWithContext = CommandWithContext<never, never>
 
 /**
  * This is a HTTPWatcherDevice, requests a uri on a regular interval and watches
  * it's response.
  */
-export class HTTPWatcherDevice extends Device<HTTPWatcherOptions, HTTPWatcherDeviceState, CommandWithContext> {
-	readonly actions: Record<string, (id: string, payload?: Record<string, any>) => Promise<ActionExecutionResult>> = {}
+export class HTTPWatcherDevice
+	implements Device<HttpWatcherDeviceTypes, HTTPWatcherDeviceState, HTTPWatcherCommandWithContext>
+{
+	readonly actions = null
 
 	private uri?: string
 	/** Setup in init */
@@ -25,9 +29,13 @@ export class HTTPWatcherDevice extends Device<HTTPWatcherOptions, HTTPWatcherDev
 	private keyword: string | undefined
 	/** Setup in init */
 	private intervalTime!: number
-	private interval: NodeJS.Timer | undefined
+	private interval: NodeJS.Timeout | undefined
 	private status: StatusCode = StatusCode.UNKNOWN
 	private statusReason: string | undefined
+
+	constructor(protected context: DeviceContextAPI<HTTPWatcherDeviceState>) {
+		// Nothing
+	}
 
 	private onInterval() {
 		if (!this.uri) {
@@ -71,7 +79,7 @@ export class HTTPWatcherDevice extends Device<HTTPWatcherOptions, HTTPWatcherDev
 		}
 	}
 
-	async init(options: HTTPWatcherOptions): Promise<boolean> {
+	async init(options: HttpWatcherOptions): Promise<boolean> {
 		switch (options.httpMethod) {
 			case 'post':
 				this.httpMethod = TimelineContentTypeHTTP.POST
@@ -127,7 +135,7 @@ export class HTTPWatcherDevice extends Device<HTTPWatcherOptions, HTTPWatcherDev
 		// Noop
 		return {}
 	}
-	diffStates(): Array<CommandWithContext> {
+	diffStates(): Array<HTTPWatcherCommandWithContext> {
 		// Noop
 		return []
 	}

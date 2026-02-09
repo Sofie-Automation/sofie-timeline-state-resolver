@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3'
+import { EventEmitter } from 'node:events'
 import {
 	DeviceType,
 	SomeMappingTricaster,
@@ -6,14 +6,15 @@ import {
 	TimelineContentTypeTriCaster,
 	TimelineContentTriCasterME,
 	Mapping,
-	Timeline,
 	TSRTimelineContent,
+	TriCasterMixEffect,
 } from 'timeline-state-resolver-types'
 import { TriCasterDevice } from '..'
 import { TriCasterConnectionEvents, TriCasterConnection } from '../triCasterConnection'
 import { literal } from '../../../lib'
 import { wrapIntoResolvedInstance } from './helpers'
 import { getDeviceContext } from '../../__tests__/testlib'
+import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const MOCK_CONNECT = jest.fn()
 const MOCK_CLOSE = jest.fn()
@@ -26,7 +27,7 @@ jest.mock('../triCasterConnection', () => ({
 
 describe('TriCasterDevice', () => {
 	beforeEach(() => {
-		;(TriCasterConnection as jest.Mock).mockClear()
+		;(TriCasterConnection as unknown as jest.Mock).mockClear()
 		MOCK_CONNECT.mockClear()
 		MOCK_CLOSE.mockClear()
 	})
@@ -67,26 +68,30 @@ describe('TriCasterDevice', () => {
 			}),
 		}
 
-		const state1: Timeline.TimelineState<TSRTimelineContent> = { time: 11000, layers: {}, nextEvents: [] }
+		const state1: DeviceTimelineState<TSRTimelineContent> = { time: 11000, objects: [] }
 		const tricasterState1 = device.convertTimelineStateToDeviceState(state1, mappings)
 		const commands1 = device.diffStates(undefined, tricasterState1, mappings)
 		expect(commands1).not.toHaveLength(0)
 
-		const state2: Timeline.TimelineState<TSRTimelineContent> = {
+		const state2: DeviceTimelineState<TSRTimelineContent> = {
 			time: 12000,
-			layers: {
-				tc_me0_0: wrapIntoResolvedInstance<TimelineContentTriCasterME>({
+			objects: [
+				wrapIntoResolvedInstance<TimelineContentTriCasterME>({
 					layer: 'tc_me0_0',
 					enable: { while: '1' },
 					id: 't0',
 					content: {
 						deviceType: DeviceType.TRICASTER,
 						type: TimelineContentTypeTriCaster.ME,
-						me: { programInput: 'input2', previewInput: 'input3', transitionEffect: 5, transitionDuration: 20 },
+						me: {
+							programInput: 'input2',
+							previewInput: 'input3',
+							transitionEffect: 5,
+							transitionDuration: 20,
+						} as TriCasterMixEffect,
 					},
 				}),
-			},
-			nextEvents: [],
+			],
 		}
 		const tricasterState2 = device.convertTimelineStateToDeviceState(state2, mappings)
 		const commands2 = device.diffStates(tricasterState1, tricasterState2, mappings)
