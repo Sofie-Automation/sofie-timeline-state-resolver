@@ -1,11 +1,11 @@
 import {
 	VMixCommand,
-	VMixLayers,
 	VMixInputType,
 	VMixTransform,
 	VMixTransition,
 	VMixTransitionType,
 	VMixLayer,
+	VMixLayers,
 	VMixText,
 	VMixImages,
 	MappingVmixAudioBus,
@@ -74,15 +74,15 @@ export type VMixAudioBusesState = {
 
 export interface VMixMix {
 	number: number
-	program: string | number | undefined
-	preview: string | number | undefined
+	program: string | undefined
+	preview: string | undefined
 	transition: VMixTransition
 	/** whether `program` is a name of a layer that we're expecting an input added by us */
 	layerToProgram?: boolean
 }
 
 export interface VMixInput {
-	number?: number
+	number?: string
 	type?: VMixInputType | string
 	name?: string
 	filePath?: PropertyWithContext<string>
@@ -108,7 +108,7 @@ export interface PropertyWithContext<T> {
 }
 
 export interface VMixInputAudio {
-	number?: number
+	number?: string
 	muted?: boolean
 	volume?: number
 	balance?: number
@@ -120,12 +120,12 @@ export interface VMixInputAudio {
 
 export interface VMixOutput {
 	source: 'Preview' | 'Program' | 'MultiView' | 'Input'
-	input?: number | string
+	input?: string
 }
 
 export interface VMixOverlay {
 	number: number
-	input: string | number | undefined
+	input: string | undefined
 }
 
 export interface VMixAudioBusBase {
@@ -153,8 +153,8 @@ export interface VMixReplayState {
 
 export interface VMixDefaultStateFactory {
 	getDefaultState: () => VMixStateExtended
-	getDefaultInputState: (inputIndex: number | string | undefined) => VMixInput
-	getDefaultInputAudioState: (inputIndex: number | string | undefined) => VMixInputAudio
+	getDefaultInputState: (inputIndex: string | undefined) => VMixInput
+	getDefaultInputAudioState: (inputIndex: string | undefined) => VMixInputAudio
 	getDefaultAudioBusState: () => VMixAudioBusBase
 }
 
@@ -243,9 +243,9 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		}
 	}
 
-	getDefaultInputState(inputNumber: number | string | undefined): VMixInput {
+	getDefaultInputState(inputNumber: string | undefined): VMixInput {
 		return {
-			number: Number(inputNumber) || undefined,
+			number: inputNumber,
 			position: { value: 0 },
 			loop: { value: false },
 			playing: { value: false },
@@ -261,9 +261,9 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		}
 	}
 
-	getDefaultInputAudioState(inputNumber: number | string | undefined): VMixInputAudio {
+	getDefaultInputAudioState(inputNumber: string | undefined): VMixInputAudio {
 		return {
-			number: Number(inputNumber) || undefined,
+			number: inputNumber,
 			muted: true,
 			volume: 100,
 			balance: 0,
@@ -884,7 +884,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 			this.inputHandler.addInput(key, input.type, input.name)
 		}
 
-		oldInput ??= this.getDefaultInputState(0) // or {} but we assume that a new input has all parameters default
+		oldInput ??= this.getDefaultInputState('0') // or {} but we assume that a new input has all parameters default
 
 		return this._resolveInputState(oldVMixState, oldInput, input, key)
 	}
@@ -958,7 +958,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		const commands: Array<VMixStateCommandWithContext> = []
 		newVMixState.reportedState.overlays.forEach((overlay, index) => {
 			const oldOverlay = oldVMixState?.reportedState.overlays[index]
-			if (overlay != null && (oldOverlay == null || oldOverlay?.input !== overlay.input)) {
+			if (overlay != null && (oldOverlay == null || oldOverlay.input !== overlay.input)) {
 				if (overlay.input === undefined) {
 					commands.push({
 						command: {
@@ -1073,7 +1073,10 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		for (const [name, output] of Object.entries<VMixOutput | undefined>({ ...newVMixState.outputs })) {
 			const nameKey = name as keyof VMixStateExtended['outputs']
 			const oldOutput = oldVMixState && nameKey in oldVMixState.outputs ? oldVMixState.outputs[nameKey] : undefined
-			if (output != null && !_.isEqual(output, oldOutput)) {
+			if (
+				output != null &&
+				(oldOutput == null || output.source !== oldOutput.source || output.input !== oldOutput.input)
+			) {
 				const value = output.source === 'Program' ? 'Output' : output.source
 				commands.push({
 					command: {
@@ -1197,8 +1200,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 				(state.reportedState.inputsAddedByUs[mix.program] as VMixInput | undefined)
 			if (!pgmInput || !pgmInput.layers) continue
 
-			for (const layer of Object.keys(pgmInput.layers)) {
-				const layerInput = pgmInput.layers[layer as unknown as keyof VMixLayers]
+			for (const layerInput of Object.values<VMixLayer>(pgmInput.layers as Record<string, VMixLayer>)) {
 				if (layerInput.input === input.name || layerInput.input === input.number) {
 					// Input is in program as a layer of a Multi View of something else that is in program,
 					// so stop the search and return true.

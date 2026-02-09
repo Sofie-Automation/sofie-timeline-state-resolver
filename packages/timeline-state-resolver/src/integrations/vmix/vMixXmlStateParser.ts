@@ -31,14 +31,14 @@ export class VMixXmlStateParser {
 		const inputsAddedByUsAudio: Record<string, VMixInputAudio> = {}
 		let replay: VMixReplayState | undefined
 
-		const inputKeysToNumbers: Record<string, number> = {}
+		const inputKeyToNumber: Record<string, string> = {}
 		for (const input of xmlState['vmix']['inputs']['input']) {
-			inputKeysToNumbers[input['_attributes']['key']] = Number(input['_attributes']['number'])
+			inputKeyToNumber[input['_attributes']['key']] = input['_attributes']['number']
 		}
 
 		for (const input of xmlState['vmix']['inputs']['input']) {
 			const title = input['_attributes']['title'] as string
-			const inputNumber = Number(input['_attributes']['number'])
+			const inputNumber: string = input['_attributes']['number']
 			const isAddedByUs = title.startsWith(TSR_INPUT_PREFIX)
 
 			let fixedListFilePaths: VMixInput['listFilePaths'] = undefined
@@ -52,7 +52,7 @@ export class VMixXmlStateParser {
 					const position = item['position']?.['_attributes']
 					const crop = item['crop']?.['_attributes']
 					layers[parseInt(item['_attributes']['index'], 10) + 1] = {
-						input: inputKeysToNumbers[item['_attributes']['key']],
+						input: inputKeyToNumber[item['_attributes']['key']],
 						zoom: Number(position?.['zoomX'] ?? 1), // assume that zoomX==zoomY because we can't control both
 						panX: Number(position?.['panX'] ?? 0),
 						panY: Number(position?.['panY'] ?? 0),
@@ -147,15 +147,15 @@ export class VMixXmlStateParser {
 			mixes: [
 				{
 					number: 1,
-					program: Number(xmlState['vmix']['active']['_text']),
-					preview: Number(xmlState['vmix']['preview']['_text']),
+					program: xmlState['vmix']['active']['_text'],
+					preview: xmlState['vmix']['preview']['_text'],
 					transition: { effect: VMixTransitionType.Cut, duration: 0 },
 				},
 				...mixes.map((mix: any): VMixMix => {
 					return {
 						number: Number(mix['_attributes']['number']),
-						program: Number(mix['active']['_text']),
-						preview: Number(mix['preview']['_text']),
+						program: mix['active']['_text'],
+						preview: mix['preview']['_text'],
 						transition: { effect: VMixTransitionType.Cut, duration: 0 },
 					}
 				}),

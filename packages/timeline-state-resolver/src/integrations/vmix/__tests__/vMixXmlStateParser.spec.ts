@@ -15,7 +15,7 @@ describe('VMixXmlStateParser', () => {
 			edition: 'HD',
 			existingInputs: {
 				'1': {
-					number: 1,
+					number: '1',
 					type: 'Capture',
 					state: 'Running',
 					position: { value: 0 },
@@ -34,7 +34,7 @@ describe('VMixXmlStateParser', () => {
 					playing: { value: true },
 				},
 				'2': {
-					number: 2,
+					number: '2',
 					type: 'Capture',
 					state: 'Running',
 					position: { value: 0 },
@@ -82,8 +82,8 @@ describe('VMixXmlStateParser', () => {
 			mixes: [
 				{
 					number: 1,
-					program: 1,
-					preview: 2,
+					program: '1',
+					preview: '2',
 					transition: {
 						duration: 0,
 						effect: VMixTransitionType.Cut,
@@ -164,7 +164,7 @@ describe('VMixXmlStateParser', () => {
 		expect(parsedState).toMatchObject<Partial<VMixState>>({
 			existingInputs: {
 				'1': {
-					number: 1,
+					number: '1',
 					type: 'Capture',
 					state: 'Running',
 					position: { value: 0 },
@@ -194,7 +194,7 @@ describe('VMixXmlStateParser', () => {
 			},
 			inputsAddedByUs: {
 				[prefixAddedInput('C:\\someVideo.mp4')]: {
-					number: 2,
+					number: '2',
 					type: 'Video',
 					state: 'Running',
 					position: { value: 0 },
@@ -244,8 +244,8 @@ describe('VMixXmlStateParser', () => {
 			existingInputs: {
 				'2': {
 					layers: {
-						3: { input: 3 },
-						6: { input: 1 },
+						3: { input: '3' },
+						6: { input: '1' },
 					},
 				},
 			},
@@ -275,9 +275,18 @@ describe('VMixXmlStateParser', () => {
 			existingInputs: {
 				'2': {
 					layers: {
-						3: { input: 3, panX: -0.673, panY: 0, zoom: 0.4, cropLeft: 0, cropTop: 0, cropBottom: 1, cropRight: 1 },
+						3: {
+							input: '3',
+							panX: -0.673,
+							panY: 0,
+							zoom: 0.4,
+							cropLeft: 0,
+							cropTop: 0,
+							cropBottom: 1,
+							cropRight: 1,
+						},
 						6: {
-							input: 1,
+							input: '1',
 							panX: -0.79,
 							panY: 0.134,
 							zoom: 0.208,
