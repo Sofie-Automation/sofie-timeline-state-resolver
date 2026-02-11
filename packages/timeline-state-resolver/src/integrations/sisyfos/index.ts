@@ -12,8 +12,6 @@ import {
 	SisyfosChannelOptions,
 	MappingSisyfosChannel,
 	TSRTimelineContent,
-	Timeline,
-	ResolvedTimelineObjectInstanceExtended,
 	Mapping,
 	SisyfosActionMethods,
 	ActionExecutionResultCode,
@@ -21,6 +19,7 @@ import {
 	SisyfosActions,
 	DeviceStatus,
 	StatusCode,
+	DeviceTimelineState,
 } from 'timeline-state-resolver-types'
 import type { CommandWithContext } from 'timeline-state-resolver-api'
 
@@ -102,7 +101,7 @@ export class SisyfosMessageDevice extends DeviceWithState<
 	 * in time.
 	 * @param newState
 	 */
-	handleState(newState: Timeline.TimelineState<TSRTimelineContent>, newMappings: Mappings) {
+	handleState(newState: DeviceTimelineState<TSRTimelineContent>, newMappings: Mappings) {
 		super.onHandleState(newState, newMappings)
 		if (!this._sisyfos.state) {
 			this.emit('warning', 'Sisyfos State not initialized yet')
@@ -320,10 +319,7 @@ export class SisyfosMessageDevice extends DeviceWithState<
 	 * a timeline state.
 	 * @param state
 	 */
-	convertTimelineStateToDeviceState(
-		state: Timeline.TimelineState<TSRTimelineContent>,
-		mappings: Mappings
-	): SisyfosState {
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings): SisyfosState {
 		const deviceState: SisyfosState = this.getDeviceState(true, mappings)
 
 		// Set labels to layer names
@@ -357,11 +353,10 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			disableDefaults?: boolean
 		} & SisyfosChannelOptions)[] = []
 
-		_.each(state.layers, (tlObject, layerName) => {
-			const layer = tlObject as ResolvedTimelineObjectInstanceExtended<any>
-			let foundMapping = mappings[layerName] as Mapping<SomeMappingSisyfos> | undefined
+		state.objects.forEach((tlObj) => {
+			let foundMapping = mappings[tlObj.layer] as Mapping<SomeMappingSisyfos> | undefined
 
-			const content = tlObject.content as TimelineContentSisyfosAny
+			const content = tlObj.content as TimelineContentSisyfosAny
 
 			// Allow resync without valid channel mapping
 			if ('resync' in content && content.resync !== undefined) {
@@ -378,8 +373,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 			}
 
 			// if the tlObj is specifies to load to PST the original Layer is used to resolve the mapping
-			if (!foundMapping && layer.isLookahead && layer.lookaheadForLayer) {
-				foundMapping = mappings[layer.lookaheadForLayer] as Mapping<SomeMappingSisyfos> | undefined
+			if (!foundMapping && tlObj.isLookahead && tlObj.lookaheadForLayer) {
+				foundMapping = mappings[tlObj.lookaheadForLayer] as Mapping<SomeMappingSisyfos> | undefined
 			}
 
 			if (foundMapping?.deviceId !== this.deviceId) return
@@ -403,8 +398,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 					...content,
 					channel: foundMapping.options.channel,
 					overridePriority: content.overridePriority || 0,
-					isLookahead: layer.isLookahead || false,
-					timelineObjId: layer.id,
+					isLookahead: tlObj.isLookahead || false,
+					timelineObjId: tlObj.id,
 					triggerValue: content.triggerValue,
 					disableDefaults: foundMapping.options.disableDefaults,
 				})
@@ -421,8 +416,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 					...content,
 					channel: ch,
 					overridePriority: content.overridePriority || 0,
-					isLookahead: layer.isLookahead || false,
-					timelineObjId: layer.id,
+					isLookahead: tlObj.isLookahead || false,
+					timelineObjId: tlObj.id,
 					triggerValue: content.triggerValue,
 					disableDefaults: foundMapping.options.disableDefaults,
 				})
@@ -449,8 +444,8 @@ export class SisyfosMessageDevice extends DeviceWithState<
 						...channel,
 						channel: channelNumber,
 						overridePriority: content.overridePriority || 0,
-						isLookahead: layer.isLookahead || false,
-						timelineObjId: layer.id,
+						isLookahead: tlObj.isLookahead || false,
+						timelineObjId: tlObj.id,
 						triggerValue: content.triggerValue,
 						disableDefaults: foundMapping.options.disableDefaults,
 					})

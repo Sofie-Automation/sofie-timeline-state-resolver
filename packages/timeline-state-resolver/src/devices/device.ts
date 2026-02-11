@@ -5,7 +5,6 @@ import {
 	MediaObject,
 	DeviceOptionsBase,
 	DeviceStatus,
-	Timeline,
 	TSRTimelineContent,
 	ActionExecutionResult,
 } from 'timeline-state-resolver-types'
@@ -13,7 +12,7 @@ import { EventEmitter } from 'node:events'
 import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo } from './doOnTime'
 import { ExpectedPlayoutItem } from '../expectedPlayoutItems'
 import { actionNotFoundMessage } from '../lib'
-import type { FinishedTrace } from 'timeline-state-resolver-api'
+import type { DeviceTimelineState, FinishedTrace } from 'timeline-state-resolver-api'
 import type { CommandWithContext, DeviceEvents } from 'timeline-state-resolver-api'
 
 // =================================================================================================
@@ -78,7 +77,7 @@ export interface IDevice<TOptions extends DeviceOptionsBase<any>> {
 	getCurrentTime: () => number
 
 	prepareForHandleState: (newStateTime: number) => void
-	handleState: (newState: Timeline.TimelineState<TSRTimelineContent>, mappings: Mappings) => void
+	handleState: (newState: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings) => void
 	clearFuture: (clearAfterTime: number) => void
 	canConnect: boolean
 	connected: boolean
@@ -174,10 +173,10 @@ export abstract class Device<
 	/** Called from Conductor when a new state is about to be handled soon */
 	abstract prepareForHandleState(newStateTime: number): void
 	/** Called from Conductor when a new state is to be handled */
-	abstract handleState(newState: Timeline.TimelineState<TSRTimelineContent>, mappings: Mappings): void
+	abstract handleState(newState: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings): void
 
 	/** To be called by children first in .handleState */
-	protected onHandleState(_newState: Timeline.TimelineState<TSRTimelineContent>, mappings: Mappings) {
+	protected onHandleState(_newState: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings) {
 		this.updateIsActive(mappings)
 	}
 	/**
