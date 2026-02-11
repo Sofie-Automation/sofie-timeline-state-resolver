@@ -37,6 +37,8 @@ export class WebSocketConnection {
 					this.ws.on('open', () => {
 						clearTimeout(timeout)
 						this.isWsConnected = true
+						this.lastError = undefined
+						this.disconnectReason = undefined
 						resolve()
 					})
 
