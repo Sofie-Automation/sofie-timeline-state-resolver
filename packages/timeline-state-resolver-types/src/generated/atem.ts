@@ -5,6 +5,7 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 import type { ActionExecutionResult } from "../actions"
+import type { DeviceType } from './device-options.js'
 
 export interface AtemOptions {
 	host: string
@@ -113,6 +114,7 @@ export interface AtemActionMethods {
 }
 
 export interface AtemDeviceTypes {
+	Type: DeviceType.ATEM,
 	Options: AtemOptions
 	Mappings: SomeMappingAtem
 	Actions: AtemActionMethods

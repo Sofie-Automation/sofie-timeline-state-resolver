@@ -5,6 +5,7 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 import type { ActionExecutionResult } from "../actions"
+import type { DeviceType } from './device-options.js'
 
 export interface SofieChefOptions {
 	/**
@@ -42,6 +43,7 @@ export interface SofieChefActionMethods {
 }
 
 export interface SofieChefDeviceTypes {
+	Type: DeviceType.SOFIE_CHEF,
 	Options: SofieChefOptions
 	Mappings: SomeMappingSofieChef
 	Actions: SofieChefActionMethods

@@ -4,6 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
+import type { DeviceType } from './device-options.js'
 
 export interface ShotokuOptions {
 	host: string
@@ -13,6 +14,7 @@ export interface ShotokuOptions {
 export type SomeMappingShotoku = Record<string, never>
 
 export interface ShotokuDeviceTypes {
+	Type: DeviceType.SHOTOKU,
 	Options: ShotokuOptions
 	Mappings: SomeMappingShotoku
 	Actions: null

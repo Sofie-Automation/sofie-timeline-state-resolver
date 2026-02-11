@@ -227,7 +227,7 @@ for (const dir of dirs) {
 
 	const dirId = capitalise(dir)
 
-	let output = ''
+	let output = "import type { DeviceType } from './device-options.js'\n"
 
 	// compile options from file
 	try {
@@ -401,14 +401,6 @@ ${actionDefinitions
 			}"\n` + output
 	}
 
-	output += `
-export interface ${dirId}DeviceTypes {
-	Options: ${dirId}Options
-	Mappings: SomeMapping${dirId}
-	Actions: ${actionDefinitions.length > 0 ? `${dirId}ActionMethods` : 'null'}
-}
-`
-
 	let deviceTypeId = toConstantCase(dir)
 	// Special case handling for some devices, for backwards compatibility
 	if (
@@ -422,10 +414,17 @@ export interface ${dirId}DeviceTypes {
 	}
 	deviceTypeEnum.push(deviceTypeId)
 
+	output += `
+export interface ${dirId}DeviceTypes {
+	Type: DeviceType.${deviceTypeId},
+	Options: ${dirId}Options
+	Mappings: SomeMapping${dirId}
+	Actions: ${actionDefinitions.length > 0 ? `${dirId}ActionMethods` : 'null'}
+}
+`
+
 	deviceOptionsFile += `import type { ${dirId}Options } from './${dir}'
-export interface DeviceOptions${dirId} extends DeviceOptionsBase<${dirId}Options> {
-	type: DeviceType.${deviceTypeId}
-}\n\n`
+export type DeviceOptions${dirId} = DeviceOptionsBase<DeviceType.${deviceTypeId}, ${dirId}Options>\n\n`
 	deviceOptionsTypes.push(`DeviceOptions${dirId}`)
 
 	manifestFileSubdevices += `\t\t[DeviceType.${deviceTypeId}]: {
