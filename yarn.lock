@@ -2857,12 +2857,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^20.19.28":
-  version: 20.19.28
-  resolution: "@types/node@npm:20.19.28"
+"@types/node@npm:*, @types/node@npm:^22.19.11":
+  version: 22.19.11
+  resolution: "@types/node@npm:22.19.11"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10c0/aaa2de8570bfafdb9c160c1dbe3ecd7d9b2ccdc496ab6b0f24ccd5023aabe6f8c7fd02d7090185c2912052174f7cffef4ace80edd7d2a433200429c7a0a4869d
+  checksum: 10c0/4b274acf27ec31aa83b50ef22088f83c783e6bcd7dcb40b4834f64f44868b6bf68725214220f15a0c776928f7c0f7f26f03c05cd5868f0526340af3f4af4b58b
   languageName: node
   linkType: hard
 
@@ -12253,7 +12253,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/code-standard-preset": "npm:~2.5.2"
     "@types/debug": "npm:^4.1.12"
     "@types/jest": "npm:^30.0.0"
-    "@types/node": "npm:^20.19.28"
+    "@types/node": "npm:^22.19.11"
     "@types/semver": "npm:^7.7.1"
     "@types/sprintf-js": "npm:^1.1.4"
     "@types/underscore": "npm:^1.13.0"
