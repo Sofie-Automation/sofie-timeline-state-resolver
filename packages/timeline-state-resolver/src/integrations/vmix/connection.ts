@@ -270,6 +270,8 @@ export class VMixCommandSender {
 				return this.setText(command.input, command.value, command.fieldName)
 			case VMixCommand.BROWSER_NAVIGATE:
 				return this.browserNavigate(command.input, command.value)
+			case VMixCommand.BROWSER_RELOAD:
+				return this.browserReload(command.input)
 			case VMixCommand.SELECT_INDEX:
 				return this.selectIndex(command.input, command.value)
 			case VMixCommand.SET_IMAGE:
@@ -510,6 +512,10 @@ export class VMixCommandSender {
 
 	public async browserNavigate(input: string | number, value: string): Promise<any> {
 		return this.sendCommandFunction(`BrowserNavigate`, { input, value: encodeURIComponent(value) })
+	}
+
+	public async browserReload(input: string | number): Promise<any> {
+		return this.sendCommandFunction(`BrowserReload`, { input })
 	}
 
 	public async selectIndex(input: string | number, value: number): Promise<any> {

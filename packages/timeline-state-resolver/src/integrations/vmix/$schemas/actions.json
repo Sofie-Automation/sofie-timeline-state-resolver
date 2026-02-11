@@ -53,6 +53,23 @@
 			"name": "Stop External Output",
 			"destructive": false,
 			"timeout": 5000
+		},
+		{
+			"id": "browserReload",
+			"name": "Browser Reload",
+			"destructive": true,
+			"timeout": 5000,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"input": {
+						"description": "Input name or number",
+						"type": ["integer", "string"]
+					}
+				},
+				"required": ["input"],
+				"additionalProperties": false
+			}
 		}
 	]
 }
