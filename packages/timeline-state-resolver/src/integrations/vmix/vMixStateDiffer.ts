@@ -29,6 +29,11 @@ export interface VMixStateExtended {
 	 */
 	inputLayers: { [key: string]: string }
 	runningScripts: string[]
+	/**
+	 * The name of the currently recorded replay event
+	 * Recording only one event at a time is supported
+	 */
+	recordedEventName: string | undefined
 }
 
 export interface VMixState {
@@ -49,6 +54,7 @@ export interface VMixState {
 	multiCorder: boolean
 	fullscreen: boolean
 	audioBuses: VMixAudioBusesState
+	replay: VMixReplayState | undefined
 }
 
 interface VMixOutputsState {
@@ -135,6 +141,10 @@ interface PreAndPostTransitionCommands {
 	postTransitionCommands: Array<VMixStateCommandWithContext>
 }
 
+export interface VMixReplayState {
+	recording: boolean
+}
+
 export interface VMixDefaultStateFactory {
 	getDefaultState: () => VMixStateExtended
 	getDefaultInputState: (inputIndex: number | string | undefined) => VMixInput
@@ -177,6 +187,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 			this._resolveAddedByUsInputsRemovalState(time, oldVMixState?.reportedState, newVMixState.reportedState)
 		)
 		commands = commands.concat(this._resolveScriptsState(oldVMixState, newVMixState))
+		commands = commands.concat(this._resolveReplayState(oldVMixState, newVMixState))
 
 		return commands
 	}
@@ -210,6 +221,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 					F: undefined,
 					G: undefined,
 				},
+				replay: undefined,
 			},
 			outputs: {
 				'2': undefined,
@@ -221,6 +233,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 			},
 			inputLayers: {},
 			runningScripts: [],
+			recordedEventName: undefined,
 		}
 	}
 
@@ -1087,6 +1100,62 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 				})
 			}
 		})
+		return commands
+	}
+
+	private _resolveReplayState(
+		oldVMixState: VMixStateExtended | undefined,
+		newVMixState: VMixStateExtended
+	): Array<VMixStateCommandWithContext> {
+		const commands: Array<VMixStateCommandWithContext> = []
+		const wasRecording = oldVMixState?.reportedState.replay?.recording
+		const shouldRecord = newVMixState.reportedState.replay?.recording
+		if (wasRecording !== shouldRecord && shouldRecord) {
+			commands.push({
+				command: {
+					command: VMixCommand.REPLAY_START_RECORDING,
+				},
+				context: CommandContext.None,
+				timelineObjId: '',
+			})
+		}
+		if (oldVMixState?.recordedEventName !== newVMixState.recordedEventName) {
+			if (oldVMixState?.recordedEventName !== undefined) {
+				commands.push({
+					command: {
+						command: VMixCommand.REPLAY_MARK_OUT,
+					},
+					context: CommandContext.None,
+					timelineObjId: '',
+				})
+			}
+			if (newVMixState.recordedEventName !== undefined) {
+				commands.push({
+					command: {
+						command: VMixCommand.REPLAY_MARK_IN_LIVE,
+					},
+					context: CommandContext.None,
+					timelineObjId: '',
+				})
+				commands.push({
+					command: {
+						command: VMixCommand.REPLAY_SET_LAST_EVENT_TEXT,
+						value: newVMixState.recordedEventName,
+					},
+					context: CommandContext.None,
+					timelineObjId: '',
+				})
+			}
+		}
+		if (wasRecording !== shouldRecord && shouldRecord === false) {
+			commands.push({
+				command: {
+					command: VMixCommand.REPLAY_STOP_RECORDING,
+				},
+				context: CommandContext.None,
+				timelineObjId: '',
+			})
+		}
 		return commands
 	}
 

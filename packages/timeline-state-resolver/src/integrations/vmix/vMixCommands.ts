@@ -248,6 +248,22 @@ export interface VMixStateCommandSetImage extends VMixStateCommandBase {
 	fieldName: string
 	value: string
 }
+export interface VMixStateCommandReplayMarkInLive extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_MARK_IN_LIVE
+}
+export interface VMixStateCommandReplayMarkOut extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_MARK_OUT
+}
+export interface VMixStateCommandReplaySetLastEventText extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_SET_LAST_EVENT_TEXT
+	value: string
+}
+export interface VMixStateCommandReplayStartRecording extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_START_RECORDING
+}
+export interface VMixStateCommandReplayStopRecording extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_STOP_RECORDING
+}
 export type VMixStateCommand =
 	| VMixStateCommandPreviewInput
 	| VMixStateCommandActiveInput
@@ -302,6 +318,11 @@ export type VMixStateCommand =
 	| VMixStateCommandBrowserReload
 	| VMixStateCommanSelectIndex
 	| VMixStateCommandSetImage
+	| VMixStateCommandReplayMarkInLive
+	| VMixStateCommandReplayMarkOut
+	| VMixStateCommandReplaySetLastEventText
+	| VMixStateCommandReplayStartRecording
+	| VMixStateCommandReplayStopRecording
 
 export enum CommandContext {
 	None = 'none',

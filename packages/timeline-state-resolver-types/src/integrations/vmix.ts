@@ -61,6 +61,11 @@ export enum VMixCommand {
 	BROWSER_RELOAD = 'BROWSER_RELOAD',
 	SELECT_INDEX = 'SELECT_INDEX',
 	SET_IMAGE = 'SET_IMAGE',
+	REPLAY_MARK_IN_LIVE = 'REPLAY_MARK_IN_LIVE',
+	REPLAY_MARK_OUT = 'REPLAY_MARK_OUT',
+	REPLAY_SET_LAST_EVENT_TEXT = 'REPLAY_SET_LAST_EVENT_TEXT',
+	REPLAY_START_RECORDING = 'REPLAY_START_RECORDING',
+	REPLAY_STOP_RECORDING = 'REPLAY_STOP_RECORDING',
 }
 
 export type TimelineContentVMixAny =
@@ -77,6 +82,8 @@ export type TimelineContentVMixAny =
 	| TimelineContentVMixOverlay
 	| TimelineContentVMixInput
 	| TimelineContentVMixScript
+	| TimelineContentVMixReplay
+	| TimelineContentVMixReplayEvent
 
 export enum TimelineContentTypeVMix {
 	PROGRAM = 'PROGRAM',
@@ -92,6 +99,8 @@ export enum TimelineContentTypeVMix {
 	EXTERNAL = 'EXTERNAL',
 	OVERLAY = 'OVERLAY',
 	SCRIPT = 'SCRIPT',
+	REPLAY = 'REPLAY',
+	REPLAY_EVENT = 'REPLAY_EVENT',
 }
 export interface TimelineContentVMixBase {
 	deviceType: DeviceType.VMIX
@@ -266,6 +275,18 @@ export interface TimelineContentVMixScript extends TimelineContentVMixBase {
 	type: TimelineContentTypeVMix.SCRIPT
 
 	/** Script name */
+	name: string
+}
+
+export interface TimelineContentVMixReplay extends TimelineContentVMixBase {
+	type: TimelineContentTypeVMix.REPLAY
+
+	recording: boolean
+}
+
+export interface TimelineContentVMixReplayEvent extends TimelineContentVMixBase {
+	type: TimelineContentTypeVMix.REPLAY_EVENT
+
 	name: string
 }
 

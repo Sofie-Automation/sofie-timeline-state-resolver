@@ -333,4 +333,36 @@ describe('VMixTimelineStateConverter', () => {
 		// 	expect(result.reportedState.inputsAddedByUsAudio[prefixAddedInput(filePath)]).toBeDefined()
 		// })
 	})
+
+	describe('replay', () => {
+		it('does not track state when not mapped', () => {
+			const converter = createTestee()
+
+			const result = converter.getVMixStateFromTimelineState(wrapInTimelineState({}), {})
+			expect(result.reportedState.replay).toBe(undefined)
+		})
+
+		it('tracks state for mapped existing inputs', () => {
+			const converter = createTestee()
+
+			const result = converter.getVMixStateFromTimelineState(wrapInTimelineState({}), {
+				replay0: wrapInMapping({
+					mappingType: MappingVmixType.Replay,
+				}),
+			})
+			expect(result.reportedState.replay?.recording).toBe(false)
+		})
+
+		it('does not apply default state when disableDefaults===true', () => {
+			const converter = createTestee()
+
+			const result = converter.getVMixStateFromTimelineState(wrapInTimelineState({}), {
+				replay0: wrapInMapping({
+					mappingType: MappingVmixType.Replay,
+					disableDefaults: true,
+				}),
+			})
+			expect(result.reportedState.replay).toBeUndefined()
+		})
+	})
 })

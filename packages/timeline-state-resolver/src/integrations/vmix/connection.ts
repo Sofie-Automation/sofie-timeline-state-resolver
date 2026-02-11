@@ -276,6 +276,16 @@ export class VMixCommandSender {
 				return this.selectIndex(command.input, command.value)
 			case VMixCommand.SET_IMAGE:
 				return this.setImage(command.input, command.value, command.fieldName)
+			case VMixCommand.REPLAY_MARK_IN_LIVE:
+				return this.replayMarkInLive()
+			case VMixCommand.REPLAY_MARK_OUT:
+				return this.replayMarkOut()
+			case VMixCommand.REPLAY_SET_LAST_EVENT_TEXT:
+				return this.replaySetLastEventText(command.value)
+			case VMixCommand.REPLAY_START_RECORDING:
+				return this.replayStartRecording()
+			case VMixCommand.REPLAY_STOP_RECORDING:
+				return this.replayStopRecording()
 			default:
 				throw new Error(`vmixAPI: Command ${((command || {}) as any).command} not implemented`)
 		}
@@ -528,5 +538,25 @@ export class VMixCommandSender {
 
 	private async sendCommandFunction(func: string, args: SentCommandArgs) {
 		return this.vMixConnection.sendCommandFunction(func, args)
+	}
+
+	public async replayStopRecording(): Promise<any> {
+		return this.sendCommandFunction(`ReplayStopRecording`, {})
+	}
+
+	public async replayStartRecording(): Promise<any> {
+		return this.sendCommandFunction(`ReplayStartRecording`, {})
+	}
+
+	public async replaySetLastEventText(value: string): Promise<any> {
+		return this.sendCommandFunction(`ReplaySetLastEventText`, { value })
+	}
+
+	public async replayMarkOut(): Promise<any> {
+		return this.sendCommandFunction(`ReplayMarkOut`, {})
+	}
+
+	public async replayMarkInLive(): Promise<any> {
+		return this.sendCommandFunction(`ReplayMarkInLive`, {})
 	}
 }

@@ -1382,4 +1382,122 @@ describe('VMixStateDiffer', () => {
 			input: '11',
 		})
 	})
+
+	describe('Replay Recording', () => {
+		test('on', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.reportedState.replay = undefined
+			newState.reportedState.replay = { recording: true }
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(1)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_START_RECORDING,
+			})
+		})
+
+		test('off', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			newState.reportedState.replay = { recording: true }
+			newState.reportedState.replay = { recording: false }
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(1)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_STOP_RECORDING,
+			})
+		})
+
+		test('same state', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.reportedState.replay = { recording: true }
+			newState.reportedState.replay = { recording: true }
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(0)
+		})
+
+		test('uncontrolled', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			newState.reportedState.replay = { recording: true }
+			newState.reportedState.replay = undefined
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(0)
+		})
+	})
+
+	describe('Replay Event', () => {
+		test('mark in', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.recordedEventName = undefined
+			newState.recordedEventName = 'my event'
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(2)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_MARK_IN_LIVE,
+			})
+			expect(commands[1].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_SET_LAST_EVENT_TEXT,
+				value: 'my event',
+			})
+		})
+
+		test('mark out', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.recordedEventName = 'my event'
+			newState.recordedEventName = undefined
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(1)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_MARK_OUT,
+			})
+		})
+
+		test('mark out and mark in', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.recordedEventName = 'my event'
+			newState.recordedEventName = 'my other event'
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(3)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_MARK_OUT,
+			})
+			expect(commands[1].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_MARK_IN_LIVE,
+			})
+			expect(commands[2].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_SET_LAST_EVENT_TEXT,
+				value: 'my other event',
+			})
+		})
+
+		test('same state', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.recordedEventName = 'my event'
+			newState.recordedEventName = 'my event'
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(0)
+		})
+	})
 })

@@ -8,6 +8,7 @@ import {
 	VMixInput,
 	VMixInputAudio,
 	VMixMix,
+	VMixReplayState,
 	VMixState,
 } from './vMixStateDiffer'
 import { VMixTransitionType } from 'timeline-state-resolver-types'
@@ -28,6 +29,7 @@ export class VMixXmlStateParser {
 		const existingInputsAudio: Record<string, VMixInputAudio> = {}
 		const inputsAddedByUs: Record<string, VMixInput> = {}
 		const inputsAddedByUsAudio: Record<string, VMixInputAudio> = {}
+		let replay: VMixReplayState | undefined
 
 		const inputKeysToNumbers: Record<string, number> = {}
 		for (const input of xmlState['vmix']['inputs']['input']) {
@@ -78,9 +80,11 @@ export class VMixXmlStateParser {
 				})
 			}
 
+			const inputType = input['_attributes']['type']
+
 			const result: VMixInput = {
 				number: inputNumber,
-				type: input['_attributes']['type'],
+				type: inputType,
 				name: isAddedByUs ? title : undefined,
 				state: input['_attributes']['state'],
 				playing: input['_attributes']['state'] === 'Running',
@@ -98,6 +102,12 @@ export class VMixXmlStateParser {
 				listFilePaths: fixedListFilePaths!,
 				text,
 				images,
+			}
+
+			if (inputType === 'Replay') {
+				replay = {
+					recording: input['replay']?.['_attributes']['recording'] === 'True',
+				}
 			}
 
 			const resultAudio = {
@@ -156,6 +166,7 @@ export class VMixXmlStateParser {
 			multiCorder: xmlState['vmix']['multiCorder']['_text'] === 'True',
 			fullscreen: xmlState['vmix']['fullscreen']['_text'] === 'True',
 			audioBuses: this.parseAudioBuses(xmlState),
+			replay,
 		}
 	}
 
