@@ -1,4 +1,4 @@
-import { VMixResponseStreamReader } from '../vMixResponseStreamReader'
+import { VMixResponseStreamReader } from '../vMixResponseStreamReader.js'
 
 describe('VMixResponseStreamReader', () => {
 	test('the helper uses byte length of strings', () => {

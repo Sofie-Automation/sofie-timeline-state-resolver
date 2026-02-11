@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from "../actions.js"
 
 export interface HttpSendOptions {
 	/**
@@ -54,11 +54,11 @@ export enum TimelineContentTypeHTTP {
 	GET = 'get',
 	POST = 'post',
 	PUT = 'put',
-	DELETE = 'delete'
+	DELETE = 'delete',
 }
 export enum TimelineContentTypeHTTPParamType {
 	JSON = 'json',
-	FORM = 'form'
+	FORM = 'form',
 }
 
 export interface SendCommandResult {

@@ -20,11 +20,11 @@ import {
 	StatusCode as ChefStatusCode,
 	StatusObject,
 	ReceiveWSMessageResponse,
-} from './api'
-import { t } from '../../lib'
+} from './api.js'
+import { t } from '../../lib.js'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { diffStates } from './diffStates'
-import { buildSofieChefState } from './stateBuilder'
+import { diffStates } from './diffStates.js'
+import { buildSofieChefState } from './stateBuilder.js'
 
 export type SofieChefCommandWithContext = CommandWithContext<ReceiveWSMessageAny, string>
 export interface SofieChefState {
@@ -271,8 +271,9 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 			this.context.connectionChanged(this.getStatus())
 		}
 	}
-	private _handleReceivedMessage(data: WebSocket.Data) {
+	private _handleReceivedMessage(data: WebSocket.RawData) {
 		try {
+			// eslint-disable-next-line @typescript-eslint/no-base-to-string
 			const message: SendWSMessageAny = JSON.parse(data.toString())
 			if (message) {
 				if (message.type === SendWSMessageType.REPLY) {

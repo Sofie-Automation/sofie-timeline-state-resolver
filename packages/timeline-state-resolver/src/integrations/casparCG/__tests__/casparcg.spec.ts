@@ -1,4 +1,4 @@
-import { Conductor } from '../../../conductor'
+import { Conductor } from '../../../conductor.js'
 import {
 	TimelineContentTypeCasparCg,
 	SomeMappingCasparCG,
@@ -12,8 +12,8 @@ import {
 	Mapping,
 	MappingCasparCGType,
 } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
-import { addConnections, getMockCall } from '../../../__tests__/lib'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import { addConnections, getMockCall } from '../../../__tests__/lib.js'
 import { Commands } from 'casparcg-connection'
 
 // usage logCalls(commandReceiver0)

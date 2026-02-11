@@ -1,4 +1,4 @@
-import { VMixCommandSender, VMixConnection } from './connection'
+import { VMixCommandSender, VMixConnection } from './connection.js'
 import {
 	DeviceStatus,
 	Mappings,
@@ -8,14 +8,14 @@ import {
 	VmixDeviceTypes,
 	VmixOptions,
 } from 'timeline-state-resolver-types'
-import { VMixState, VMixStateDiffer, VMixStateExtended } from './vMixStateDiffer'
-import { VMixStateCommandWithContext } from './vMixCommands'
-import { MappingsVmix, VMixTimelineStateConverter } from './vMixTimelineStateConverter'
-import { VMixXmlStateParser } from './vMixXmlStateParser'
-import { VMixPollingTimer } from './vMixPollingTimer'
-import { VMixStateSynchronizer } from './vMixStateSynchronizer'
-import { Response } from './vMixResponseStreamReader'
-import { vMixActionsImpl } from './vMixActionsImpl'
+import { VMixState, VMixStateDiffer, VMixStateExtended } from './vMixStateDiffer.js'
+import { VMixStateCommandWithContext } from './vMixCommands.js'
+import { MappingsVmix, VMixTimelineStateConverter } from './vMixTimelineStateConverter.js'
+import { VMixXmlStateParser } from './vMixXmlStateParser.js'
+import { VMixPollingTimer } from './vMixPollingTimer.js'
+import { VMixStateSynchronizer } from './vMixStateSynchronizer.js'
+import { Response } from './vMixResponseStreamReader.js'
+import { vMixActionsImpl } from './vMixActionsImpl.js'
 import { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 /**

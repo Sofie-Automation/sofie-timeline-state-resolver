@@ -1,5 +1,5 @@
-import { VMixInput, VMixState, VMixStateExtended } from './vMixStateDiffer'
-import { EnforceableVMixInputStateKeys } from '.'
+import { VMixInput, VMixState, VMixStateExtended } from './vMixStateDiffer.js'
+import { EnforceableVMixInputStateKeys } from './index.js'
 import { VMixInputOverlays, VMixLayers, VMixTransform } from 'timeline-state-resolver-types'
 
 /**
@@ -33,9 +33,9 @@ export class VMixStateSynchronizer {
 				transform:
 					realInputs[inputKey].transform && expectedInputs[inputKey].transform
 						? {
-								...realInputs[inputKey].transform!,
-								alpha: expectedInputs[inputKey].transform!.alpha, // we don't know the value of alpha - we have to assume it hasn't changed, otherwise we will be sending commands for it all the time
-						  }
+								...realInputs[inputKey].transform,
+								alpha: expectedInputs[inputKey].transform.alpha, // we don't know the value of alpha - we have to assume it hasn't changed, otherwise we will be sending commands for it all the time
+							}
 						: realInputs[inputKey].transform,
 				layers: realInputs[inputKey].layers,
 

@@ -7,8 +7,8 @@
 
 import { DeviceType } from 'timeline-state-resolver-types'
 import CommonOptions = require('./$schemas/common-options.json')
-import { generateTranslation } from './lib'
-import { stringifyActionSchema, stringifyMappingSchema, TSRManifest } from './manifestLib'
+import { generateTranslation } from './lib.js'
+import { stringifyActionSchema, stringifyMappingSchema, TSRManifest } from './manifestLib.js'
 import AbstractActions = require('./$schemas/generated/abstract/actions.json')
 import AbstractOptions = require('./$schemas/generated/abstract/options.json')
 import AbstractMappings = require('./$schemas/generated/abstract/mappings.json')

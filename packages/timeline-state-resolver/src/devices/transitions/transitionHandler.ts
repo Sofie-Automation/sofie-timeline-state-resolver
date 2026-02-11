@@ -1,6 +1,6 @@
 import { TSRTransitionOptions } from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
-import { Animator, LinearMovement, PhysicalAcceleration } from './animate'
+import { Animator, LinearMovement, PhysicalAcceleration } from './animate.js'
 
 export interface AnimatorType {
 	type: 'linear' | 'physical'
@@ -115,7 +115,7 @@ export class InternalTransitionHandler {
 									options2.acceleration || 0.0001,
 									options2.maxSpeed || 0.05,
 									options2.snapDistance || 1 / 1920
-							  )
+								)
 							: new LinearMovement(getGroupValues(t.values, groups, groupId), options2.linearSpeed || 1 / 1000),
 				}
 			})

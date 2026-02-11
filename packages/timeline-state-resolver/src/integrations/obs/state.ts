@@ -10,7 +10,7 @@ import {
 	TimelineContentTypeOBS,
 } from 'timeline-state-resolver-types'
 import { JsonObject } from 'type-fest'
-import _ = require('underscore')
+import _ from 'underscore'
 
 export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings): OBSDeviceState {
 	const deviceState = getDefaultState(state.time)

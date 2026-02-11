@@ -1,6 +1,6 @@
 import { DeviceType, MappingTricasterType as MappingType } from 'timeline-state-resolver-types'
-import { TriCasterInfo } from '../triCasterConnection'
-import { MappingsTriCaster, TriCasterStateDiffer } from '../triCasterStateDiffer'
+import { TriCasterInfo } from '../triCasterConnection.js'
+import { MappingsTriCaster, TriCasterStateDiffer } from '../triCasterStateDiffer.js'
 
 const MOCK_DEVICE_ID = 'tc0'
 const MOCK_MAPPINGS: MappingsTriCaster = {

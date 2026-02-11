@@ -1,17 +1,20 @@
-import { CommandType } from '../enums'
-
-export interface AbstractCommand {
-	deserializeReply(payload: Buffer): any
-}
+import { CommandType } from '../enums.js'
 
 export abstract class AbstractCommand {
 	abstract readonly commandType: CommandType
 
 	abstract serialize(): Buffer
+
+	abstract deserializeReply(payload: Buffer): unknown
 }
 
 export abstract class ViscaCommand extends AbstractCommand {
 	readonly commandType = CommandType.ViscaCommand
+
+	deserializeReply(_payload: Buffer): unknown {
+		// No reply expected
+		return undefined
+	}
 
 	protected toIntWithZeroes(n: number) {
 		n = n & 0xffff
@@ -76,4 +79,9 @@ export abstract class ViscaInquiryCommand extends AbstractCommand {
 
 export abstract class ControlCommand extends AbstractCommand {
 	readonly commandType = CommandType.ControlCommand
+
+	deserializeReply(_payload: Buffer): unknown {
+		// No reply expected
+		return undefined
+	}
 }

@@ -11,9 +11,9 @@ import {
 	VMixTransitionType,
 } from 'timeline-state-resolver-types'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
-import { VMixTimelineStateConverter } from '../vMixTimelineStateConverter'
-import { VMixOutput, VMixStateDiffer } from '../vMixStateDiffer'
-import { prefixAddedInput } from './mockState'
+import { VMixTimelineStateConverter } from '../vMixTimelineStateConverter.js'
+import { VMixOutput, VMixStateDiffer } from '../vMixStateDiffer.js'
+import { prefixAddedInput } from './mockState.js'
 
 function createTestee(): VMixTimelineStateConverter {
 	const stateDiffer = new VMixStateDiffer(

@@ -6,7 +6,7 @@ export type OSCConnectionOptions = MultiOscOptions['connections'][any] & {
 	oscSender?: OSCSender
 }
 
-type OSCSender = (msg: osc.OscMessage, address?: string | undefined, port?: number | undefined) => void
+type OSCSender = (msg: osc.OscMessage, address?: string, port?: number) => void
 
 export class OSCConnection extends EventEmitter {
 	connectionId: string | undefined
@@ -58,12 +58,12 @@ export class OSCConnection extends EventEmitter {
 		if (this._oscClient) this._oscClient.close()
 	}
 
-	private _defaultOscSender(msg: osc.OscMessage, address?: string | undefined, port?: number | undefined): void {
+	private _defaultOscSender(msg: osc.OscMessage, address?: string, port?: number): void {
 		this.emit('debug', 'sending ' + msg.address)
 		if (this._oscClient) this._oscClient.send(msg, address, port)
 	}
 
-	sendOsc(msg: osc.OscMessage, address?: string | undefined, port?: number | undefined): void {
+	sendOsc(msg: osc.OscMessage, address?: string, port?: number): void {
 		this._oscSender(msg, address, port)
 	}
 

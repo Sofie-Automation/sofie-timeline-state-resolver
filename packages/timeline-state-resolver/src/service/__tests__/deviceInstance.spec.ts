@@ -1,9 +1,9 @@
 import { DeviceType, StatusCode } from 'timeline-state-resolver-types'
-import { DeviceInstanceWrapper } from '../DeviceInstance'
+import { DeviceInstanceWrapper } from '../DeviceInstance.js'
 import { ActionExecutionResultCode } from 'timeline-state-resolver-types'
-import { t } from '../../lib'
-import { DevicesDict } from '../devices'
-import { waitTime } from '../../__tests__/lib'
+import { t } from '../../lib.js'
+import { DevicesDict } from '../devices.js'
+import { waitTime } from '../../__tests__/lib.js'
 
 const StateHandler = {
 	terminate: jest.fn(),

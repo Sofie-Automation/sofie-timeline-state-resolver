@@ -12,6 +12,8 @@
 		},
 		"types": ["node"],
 		"composite": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
 
 		"moduleResolution": "node16",
 		"esModuleInterop": true,

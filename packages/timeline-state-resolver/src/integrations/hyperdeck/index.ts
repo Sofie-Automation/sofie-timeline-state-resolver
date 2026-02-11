@@ -17,17 +17,19 @@ import {
 	FilesystemFormat,
 	SlotStatus,
 } from 'hyperdeck-connection'
-import { deferAsync } from '../../lib'
-import { HyperdeckCommandWithContext, diffHyperdeckStates } from './diffState'
-import { HyperdeckDeviceState, convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from './stateBuilder'
+import { deferAsync } from '../../lib.js'
+import { HyperdeckCommandWithContext, diffHyperdeckStates } from './diffState.js'
+import { HyperdeckDeviceState, convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from './stateBuilder.js'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 /**
  * This is a wrapper for the Hyperdeck Device. Commands to any and all hyperdeck devices will be sent through here.
  */
-export class HyperdeckDevice
-	implements Device<HyperdeckDeviceTypes, HyperdeckDeviceState, HyperdeckCommandWithContext>
-{
+export class HyperdeckDevice implements Device<
+	HyperdeckDeviceTypes,
+	HyperdeckDeviceState,
+	HyperdeckCommandWithContext
+> {
 	readonly actions: HyperdeckActionMethods = {
 		[HyperdeckActions.FormatDisks]: this.formatDisks.bind(this),
 		[HyperdeckActions.Resync]: this.resyncState.bind(this),
@@ -143,7 +145,7 @@ export class HyperdeckDevice
 			const state = await this._queryCurrentState()
 
 			this.context.resetToState(state)
-		} catch (e) {
+		} catch (_e) {
 			this.context.resetResolver()
 		}
 
@@ -166,7 +168,7 @@ export class HyperdeckDevice
 				slotSel.slotId = i
 				try {
 					await this._hyperdeck.sendCommand(slotSel)
-				} catch (e) {
+				} catch (_e) {
 					continue
 				}
 				// get code:
@@ -340,10 +342,10 @@ export class HyperdeckDevice
 			try {
 				const res = await this._hyperdeck.sendCommand(new HyperdeckCommands.SlotInfoCommand(slot))
 				this._slotStatus[slot] = res
-				if (res.status === 'mounted') {
+				if (res.status === SlotStatus.MOUNTED) {
 					totalRecordingTime += res.recordingTime
 				}
-			} catch (e) {
+			} catch (_e) {
 				// null
 			}
 		}

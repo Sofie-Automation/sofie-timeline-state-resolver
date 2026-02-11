@@ -1,4 +1,4 @@
-import { Commands as HyperdeckCommands, TransportStatus } from 'hyperdeck-connection'
+import { Commands as HyperdeckCommands } from 'hyperdeck-connection'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 import {
 	DeviceType,
@@ -8,6 +8,7 @@ import {
 	SomeMappingHyperdeck,
 	TSRTimelineContent,
 	TimelineContentTypeHyperdeck,
+	TransportStatus,
 } from 'timeline-state-resolver-types'
 
 const DEFAULT_SPEED = 100 // 1x speed

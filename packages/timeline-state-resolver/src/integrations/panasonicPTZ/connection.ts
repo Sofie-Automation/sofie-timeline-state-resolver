@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { EventEmitter } from 'events'
 import got from 'got'
 import * as querystring from 'querystring'
-import { Command, PowerMode, PowerModeQuery } from './commands'
+import { Command, PowerMode, PowerModeQuery } from './commands.js'
 
 const PROBE_INTERVAL = 10 * 1000 // Probe every 10s
 
@@ -142,7 +142,8 @@ export class PanasonicPtzHttpInterface extends EventEmitter {
 		check() // do a check right away
 	}
 
-	private static _isError(response: string) {
+	private static _isError(response0: string) {
+		const response = response0 as PanasonicHttpResponse
 		if (
 			response === PanasonicHttpResponse.ERROR_1 ||
 			response === PanasonicHttpResponse.ERROR_2 ||

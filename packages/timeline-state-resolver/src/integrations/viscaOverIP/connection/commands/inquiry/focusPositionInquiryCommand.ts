@@ -1,4 +1,4 @@
-import { ViscaInquiryCommand } from '../abstractCommand'
+import { ViscaInquiryCommand } from '../abstractCommand.js'
 
 export class FocusPositionInquiryCommand extends ViscaInquiryCommand {
 	serialize() {

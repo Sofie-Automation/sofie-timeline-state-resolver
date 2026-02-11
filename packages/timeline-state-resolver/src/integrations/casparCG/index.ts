@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceWithState } from '../../devices/device'
+import { DeviceWithState } from '../../devices/device.js'
 import {
 	AMCPCommand,
 	BasicCasparCGAPI,
@@ -55,11 +55,11 @@ import {
 	Mixer,
 } from 'casparcg-state'
 import { InternalState } from 'casparcg-state/dist/lib/stateObjectStorage'
-import { DoOnTime, SendMode } from '../../devices/doOnTime'
+import { DoOnTime, SendMode } from '../../devices/doOnTime.js'
 import got from 'got'
-import { InternalTransitionHandler } from '../../devices/transitions/transitionHandler'
+import { InternalTransitionHandler } from '../../devices/transitions/transitionHandler.js'
 import Debug from 'debug'
-import { deepMerge, endTrace, literal, startTrace, t } from '../../lib'
+import { deepMerge, endTrace, literal, startTrace, t } from '../../lib.js'
 import { ClsParameters } from 'casparcg-connection/dist/parameters'
 import type { DeviceStatus, CommandWithContext } from 'timeline-state-resolver-api'
 
@@ -156,7 +156,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 						})
 						if (error) {
 							// We can't return here, as that will leave anything in channelPromises as potentially unhandled
-							channelPromises.push(Promise.reject('execute failed'))
+							channelPromises.push(Promise.reject(new Error('execute failed')))
 							continue
 						}
 						channelPromises.push(request)
@@ -316,7 +316,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			const seekOffsetByLookahead =
 				content.seek !== undefined && layerProps.lookaheadOffset !== undefined
 					? content.seek + layerProps.lookaheadOffset
-					: content.seek ?? layerProps.lookaheadOffset
+					: (content.seek ?? layerProps.lookaheadOffset)
 
 			stateLayer = literal<MediaLayer>({
 				id: layer.id,
@@ -584,7 +584,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 										...(backgroundStateLayer as NextUp),
 										auto: false,
 									})
-							  )
+								)
 							: undefined,
 					})
 				} else if (backgroundStateLayer) {

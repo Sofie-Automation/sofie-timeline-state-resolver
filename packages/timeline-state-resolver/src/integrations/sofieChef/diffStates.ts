@@ -1,6 +1,6 @@
 import type { Mappings } from 'timeline-state-resolver-types'
-import type { SofieChefState, SofieChefCommandWithContext } from '.'
-import { ReceiveWSMessageType } from './api'
+import type { SofieChefState, SofieChefCommandWithContext } from './index.js'
+import { ReceiveWSMessageType } from './api.js'
 
 export function diffStates(
 	oldSofieChefState: SofieChefState | undefined,

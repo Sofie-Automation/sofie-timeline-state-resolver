@@ -12,11 +12,13 @@
     ]
   },
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky",
     "build": "(rimraf packages/*/dist packages/*/*.tsbuildinfo || true) && run build:prepare && run build:main",
     "build:prepare": "run generate-schema-types && run translations:bundle",
     "build:main": "tsc --build tsconfig.build.json",
-    "lint": "lerna exec yarn lint -- --",
+    "lint:raw": "run eslint --ext .ts --ext .js --ext .tsx --ext .jsx ",
+    "lint": "run lint:raw .",
+    "lint-fix": "run lint --fix",
     "test": "lerna exec yarn test",
     "test:changed": "lerna run --since origin/master --include-dependents test",
     "unit": "lerna exec yarn unit",
@@ -30,13 +32,10 @@
     "validate:dev-dependencies": "lerna exec --parallel yarn validate:dev-dependencies",
     "generate-schema-types": "yarn workspace timeline-state-resolver generate-schema-types",
     "translations:extract": "yarn workspace timeline-state-resolver translations:extract",
-    "translations:bundle": "yarn workspace timeline-state-resolver translations:bundle",
-    "lint-staged": "./node_modules/.bin/lint-staged",
-    "prettier": "cd $INIT_CWD && \"$PROJECT_CWD/node_modules/.bin/prettier\"",
-    "eslint": "cd $INIT_CWD && \"$PROJECT_CWD/node_modules/.bin/eslint\""
+    "translations:bundle": "yarn workspace timeline-state-resolver translations:bundle"
   },
   "devDependencies": {
-    "@sofie-automation/code-standard-preset": "~2.5.2",
+    "@sofie-automation/code-standard-preset": "~3.2.0",
     "@types/debug": "^4.1.12",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.19.28",
@@ -44,15 +43,30 @@
     "@types/sprintf-js": "^1.1.4",
     "@types/underscore": "^1.13.0",
     "@types/ws": "^8.18.1",
+    "eslint": "^9.39.2",
+    "husky": "^9.1.7",
     "jest": "^30.2.0",
     "lerna": "^9.0.3",
+    "lint-staged": "^16.2.7",
     "open-cli": "^8.0.0",
+    "prettier": "^3.7.4",
     "rimraf": "^6.1.2",
     "semver": "^7.7.3",
     "ts-jest": "^29.4.6",
     "typedoc": "^0.26.11",
-    "typescript": "~5.1"
+    "typescript": "~5.7.3"
   },
   "prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
-  "packageManager": "yarn@4.12.0"
+  "lint-staged": {
+    "*.{css,json,md,scss}": [
+      "prettier --write"
+    ],
+    "*.{ts,tsx,js,jsx}": [
+      "yarn lint-fix"
+    ]
+  },
+  "packageManager": "yarn@4.12.0",
+  "resolutions": {
+    "casparcg-connection": "6.3.3"
+  }
 }

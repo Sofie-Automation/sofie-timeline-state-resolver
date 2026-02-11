@@ -10,7 +10,7 @@ import {
 	VMixMix,
 	VMixReplayState,
 	VMixState,
-} from './vMixStateDiffer'
+} from './vMixStateDiffer.js'
 import { VMixTransitionType } from 'timeline-state-resolver-types'
 
 const BUS_NAME_REGEX = /^bus([A-Z])$/

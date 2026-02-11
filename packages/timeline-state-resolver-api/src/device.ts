@@ -1,5 +1,5 @@
-import type { SlowSentCommandInfo, SlowFulfilledCommandInfo, CommandReport } from './commandReport'
-import type { FinishedTrace } from './trace'
+import type { SlowSentCommandInfo, SlowFulfilledCommandInfo, CommandReport } from './commandReport.js'
+import type { FinishedTrace } from './trace.js'
 import type {
 	Timeline,
 	TSRTimelineContent,
@@ -44,8 +44,9 @@ export interface DeviceTimelineState<TContent extends TSRTimelineContent = TSRTi
 /**
  * A simplified representation of the TimelineObjet that was matched for this device
  */
-export interface DeviceTimelineStateObject<TContent extends TSRTimelineContent = TSRTimelineContent>
-	extends TSRTimelineObjProps {
+export interface DeviceTimelineStateObject<
+	TContent extends TSRTimelineContent = TSRTimelineContent,
+> extends TSRTimelineObjProps {
 	/** ID of the object. Must be unique! */
 	id: string
 	/**
@@ -74,7 +75,7 @@ export interface Device<
 	DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> | null },
 	DeviceState,
 	Command extends CommandWithContext<any, any>,
-	AddressState = void
+	AddressState = void,
 > extends BaseDeviceAPI<DeviceState, AddressState, Command> {
 	readonly actions: DeviceTypes['Actions']
 

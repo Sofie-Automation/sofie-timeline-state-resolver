@@ -1,6 +1,6 @@
-import { diffStates } from '../diffStates'
-import { SofieChefCommandWithContext, SofieChefState } from '..'
-import { ReceiveWSMessageType } from '../api'
+import { diffStates } from '../diffStates.js'
+import { SofieChefCommandWithContext, SofieChefState } from '../index.js'
+import { ReceiveWSMessageType } from '../api.js'
 
 describe('Diff States', () => {
 	test('Simple diff against undefined state', async () => {

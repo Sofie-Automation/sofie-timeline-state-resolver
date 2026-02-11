@@ -1,5 +1,5 @@
-import { WebSocketConnection } from '../connection'
-import { WebSocketClientDevice, WebSocketClientDeviceState, WebSocketCommand } from '../index'
+import { WebSocketConnection } from '../connection.js'
+import { WebSocketClientDevice, WebSocketClientDeviceState, WebSocketCommand } from '../index.js'
 import {
 	DeviceType,
 	WebsocketClientOptions,
@@ -7,7 +7,7 @@ import {
 	StatusCode,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
+import { MockTime } from '../../../__tests__/mockTime.js'
 import { TimelineContentWebSocketClientAny } from 'timeline-state-resolver-types/src'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
@@ -66,7 +66,7 @@ describe('WebSocketClientDevice', () => {
 		// Clean up to avoid race conditions
 		try {
 			await device.terminate()
-		} catch (e) {
+		} catch (_e) {
 			// Ignore termination errors during cleanup
 		}
 		jest.resetAllMocks()

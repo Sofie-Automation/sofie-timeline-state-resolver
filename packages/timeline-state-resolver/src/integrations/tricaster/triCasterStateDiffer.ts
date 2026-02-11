@@ -25,11 +25,11 @@ import {
 	TriCasterCommandWithContext,
 	TriCasterGenericCommandName,
 	TriCasterGenericCommand,
-} from './triCasterCommands'
-import { TriCasterShortcutStateConverter } from './triCasterShortcutStateConverter'
-import { TriCasterTimelineStateConverter } from './triCasterTimelineStateConverter'
-import { TriCasterInfo } from './triCasterConnection'
-import _ = require('underscore')
+} from './triCasterCommands.js'
+import { TriCasterShortcutStateConverter } from './triCasterShortcutStateConverter.js'
+import { TriCasterTimelineStateConverter } from './triCasterTimelineStateConverter.js'
+import { TriCasterInfo } from './triCasterConnection.js'
+import _ from 'underscore'
 
 const BLACK_INPUT = 'black'
 const DEFAULT_TRANSITION_DURATION = 1 // in seconds
@@ -41,7 +41,7 @@ const DEFAULT_TEMPORAL_PRIORITY = 0
 export type RequiredDeep<T> = T extends object
 	? {
 			[K in keyof T]-?: RequiredDeep<T[K]>
-	  }
+		}
 	: T
 
 export type RequireDeepExcept<T, K extends keyof T> = RequiredDeep<Omit<T, K>> & Pick<T, K>
@@ -86,7 +86,7 @@ export type WithContext<T> = T extends any[] | string | number | boolean
 	? StateEntry<T>
 	: {
 			[K in keyof T]: WithContext<T[K]>
-	  }
+		}
 
 export type TriCasterMixEffectState = Partial<
 	Omit<TriCasterMixEffectWithPreview & TriCasterMixEffectInEffectMode, 'transitionEffect'> & TriCasterMixEffectInMixMode
@@ -565,10 +565,13 @@ function fillArray<T>(length: number, valueOrMapFn: T | ((index: number) => T)):
 export function fillRecord<T extends string, U>(keys: T[], mapFn: (key: T) => U): Record<T, U>
 export function fillRecord<T extends string, U>(keys: T[], value: U): Record<T, U>
 export function fillRecord<T extends string, U>(keys: T[], valueOrMapFn: U | ((key: T) => U)): Record<T, U> {
-	return keys.reduce((accumulator, key) => {
-		accumulator[key] = valueOrMapFn instanceof Function ? valueOrMapFn(key) : valueOrMapFn
-		return accumulator
-	}, {} as Record<T, U>)
+	return keys.reduce(
+		(accumulator, key) => {
+			accumulator[key] = valueOrMapFn instanceof Function ? valueOrMapFn(key) : valueOrMapFn
+			return accumulator
+		},
+		{} as Record<T, U>
+	)
 }
 
 export function wrapStateInContext<T extends object>(state: T): WithContext<T> {

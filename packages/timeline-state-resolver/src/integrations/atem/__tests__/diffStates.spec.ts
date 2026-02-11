@@ -1,5 +1,5 @@
 import * as AtemConnection from 'atem-connection'
-import { compareAtemCommands, createDevice, expectIncludesAtemCommandName, extractAllCommands } from './util'
+import { compareAtemCommands, createDevice, expectIncludesAtemCommandName, extractAllCommands } from './util.js'
 import {
 	AtemTransitionStyle,
 	DeviceType,
@@ -10,7 +10,7 @@ import {
 	Mappings,
 } from 'timeline-state-resolver-types'
 import { AtemState } from 'atem-state'
-import { createDiffOptions } from '../diffState'
+import { createDiffOptions } from '../diffState.js'
 
 const diffStatesSpy = jest.spyOn(AtemState, 'diffStates')
 

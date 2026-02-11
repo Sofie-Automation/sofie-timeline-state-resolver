@@ -1,4 +1,4 @@
-import { SingularLiveControlNodeCommandContent, SingularLiveDevice } from '..'
+import { SingularLiveControlNodeCommandContent, SingularLiveDevice } from '../index.js'
 import {
 	SomeMappingSingularLive,
 	Mapping,
@@ -7,8 +7,8 @@ import {
 	TimelineContentTypeSingularLive,
 	MappingSingularLiveType,
 } from 'timeline-state-resolver-types'
-import { getDeviceContext } from '../../__tests__/testlib'
-import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
+import { getDeviceContext } from '../../__tests__/testlib.js'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 
 describe('Singular.Live', () => {
 	test('POST message', async () => {

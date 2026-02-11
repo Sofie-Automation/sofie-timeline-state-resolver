@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { mock } from 'jest-mock-extended'
-import { VMixCommandSender, VMixConnection } from '../connection'
+import { VMixCommandSender, VMixConnection } from '../connection.js'
 import { VMixCommand } from 'timeline-state-resolver-types'
 
 function createTestee() {

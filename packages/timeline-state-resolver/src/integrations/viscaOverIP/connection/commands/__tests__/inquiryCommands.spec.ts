@@ -1,10 +1,10 @@
-import { FocusMode } from '../../enums'
+import { FocusMode } from '../../enums.js'
 import {
 	FocusModeInquiryCommand,
 	FocusPositionInquiryCommand,
 	PanTiltPositionInquiryCommand,
 	ZoomPositionInquiryCommand,
-} from '../inquiry'
+} from '../inquiry/index.js'
 
 describe('Visca Inquiry Commands', () => {
 	describe('FocusModeInquiryCommand', () => {

@@ -12,11 +12,11 @@ import {
 	MultiOscDeviceTypes,
 } from 'timeline-state-resolver-types'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { OSCConnection } from './deviceConnection'
+import { OSCConnection } from './deviceConnection.js'
 import * as osc from 'osc'
 
 export interface MultiOscInitTestOptions {
-	oscSenders?: Record<string, (msg: osc.OscMessage, address?: string | undefined, port?: number | undefined) => void>
+	oscSenders?: Record<string, (msg: osc.OscMessage, address?: string, port?: number) => void>
 }
 
 interface MultiOSCDeviceState {
@@ -36,9 +36,11 @@ export type MultiOscCommandWithContext = CommandWithContext<OSCDeviceStateConten
 /**
  * This is a generic wrapper for any osc-enabled device.
  */
-export class MultiOSCMessageDevice
-	implements Device<MultiOscDeviceTypes, MultiOSCDeviceState, MultiOscCommandWithContext>
-{
+export class MultiOSCMessageDevice implements Device<
+	MultiOscDeviceTypes,
+	MultiOSCDeviceState,
+	MultiOscCommandWithContext
+> {
 	readonly actions = null
 
 	private _connections: Record<string, OSCConnection> = {}

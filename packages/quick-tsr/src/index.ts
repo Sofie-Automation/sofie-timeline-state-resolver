@@ -4,9 +4,8 @@ import * as fs from 'fs'
 import * as _ from 'underscore'
 import * as path from 'path'
 import { Mappings, TSRTimeline, DeviceOptionsAny, Datastore } from 'timeline-state-resolver-types'
-import { TSRHandler } from './tsrHandler'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const clone = require('fast-clone')
+import { TSRHandler } from './tsrHandler.js'
+
 // import { TSRHandler } from './tsrHandler'
 
 console.log('Starting Quick-TSR')
@@ -40,7 +39,7 @@ const currentInput: Input = {
 let applyingNewInput = false
 let tsr = new TSRHandler()
 function reloadInput(changed?: { path: string; stats: fs.Stats }) {
-	const newInput: Input = pendingInput ?? clone(currentInput)
+	const newInput: Input = pendingInput ?? structuredClone(currentInput)
 	pendingInput = newInput
 
 	_.each(getAllFilesInDirectory('input/'), (filePath) => {
@@ -62,7 +61,7 @@ function reloadInput(changed?: { path: string; stats: fs.Stats }) {
 			delete require.cache[require.resolve(requirePath)]
 
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-var-requires
+				// eslint-disable-next-line @typescript-eslint/no-require-imports
 				const fileContents = require(requirePath)
 
 				const fileInput: TSRInput = fileContents.input || {}
@@ -142,7 +141,7 @@ async function applyNewInput(newInput: Input): Promise<void> {
 		console.log('')
 		console.log('')
 		console.log('************************ Settings changed ******************')
-		currentInput.settings = clone(newInput.settings)
+		currentInput.settings = structuredClone(newInput.settings)
 		currentInput.devices = {}
 		currentInput.mappings = {}
 		currentInput.timeline = []
@@ -157,7 +156,7 @@ async function applyNewInput(newInput: Input): Promise<void> {
 		console.log('')
 		console.log('')
 		console.log('************************ Devices changed ******************')
-		currentInput.devices = clone(newInput.devices)
+		currentInput.devices = structuredClone(newInput.devices)
 		currentInput.mappings = {}
 		currentInput.timeline = []
 
@@ -172,8 +171,8 @@ async function applyNewInput(newInput: Input): Promise<void> {
 		console.log('')
 		console.log('')
 		console.log('************************ Timeline / Mappings changed ******************')
-		currentInput.mappings = clone(newInput.mappings)
-		currentInput.timeline = clone(newInput.timeline)
+		currentInput.mappings = structuredClone(newInput.mappings)
+		currentInput.timeline = structuredClone(newInput.timeline)
 
 		// Check that layers are correct.
 		newInput.timeline.forEach((obj) => {
@@ -187,7 +186,7 @@ async function applyNewInput(newInput: Input): Promise<void> {
 		console.log('')
 		console.log('')
 		console.log('************************ Datastore changed ******************')
-		currentInput.datastore = clone(newInput.datastore)
+		currentInput.datastore = structuredClone(newInput.datastore)
 
 		tsr.setDatastore(newInput.datastore)
 	}

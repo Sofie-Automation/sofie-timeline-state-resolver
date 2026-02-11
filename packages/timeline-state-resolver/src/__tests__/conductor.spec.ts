@@ -10,12 +10,16 @@ import {
 	SomeMappingCasparCG,
 	MappingCasparCGType,
 } from 'timeline-state-resolver-types'
-import { MockTime } from './mockTime'
+import { MockTime } from './mockTime.js'
 import { ThreadedClass } from 'threadedclass'
-import { addConnections, getMockCall, removeConnections } from './lib'
-import { setupAllMocks } from '../__mocks__/_setup-all-mocks'
+import { addConnections, getMockCall, removeConnections } from './lib.js'
+import { setupAllMocks } from '../__mocks__/_setup-all-mocks.js'
 import { Commands } from 'casparcg-connection'
-import { MockDeviceInstanceWrapper, ConstructedMockDevices, DiscardAllMockDevices } from './mockDeviceInstanceWrapper'
+import {
+	MockDeviceInstanceWrapper,
+	ConstructedMockDevices,
+	DiscardAllMockDevices,
+} from './mockDeviceInstanceWrapper.js'
 
 // Mock explicitly the 'dist' version, as that is what threadedClass is being told to load
 jest.mock('../../dist/service/DeviceInstance', () => ({
@@ -25,8 +29,8 @@ jest.mock('../service/DeviceInstance', () => ({
 	DeviceInstanceWrapper: MockDeviceInstanceWrapper,
 }))
 
-import { Conductor, TimelineTriggerTimeResult } from '../conductor'
-import type { DeviceInstanceWrapper } from '../service/DeviceInstance'
+import { Conductor, TimelineTriggerTimeResult } from '../conductor.js'
+import type { DeviceInstanceWrapper } from '../service/DeviceInstance.js'
 
 describe('Conductor', () => {
 	const mockTime = new MockTime()

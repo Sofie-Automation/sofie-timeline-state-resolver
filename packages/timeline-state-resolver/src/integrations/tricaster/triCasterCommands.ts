@@ -62,8 +62,10 @@ interface CommandWithTarget<NameType extends CommandName> extends Command<NameTy
 	target: string
 }
 
-interface CommandWithValueAndTarget<NameType extends CommandName, ValueType extends ValueTypes>
-	extends Command<NameType> {
+interface CommandWithValueAndTarget<
+	NameType extends CommandName,
+	ValueType extends ValueTypes,
+> extends Command<NameType> {
 	value: ValueType
 	target: string
 }
@@ -166,10 +168,10 @@ export type TriCasterGenericCommand =
 export type TriCasterGenericCommandName<T> = T extends boolean
 	? TriCasterGenericBooleanCommand['name']
 	: T extends string
-	? TriCasterGenericStringCommand['name']
-	: T extends number
-	? TriCasterGenericNumberCommand['name']
-	: never
+		? TriCasterGenericStringCommand['name']
+		: T extends number
+			? TriCasterGenericNumberCommand['name']
+			: never
 
 export interface TriCasterCommandWithContext extends CommandWithContext<TriCasterCommand, string> {
 	temporalPriority: number

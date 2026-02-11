@@ -1,7 +1,7 @@
 import { ThreadedClass, threadedClass, ThreadedClassConfig, ThreadedClassManager } from 'threadedclass'
-import { Device } from './device'
+import { Device } from './device.js'
 import { DeviceOptionsBase } from 'timeline-state-resolver-types'
-import { BaseRemoteDeviceIntegration, DeviceContainerEvents } from '../service/remoteDeviceInstance'
+import { BaseRemoteDeviceIntegration, DeviceContainerEvents } from '../service/remoteDeviceInstance.js'
 
 export { DeviceContainerEvents }
 
@@ -25,7 +25,7 @@ export class DeviceContainer<TOptions extends DeviceOptionsBase<any>> extends Ba
 
 	static async create<
 		TOptions extends DeviceOptionsBase<unknown>,
-		TCtor extends new (...args: any[]) => Device<any, TOptions>
+		TCtor extends new (...args: any[]) => Device<any, TOptions>,
 	>(
 		orgModule: string,
 		orgClassExport: string,

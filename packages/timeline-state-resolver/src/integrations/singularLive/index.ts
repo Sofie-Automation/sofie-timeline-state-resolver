@@ -13,7 +13,7 @@ import {
 	SingularLiveDeviceTypes,
 } from 'timeline-state-resolver-types'
 import got from 'got'
-import { literal } from '../../lib'
+import { literal } from '../../lib.js'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 export interface SingularLiveControlNodeCommandContent extends SingularLiveCommandContent {
@@ -49,9 +49,11 @@ const SINGULAR_LIVE_API = 'https://app.singular.live/apiv2/controlapps/'
 /**
  * This is a Singular.Live device, it talks to a Singular.Live App Instance using an Access Token
  */
-export class SingularLiveDevice
-	implements Device<SingularLiveDeviceTypes, SingularLiveState, SingularLiveCommandContext>
-{
+export class SingularLiveDevice implements Device<
+	SingularLiveDeviceTypes,
+	SingularLiveState,
+	SingularLiveCommandContext
+> {
 	readonly actions = null
 
 	private _accessToken: string | undefined
@@ -197,8 +199,8 @@ export class SingularLiveDevice
 				(a.command.content as any).state && !(b.command.content as any).state
 					? 1
 					: !(a.command.content as any).state && (b.command.content as any).state
-					? -1
-					: 0
+						? -1
+						: 0
 			)
 			.sort((a, b) => a.command.layer.localeCompare(b.command.layer))
 	}

@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { Q } from 'tv-automation-quantel-gateway-client'
-import got from '../../../__mocks__/got'
+import got from '../../../__mocks__/got.js'
 // const orgSetTimeout = setTimeout
 
 /*
@@ -148,7 +148,7 @@ async function urlRoute(
 }
 async function handleRequest(
 	quantelServer: QuantelServerMockOptions,
-	triggerFcn: Function,
+	triggerFcn: (type: string, url: string) => void,
 	type: string,
 	options: any
 ) {

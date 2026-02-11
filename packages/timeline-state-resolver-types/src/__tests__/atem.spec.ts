@@ -1,6 +1,5 @@
-// eslint-disable-next-line node/no-extraneous-import
 import { Enums as AtemStateEnums } from 'atem-state'
-import { AtemTransitionStyle } from '../'
+import { AtemTransitionStyle } from '../index.js'
 
 describe('Atem types', () => {
 	test('Atem types: TransitionStyle', async () => {

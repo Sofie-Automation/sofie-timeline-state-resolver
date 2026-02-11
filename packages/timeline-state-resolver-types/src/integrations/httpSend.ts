@@ -1,4 +1,4 @@
-import { DeviceType, HTTPSendCommandContent, TemplateString } from '..'
+import { DeviceType, HTTPSendCommandContent, TemplateString } from '../index.js'
 
 export type TimelineContentHTTPSendAny = TimelineContentHTTPRequest
 export interface TimelineContentHTTPSendBase {

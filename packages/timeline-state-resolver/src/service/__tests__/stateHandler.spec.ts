@@ -1,6 +1,6 @@
 import { Timeline, TSRTimelineContent } from 'timeline-state-resolver-types'
-import { StateHandler } from '../stateHandler'
-import { MockTime } from '../../__tests__/mockTime'
+import { StateHandler } from '../stateHandler.js'
+import { MockTime } from '../../__tests__/mockTime.js'
 
 interface DeviceState {
 	[prop: string]: {
@@ -89,7 +89,7 @@ const deviceTrackerMethodsImpl = {
 	}),
 	addressStateReassertsControl: jest.fn(() => deviceTrackerMethodsImpl.reassertsControl),
 }
-import { StateTracker } from '../stateTracker'
+import { StateTracker } from '../stateTracker.js'
 
 describe('stateHandler', () => {
 	const mockTime = new MockTime()
@@ -140,15 +140,15 @@ describe('stateHandler', () => {
 												type: 'removed',
 												property: e,
 											},
-									  }
+										}
 									: n[e].value !== o?.[e]?.value
-									? {
-											command: {
-												type: 'changed',
-												property: e,
-											},
-									  }
-									: null
+										? {
+												command: {
+													type: 'changed',
+													property: e,
+												},
+											}
+										: null
 							)
 							.filter((c) => c !== null),
 					] as CommandWithContext[]

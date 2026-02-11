@@ -1,6 +1,5 @@
-// eslint-disable-next-line node/no-extraneous-import
 import { TransportStatus as UpstreamTransportStatus } from 'hyperdeck-connection'
-import { TransportStatus as LocalTransportStatus } from '../'
+import { TransportStatus as LocalTransportStatus } from '../index.js'
 
 describe('Hyperdeck types', () => {
 	test('Hyperdeck types: TransportStatus', async () => {

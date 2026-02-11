@@ -198,10 +198,17 @@ export interface RGBOptions {
 	path?: 'Default' | 'Linear' | 'Start' | 'End' | 'Braked' | 'Accelerated' | 'Damped' | 'Overshoot'
 }
 
+export type PharosEvents = {
+	connected: []
+	disconnected: []
+	restart: []
+	error: [err: Error]
+}
+
 /**
  * Implementation of the Pharos V2 http API
  */
-export class Pharos extends EventEmitter {
+export class Pharos extends EventEmitter<PharosEvents> {
 	private _socket: WebSocket | null = null
 
 	private _keepAlive = false
@@ -212,9 +219,9 @@ export class Pharos extends EventEmitter {
 	private _isConnecting = false
 	private _isReconnecting = false
 	private _aboutToReconnect = false
-	private _pendingMessages: Array<{ msg: string; resolve: Function; reject: Function }> = []
-	private _requestPromises: { [id: string]: Array<{ resolve: Function; reject: Function }> } = {}
-	private _broadcastCallbacks: { [id: string]: Array<Function> } = {}
+	private _pendingMessages: Array<{ msg: string; resolve: (v?: any) => void; reject: (e: any) => void }> = []
+	private _requestPromises: { [id: string]: Array<{ resolve: (v: any) => void; reject: (e: any) => void }> } = {}
+	private _broadcastCallbacks: { [id: string]: Array<(data: any) => void> } = {}
 
 	/** Setup in connect */
 	private _options!: Options
@@ -537,13 +544,13 @@ export class Pharos extends EventEmitter {
 				}
 			}
 			this._sendMessage(JSON.stringify(json)).catch((e) => {
-				reject(e)
+				reject(e as Error)
 			})
 		})
 
 		return p
 	}
-	public async subscribe(id: string, callback: Function): Promise<void> {
+	public async subscribe(id: string, callback: (data: any) => void): Promise<void> {
 		if (!this._broadcastCallbacks[id]) this._broadcastCallbacks[id] = []
 		this._broadcastCallbacks[id].push(callback)
 
@@ -584,7 +591,7 @@ export class Pharos extends EventEmitter {
 					break
 
 				default:
-					reject(`Unknown method: "${method}"`)
+					reject(new Error(`Unknown method: "${method}"`))
 					return
 			}
 
@@ -618,7 +625,7 @@ export class Pharos extends EventEmitter {
 
 					emitError.stack += `\nOriginal stack: ${orgError.stack}`
 					this.emit('error', emitError)
-					reject(error)
+					reject(error as Error)
 				})
 		})
 	}
@@ -683,6 +690,7 @@ export class Pharos extends EventEmitter {
 						this._serverSessionKey = array
 					}
 				} else {
+					// eslint-disable-next-line @typescript-eslint/no-base-to-string
 					const json = JSON.parse(data.toString())
 					this._onReceiveMessage(json)
 				}
@@ -793,9 +801,9 @@ export class Pharos extends EventEmitter {
 				this.emit('error', new Error(`no requestPromise array found for ${json.request}`))
 			}
 		} else if (json.redirect) {
-			this.emit('error', `Redirect to ${json.redirect}`)
+			this.emit('error', new Error(`Redirect to ${json.redirect}`))
 		} else {
-			this.emit('error', `Unknown reply: ${json}`)
+			this.emit('error', new Error(`Unknown reply: ${json}`))
 		}
 	}
 	private _handleWebsocketReconnection(e?: Error) {
@@ -812,9 +820,12 @@ export class Pharos extends EventEmitter {
 			}
 		}
 
-		setTimeout(() => {
-			this._reconnect()
-		}, Math.min(60, this._reconnectAttempts) * 1000)
+		setTimeout(
+			() => {
+				this._reconnect()
+			},
+			Math.min(60, this._reconnectAttempts) * 1000
+		)
 	}
 	private _connectionChanged(connected: boolean) {
 		if (this._connected !== connected) {

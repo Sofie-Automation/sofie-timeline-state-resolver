@@ -1,4 +1,4 @@
-import { MockTime } from './mockTime'
+import { MockTime } from './mockTime.js'
 
 describe('mockTime', () => {
 	test('mockTime sync', () => {

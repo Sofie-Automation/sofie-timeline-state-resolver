@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import * as TSR from '../index'
+import * as TSR from '../index.js'
 
 describe('index', () => {
 	test('imports', () => {

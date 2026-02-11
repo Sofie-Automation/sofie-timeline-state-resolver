@@ -1,5 +1,5 @@
-import { FocusMode } from '../../enums'
-import { ViscaInquiryCommand } from '../abstractCommand'
+import { FocusMode } from '../../enums.js'
+import { ViscaInquiryCommand } from '../abstractCommand.js'
 
 export class FocusModeInquiryCommand extends ViscaInquiryCommand {
 	serialize() {

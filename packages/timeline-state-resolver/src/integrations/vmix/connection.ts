@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events'
 import { Socket } from 'net'
 import { MappingVmixAudioBus, VMixCommand } from 'timeline-state-resolver-types'
-import { VMixStateCommand } from './vMixCommands'
-import { Response, VMixResponseStreamReader } from './vMixResponseStreamReader'
+import { VMixStateCommand } from './vMixCommands.js'
+import { Response, VMixResponseStreamReader } from './vMixResponseStreamReader.js'
 
 const VMIX_DEFAULT_TCP_PORT = 8099
 
@@ -36,7 +36,11 @@ export class VMixConnection extends EventEmitter<ConnectionEvents> {
 	private _connected = false
 	private _responseStreamReader = new VMixResponseStreamReader()
 
-	constructor(private host: string, private port = VMIX_DEFAULT_TCP_PORT, autoConnect = false) {
+	constructor(
+		private host: string,
+		private port = VMIX_DEFAULT_TCP_PORT,
+		autoConnect = false
+	) {
 		super()
 		if (autoConnect) this._setupSocket()
 		this._responseStreamReader.on('response', (response) => this.emit('data', response))
@@ -49,7 +53,7 @@ export class VMixConnection extends EventEmitter<ConnectionEvents> {
 
 	connect(host?: string, port?: number): void {
 		this.host = host ?? this.host
-		this.port = host ? port ?? VMIX_DEFAULT_TCP_PORT : this.port
+		this.port = host ? (port ?? VMIX_DEFAULT_TCP_PORT) : this.port
 
 		this._socket?.end()
 

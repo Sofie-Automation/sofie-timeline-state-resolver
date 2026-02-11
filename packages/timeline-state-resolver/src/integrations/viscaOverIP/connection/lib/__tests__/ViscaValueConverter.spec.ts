@@ -1,7 +1,7 @@
-import { ViscaValueConverter } from '../ViscaValueConverter'
+import { ViscaValueConverter } from '../ViscaValueConverter.js'
 import { FocusMode } from 'timeline-state-resolver-types'
-import * as ConnectionEnums from '../../enums'
-import { PanTiltPosition } from '../../commands/inquiry'
+import * as ConnectionEnums from '../../enums.js'
+import { PanTiltPosition } from '../../commands/inquiry/index.js'
 
 describe('ViscaValueConverter', () => {
 	let converter: ViscaValueConverter

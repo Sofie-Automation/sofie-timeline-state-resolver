@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events'
 import { QuantelTransitionType, QuantelControlMode } from 'timeline-state-resolver-types'
 import { QuantelGateway, Q, QuantelErrorResponse } from 'tv-automation-quantel-gateway-client'
-import _ = require('underscore')
+import _ from 'underscore'
 import {
 	QuantelCommandClearClip,
 	QuantelCommandClip,
@@ -14,8 +14,8 @@ import {
 	QuantelStatePortClipContent,
 	QuantelTrackedState,
 	QuantelTrackedStatePort,
-} from './types'
-import { WaitGroup } from '../../waitGroup'
+} from './types.js'
+import { WaitGroup } from '../../waitGroup.js'
 
 let SOFT_JUMP_WAIT_TIME = 250 // Is a constant, but can be changed during unit tests
 
@@ -63,7 +63,7 @@ export class QuantelManager extends EventEmitter {
 			// Setup a port and connect it to a channel
 			try {
 				port = await this._quantel.getPort(cmd.portId)
-			} catch (e) {
+			} catch (_e) {
 				// If the GET fails, it might be something unknown wrong.
 				// A temporary workaround is to send a delete on that port and try again, it might work.
 				try {

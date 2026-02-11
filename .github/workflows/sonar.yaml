@@ -7,7 +7,12 @@ on:
       - release**
   pull_request:
     types: [opened, synchronize, reopened]
+
 name: SonarCloud
+
+permissions:
+  contents: read
+
 jobs:
   sonarcloud:
     name: SonarCloud

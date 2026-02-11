@@ -1,12 +1,17 @@
 import { EventEmitter } from 'events'
-import { AbstractCommand } from './commands'
-import { ViscaUdpSocket } from './lib/socket'
+import { AbstractCommand } from './commands/index.js'
+import { ViscaUdpSocket } from './lib/socket.js'
 
 export class ViscaDevice extends EventEmitter {
 	private _address: string
 	private _socket: ViscaUdpSocket
 
-	constructor(address: string, port?: number, debug?: boolean, private log?: (...args) => void) {
+	constructor(
+		address: string,
+		port?: number,
+		debug?: boolean,
+		private log?: (...args) => void
+	) {
 		super()
 		this._address = address
 		this._socket = new ViscaUdpSocket({ address, port, debug, log })

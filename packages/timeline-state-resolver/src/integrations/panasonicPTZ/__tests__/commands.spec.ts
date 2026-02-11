@@ -21,8 +21,8 @@ import {
 	ZoomPositionQuery,
 	ZoomSpeedControl,
 	ZoomSpeedQuery,
-} from '../commands'
-import { PanasonicFocusMode } from '../connection'
+} from '../commands.js'
+import { PanasonicFocusMode } from '../connection.js'
 
 describe('PowerModeQuery', () => {
 	test('serialize', () => {

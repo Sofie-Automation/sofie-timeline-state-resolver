@@ -5,10 +5,10 @@ import {
 	SomeMappingPharos,
 	TimelineContentTypePharos,
 } from 'timeline-state-resolver-types'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 import { EventEmitter } from 'events'
-import type { Pharos, ProjectInfo } from '../connection'
-import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
+import type { Pharos, ProjectInfo } from '../connection.js'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 
 class MockPharosApi
 	extends EventEmitter
@@ -81,7 +81,7 @@ class MockPharosApi
 	})
 }
 jest.mock('../connection', () => ({ Pharos: MockPharosApi }))
-import { PharosDevice, PharosState } from '..'
+import { PharosDevice, PharosState } from '../index.js'
 
 describe('Pharos', () => {
 	jest.mock('ws', () => null)
