@@ -4,6 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
+import type { DeviceType } from './device-options.js'
 
 export interface LawoOptions {
 	host: string
@@ -78,6 +79,7 @@ export enum MappingLawoType {
 export type SomeMappingLawo = MappingLawoSource | MappingLawoSources | MappingLawoFullpath | MappingLawoTriggerValue
 
 export interface LawoDeviceTypes {
+	Type: DeviceType.LAWO,
 	Options: LawoOptions
 	Mappings: SomeMappingLawo
 	Actions: null

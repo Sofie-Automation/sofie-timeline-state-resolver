@@ -27,7 +27,7 @@ export interface ConnectionManagerIntEvents {
 	error: [context: string, err?: Error]
 	debug: [...debug: any[]]
 
-	connectionAdded: [id: string, container: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>]
+	connectionAdded: [id: string, container: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>]
 	connectionInitialised: [id: string]
 	connectionRemoved: [id: string]
 }
@@ -68,7 +68,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 		this._updateConnections()
 	}
 
-	public getConnections(includeUninitialized = false): Array<BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>> {
+	public getConnections(includeUninitialized = false): Array<BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>> {
 		if (includeUninitialized) {
 			return Array.from(this._connections.values())
 		} else {
@@ -79,7 +79,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 	public getConnection(
 		connectionId: string,
 		includeUninitialized = false
-	): BaseRemoteDeviceIntegration<DeviceOptionsBase<any>> | undefined {
+	): BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>> | undefined {
 		if (includeUninitialized) {
 			return this._connections.get(connectionId)
 		} else {
@@ -372,15 +372,15 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
  * consideration. In addition, the debug logging flag should be ignored as that can be changed at runtime.
  */
 function connectionConfigHasChanged(
-	connection: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>,
-	config: DeviceOptionsBase<any>
+	connection: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>,
+	config: DeviceOptionsBase<any, any>
 ): boolean {
 	const oldConfig = connection.deviceOptions
 
 	// now check device specific options
 	return configHasChanged(oldConfig, config)
 }
-function configHasChanged(oldConfig: DeviceOptionsBase<any>, config: DeviceOptionsBase<any>): boolean {
+function configHasChanged(oldConfig: DeviceOptionsBase<any, any>, config: DeviceOptionsBase<any, any>): boolean {
 	// now check device specific options
 	return !_.isEqual(_.omit(oldConfig, 'debug', 'debugState'), _.omit(config, 'debug', 'debugState'))
 }
@@ -391,7 +391,7 @@ function createContainer(
 	deviceId: string,
 	getCurrentTime: () => number,
 	threadedClassOptions: ThreadedClassConfig
-): Promise<BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>> | null {
+): Promise<BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>> | null {
 	switch (deviceOptions.type) {
 		case DeviceType.CASPARCG:
 			return DeviceContainer.create<DeviceOptionsCasparCGInternal, typeof CasparCGDevice>(

@@ -7,6 +7,7 @@
 import type { ActionExecutionResult } from "../actions"
 import type { SetPanTiltSpeedPayload, GetPanTiltPositionResult, SetZoomSpeedPayload, GetZoomPositionResult, StorePresetPayload, RecallPresetPayload, ResetPresetPayload, SetFocusSpeedPayload, SetFocusModePayload, GetFocusPositionResult, GetFocusModeResult } from './generic-ptz-actions'
 
+import type { DeviceType } from './device-options.js'
 
 export interface PanasonicPTZOptions {
 	host: string
@@ -69,6 +70,7 @@ export interface PanasonicPTZActionMethods {
 }
 
 export interface PanasonicPTZDeviceTypes {
+	Type: DeviceType.PANASONIC_PTZ,
 	Options: PanasonicPTZOptions
 	Mappings: SomeMappingPanasonicPTZ
 	Actions: PanasonicPTZActionMethods
