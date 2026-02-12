@@ -1,11 +1,11 @@
-import { PharosError, PharosErrorCode, PharosErrorContextMap } from 'timeline-state-resolver-types'
+import { PharosStatusDetail, PharosStatusCode, PharosStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating Pharos device errors
+ * Type-safe helper for creating Pharos device status details
  */
-export function createPharosError<T extends PharosErrorCode>(
+export function createPharosStatusDetail<T extends PharosStatusCode>(
 	code: T,
-	context: PharosErrorContextMap[T]
-): PharosError<T> {
+	context: PharosStatusContextMap[T]
+): PharosStatusDetail<T> {
 	return { code, context }
 }

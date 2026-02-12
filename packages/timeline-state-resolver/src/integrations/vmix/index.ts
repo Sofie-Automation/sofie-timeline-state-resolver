@@ -1,17 +1,17 @@
 import { VMixCommandSender, VMixConnection } from './connection'
 import {
 	DeviceStatus,
-	errorsToMessages,
+	statusDetailsToMessages,
 	Mappings,
 	StatusCode,
 	TSRTimelineContent,
 	VmixActionMethods,
 	VmixDeviceTypes,
 	VmixOptions,
-	VMixErrorCode,
-	VMixErrorMessages,
+	VMixStatusCode,
+	VMixStatusMessages,
 } from 'timeline-state-resolver-types'
-import { createVMixError } from './errors'
+import { createVMixStatusDetail } from './errors'
 import { VMixState, VMixStateDiffer, VMixStateExtended } from './vMixStateDiffer'
 import { VMixStateCommandWithContext } from './vMixCommands'
 import { MappingsVmix, VMixTimelineStateConverter } from './vMixTimelineStateConverter'
@@ -211,23 +211,23 @@ export class VMixDevice implements Device<VmixDeviceTypes, VMixStateExtended, VM
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const errors: DeviceStatus['errors'] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
 
 		const host = this._initOptions?.host ?? ''
 		const deviceName = this.context.deviceName
 
 		if (!this._connected) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createVMixError(VMixErrorCode.NOT_CONNECTED, {
+			statusDetails.push(
+				createVMixStatusDetail(VMixStatusCode.NOT_CONNECTED, {
 					deviceName,
 					host,
 				})
 			)
 		} else if (!this._initialized) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createVMixError(VMixErrorCode.NOT_INITIALIZED, {
+			statusDetails.push(
+				createVMixStatusDetail(VMixStatusCode.NOT_INITIALIZED, {
 					deviceName,
 					host,
 				})
@@ -236,9 +236,8 @@ export class VMixDevice implements Device<VmixDeviceTypes, VMixStateExtended, VM
 
 		return {
 			statusCode: statusCode,
-			messages: errorsToMessages(errors, VMixErrorMessages),
-			errors,
-		}
+			messages: statusDetailsToMessages(statusDetails, VMixStatusMessages),
+			statusDetails,		}
 	}
 
 	public readonly actions: VmixActionMethods = new vMixActionsImpl(() => this._vMixCommandSender)

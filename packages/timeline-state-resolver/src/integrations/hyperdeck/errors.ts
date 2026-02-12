@@ -1,12 +1,12 @@
-import { HyperdeckError, HyperdeckErrorCode, HyperdeckErrorContextMap } from 'timeline-state-resolver-types'
+import { HyperdeckStatusDetail, HyperdeckStatusCode, HyperdeckStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating Hyperdeck device errors with proper context.
+ * Type-safe helper for creating Hyperdeck device status details with proper context.
  */
-export function createHyperdeckError<T extends HyperdeckErrorCode>(
+export function createHyperdeckStatusDetail<T extends HyperdeckStatusCode>(
 	code: T,
-	context: HyperdeckErrorContextMap[T]
-): HyperdeckError<T> {
+	context: HyperdeckStatusContextMap[T]
+): HyperdeckStatusDetail<T> {
 	return {
 		code,
 		context,

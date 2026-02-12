@@ -14,9 +14,9 @@ import {
 	GetFocusPositionResult,
 	GetZoomPositionResult,
 	PanasonicPTZActions,
-	PanasonicPTZErrorCode,
-	PanasonicPTZErrorMessages,
-	errorsToMessages,
+	PanasonicPTZStatusCode,
+	PanasonicPTZStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { PanasonicPtzState, convertStateToPtz, getDefaultState } from './state'
@@ -39,7 +39,7 @@ import {
 	ZoomSpeedControl,
 } from './commands'
 import { t } from '../../lib'
-import { createPanasonicPTZError } from './errors'
+import { createPanasonicPTZStatusDetail } from './errors'
 
 const FOCUS_MODE_MAP = {
 	[FocusMode.AUTO]: PanasonicFocusMode.AUTO,
@@ -136,13 +136,13 @@ export class PanasonicPtzDevice
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const errors: DeviceStatus['errors'] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
 		const deviceName = 'Panasonic PTZ'
 
 		if (!this._device?.connected) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createPanasonicPTZError(PanasonicPTZErrorCode.NOT_CONNECTED, {
+			statusDetails.push(
+				createPanasonicPTZStatusDetail(PanasonicPTZStatusCode.NOT_CONNECTED, {
 					deviceName,
 					host: this._host,
 					port: this._port,
@@ -152,9 +152,8 @@ export class PanasonicPtzDevice
 
 		return {
 			statusCode,
-			messages: errorsToMessages(errors, PanasonicPTZErrorMessages),
-			errors,
-		}
+			messages: statusDetailsToMessages(statusDetails, PanasonicPTZStatusMessages),
+			statusDetails,		}
 	}
 
 	readonly actions: PanasonicPTZActionMethods = {

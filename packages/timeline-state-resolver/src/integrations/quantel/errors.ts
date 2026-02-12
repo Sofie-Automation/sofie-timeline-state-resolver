@@ -1,11 +1,11 @@
-import { QuantelError, QuantelErrorCode, QuantelErrorContextMap } from 'timeline-state-resolver-types'
+import { QuantelStatusDetail, QuantelStatusCode, QuantelStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating Quantel device errors
+ * Type-safe helper for creating Quantel device status details
  */
-export function createQuantelError<T extends QuantelErrorCode>(
+export function createQuantelStatusDetail<T extends QuantelStatusCode>(
 	code: T,
-	context: QuantelErrorContextMap[T]
-): QuantelError<T> {
+	context: QuantelStatusContextMap[T]
+): QuantelStatusDetail<T> {
 	return { code, context }
 }

@@ -34,20 +34,20 @@ export interface TimelineContentPharosTimeline extends TimelineContentPharos {
 	fade?: number
 }
 
-export const PharosErrorCode = {
+export const PharosStatusCode = {
 	NOT_CONNECTED: 'DEVICE_PHAROS_NOT_CONNECTED',
 } as const
-export type PharosErrorCode = (typeof PharosErrorCode)[keyof typeof PharosErrorCode]
+export type PharosStatusCode = (typeof PharosStatusCode)[keyof typeof PharosStatusCode]
 
-export interface PharosErrorContextMap {
-	[PharosErrorCode.NOT_CONNECTED]: Record<string, never>
+export interface PharosStatusContextMap {
+	[PharosStatusCode.NOT_CONNECTED]: Record<string, never>
 }
 
-export type PharosError<T extends PharosErrorCode = PharosErrorCode> = {
+export type PharosStatusDetail<T extends PharosStatusCode = PharosStatusCode> = {
 	code: T
-	context: PharosErrorContextMap[T]
+	context: PharosStatusContextMap[T]
 }
 
-export const PharosErrorMessages: Record<PharosErrorCode, string> = {
-	[PharosErrorCode.NOT_CONNECTED]: 'Not connected',
+export const PharosStatusMessages: Record<PharosStatusCode, string> = {
+	[PharosStatusCode.NOT_CONNECTED]: 'Not connected',
 }
