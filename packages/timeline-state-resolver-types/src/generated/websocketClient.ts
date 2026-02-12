@@ -5,6 +5,7 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 import type { ActionExecutionResult } from "../actions"
+import type { DeviceType } from './device-options.js'
 
 export interface WebsocketClientOptions {
 	webSocket: {
@@ -54,6 +55,7 @@ export interface WebsocketClientActionMethods {
 }
 
 export interface WebsocketClientDeviceTypes {
+	Type: DeviceType.WEBSOCKET_CLIENT,
 	Options: WebsocketClientOptions
 	Mappings: SomeMappingWebsocketClient
 	Actions: WebsocketClientActionMethods

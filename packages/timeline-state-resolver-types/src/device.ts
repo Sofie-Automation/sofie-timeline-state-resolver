@@ -15,11 +15,11 @@ export interface DeviceStatus {
 	active: boolean
 }
 
-export interface DeviceOptionsBase<T> extends SlowReportOptions, DeviceCommonOptions {
-	type: DeviceType
+export interface DeviceOptionsBase<TType extends DeviceType, TOptions> extends SlowReportOptions, DeviceCommonOptions {
+	type: TType
 	isMultiThreaded?: boolean
 	reportAllCommands?: boolean
-	options?: T
+	options?: TOptions
 }
 
 export interface SlowReportOptions {

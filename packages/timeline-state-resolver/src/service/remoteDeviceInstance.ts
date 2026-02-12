@@ -9,7 +9,7 @@ export type DeviceContainerEvents = {
 }
 
 export abstract class BaseRemoteDeviceIntegration<
-	TOptions extends DeviceOptionsBase<any>
+	TOptions extends DeviceOptionsBase<any, any>
 > extends EventEmitter<DeviceContainerEvents> {
 	public abstract onChildClose: (() => void) | undefined
 
@@ -105,7 +105,7 @@ export abstract class BaseRemoteDeviceIntegration<
  * names and id's) to prevent a costly round trip over IPC.
  */
 export class RemoteDeviceInstance<
-	TOptions extends DeviceOptionsBase<any>
+	TOptions extends DeviceOptionsBase<any, any>
 > extends BaseRemoteDeviceIntegration<TOptions> {
 	protected _device!: ThreadedClass<DeviceInstanceWrapper>
 	public onChildClose: (() => void) | undefined
@@ -114,7 +114,7 @@ export class RemoteDeviceInstance<
 		super(deviceOptions, threadConfig)
 	}
 
-	static async create<TOptions extends DeviceOptionsBase<unknown>>(
+	static async create<TOptions extends DeviceOptionsBase<DeviceType, unknown>>(
 		pluginPath: string | null,
 		deviceId: string,
 		deviceOptions: TOptions,

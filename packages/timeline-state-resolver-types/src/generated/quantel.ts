@@ -5,6 +5,7 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 import type { ActionExecutionResult } from "../actions"
+import type { DeviceType } from './device-options.js'
 
 export interface QuantelOptions {
 	/**
@@ -74,6 +75,7 @@ export interface QuantelActionMethods {
 }
 
 export interface QuantelDeviceTypes {
+	Type: DeviceType.QUANTEL,
 	Options: QuantelOptions
 	Mappings: SomeMappingQuantel
 	Actions: QuantelActionMethods

@@ -7,129 +7,79 @@
 
 import type { DeviceOptionsBase } from '../device'
 import type { AbstractOptions } from './abstract'
-export interface DeviceOptionsAbstract extends DeviceOptionsBase<AbstractOptions> {
-	type: DeviceType.ABSTRACT
-}
+export type DeviceOptionsAbstract = DeviceOptionsBase<DeviceType.ABSTRACT, AbstractOptions>
 
 import type { AtemOptions } from './atem'
-export interface DeviceOptionsAtem extends DeviceOptionsBase<AtemOptions> {
-	type: DeviceType.ATEM
-}
+export type DeviceOptionsAtem = DeviceOptionsBase<DeviceType.ATEM, AtemOptions>
 
 import type { CasparCGOptions } from './casparCG'
-export interface DeviceOptionsCasparCG extends DeviceOptionsBase<CasparCGOptions> {
-	type: DeviceType.CASPARCG
-}
+export type DeviceOptionsCasparCG = DeviceOptionsBase<DeviceType.CASPARCG, CasparCGOptions>
 
 import type { HttpSendOptions } from './httpSend'
-export interface DeviceOptionsHttpSend extends DeviceOptionsBase<HttpSendOptions> {
-	type: DeviceType.HTTPSEND
-}
+export type DeviceOptionsHttpSend = DeviceOptionsBase<DeviceType.HTTPSEND, HttpSendOptions>
 
 import type { HttpWatcherOptions } from './httpWatcher'
-export interface DeviceOptionsHttpWatcher extends DeviceOptionsBase<HttpWatcherOptions> {
-	type: DeviceType.HTTPWATCHER
-}
+export type DeviceOptionsHttpWatcher = DeviceOptionsBase<DeviceType.HTTPWATCHER, HttpWatcherOptions>
 
 import type { HyperdeckOptions } from './hyperdeck'
-export interface DeviceOptionsHyperdeck extends DeviceOptionsBase<HyperdeckOptions> {
-	type: DeviceType.HYPERDECK
-}
+export type DeviceOptionsHyperdeck = DeviceOptionsBase<DeviceType.HYPERDECK, HyperdeckOptions>
 
 import type { KairosOptions } from './kairos'
-export interface DeviceOptionsKairos extends DeviceOptionsBase<KairosOptions> {
-	type: DeviceType.KAIROS
-}
+export type DeviceOptionsKairos = DeviceOptionsBase<DeviceType.KAIROS, KairosOptions>
 
 import type { LawoOptions } from './lawo'
-export interface DeviceOptionsLawo extends DeviceOptionsBase<LawoOptions> {
-	type: DeviceType.LAWO
-}
+export type DeviceOptionsLawo = DeviceOptionsBase<DeviceType.LAWO, LawoOptions>
 
 import type { MultiOscOptions } from './multiOsc'
-export interface DeviceOptionsMultiOsc extends DeviceOptionsBase<MultiOscOptions> {
-	type: DeviceType.MULTI_OSC
-}
+export type DeviceOptionsMultiOsc = DeviceOptionsBase<DeviceType.MULTI_OSC, MultiOscOptions>
 
 import type { ObsOptions } from './obs'
-export interface DeviceOptionsObs extends DeviceOptionsBase<ObsOptions> {
-	type: DeviceType.OBS
-}
+export type DeviceOptionsObs = DeviceOptionsBase<DeviceType.OBS, ObsOptions>
 
 import type { OscOptions } from './osc'
-export interface DeviceOptionsOsc extends DeviceOptionsBase<OscOptions> {
-	type: DeviceType.OSC
-}
+export type DeviceOptionsOsc = DeviceOptionsBase<DeviceType.OSC, OscOptions>
 
 import type { PanasonicPTZOptions } from './panasonicPTZ'
-export interface DeviceOptionsPanasonicPTZ extends DeviceOptionsBase<PanasonicPTZOptions> {
-	type: DeviceType.PANASONIC_PTZ
-}
+export type DeviceOptionsPanasonicPTZ = DeviceOptionsBase<DeviceType.PANASONIC_PTZ, PanasonicPTZOptions>
 
 import type { PharosOptions } from './pharos'
-export interface DeviceOptionsPharos extends DeviceOptionsBase<PharosOptions> {
-	type: DeviceType.PHAROS
-}
+export type DeviceOptionsPharos = DeviceOptionsBase<DeviceType.PHAROS, PharosOptions>
 
 import type { QuantelOptions } from './quantel'
-export interface DeviceOptionsQuantel extends DeviceOptionsBase<QuantelOptions> {
-	type: DeviceType.QUANTEL
-}
+export type DeviceOptionsQuantel = DeviceOptionsBase<DeviceType.QUANTEL, QuantelOptions>
 
 import type { ShotokuOptions } from './shotoku'
-export interface DeviceOptionsShotoku extends DeviceOptionsBase<ShotokuOptions> {
-	type: DeviceType.SHOTOKU
-}
+export type DeviceOptionsShotoku = DeviceOptionsBase<DeviceType.SHOTOKU, ShotokuOptions>
 
 import type { SingularLiveOptions } from './singularLive'
-export interface DeviceOptionsSingularLive extends DeviceOptionsBase<SingularLiveOptions> {
-	type: DeviceType.SINGULAR_LIVE
-}
+export type DeviceOptionsSingularLive = DeviceOptionsBase<DeviceType.SINGULAR_LIVE, SingularLiveOptions>
 
 import type { SisyfosOptions } from './sisyfos'
-export interface DeviceOptionsSisyfos extends DeviceOptionsBase<SisyfosOptions> {
-	type: DeviceType.SISYFOS
-}
+export type DeviceOptionsSisyfos = DeviceOptionsBase<DeviceType.SISYFOS, SisyfosOptions>
 
 import type { SofieChefOptions } from './sofieChef'
-export interface DeviceOptionsSofieChef extends DeviceOptionsBase<SofieChefOptions> {
-	type: DeviceType.SOFIE_CHEF
-}
+export type DeviceOptionsSofieChef = DeviceOptionsBase<DeviceType.SOFIE_CHEF, SofieChefOptions>
 
 import type { TcpSendOptions } from './tcpSend'
-export interface DeviceOptionsTcpSend extends DeviceOptionsBase<TcpSendOptions> {
-	type: DeviceType.TCPSEND
-}
+export type DeviceOptionsTcpSend = DeviceOptionsBase<DeviceType.TCPSEND, TcpSendOptions>
 
 import type { TelemetricsOptions } from './telemetrics'
-export interface DeviceOptionsTelemetrics extends DeviceOptionsBase<TelemetricsOptions> {
-	type: DeviceType.TELEMETRICS
-}
+export type DeviceOptionsTelemetrics = DeviceOptionsBase<DeviceType.TELEMETRICS, TelemetricsOptions>
 
 import type { TricasterOptions } from './tricaster'
-export interface DeviceOptionsTricaster extends DeviceOptionsBase<TricasterOptions> {
-	type: DeviceType.TRICASTER
-}
+export type DeviceOptionsTricaster = DeviceOptionsBase<DeviceType.TRICASTER, TricasterOptions>
 
 import type { ViscaOverIPOptions } from './viscaOverIP'
-export interface DeviceOptionsViscaOverIP extends DeviceOptionsBase<ViscaOverIPOptions> {
-	type: DeviceType.VISCA_OVER_IP
-}
+export type DeviceOptionsViscaOverIP = DeviceOptionsBase<DeviceType.VISCA_OVER_IP, ViscaOverIPOptions>
 
 import type { VizMSEOptions } from './vizMSE'
-export interface DeviceOptionsVizMSE extends DeviceOptionsBase<VizMSEOptions> {
-	type: DeviceType.VIZMSE
-}
+export type DeviceOptionsVizMSE = DeviceOptionsBase<DeviceType.VIZMSE, VizMSEOptions>
 
 import type { VmixOptions } from './vmix'
-export interface DeviceOptionsVmix extends DeviceOptionsBase<VmixOptions> {
-	type: DeviceType.VMIX
-}
+export type DeviceOptionsVmix = DeviceOptionsBase<DeviceType.VMIX, VmixOptions>
 
 import type { WebsocketClientOptions } from './websocketClient'
-export interface DeviceOptionsWebsocketClient extends DeviceOptionsBase<WebsocketClientOptions> {
-	type: DeviceType.WEBSOCKET_CLIENT
-}
+export type DeviceOptionsWebsocketClient = DeviceOptionsBase<DeviceType.WEBSOCKET_CLIENT, WebsocketClientOptions>
 
 export type DeviceOptionsAny =
 	| DeviceOptionsAbstract
