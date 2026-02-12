@@ -22,6 +22,7 @@
 	"contributors": [],
 	"scripts": {
 		"start": "tsx src/index.ts",
+		"unit": "",
 		"lint:raw": "run -T eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
 		"lint": "run lint:raw .",
 		"lint-fix": "run lint --fix",
