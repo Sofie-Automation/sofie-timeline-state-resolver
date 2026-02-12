@@ -8256,22 +8256,22 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"kairos-connection@npm:0.2.3-nightly-feat-version2-0-20260129-131909-455e2bd":
-  version: 0.2.3-nightly-feat-version2-0-20260129-131909-455e2bd
-  resolution: "kairos-connection@npm:0.2.3-nightly-feat-version2-0-20260129-131909-455e2bd"
+"kairos-connection@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "kairos-connection@npm:1.0.0"
   dependencies:
-    kairos-lib: "npm:0.2.3-nightly-feat-version2-0-20260129-131909-455e2bd"
+    kairos-lib: "npm:1.0.0"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/6a4e4839213758a57b5b545c74a92f23f4ed980fb8ef3fda7d1f2d63f743e778c76eb9f3b47fa2155f84e39efb15bed003982421067f05a8aeb68870f5fad0cf
+  checksum: 10c0/cd5433a32d2314fe5e3239ad1fd28ad62b54952b37facb39e28a565447f92c4c04f870f384f28df55e6dec14e7fc1d7ab127392d9de7d60081fafc6899d974e7
   languageName: node
   linkType: hard
 
-"kairos-lib@npm:0.2.3-nightly-feat-version2-0-20260129-131909-455e2bd":
-  version: 0.2.3-nightly-feat-version2-0-20260129-131909-455e2bd
-  resolution: "kairos-lib@npm:0.2.3-nightly-feat-version2-0-20260129-131909-455e2bd"
+"kairos-lib@npm:1.0.0":
+  version: 1.0.0
+  resolution: "kairos-lib@npm:1.0.0"
   dependencies:
     tslib: "npm:^2.8.1"
-  checksum: 10c0/38b0b4dafb9e1f8f8d22fdcc4cda874d1d0f180b299e290e16f9b2ae5f1df60678df6e891e839523a3280fb00c61b3f1a00938e4173502884c075840b4304e7e
+  checksum: 10c0/d1290f1611ad2d73482eeae3ad1d760ad88d92a1d91abd33344ef8eb5db034096c36cc52cbeb1152322993f9014ac5cb13b8110ed23dd7b36080dcd55b78caaf
   languageName: node
   linkType: hard
 
@@ -12291,7 +12291,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "timeline-state-resolver-types@workspace:packages/timeline-state-resolver-types"
   dependencies:
-    kairos-lib: "npm:0.2.3-nightly-feat-version2-0-20260129-131909-455e2bd"
+    kairos-lib: "npm:1.0.0"
     tslib: "npm:^2.8.1"
   languageName: unknown
   linkType: soft
@@ -12315,7 +12315,7 @@ asn1@evs-broadcast/node-asn1:
     hyperdeck-connection: "npm:2.0.1"
     jest-mock-extended: "npm:^4.0.0"
     json-schema-to-typescript: "npm:^15.0.4"
-    kairos-connection: "npm:0.2.3-nightly-feat-version2-0-20260129-131909-455e2bd"
+    kairos-connection: "npm:^1.0.0"
     klona: "npm:^2.0.6"
     obs-websocket-js: "npm:^5.0.7"
     osc: "npm:^2.4.5"

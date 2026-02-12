@@ -26,22 +26,15 @@ export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, stri
 export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState, KairosCommandWithContext> {
 	private readonly _kairos: KairosConnection
 	private readonly _kairosRamLoader: KairosRamLoader
-	private readonly _kairosApplicationMonitor: KairosApplicationMonitor
+	private _kairosApplicationMonitor: KairosApplicationMonitor | undefined
 
 	readonly actions: KairosActionMethods
-	/** Whether to monitor the Kairos application state (check that all resources exist etc) */
-	private _monitorState: boolean | undefined
 
 	constructor(public context: DeviceContextAPI<KairosDeviceState>) {
 		this._kairos = new KairosConnection()
 		this._kairosRamLoader = new KairosRamLoader(this._kairos, context)
-		this._kairosApplicationMonitor = new KairosApplicationMonitor(this._kairos)
-		this.actions = getActions(this._kairos)
 
-		this._kairosApplicationMonitor.on('error', (e: Error) =>
-			this.context.logger.error('Error from Kairos Application Checker', e)
-		)
-		this._kairosApplicationMonitor.on('status', () => this._connectionChanged())
+		this.actions = getActions(this._kairos)
 	}
 
 	/**
@@ -67,7 +60,14 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 			this.context.resetState()
 		})
 
-		this._monitorState = options.monitorState
+		if (options.monitorState) {
+			this._kairosApplicationMonitor = new KairosApplicationMonitor(this._kairos)
+
+			this._kairosApplicationMonitor.on('error', (e: Error) =>
+				this.context.logger.error('Error from Kairos Application Checker', e)
+			)
+			this._kairosApplicationMonitor.on('status', () => this._connectionChanged())
+		}
 
 		// Start the connection, without waiting
 		this._kairos.connect(options.host, options.port)
@@ -79,7 +79,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 	 * garbage collected.
 	 */
 	async terminate(): Promise<void> {
-		this._kairosApplicationMonitor.terminate()
+		this._kairosApplicationMonitor?.terminate()
 		this._kairos.disconnect()
 		this._kairos.discard()
 		this._kairos.removeAllListeners()
@@ -101,8 +101,8 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 
 		// Note: Nut sure if this is the best way to handle this, perhaps we should
 		// have a way to store the mappings somewhere else?
-		this._kairosApplicationMonitor.updateMappings(mappings)
-		this._kairosApplicationMonitor.updateDeviceState(deviceState)
+		this._kairosApplicationMonitor?.updateMappings(mappings)
+		this._kairosApplicationMonitor?.updateDeviceState(deviceState)
 
 		return deviceState
 	}
@@ -117,11 +117,11 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 				messages: [`Kairos disconnected`],
 			}
 		}
-		if (this._monitorState) {
-			if (this._kairosApplicationMonitor.status.statusCode !== StatusCode.GOOD) {
-				return this._kairosApplicationMonitor.status
-			}
+
+		if (this._kairosApplicationMonitor && this._kairosApplicationMonitor.status.statusCode !== StatusCode.GOOD) {
+			return this._kairosApplicationMonitor.status
 		}
+
 		return {
 			statusCode: StatusCode.GOOD,
 			messages: [],

@@ -26,11 +26,19 @@ export class KairosRamLoader {
 		// If the ramrec/still is not loaded into RAM it cannot be used.
 
 		const clipRef = typeof source === 'string' ? pathToRef(source) : source
-		if (!isRef(clipRef) || (clipRef.realm !== 'media-still' && clipRef.realm !== 'media-ramrec')) {
+		if (!isRef(clipRef)) {
+			// That's a bit weird, log and exit:
 			this.context.logger.error(
 				'KairosRamLoader',
-				new Error(`KairosRamLoader: Unsupported clip reference for RAM loading: ${JSON.stringify(source)}`)
+				new Error(
+					`KairosRamLoader: Unsupported clip reference for RAM loading, unable to parse source: ${JSON.stringify(
+						source
+					)}`
+				)
 			)
+			return
+		} else if (clipRef.realm !== 'media-still' && clipRef.realm !== 'media-ramrec') {
+			// Source needs no ream preloading.
 			return
 		}
 

@@ -65,8 +65,10 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 	>
 
 	private _mappings: Mappings<SomeMappingKairos> | null = null
+	private _previousDeviceState: KairosDeviceState | null = null
 
 	private _checkTimeout: NodeJS.Timeout | null = null
+	private _checkTimeoutAsap = false
 	private terminated = false
 
 	public status: DeviceStatus = {
@@ -77,8 +79,8 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 
 	constructor(private _kairos: KairosConnection) {
 		super()
+
 		this.triggerCheckApplicationStatus()
-		this._checkTimeout = setInterval(() => {}, 60 * 1000) // Check every 5 seconds
 
 		this.aware = new SetWithTimeout(
 			this.MONITOR_INTERVAL * 2 // Keep items for twice the monitor interval, to ensure we don't drop them too quickly
@@ -99,19 +101,27 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 	}
 	/** Is called whenever the deviceState is updated */
 	updateDeviceState(deviceState: KairosDeviceState): void {
-		this.applyDeviceState(deviceState)
+		deviceState = {
+			...deviceState,
+			stateTime: 0, // Not used
+		}
+		if (!_.isEqual(this._previousDeviceState, deviceState)) {
+			this._previousDeviceState = deviceState
+			this.applyDeviceState(deviceState)
 
-		this.triggerCheckApplicationStatus(true)
+			this.triggerCheckApplicationStatus(true)
+		}
 	}
 
 	private triggerCheckApplicationStatus(asap?: boolean) {
 		if (this.terminated) return
 
 		if (this._checkTimeout) {
-			if (asap) clearTimeout(this._checkTimeout)
+			if (asap && !this._checkTimeoutAsap) clearTimeout(this._checkTimeout)
 			else return // Is already queued for later
 		}
 
+		this._checkTimeoutAsap = Boolean(asap)
 		this._checkTimeout = setTimeout(
 			async () => {
 				this._checkTimeout = null
@@ -207,10 +217,11 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 		this.applyMappings()
 
 		const issues: string[] = []
-		const ensureExists = async (pValue: Promise<unknown>, description: string): Promise<void> => {
+		const ensureExists = async (pExists: Promise<boolean>, description: string): Promise<void> => {
 			try {
-				const value = await pValue
-				if (value === undefined || value === null) {
+				const value = await pExists
+
+				if (value === false) {
 					issues.push(`${description} not found on the Kairos`)
 				}
 			} catch (e) {
@@ -278,11 +289,11 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 			} else if (sourceRef.realm === 'scene-layer-effect') {
 				// There is no method to check a sceneLayerEffect individually (yet)
 			} else if (sourceRef.realm === 'aux') {
-				await ensureExists(this._kairos.getAux(sourceRef), `Aux ${refToPath(sourceRef)}`)
+				await ensureExists(this._kairos.auxExists(sourceRef), `Aux ${refToPath(sourceRef)}`)
 			} else if (sourceRef.realm === 'media-clip') {
-				await ensureExists(this._kairos.getMediaClip(sourceRef), `Media Clip ${refToPath(sourceRef)}`)
+				await ensureExists(this._kairos.mediaClipExists(sourceRef), `Media Clip ${refToPath(sourceRef)}`)
 			} else if (sourceRef.realm === 'media-image') {
-				await ensureExists(this._kairos.getMediaImage(sourceRef), `Media Image ${refToPath(sourceRef)}`)
+				await ensureExists(this._kairos.mediaImageExists(sourceRef), `Media Image ${refToPath(sourceRef)}`)
 			} else {
 				assertNever(sourceRef)
 			}
@@ -335,21 +346,36 @@ async function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+/**
+ * Convenience class.
+ * It's like Set(), but the values have a TTL
+ */
 class SetWithTimeout<T> {
-	private store = new Map<T, number>() // value -> expiry timestamp
+	private store = new Map<
+		string,
+		{
+			value: T
+			ttl: number
+		}
+	>() // value -> expiry timestamp
 
 	constructor(private ttl: number) {}
 	add(value: T): void {
-		this.store.set(value, Date.now() + this.ttl)
+		const key = JSON.stringify(value)
+		this.store.set(key, {
+			value,
+			ttl: Date.now() + this.ttl,
+		})
 	}
 	values(): T[] {
 		const now = Date.now()
 
 		const result: T[] = []
-		for (const [key, expiry] of this.store.entries()) {
-			if (expiry > now) {
-				result.push(key)
+		for (const [key, val] of this.store.entries()) {
+			if (val.ttl > now) {
+				result.push(val.value)
 			} else {
+				// clean up:
 				this.store.delete(key)
 			}
 		}
