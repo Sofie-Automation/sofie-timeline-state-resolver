@@ -4,6 +4,7 @@ import { DeviceContextAPI } from 'timeline-state-resolver-api'
 
 export function getDeviceContext(): DeviceContextAPI<any, any> {
 	return {
+		deviceName: 'Test Device',
 		logger: {
 			error: jest.fn(),
 			warning: jest.fn(),

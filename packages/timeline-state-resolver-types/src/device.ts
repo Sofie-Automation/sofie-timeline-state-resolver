@@ -1,5 +1,6 @@
 import type { DeviceType } from '.'
 import type { DeviceCommonOptions } from './generated/common-options'
+import type { DeviceStatusDetail } from './deviceError'
 
 export enum StatusCode {
 	UNKNOWN = 0, // Status unknown
@@ -11,7 +12,23 @@ export enum StatusCode {
 }
 export interface DeviceStatus {
 	statusCode: StatusCode
+	/**
+	 * Human-readable status messages.
+	 * Devices populate this from their errors array using default templates.
+	 * Maintained for backward compatibility with consumers that don't use structured errors.
+	 */
 	messages: Array<string>
+	/**
+	 * Structured status details for customizable status messages.
+	 * Each detail contains a code (e.g., 'DEVICE_ATEM_DISCONNECTED') and context
+	 * for message interpolation (e.g., { host: '192.168.1.10' }).
+	 * Contains both errors and warnings - "detail" is used because not all statuses
+	 * are true errors (e.g., disconnect is recoverable).
+	 * Consuming applications can override default messages by providing custom templates
+	 * using the `statusDetailsToMessages()` function with custom template strings.
+	 * See `interpolateTemplateString()` and `statusDetailsToMessages()` for template interpolation utilities.
+	 */
+	statusDetails?: Array<DeviceStatusDetail>
 	active: boolean
 }
 

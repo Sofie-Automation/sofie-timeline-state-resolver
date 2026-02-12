@@ -299,3 +299,21 @@ export interface TriCasterKeyer extends TriCasterLayer {
 	/** Duration in seconds, applicable to effects other than 'cut' */
 	transitionDuration?: number
 }
+
+export const TriCasterStatusCode = {
+	NOT_CONNECTED: 'DEVICE_TRICASTER_NOT_CONNECTED',
+} as const
+export type TriCasterStatusCode = (typeof TriCasterStatusCode)[keyof typeof TriCasterStatusCode]
+
+export interface TriCasterStatusContextMap {
+	[TriCasterStatusCode.NOT_CONNECTED]: Record<string, never>
+}
+
+export type TriCasterStatusDetail<T extends TriCasterStatusCode = TriCasterStatusCode> = {
+	code: T
+	context: TriCasterStatusContextMap[T]
+}
+
+export const TriCasterStatusMessages: Record<TriCasterStatusCode, string> = {
+	[TriCasterStatusCode.NOT_CONNECTED]: 'Not connected',
+}

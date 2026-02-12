@@ -25,6 +25,9 @@ import {
 	VizMSEActions,
 	DeviceStatus,
 	StatusCode,
+	VizMSEStatusCode,
+	VizMSEStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 
 import { createMSE, MSE } from '@tv2media/v-connection'
@@ -35,6 +38,7 @@ import { ExpectedPlayoutItem } from '../../expectedPlayoutItems'
 import { endTrace, startTrace, t, literal } from '../../lib'
 import { HTTPClientError, HTTPServerError } from '@tv2media/v-connection/dist/msehttp'
 import { VizMSEManager } from './vizMSEManager'
+import { createVizMSEStatusDetail } from './errors'
 import {
 	VizMSECommand,
 	VizMSEState,
@@ -522,30 +526,44 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 	}
 	getStatus(): DeviceStatus {
 		let statusCode = StatusCode.GOOD
-		const messages: Array<string> = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
+		const deviceName = 'Viz MSE'
 
 		if (!this._vizMSEConnected) {
 			statusCode = StatusCode.BAD
-			messages.push('Not connected')
+			statusDetails.push(
+				createVizMSEStatusDetail(VizMSEStatusCode.NOT_CONNECTED, {
+					deviceName,
+				})
+			)
 		} else if (this._vizmseManager) {
 			if (this._vizmseManager.notLoadedCount > 0 || this._vizmseManager.loadingCount > 0) {
 				statusCode = StatusCode.WARNING_MINOR
-				messages.push(
-					`Got ${this._vizmseManager.notLoadedCount} elements not yet loaded to the Viz Engine (${this._vizmseManager.loadingCount} are currently loading)`
+				statusDetails.push(
+					createVizMSEStatusDetail(VizMSEStatusCode.ELEMENTS_LOADING, {
+						deviceName,
+						notLoadedCount: this._vizmseManager.notLoadedCount,
+						loadingCount: this._vizmseManager.loadingCount,
+					})
 				)
 			}
 			if (this._vizmseManager.enginesDisconnected.length) {
 				statusCode = StatusCode.BAD
 				this._vizmseManager.enginesDisconnected.forEach((engine) => {
-					messages.push(`Viz Engine ${engine} disconnected`)
+					statusDetails.push(
+						createVizMSEStatusDetail(VizMSEStatusCode.ENGINE_DISCONNECTED, {
+							deviceName,
+							engineName: engine,
+						})
+					)
 				})
 			}
 		}
 
 		return {
-			statusCode: statusCode,
-			messages: messages,
-			active: this.isActive,
+			statusCode,
+			messages: statusDetailsToMessages(statusDetails, VizMSEStatusMessages),
+			statusDetails,			active: this.isActive,
 		}
 	}
 	/**

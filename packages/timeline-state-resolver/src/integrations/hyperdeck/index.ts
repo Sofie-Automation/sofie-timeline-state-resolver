@@ -9,6 +9,9 @@ import {
 	HyperdeckActions,
 	DeviceStatus,
 	StatusCode,
+	HyperdeckStatusCode,
+	HyperdeckStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 import {
 	Hyperdeck,
@@ -20,6 +23,7 @@ import {
 import { deferAsync } from '../../lib'
 import { HyperdeckCommandWithContext, diffHyperdeckStates } from './diffState'
 import { HyperdeckDeviceState, convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from './stateBuilder'
+import { createHyperdeckStatusDetail } from './errors'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 /**
@@ -34,6 +38,7 @@ export class HyperdeckDevice
 	}
 
 	private readonly _hyperdeck = new Hyperdeck({ pingPeriod: 1000 })
+	private _initOptions?: HyperdeckOptions
 	private _connected = false
 
 	private _recordingTime = 0
@@ -53,6 +58,7 @@ export class HyperdeckDevice
 	 * Initiates the connection with the Hyperdeck through the hyperdeck-connection lib.
 	 */
 	async init(initOptions: HyperdeckOptions): Promise<boolean> {
+		this._initOptions = initOptions
 		let firstConnect = true
 
 		this._hyperdeck.connect(initOptions.host, initOptions.port)
@@ -250,11 +256,18 @@ export class HyperdeckDevice
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const messages: Array<string> = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
+		const deviceName = 'Hyperdeck'
 
 		if (!this._connected) {
 			statusCode = StatusCode.BAD
-			messages.push('Not connected')
+			statusDetails.push(
+				createHyperdeckStatusDetail(HyperdeckStatusCode.NOT_CONNECTED, {
+					deviceName,
+					host: this._initOptions?.host ?? '',
+					port: this._initOptions?.port ?? 9993,
+				})
+			)
 		} else {
 			// check recording time left
 			if (this._minRecordingTime && this._recordingTime < this._minRecordingTime) {
@@ -263,10 +276,12 @@ export class HyperdeckDevice
 				} else {
 					statusCode = StatusCode.WARNING_MAJOR
 				}
-				messages.push(
-					`Recording time left is less than ${Math.floor(this._recordingTime / 60)} minutes and ${
-						this._recordingTime % 60
-					} seconds`
+				statusDetails.push(
+					createHyperdeckStatusDetail(HyperdeckStatusCode.LOW_RECORDING_TIME, {
+						deviceName,
+						minutes: Math.floor(this._recordingTime / 60),
+						seconds: this._recordingTime % 60,
+					})
 				)
 			}
 
@@ -278,7 +293,12 @@ export class HyperdeckDevice
 					this._slotStatus[slot].status !== SlotStatus.MOUNTED &&
 					!this._suppressEmptySlotWarnings
 				) {
-					messages.push(`Slot ${slot} is not mounted`)
+					statusDetails.push(
+						createHyperdeckStatusDetail(HyperdeckStatusCode.SLOT_NOT_MOUNTED, {
+							deviceName,
+							slot,
+						})
+					)
 					if (statusCode < StatusCode.WARNING_MINOR) statusCode = StatusCode.WARNING_MINOR
 				} else {
 					noAvailableSlots = false
@@ -292,18 +312,26 @@ export class HyperdeckDevice
 			if (this._expectedTransportStatus !== this._transportStatus) {
 				if (this._expectedTransportStatus === TransportStatus.RECORD) {
 					if (statusCode < StatusCode.WARNING_MAJOR) statusCode = StatusCode.WARNING_MAJOR
-					messages.push('Hyperdeck not recording')
+					statusDetails.push(
+						createHyperdeckStatusDetail(HyperdeckStatusCode.NOT_RECORDING, {
+							deviceName,
+						})
+					)
 				} else if (this._expectedTransportStatus === TransportStatus.PLAY) {
 					if (statusCode < StatusCode.WARNING_MAJOR) statusCode = StatusCode.WARNING_MAJOR
-					messages.push('Hyperdeck not playing')
+					statusDetails.push(
+						createHyperdeckStatusDetail(HyperdeckStatusCode.NOT_PLAYING, {
+							deviceName,
+						})
+					)
 				}
 			}
 		}
 
 		return {
 			statusCode,
-			messages,
-		}
+			messages: statusDetailsToMessages(statusDetails, HyperdeckStatusMessages),
+			statusDetails,		}
 	}
 
 	/**
