@@ -45,9 +45,6 @@ export class SisyfosApi extends EventEmitter<SisyfosApiEvents> {
 			client.once('ready', () => {
 				// Monitor connectivity:
 				this._monitorConnectivity()
-
-				// Request initial, full state:
-				client.send({ address: '/state/full', args: [] })
 			})
 			client.open()
 
@@ -316,6 +313,9 @@ export class SisyfosApi extends EventEmitter<SisyfosApiEvents> {
 
 			if (connected) {
 				this.emit('connected')
+
+				// Always request full state after a connection
+				this._oscClient?.send({ address: '/state/full', args: [] })
 			} else {
 				this.emit('disconnected')
 			}
