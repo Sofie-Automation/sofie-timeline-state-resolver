@@ -75,7 +75,7 @@ export class OBSDevice implements Device<ObsDeviceTypes, OBSDeviceState, OBSComm
 
 		statusDetails.push(
 			createOBSStatusDetail(OBSStatusCode.DISCONNECTED, {
-				deviceName: 'OBS',
+				deviceName: this.context.deviceName,
 				host,
 				port,
 				error: this._obs?.error,
