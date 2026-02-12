@@ -14,8 +14,16 @@
 			"description": "Port of KAIROS server",
 			"ui:title": "Port",
 			"default": 3005
+		},
+		"monitorState": {
+			"type": "boolean",
+			"description": "Whether to monitor the Kairos application status (that all resources exist)",
+			"ui:title": "Monitor Kairos",
+			"default": false
 		}
 	},
-	"required": ["host"],
+	"required": [
+		"host"
+	],
 	"additionalProperties": false
 }

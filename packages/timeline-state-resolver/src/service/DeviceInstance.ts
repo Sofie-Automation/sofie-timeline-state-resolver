@@ -71,7 +71,7 @@ function loadDeviceIntegration(pluginPath: string | null, deviceType: DeviceType
  */
 export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	private _device: Device<any, DeviceState, CommandWithContext<any, any>>
-	private _stateHandler: StateHandler<DeviceState, CommandWithContext<any, any>, AddressState>
+	private _stateHandler: StateHandler<DeviceState, CommandWithContext<unknown, unknown>, AddressState>
 	private _deviceSpecs: DeviceEntry
 	private _stateTracker?: StateTracker<AddressState>
 

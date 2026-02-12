@@ -142,7 +142,7 @@ export class KairosStateBuilder {
 
 	public static fromTimeline(
 		timelineState: DeviceTimelineState<TSRTimelineContent>,
-		mappings: Mappings
+		mappings: Mappings<SomeMappingKairos>
 	): KairosDeviceState {
 		const builder = new KairosStateBuilder()
 
