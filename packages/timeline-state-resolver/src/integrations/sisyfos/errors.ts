@@ -1,12 +1,12 @@
-import { SisyfosError, SisyfosErrorCode, SisyfosErrorContextMap } from 'timeline-state-resolver-types'
+import { SisyfosStatusDetail, SisyfosStatusCode, SisyfosStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating Sisyfos device errors with proper context.
+ * Type-safe helper for creating Sisyfos device status details with proper context.
  */
-export function createSisyfosError<T extends SisyfosErrorCode>(
+export function createSisyfosStatusDetail<T extends SisyfosStatusCode>(
 	code: T,
-	context: SisyfosErrorContextMap[T]
-): SisyfosError<T> {
+	context: SisyfosStatusContextMap[T]
+): SisyfosStatusDetail<T> {
 	return {
 		code,
 		context,

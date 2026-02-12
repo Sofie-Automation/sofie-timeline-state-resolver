@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import {
 	AtemOptions,
-	errorsToMessages,
+	statusDetailsToMessages,
 	Mappings,
 	ActionExecutionResult,
 	ActionExecutionResultCode,
@@ -11,9 +11,9 @@ import {
 	AtemActionMethods,
 	AtemActions,
 	StatusCode,
-	AtemErrorCode,
-	AtemErrorMessages,
-	AtemError,
+	AtemStatusCode,
+	AtemStatusMessages,
+	AtemStatusDetail,
 } from 'timeline-state-resolver-types'
 import { AtemState, State as DeviceState } from 'atem-state'
 import {
@@ -40,7 +40,7 @@ import {
 	diffAddressStates,
 	updateFromAtemState,
 } from './state.js'
-import { createAtemError } from './errors.js'
+import { createAtemStatusDetail } from './errors.js'
 
 export type AtemCommandWithContext = CommandWithContext<AtemCommands.ISerializableCommand[], string>
 
@@ -158,25 +158,25 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 	}
 
 	/**
-	 * Get device status with structured errors.
+	 * Get device status with structured status details.
 	 * Returns both:
-	 * - errors: Structured error objects for customization by consuming applications
-	 * - messages: Default human-readable strings (converted from errors)
+	 * - statusDetails: Structured status objects for customization by consuming applications
+	 * - messages: Default human-readable strings (converted from statusDetails)
 	 */
 	public getStatus(): Omit<DeviceStatus, 'active'> {
-		const errors: AtemError[] = []
+		const statusDetails: AtemStatusDetail[] = []
 
 		if (!this._connected) {
-			errors.push(
-				createAtemError(AtemErrorCode.DISCONNECTED, {
+			statusDetails.push(
+				createAtemStatusDetail(AtemStatusCode.DISCONNECTED, {
 					deviceName: this.context.deviceName,
 					host: this._host,
 				})
 			)
 			return {
 				statusCode: StatusCode.BAD,
-				messages: errorsToMessages(errors, AtemErrorMessages),
-				errors,
+				messages: statusDetailsToMessages(statusDetails, AtemStatusMessages),
+				statusDetails,
 			}
 		}
 
@@ -185,8 +185,8 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 		psus.forEach((psu: boolean, i: number) => {
 			if (!psu) {
 				statusCode = StatusCode.WARNING_MAJOR
-				errors.push(
-					createAtemError(AtemErrorCode.PSU_FAULT, {
+				statusDetails.push(
+					createAtemStatusDetail(AtemStatusCode.PSU_FAULT, {
 						deviceName: this.context.deviceName,
 						host: this._host,
 						psuNumber: i + 1,
@@ -198,8 +198,8 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 
 		return {
 			statusCode,
-			messages: errorsToMessages(errors, AtemErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, AtemStatusMessages),
+			statusDetails,
 		}
 	}
 

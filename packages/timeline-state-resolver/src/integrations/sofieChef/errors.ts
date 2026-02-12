@@ -1,12 +1,12 @@
-import { SofieChefError, SofieChefErrorCode, SofieChefErrorContextMap } from 'timeline-state-resolver-types'
+import { SofieChefStatusDetail, SofieChefStatusCode, SofieChefStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating SofieChef device errors with proper context.
+ * Type-safe helper for creating SofieChef device status details with proper context.
  */
-export function createSofieChefError<T extends SofieChefErrorCode>(
+export function createSofieChefStatusDetail<T extends SofieChefStatusCode>(
 	code: T,
-	context: SofieChefErrorContextMap[T]
-): SofieChefError<T> {
+	context: SofieChefStatusContextMap[T]
+): SofieChefStatusDetail<T> {
 	return {
 		code,
 		context,

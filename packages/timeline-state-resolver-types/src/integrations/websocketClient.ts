@@ -17,30 +17,30 @@ export interface TimelineContentWebSocketMessage extends TimelineContentWebSocke
 
 export type TimelineContentWebSocketClientAny = TimelineContentWebSocketMessage
 
-export const WebSocketClientErrorCode = {
+export const WebSocketClientStatusCode = {
 	NOT_CONNECTED: 'DEVICE_WEBSOCKET_CLIENT_NOT_CONNECTED',
 	CONNECTION_FAILED: 'DEVICE_WEBSOCKET_CLIENT_CONNECTION_FAILED',
 } as const
-export type WebSocketClientErrorCode = (typeof WebSocketClientErrorCode)[keyof typeof WebSocketClientErrorCode]
+export type WebSocketClientStatusCode = (typeof WebSocketClientStatusCode)[keyof typeof WebSocketClientStatusCode]
 
-export interface WebSocketClientErrorContextMap {
-	[WebSocketClientErrorCode.NOT_CONNECTED]: {
+export interface WebSocketClientStatusContextMap {
+	[WebSocketClientStatusCode.NOT_CONNECTED]: {
 		uri?: string
 		reason?: string
 	}
-	[WebSocketClientErrorCode.CONNECTION_FAILED]: {
+	[WebSocketClientStatusCode.CONNECTION_FAILED]: {
 		uri?: string
 		error?: string
 		statusCode?: number
 	}
 }
 
-export type WebSocketClientError<T extends WebSocketClientErrorCode = WebSocketClientErrorCode> = {
+export type WebSocketClientStatusDetail<T extends WebSocketClientStatusCode = WebSocketClientStatusCode> = {
 	code: T
-	context: WebSocketClientErrorContextMap[T]
+	context: WebSocketClientStatusContextMap[T]
 }
 
-export const WebSocketClientErrorMessages: Record<WebSocketClientErrorCode, string> = {
-	[WebSocketClientErrorCode.NOT_CONNECTED]: 'WS Disconnected: {{uri}} ({{reason}})',
-	[WebSocketClientErrorCode.CONNECTION_FAILED]: 'WS Connection failed to {{uri}}: {{error}}',
+export const WebSocketClientStatusMessages: Record<WebSocketClientStatusCode, string> = {
+	[WebSocketClientStatusCode.NOT_CONNECTED]: 'WS Disconnected: {{uri}} ({{reason}})',
+	[WebSocketClientStatusCode.CONNECTION_FAILED]: 'WS Connection failed to {{uri}}: {{error}}',
 }

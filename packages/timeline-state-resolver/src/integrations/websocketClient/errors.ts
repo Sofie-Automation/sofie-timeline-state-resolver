@@ -1,15 +1,15 @@
 import {
-	WebSocketClientError,
-	WebSocketClientErrorCode,
-	WebSocketClientErrorContextMap,
+	WebSocketClientStatusDetail,
+	WebSocketClientStatusCode,
+	WebSocketClientStatusContextMap,
 } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating WebSocketClient device errors
+ * Type-safe helper for creating WebSocketClient device status details
  */
-export function createWebSocketClientError<T extends WebSocketClientErrorCode>(
+export function createWebSocketClientStatusDetail<T extends WebSocketClientStatusCode>(
 	code: T,
-	context: WebSocketClientErrorContextMap[T]
-): WebSocketClientError<T> {
+	context: WebSocketClientStatusContextMap[T]
+): WebSocketClientStatusDetail<T> {
 	return { code, context }
 }

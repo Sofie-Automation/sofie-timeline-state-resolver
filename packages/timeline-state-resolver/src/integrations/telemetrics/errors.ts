@@ -1,12 +1,16 @@
-import { TelemetricsError, TelemetricsErrorCode, TelemetricsErrorContextMap } from 'timeline-state-resolver-types'
+import {
+	TelemetricsStatusDetail,
+	TelemetricsStatusCode,
+	TelemetricsStatusContextMap,
+} from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating Telemetrics device errors with proper context.
+ * Type-safe helper for creating Telemetrics device status details with proper context.
  */
-export function createTelemetricsError<T extends TelemetricsErrorCode>(
+export function createTelemetricsStatusDetail<T extends TelemetricsStatusCode>(
 	code: T,
-	context: TelemetricsErrorContextMap[T]
-): TelemetricsError<T> {
+	context: TelemetricsStatusContextMap[T]
+): TelemetricsStatusDetail<T> {
 	return {
 		code,
 		context,

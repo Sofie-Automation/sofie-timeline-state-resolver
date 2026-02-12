@@ -31,7 +31,7 @@ describe('Hyperdeck', () => {
 			expect(device.getStatus()).toEqual({
 				messages: ['Not connected'],
 				statusCode: StatusCode.BAD,
-				errors: [
+				statusDetails: [
 					{
 						code: 'DEVICE_HYPERDECK_NOT_CONNECTED',
 						context: {
@@ -49,7 +49,7 @@ describe('Hyperdeck', () => {
 			expect(device.getStatus()).toEqual({
 				messages: ['Not connected'],
 				statusCode: StatusCode.BAD,
-				errors: [
+				statusDetails: [
 					{
 						code: 'DEVICE_HYPERDECK_NOT_CONNECTED',
 						context: {
@@ -70,7 +70,7 @@ describe('Hyperdeck', () => {
 			expect(device.getStatus()).toEqual({
 				messages: ['Not connected'],
 				statusCode: StatusCode.BAD,
-				errors: [
+				statusDetails: [
 					{
 						code: 'DEVICE_HYPERDECK_NOT_CONNECTED',
 						context: {
@@ -137,7 +137,7 @@ describe('Hyperdeck', () => {
 			expect(device.getStatus()).toEqual({
 				messages: ['Slot 2 is not mounted'],
 				statusCode: StatusCode.WARNING_MINOR,
-				errors: [
+				statusDetails: [
 					{
 						code: 'DEVICE_HYPERDECK_SLOT_NOT_MOUNTED',
 						context: {
@@ -171,7 +171,7 @@ describe('Hyperdeck', () => {
 			expect(device.getStatus()).toEqual({
 				messages: ['Recording time left is less than 0 minutes and 10 seconds', 'Slot 2 is not mounted'],
 				statusCode: StatusCode.WARNING_MAJOR,
-				errors: [
+				statusDetails: [
 					{
 						code: 'DEVICE_HYPERDECK_LOW_RECORDING_TIME',
 						context: {
@@ -213,7 +213,7 @@ describe('Hyperdeck', () => {
 			expect(device.getStatus()).toEqual({
 				messages: ['Recording time left is less than 0 minutes and 0 seconds', 'Slot 2 is not mounted'],
 				statusCode: StatusCode.BAD,
-				errors: [
+				statusDetails: [
 					{
 						code: 'DEVICE_HYPERDECK_LOW_RECORDING_TIME',
 						context: {

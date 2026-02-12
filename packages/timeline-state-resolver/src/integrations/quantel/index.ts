@@ -6,10 +6,10 @@ import {
 	QuantelActionMethods,
 	QuantelActions,
 	QuantelDeviceTypes,
-	QuantelError,
-	QuantelErrorCode,
-	QuantelErrorMessages,
-	errorsToMessages,
+	QuantelStatusDetail,
+	QuantelStatusCode,
+	QuantelStatusMessages,
+	statusDetailsToMessages,
 	QuantelOptions,
 	SomeMappingQuantel,
 	StatusCode,
@@ -23,7 +23,7 @@ import { QuantelGateway } from 'tv-automation-quantel-gateway-client'
 import { QuantelManager } from './connection.js'
 import { convertTimelineStateToQuantelState, getMappedPorts } from './state.js'
 import { diffStates } from './diff.js'
-import { createQuantelError } from './errors.js'
+import { createQuantelStatusDetail } from './errors.js'
 const debug = Debug('timeline-state-resolver:quantel')
 
 export interface OscDeviceState {
@@ -164,28 +164,30 @@ export class QuantelDevice implements Device<QuantelDeviceTypes, QuantelState, Q
 	}
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const errors: QuantelError[] = []
+		const statusDetails: QuantelStatusDetail[] = []
 		const suppressServerDownWarning =
 			Date.now() < (this._disconnectedSince ?? 0) + (this.options?.suppressDisconnectTime ?? 0)
 
 		if (!this._quantel.connected && !suppressServerDownWarning) {
 			statusCode = StatusCode.BAD
-			errors.push(createQuantelError(QuantelErrorCode.NOT_CONNECTED, {}))
+			statusDetails.push(createQuantelStatusDetail(QuantelStatusCode.NOT_CONNECTED, {}))
 		}
 		if (this._quantel.statusMessage && !suppressServerDownWarning) {
 			statusCode = StatusCode.BAD
-			errors.push(createQuantelError(QuantelErrorCode.STATUS_MESSAGE, { statusMessage: this._quantel.statusMessage }))
+			statusDetails.push(
+				createQuantelStatusDetail(QuantelStatusCode.STATUS_MESSAGE, { statusMessage: this._quantel.statusMessage })
+			)
 		}
 
 		if (!this._quantel.initialized) {
 			statusCode = StatusCode.BAD
-			errors.push(createQuantelError(QuantelErrorCode.NOT_INITIALIZED, {}))
+			statusDetails.push(createQuantelStatusDetail(QuantelStatusCode.NOT_INITIALIZED, {}))
 		}
 
 		return {
 			statusCode: statusCode,
-			messages: errorsToMessages(errors, QuantelErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, QuantelStatusMessages),
+			statusDetails,
 		}
 	}
 

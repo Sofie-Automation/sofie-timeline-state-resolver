@@ -1,15 +1,18 @@
-import type { VMixErrorCode, VMixErrorContextMap, VMixError } from 'timeline-state-resolver-types'
+import type { VMixStatusCode, VMixStatusContextMap, VMixStatusDetail } from 'timeline-state-resolver-types'
 
 /**
- * Create a type-safe VMix error.
+ * Create a type-safe VMix status detail.
  *
- * TypeScript ensures the context matches the error code at compile time.
+ * TypeScript ensures the context matches the status code at compile time.
  *
  * @example
  * // Correct usage:
- * createVMixError(VMixErrorCode.NOT_CONNECTED, { deviceName: 'VMix 1', host: '192.168.1.10' })
- * createVMixError(VMixErrorCode.NOT_INITIALIZED, { deviceName: 'VMix 1', host: '192.168.1.10' })
+ * createVMixStatusDetail(VMixStatusCode.NOT_CONNECTED, { deviceName: 'VMix 1', host: '192.168.1.10' })
+ * createVMixStatusDetail(VMixStatusCode.NOT_INITIALIZED, { deviceName: 'VMix 1', host: '192.168.1.10' })
  */
-export function createVMixError<T extends VMixErrorCode>(code: T, context: VMixErrorContextMap[T]): VMixError<T> {
+export function createVMixStatusDetail<T extends VMixStatusCode>(
+	code: T,
+	context: VMixStatusContextMap[T]
+): VMixStatusDetail<T> {
 	return { code, context }
 }

@@ -24,9 +24,9 @@ import {
 	DeviceStatus,
 	StatusCode,
 	DeviceTimelineState,
-	VizMSEErrorCode,
-	VizMSEErrorMessages,
-	errorsToMessages,
+	VizMSEStatusCode,
+	VizMSEStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 
 import { createMSE, MSE } from '@tv2media/v-connection'
@@ -37,7 +37,7 @@ import { ExpectedPlayoutItem } from '../../expectedPlayoutItems.js'
 import { endTrace, startTrace, t, literal } from '../../lib.js'
 import { HTTPClientError, HTTPServerError } from '@tv2media/v-connection/dist/msehttp'
 import { VizMSEManager } from './vizMSEManager.js'
-import { createVizMSEError } from './errors.js'
+import { createVizMSEStatusDetail } from './errors.js'
 import {
 	VizMSECommand,
 	VizMSEState,
@@ -524,21 +524,21 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 	}
 	getStatus(): DeviceStatus {
 		let statusCode = StatusCode.GOOD
-		const errors: DeviceStatus['errors'] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
 		const deviceName = 'Viz MSE'
 
 		if (!this._vizMSEConnected) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createVizMSEError(VizMSEErrorCode.NOT_CONNECTED, {
+			statusDetails.push(
+				createVizMSEStatusDetail(VizMSEStatusCode.NOT_CONNECTED, {
 					deviceName,
 				})
 			)
 		} else if (this._vizmseManager) {
 			if (this._vizmseManager.notLoadedCount > 0 || this._vizmseManager.loadingCount > 0) {
 				statusCode = StatusCode.WARNING_MINOR
-				errors.push(
-					createVizMSEError(VizMSEErrorCode.ELEMENTS_LOADING, {
+				statusDetails.push(
+					createVizMSEStatusDetail(VizMSEStatusCode.ELEMENTS_LOADING, {
 						deviceName,
 						notLoadedCount: this._vizmseManager.notLoadedCount,
 						loadingCount: this._vizmseManager.loadingCount,
@@ -548,8 +548,8 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 			if (this._vizmseManager.enginesDisconnected.length) {
 				statusCode = StatusCode.BAD
 				this._vizmseManager.enginesDisconnected.forEach((engine) => {
-					errors.push(
-						createVizMSEError(VizMSEErrorCode.ENGINE_DISCONNECTED, {
+					statusDetails.push(
+						createVizMSEStatusDetail(VizMSEStatusCode.ENGINE_DISCONNECTED, {
 							deviceName,
 							engineName: engine,
 						})
@@ -560,8 +560,8 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 
 		return {
 			statusCode,
-			messages: errorsToMessages(errors, VizMSEErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, VizMSEStatusMessages),
+			statusDetails,
 			active: this.isActive,
 		}
 	}

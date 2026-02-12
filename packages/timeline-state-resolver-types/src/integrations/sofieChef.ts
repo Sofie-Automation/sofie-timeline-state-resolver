@@ -1,50 +1,50 @@
 import { DeviceType, TemplateString } from '../index.js'
-import { DeviceStatusError } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceError.js'
 
 /**
- * Error codes for SofieChef device issues.
- * These codes can be customized in blueprints via deviceErrorMessages.
+ * Status codes for SofieChef device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
  */
-export const SofieChefErrorCode = {
+export const SofieChefStatusCode = {
 	NOT_CONNECTED: 'DEVICE_SOFIECHEF_NOT_CONNECTED',
 	APP_STATUS: 'DEVICE_SOFIECHEF_APP_STATUS',
 	WINDOW_STATUS: 'DEVICE_SOFIECHEF_WINDOW_STATUS',
 } as const
 
-export type SofieChefErrorCode = (typeof SofieChefErrorCode)[keyof typeof SofieChefErrorCode]
+export type SofieChefStatusCode = (typeof SofieChefStatusCode)[keyof typeof SofieChefStatusCode]
 
 /**
- * Context data for each SofieChef error type.
+ * Context data for each SofieChef status.
  * These fields are available for message template interpolation.
  */
-export interface SofieChefErrorContextMap {
-	[SofieChefErrorCode.NOT_CONNECTED]: {
+export interface SofieChefStatusContextMap {
+	[SofieChefStatusCode.NOT_CONNECTED]: {
 		deviceName: string
 	}
-	[SofieChefErrorCode.APP_STATUS]: {
+	[SofieChefStatusCode.APP_STATUS]: {
 		deviceName: string
 		message: string
 	}
-	[SofieChefErrorCode.WINDOW_STATUS]: {
+	[SofieChefStatusCode.WINDOW_STATUS]: {
 		deviceName: string
 		windowIndex: number
 		message: string
 	}
 }
 
-export type SofieChefError<T extends SofieChefErrorCode = SofieChefErrorCode> = DeviceStatusError<
+export type SofieChefStatusDetail<T extends SofieChefStatusCode = SofieChefStatusCode> = DeviceStatusDetail<
 	T,
-	SofieChefErrorContextMap[T]
+	SofieChefStatusContextMap[T]
 >
 
 /**
- * Default error message templates for SofieChef devices.
- * Can be overridden in blueprints via deviceErrorMessages.
+ * Default status message templates for SofieChef devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
  */
-export const SofieChefErrorMessages: Record<SofieChefErrorCode, string> = {
-	[SofieChefErrorCode.NOT_CONNECTED]: 'Not connected',
-	[SofieChefErrorCode.APP_STATUS]: '{{message}}',
-	[SofieChefErrorCode.WINDOW_STATUS]: 'Window {{windowIndex}}: {{message}}',
+export const SofieChefStatusMessages: Record<SofieChefStatusCode, string> = {
+	[SofieChefStatusCode.NOT_CONNECTED]: 'Not connected',
+	[SofieChefStatusCode.APP_STATUS]: '{{message}}',
+	[SofieChefStatusCode.WINDOW_STATUS]: 'Window {{windowIndex}}: {{message}}',
 }
 
 export enum TimelineContentTypeSofieChef {

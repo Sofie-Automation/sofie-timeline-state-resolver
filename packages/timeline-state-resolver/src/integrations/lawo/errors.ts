@@ -1,8 +1,11 @@
-import { LawoError, LawoErrorCode, LawoErrorContextMap } from 'timeline-state-resolver-types'
+import { LawoStatusDetail, LawoStatusCode, LawoStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating Lawo device errors
+ * Type-safe helper for creating Lawo device status details
  */
-export function createLawoError<T extends LawoErrorCode>(code: T, context: LawoErrorContextMap[T]): LawoError<T> {
+export function createLawoStatusDetail<T extends LawoStatusCode>(
+	code: T,
+	context: LawoStatusContextMap[T]
+): LawoStatusDetail<T> {
 	return { code, context }
 }
