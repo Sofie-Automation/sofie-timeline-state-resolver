@@ -5,6 +5,7 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 import type { ActionExecutionResult } from "../actions"
+import type { DeviceType } from './device-options.js'
 
 export interface SisyfosOptions {
 	host: string
@@ -60,6 +61,7 @@ export interface SisyfosActionMethods {
 }
 
 export interface SisyfosDeviceTypes {
+	Type: DeviceType.SISYFOS,
 	Options: SisyfosOptions
 	Mappings: SomeMappingSisyfos
 	Actions: SisyfosActionMethods

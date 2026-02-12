@@ -363,7 +363,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 	private async _mapAllConnections<T>(
 		includeUninitialized: boolean,
-		fcn: (d: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>) => Promise<T>
+		fcn: (d: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>) => Promise<T>
 	): Promise<T[]> {
 		return PAll(
 			this.connectionManager.getConnections(includeUninitialized).map((d) => async () => fcn(d)),
@@ -476,7 +476,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			const pPrepareForHandleStates: Promise<unknown> = Promise.all(
 				this.connectionManager
 					.getConnections(false)
-					.map(async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>): Promise<void> => {
+					.map(async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>): Promise<void> => {
 						await device.device.prepareForHandleState(resolveTime)
 					})
 			).catch((error) => {
@@ -573,7 +573,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			// Push state to the right device:
 			await this._mapAllConnections(
 				false,
-				async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>): Promise<void> => {
+				async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>): Promise<void> => {
 					if (this._options.optimizeForProduction) {
 						// Don't send any state to the abstract device, since it doesn't do anything anyway
 						if (device.deviceType === DeviceType.ABSTRACT) return
@@ -604,16 +604,19 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			if (!nextEventTime && tlState.time < this._resolved.validTo) {
 				// There's nothing ahead in the timeline (as far as we can see, ref: this._resolved.validTo)
 				// Tell the devices that the future is clear:
-				await this._mapAllConnections(true, async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>) => {
-					try {
-						await device.device.clearFuture(tlState.time)
-					} catch (e) {
-						this.emit(
-							'error',
-							'Error in device "' + device.deviceId + '", clearFuture: ' + e + ' ' + (e as Error).stack
-						)
+				await this._mapAllConnections(
+					true,
+					async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>) => {
+						try {
+							await device.device.clearFuture(tlState.time)
+						} catch (e) {
+							this.emit(
+								'error',
+								'Error in device "' + device.deviceId + '", clearFuture: ' + e + ' ' + (e as Error).stack
+							)
+						}
 					}
-				})
+				)
 			}
 
 			const nowPostExec = this.getCurrentTime()
@@ -1084,7 +1087,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	 */
 	private filterLayersPerDevice(
 		layers: Timeline.StateInTime<TSRTimelineContent>,
-		devices: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>[]
+		devices: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>[]
 	) {
 		const filteredStates: { [deviceId: string]: { [layerId: string]: ResolvedTimelineObjectInstanceExtended } } = {}
 

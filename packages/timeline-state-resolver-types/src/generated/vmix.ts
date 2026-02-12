@@ -5,6 +5,7 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 import type { ActionExecutionResult } from "../actions"
+import type { DeviceType } from './device-options.js'
 
 export interface VmixOptions {
 	host: string
@@ -151,6 +152,7 @@ export interface VmixActionMethods {
 }
 
 export interface VmixDeviceTypes {
+	Type: DeviceType.VMIX,
 	Options: VmixOptions
 	Mappings: SomeMappingVmix
 	Actions: VmixActionMethods

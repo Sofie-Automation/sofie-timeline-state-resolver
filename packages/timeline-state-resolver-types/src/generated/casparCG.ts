@@ -5,6 +5,7 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 import type { ActionExecutionResult } from "../actions"
+import type { DeviceType } from './device-options.js'
 
 export interface CasparCGOptions {
 	/**
@@ -66,6 +67,7 @@ export interface CasparCGActionMethods {
 }
 
 export interface CasparCGDeviceTypes {
+	Type: DeviceType.CASPARCG,
 	Options: CasparCGOptions
 	Mappings: SomeMappingCasparCG
 	Actions: CasparCGActionMethods
