@@ -7,7 +7,5 @@ export function getDeviceContext(): MockProxy<DeviceContextAPI<any, any>> {
 	// only properties (functions) needing a specific default (return) value, incl. async ones need to be explicitly set in the first arg
 	return mockDeep<DeviceContextAPI<any, any>>({
 		getCurrentTime: () => Date.now(),
-		resetState: async () => Promise.resolve(),
-		resetToState: async () => Promise.resolve(),
 	})
 }

@@ -96,9 +96,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 
 	public async init(initOptions: SisyfosOptions): Promise<boolean> {
 		this._sisyfos.once('initialized', () => {
-			this.context
-				.resetToState(this._getDeviceState(false))
-				.catch((e) => this.context.logger.error('Failed to reset to full state', e))
+			this.context.resetToState(this._getDeviceState(false))
 		})
 
 		this._sisyfos
@@ -140,9 +138,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 	private async _initialize(): Promise<void> {
 		this._sisyfos.reInitialize()
 		this._sisyfos.once('initialized', () => {
-			this.context
-				.resetToState(this._getDeviceState(false))
-				.catch((e) => this.context.logger.error('Failed to reset to state', e))
+			this.context.resetToState(this._getDeviceState(false))
 		})
 	}
 
@@ -155,13 +151,13 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 		this._sisyfos.reInitialize()
 		this._sisyfos.once('initialized', () => {
 			this._isResyncPending = false
-			const targetState = this.context.getCurrentState()
 
-			if (targetState) {
-				this.context
-					.resetToState(this._getDeviceState(false))
-					.catch((e) => this.context.logger.error('Failed to reset to state while resyncing', e))
-			}
+			this.context.setModifiedState((targetState) => {
+				if (targetState) {
+					return this._getDeviceState(false)
+				}
+				return false
+			})
 		})
 	}
 

@@ -1,15 +1,10 @@
 import type { DeviceOptionsAny } from 'timeline-state-resolver-types'
 import { ConnectionManager } from '../service/ConnectionManager'
 import { MockTime } from './mockTime'
-import type { DeviceOptionsVMixInternal } from '../integrations/vmix'
 import type { DeviceOptionsVizMSEInternal } from '../integrations/vizMSE'
 import type { DeviceOptionsCasparCGInternal } from '../integrations/casparCG'
 
-export type DeviceOptionsAnyInternal =
-	| DeviceOptionsAny
-	| DeviceOptionsVMixInternal
-	| DeviceOptionsVizMSEInternal
-	| DeviceOptionsCasparCGInternal
+export type DeviceOptionsAnyInternal = DeviceOptionsAny | DeviceOptionsVizMSEInternal | DeviceOptionsCasparCGInternal
 
 /**
  * Just a wrapper to :any type, to be used in tests only

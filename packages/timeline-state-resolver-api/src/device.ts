@@ -242,10 +242,10 @@ export interface DeviceContextAPI<DeviceState, AddressState = void> {
 	timeTrace: (trace: FinishedTrace) => void
 
 	/** Reset the tracked device state to undefined and notify the conductor to reset the resolver */
-	resetState: () => Promise<void>
+	resetState: () => void
 
 	/** Reset the tracked device state to "state" and notify the conductor to reset the resolver */
-	resetToState: (state: DeviceState) => Promise<void>
+	resetToState: (state: DeviceState) => void
 
 	/**
 	 * Modify the tracked device state and notify the conductor to reset the resolver
@@ -253,13 +253,10 @@ export interface DeviceContextAPI<DeviceState, AddressState = void> {
 	 *           Note: The `currentState` argument is a clone, so it is safe to modify it directly.
 	 * 		     If no changes have been made, return false.
 	 */
-	setModifiedState: (cb: (currentState: DeviceState) => DeviceState | false) => Promise<void>
+	setModifiedState: (cb: (currentState: DeviceState | undefined) => DeviceState | false) => void
 
 	/** Calculate a new diff for the next state change */
 	recalcDiff: () => void
 
 	setAddressState: (address: string, state: AddressState) => void
-
-	/** Get current state */
-	getCurrentState: () => DeviceState | undefined
 }

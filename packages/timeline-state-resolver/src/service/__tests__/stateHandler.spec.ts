@@ -162,14 +162,10 @@ describe('stateHandler', () => {
 
 	async function getNewStateHandlerWithStates(stateToHandle: Timeline.TimelineState<TSRTimelineContent>) {
 		const stateHandler = getNewStateHandler(true)
-		stateHandler
-			.setCurrentState({
-				entry1: { value: true },
-			})
-			.catch((e) => {
-				console.error('Error while setting current state', e)
-			})
-		await stateHandler.handleState(stateToHandle, {})
+		stateHandler.setCurrentState({
+			entry1: { value: true },
+		})
+		stateHandler.handleState(stateToHandle, {})
 
 		return stateHandler
 	}
@@ -177,15 +173,11 @@ describe('stateHandler', () => {
 	test('transition to a new state', async () => {
 		const stateHandler = getNewStateHandler()
 
-		stateHandler
-			.setCurrentState({
-				entry1: { value: true },
-			})
-			.catch((e) => {
-				console.error('Error while setting current state', e)
-			})
+		stateHandler.setCurrentState({
+			entry1: { value: true },
+		})
 
-		await stateHandler.handleState(createTimelineState(10000, {}), {})
+		stateHandler.handleState(createTimelineState(10000, {}), {})
 
 		await mockTime.tick()
 
@@ -201,15 +193,11 @@ describe('stateHandler', () => {
 	test('transition to 2 new states', async () => {
 		const stateHandler = getNewStateHandler()
 
-		stateHandler
-			.setCurrentState({
-				entry1: { value: true },
-			})
-			.catch((e) => {
-				console.error('Error while setting current state', e)
-			})
+		stateHandler.setCurrentState({
+			entry1: { value: true },
+		})
 
-		await stateHandler.handleState(createTimelineState(10000, {}), {})
+		stateHandler.handleState(createTimelineState(10000, {}), {})
 
 		await mockTime.tick()
 
@@ -221,7 +209,7 @@ describe('stateHandler', () => {
 			},
 		})
 
-		await stateHandler.handleState(
+		stateHandler.handleState(
 			createTimelineState(10100, {
 				entry1: { value: true },
 			}),
@@ -250,11 +238,9 @@ describe('stateHandler', () => {
 	test('transition to a new state with preliminary commands', async () => {
 		const stateHandler = getNewStateHandler()
 
-		stateHandler.setCurrentState({}).catch((e) => {
-			console.error('Error while setting current state', e)
-		})
+		stateHandler.setCurrentState({})
 
-		await stateHandler.handleState(
+		stateHandler.handleState(
 			createTimelineState(12000, {
 				entry1: {
 					value: true,
@@ -295,14 +281,11 @@ describe('stateHandler', () => {
 
 	test('ignore transitions to states older than current state', async () => {
 		const stateHandler = getNewStateHandler()
-		stateHandler
-			.setCurrentState({
-				entry1: { value: true },
-			})
-			.catch((e) => {
-				console.error('Error while setting current state', e)
-			})
-		await stateHandler.handleState(createTimelineState(10000, {}), {})
+		stateHandler.setCurrentState({
+			entry1: { value: true },
+		})
+
+		stateHandler.handleState(createTimelineState(10000, {}), {})
 
 		await mockTime.tick()
 
@@ -314,7 +297,7 @@ describe('stateHandler', () => {
 			},
 		})
 
-		await stateHandler.handleState(
+		stateHandler.handleState(
 			createTimelineState(10100, {
 				entry1: { value: true },
 			}),
@@ -341,7 +324,7 @@ describe('stateHandler', () => {
 		//
 		MOCK_COMMAND_RECEIVER.mockReset()
 
-		await stateHandler.handleState(createTimelineState(10000, {}), {})
+		stateHandler.handleState(createTimelineState(10000, {}), {})
 
 		await mockTime.tick()
 

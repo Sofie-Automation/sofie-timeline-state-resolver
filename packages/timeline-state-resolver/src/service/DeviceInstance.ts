@@ -23,7 +23,7 @@ import type { StateChangeReport } from './measure'
 import { StateTracker } from './stateTracker'
 
 type Config = DeviceOptionsAny
-type DeviceState = any
+type DeviceState = object
 type AddressState = any
 
 export interface DeviceDetails {
@@ -219,7 +219,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			return actionNotFoundMessage(id as never)
 		}
 
-		return action(payload)
+		return action.call(this._device.actions, payload)
 	}
 
 	/** @deprecated - just here for API compatiblity with the old class */
@@ -228,9 +228,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	}
 
 	handleState(newState: Timeline.TimelineState<TSRTimelineContent>, newMappings: Mappings) {
-		this._stateHandler.handleState(newState, newMappings).catch((e) => {
-			this.emit('error', 'Error while handling state', e)
-		})
+		this._stateHandler.handleState(newState, newMappings)
 
 		this._isActive = Object.keys(newMappings).length > 0
 	}
@@ -279,7 +277,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		return Date.now() + (this._tDiff ?? 0)
 	}
 
-	private _getDeviceContextAPI(): DeviceContextAPI<any> {
+	private _getDeviceContextAPI(): DeviceContextAPI<DeviceState, AddressState> {
 		return {
 			logger: {
 				error: (context: string, err: Error) => {
@@ -328,24 +326,24 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 				this.emit('timeTrace', trace)
 			},
 
-			resetState: async () => {
-				await this._stateHandler.setCurrentState(undefined)
-				await this._stateHandler.clearFutureStates()
+			resetState: () => {
+				this._stateHandler.setCurrentState(undefined)
+				this._stateHandler.clearFutureStates()
 				this.emit('resyncStates')
 			},
-			setModifiedState: async (cb: (currentState: DeviceState) => DeviceState | false) => {
+			setModifiedState: (cb: (currentState: DeviceState | undefined) => DeviceState | false) => {
 				const currentState = cloneDeep(this._stateHandler.getCurrentState())
 				const newState = cb(currentState)
 
 				if (newState === false) return // false means no changes were made, and no resyncStates is necessary
 
-				await this._stateHandler.setCurrentState(newState)
-				await this._stateHandler.clearFutureStates()
+				this._stateHandler.setCurrentState(newState)
+				this._stateHandler.clearFutureStates()
 				this.emit('resyncStates')
 			},
-			resetToState: async (state: any) => {
-				await this._stateHandler.setCurrentState(state)
-				await this._stateHandler.clearFutureStates()
+			resetToState: (state: DeviceState) => {
+				this._stateHandler.setCurrentState(state)
+				this._stateHandler.clearFutureStates()
 				this.emit('resyncStates')
 			},
 
@@ -355,10 +353,6 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 
 			setAddressState: (address, state) => {
 				this._stateTracker?.updateState(address, state)
-			},
-
-			getCurrentState: () => {
-				return this._stateHandler.getCurrentState()
 			},
 		}
 	}

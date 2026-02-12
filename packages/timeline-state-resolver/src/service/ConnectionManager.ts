@@ -6,7 +6,6 @@ import { DeviceContainer } from '..//devices/deviceContainer'
 import { assertNever } from 'atem-connection/dist/lib/atemUtil'
 import { CasparCGDevice, DeviceOptionsCasparCGInternal } from '../integrations/casparCG'
 import { DeviceOptionsVizMSEInternal, VizMSEDevice } from '../integrations/vizMSE'
-import { DeviceOptionsVMixInternal, VMixDevice } from '../integrations/vmix'
 import { ImplementedServiceDeviceTypes } from './devices'
 import { EventEmitter } from 'node:events'
 import { DeviceInstanceEvents } from './DeviceInstance'
@@ -412,14 +411,6 @@ function createContainer(
 				threadedClassOptions
 			)
 		case DeviceType.VMIX:
-			return DeviceContainer.create<DeviceOptionsVMixInternal, typeof VMixDevice>(
-				'../../dist/integrations/vmix/index.js',
-				'VMixDevice',
-				deviceId,
-				deviceOptions,
-				getCurrentTime,
-				threadedClassOptions
-			)
 		case DeviceType.SINGULAR_LIVE:
 		case DeviceType.TELEMETRICS:
 		case DeviceType.PHAROS:

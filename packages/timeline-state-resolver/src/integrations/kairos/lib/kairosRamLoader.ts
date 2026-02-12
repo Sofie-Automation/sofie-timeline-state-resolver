@@ -20,7 +20,7 @@ export class KairosRamLoader {
 		playerIdentifier: number | string,
 		source: AnySourceRef | string,
 
-		afterLoadSetModifiedStateCallback: (currentState: KairosDeviceState) => KairosDeviceState | false
+		afterLoadSetModifiedStateCallback: (currentState: KairosDeviceState | undefined) => KairosDeviceState | false
 	): Promise<void> {
 		// This method is called to ensure that a ramrec/still is loaded into RAM.
 		// If the ramrec/still is not loaded into RAM it cannot be used.
@@ -82,7 +82,7 @@ export class KairosRamLoader {
 				// Modify the current device state to reflect that the clip is not loaded yet.
 				// Upon re-triggering diffState, it'll attempt to load the clip again.
 
-				await this.context.setModifiedState(afterLoadSetModifiedStateCallback)
+				this.context.setModifiedState(afterLoadSetModifiedStateCallback)
 				// ^ This will cause TSR to re-run the diffState and thus try to load the clip again.
 			})
 			.catch((e) => this.context.logger.error(`Error while waiting for ramrec load: ${e}`, e))

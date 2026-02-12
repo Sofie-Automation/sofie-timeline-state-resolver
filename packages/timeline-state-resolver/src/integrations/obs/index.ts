@@ -35,9 +35,7 @@ export class OBSDevice implements Device<ObsDeviceTypes, OBSDeviceState, OBSComm
 		this._obs.on(OBSConnectionEvents.Connected, () => {
 			this.context.logger.debug('OBS Connected')
 			this.context.connectionChanged(this.getStatus())
-			this.context.resetToState(getDefaultState(this.context.getCurrentTime())).catch((e) => {
-				this.context.logger.error('OBS: error while resetting state to default', e)
-			})
+			this.context.resetToState(getDefaultState(this.context.getCurrentTime()))
 		})
 		this._obs.on(OBSConnectionEvents.Disconnected, () => {
 			this.context.logger.debug('OBS Disconnected')

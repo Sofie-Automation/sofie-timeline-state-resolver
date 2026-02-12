@@ -70,9 +70,7 @@ export class HyperdeckDevice
 							this._connected = true
 							this._connectionChanged()
 
-							this.context
-								.resetToState(state)
-								.catch((e) => this.context.logger.error('Error resetting hyperdeck state', new Error(e)))
+							this.context.resetToState(state)
 						})
 						.catch((e) => this.context.logger.error('Hyperdeck.on("connected")', e))
 
@@ -144,7 +142,7 @@ export class HyperdeckDevice
 			// TODO - could this being slow/offline be a problem?
 			const state = await this._queryCurrentState()
 
-			await this.context.resetToState(state)
+			this.context.resetToState(state)
 		} catch (e) {
 			this.context.resetResolver()
 		}
