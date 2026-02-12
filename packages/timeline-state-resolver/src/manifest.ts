@@ -35,6 +35,9 @@ import MultiOscOptions = require('./$schemas/generated/multiOsc/options.json')
 import MultiOscMappings = require('./$schemas/generated/multiOsc/mappings.json')
 import ObsOptions = require('./$schemas/generated/obs/options.json')
 import ObsMappings = require('./$schemas/generated/obs/mappings.json')
+import OgrafActions = require('./$schemas/generated/ograf/actions.json')
+import OgrafOptions = require('./$schemas/generated/ograf/options.json')
+import OgrafMappings = require('./$schemas/generated/ograf/mappings.json')
 import OscOptions = require('./$schemas/generated/osc/options.json')
 import OscMappings = require('./$schemas/generated/osc/mappings.json')
 import PanasonicPTZActions = require('./$schemas/generated/panasonicPTZ/actions.json')
@@ -133,6 +136,12 @@ export const builtinDeviceManifest: TSRManifest = {
 			displayName: generateTranslation('Obs'),
 			configSchema: JSON.stringify(ObsOptions),
 			mappingsSchemas: stringifyMappingSchema(ObsMappings),
+		},
+		[DeviceType.OGRAF]: {
+			displayName: generateTranslation('Ograf'),
+			actions: OgrafActions.actions.map(stringifyActionSchema),
+			configSchema: JSON.stringify(OgrafOptions),
+			mappingsSchemas: stringifyMappingSchema(OgrafMappings),
 		},
 		[DeviceType.OSC]: {
 			displayName: generateTranslation('Osc'),

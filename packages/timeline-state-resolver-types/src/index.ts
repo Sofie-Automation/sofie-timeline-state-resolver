@@ -21,6 +21,7 @@ import { TimelineContentVIZMSEAny } from './integrations/vizMSE'
 import { TimelineContentSingularLiveAny } from './integrations/singularLive'
 import { TimelineContentVMixAny } from './integrations/vmix'
 import { TimelineContentOBSAny } from './integrations/obs'
+import { TimelineContentOgrafAny } from './integrations/ograf'
 import { TimelineContentTriCasterAny } from './integrations/tricaster'
 import { TimelineContentWebSocketClientAny } from './integrations/websocketClient'
 import { TimelineContentKairosAny } from './integrations/kairos'
@@ -45,6 +46,7 @@ export * from './integrations/vizMSE'
 export * from './integrations/singularLive'
 export * from './integrations/vmix'
 export * from './integrations/obs'
+export * from './integrations/ograf'
 export * from './integrations/tricaster'
 export * from './integrations/telemetrics'
 export * from './integrations/multiOsc'
@@ -114,6 +116,7 @@ export interface TimelineContentMap {
 	[DeviceType.KAIROS]: TimelineContentKairosAny
 	[DeviceType.LAWO]: TimelineContentLawoAny
 	[DeviceType.OBS]: TimelineContentOBSAny
+	[DeviceType.OGRAF]: TimelineContentOgrafAny
 	[DeviceType.OSC]: TimelineContentOSCAny
 	[DeviceType.PHAROS]: TimelineContentPharosAny
 	[DeviceType.PANASONIC_PTZ]: TimelineContentPanasonicPtzAny

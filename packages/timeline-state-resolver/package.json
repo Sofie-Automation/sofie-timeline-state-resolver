@@ -135,6 +135,7 @@
 		"@types/simple-oauth2": "^5.0.8",
 		"jest-mock-extended": "^4.0.0",
 		"json-schema-to-typescript": "^15.0.4",
+		"ograf": "^1.1.0",
 		"timeline-state-resolver-tools": "10.0.0-release53"
 	}
 }
