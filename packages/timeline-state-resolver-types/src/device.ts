@@ -1,6 +1,6 @@
 import type { DeviceType } from './index.js'
 import type { DeviceCommonOptions } from './generated/common-options.js'
-import type { DeviceStatusError } from './deviceError.js'
+import type { DeviceStatusDetail } from './deviceError.js'
 
 export enum StatusCode {
 	UNKNOWN = 0, // Status unknown
@@ -19,14 +19,16 @@ export interface DeviceStatus {
 	 */
 	messages: Array<string>
 	/**
-	 * Structured error information for customizable error messages.
-	 * Each error contains a code (e.g., 'DEVICE_ATEM_DISCONNECTED') and context
+	 * Structured status details for customizable status messages.
+	 * Each detail contains a code (e.g., 'DEVICE_ATEM_DISCONNECTED') and context
 	 * for message interpolation (e.g., { host: '192.168.1.10' }).
+	 * Contains both errors and warnings - "detail" is used because not all statuses
+	 * are true errors (e.g., disconnect is recoverable).
 	 * Consuming applications can override default messages by providing custom templates
-	 * using the `errorsToMessages()` function with custom template strings.
-	 * See `interpolateTemplateString()` and `errorsToMessages()` for template interpolation utilities.
+	 * using the `statusDetailsToMessages()` function with custom template strings.
+	 * See `interpolateTemplateString()` and `statusDetailsToMessages()` for template interpolation utilities.
 	 */
-	errors?: Array<DeviceStatusError>
+	statusDetails?: Array<DeviceStatusDetail>
 	active: boolean
 }
 

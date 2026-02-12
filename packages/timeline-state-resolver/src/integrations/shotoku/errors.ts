@@ -1,11 +1,11 @@
-import { ShotokuError, ShotokuErrorCode, ShotokuErrorContextMap } from 'timeline-state-resolver-types'
+import { ShotokuStatusDetail, ShotokuStatusCode, ShotokuStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating Shotoku device errors
+ * Type-safe helper for creating Shotoku device status details
  */
-export function createShotokuError<T extends ShotokuErrorCode>(
+export function createShotokuStatusDetail<T extends ShotokuStatusCode>(
 	code: T,
-	context: ShotokuErrorContextMap[T]
-): ShotokuError<T> {
+	context: ShotokuStatusContextMap[T]
+): ShotokuStatusDetail<T> {
 	return { code, context }
 }

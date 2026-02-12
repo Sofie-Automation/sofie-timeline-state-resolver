@@ -1,14 +1,14 @@
 import WebSocket from 'ws'
 import {
 	DeviceStatus,
-	errorsToMessages,
+	statusDetailsToMessages,
 	StatusCode,
 	WebsocketClientOptions,
-	WebSocketClientError,
-	WebSocketClientErrorCode,
-	WebSocketClientErrorMessages,
+	WebSocketClientStatusDetail,
+	WebSocketClientStatusCode,
+	WebSocketClientStatusMessages,
 } from 'timeline-state-resolver-types'
-import { createWebSocketClientError } from './errors'
+import { createWebSocketClientStatusDetail } from './errors.js'
 
 export class WebSocketConnection {
 	private ws?: WebSocket
@@ -72,19 +72,19 @@ export class WebSocketConnection {
 	}
 
 	connectionStatus(): Omit<DeviceStatus, 'active'> {
-		const errors: WebSocketClientError[] = []
+		const statusDetails: WebSocketClientStatusDetail[] = []
 
 		if (!this.isWsConnected) {
 			if (this.lastError) {
-				errors.push(
-					createWebSocketClientError(WebSocketClientErrorCode.CONNECTION_FAILED, {
+				statusDetails.push(
+					createWebSocketClientStatusDetail(WebSocketClientStatusCode.CONNECTION_FAILED, {
 						uri: this.lastError.uri,
 						error: this.lastError.error,
 					})
 				)
 			} else {
-				errors.push(
-					createWebSocketClientError(WebSocketClientErrorCode.NOT_CONNECTED, {
+				statusDetails.push(
+					createWebSocketClientStatusDetail(WebSocketClientStatusCode.NOT_CONNECTED, {
 						uri: this.options.webSocket?.uri,
 						reason: this.disconnectReason,
 					})
@@ -94,8 +94,8 @@ export class WebSocketConnection {
 
 		return {
 			statusCode: this.isWsConnected ? StatusCode.GOOD : StatusCode.BAD,
-			messages: errorsToMessages(errors, WebSocketClientErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, WebSocketClientStatusMessages),
+			statusDetails,
 		}
 	}
 

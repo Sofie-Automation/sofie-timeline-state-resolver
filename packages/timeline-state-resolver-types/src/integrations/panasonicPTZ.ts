@@ -1,39 +1,39 @@
 import { DeviceType } from '../generated/index.js'
-import { DeviceStatusError } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceError.js'
 
 /**
- * Error codes for Panasonic PTZ device issues.
- * These codes can be customized in blueprints via deviceErrorMessages.
+ * Status codes for Panasonic PTZ device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
  */
-export const PanasonicPTZErrorCode = {
+export const PanasonicPTZStatusCode = {
 	NOT_CONNECTED: 'DEVICE_PANASONIC_PTZ_NOT_CONNECTED',
 } as const
 
-export type PanasonicPTZErrorCode = (typeof PanasonicPTZErrorCode)[keyof typeof PanasonicPTZErrorCode]
+export type PanasonicPTZStatusCode = (typeof PanasonicPTZStatusCode)[keyof typeof PanasonicPTZStatusCode]
 
 /**
- * Context data for each Panasonic PTZ error type.
+ * Context data for each Panasonic PTZ status.
  * These fields are available for message template interpolation.
  */
-export interface PanasonicPTZErrorContextMap {
-	[PanasonicPTZErrorCode.NOT_CONNECTED]: {
+export interface PanasonicPTZStatusContextMap {
+	[PanasonicPTZStatusCode.NOT_CONNECTED]: {
 		deviceName: string
 		host?: string
 		port?: number
 	}
 }
 
-export type PanasonicPTZError<T extends PanasonicPTZErrorCode = PanasonicPTZErrorCode> = DeviceStatusError<
+export type PanasonicPTZStatusDetail<T extends PanasonicPTZStatusCode = PanasonicPTZStatusCode> = DeviceStatusDetail<
 	T,
-	PanasonicPTZErrorContextMap[T]
+	PanasonicPTZStatusContextMap[T]
 >
 
 /**
- * Default error message templates for Panasonic PTZ devices.
- * Can be overridden in blueprints via deviceErrorMessages.
+ * Default status message templates for Panasonic PTZ devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
  */
-export const PanasonicPTZErrorMessages: Record<PanasonicPTZErrorCode, string> = {
-	[PanasonicPTZErrorCode.NOT_CONNECTED]: 'Not connected',
+export const PanasonicPTZStatusMessages: Record<PanasonicPTZStatusCode, string> = {
+	[PanasonicPTZStatusCode.NOT_CONNECTED]: 'Not connected',
 }
 
 export enum TimelineContentTypePanasonicPtz {

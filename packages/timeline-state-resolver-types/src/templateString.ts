@@ -1,4 +1,4 @@
-import { DeviceStatusError } from './deviceError'
+import { DeviceStatusDetail } from './deviceError.js'
 
 /** This resolves to a string, where parts can be defined by the datastore */
 export interface TemplateString {
@@ -33,56 +33,63 @@ export function interpolateTemplateStringIfNeeded(str: string | TemplateString):
 }
 
 /**
- * Converts structured device errors to human-readable messages using templates.
+ * Converts structured device status details to human-readable messages using templates.
  *
  * This function is used by:
  * - TSR devices internally to populate the messages array in getStatus()
  * - Consuming applications (Sofie, SuperConductor) to apply custom message templates
- * - Blueprints to customize error messages for operators
+ * - Blueprints to customize status messages for operators
  *
- * Template syntax: Use {{variable}} placeholders, which are replaced with values from error.context.
- * Unknown error codes fall back to displaying the code itself.
+ * Template syntax: Use {{variable}} placeholders, which are replaced with values from detail.context.
+ * Unknown status codes fall back to displaying the code itself.
  * Unknown placeholders are preserved as {{key}} for downstream translation systems.
  *
- * @param errors - Array of DeviceStatusError objects from device.getStatus()
- * @param templates - Message templates keyed by error code. Each device exports default templates
- *                    (e.g., AtemErrorMessages). Consuming applications can provide custom templates.
+ * @param statusDetails - Array of DeviceStatusDetail objects from device.getStatus()
+ * @param templates - Message templates keyed by status code. Each device exports default templates
+ *                    (e.g., AtemStatusMessages). Consuming applications can provide custom templates.
  * @returns Array of interpolated message strings
  *
  * @example
  * // Device usage (internal):
- * import { AtemErrorMessages } from 'timeline-state-resolver-types'
+ * import { AtemStatusMessages } from 'timeline-state-resolver-types'
  * return {
  *   statusCode: StatusCode.BAD,
- *   messages: errorsToMessages(errors, AtemErrorMessages),
- *   errors
+ *   messages: statusDetailsToMessages(statusDetails, AtemStatusMessages),
+ *   statusDetails
  * }
  *
  * @example
  * // Multi-device usage:
- * import { AtemErrorMessages, CasparCGErrorMessages, errorsToMessages } from 'timeline-state-resolver-types'
+ * import { AtemStatusMessages, CasparCGStatusMessages, statusDetailsToMessages } from 'timeline-state-resolver-types'
  *
- * const allMessages = { ...AtemErrorMessages, ...CasparCGErrorMessages }
+ * const allMessages = { ...AtemStatusMessages, ...CasparCGStatusMessages }
  *
- * const errors = [
+ * const statusDetails = [
  *   { code: 'DEVICE_ATEM_DISCONNECTED', context: { deviceName: 'Studio A Vision Mixer', host: '192.168.1.10' } },
  *   { code: 'DEVICE_ATEM_PSU_FAULT', context: { deviceName: 'Studio A Vision Mixer', host: '192.168.1.10', psuNumber: 2, totalPsus: 2 } }
  * ]
- * const messages = errorsToMessages(errors, allMessages)
+ * const messages = statusDetailsToMessages(statusDetails, allMessages)
  * // ['ATEM Studio A Vision Mixer disconnected', 'ATEM PSU 2 is faulty. The device has 2 PSU(s) in total.']
  *
  * @example
  * // Blueprint usage with custom templates:
- * import { errorsToMessages, AtemErrorCode } from 'timeline-state-resolver-types'
+ * import { statusDetailsToMessages, AtemStatusCode } from 'timeline-state-resolver-types'
  *
  * const customMessages = {
- *   [AtemErrorCode.DISCONNECTED]: '🎬 {{deviceName}} offline - check network!'
+ *   [AtemStatusCode.DISCONNECTED]: '🎬 {{deviceName}} offline - check network!'
  * }
- * const messages = errorsToMessages(errors, customMessages)
+ * const messages = statusDetailsToMessages(statusDetails, customMessages)
  */
-export function errorsToMessages(errors: DeviceStatusError[], templates: Record<string, string> = {}): string[] {
-	return errors.map((error) => {
-		const template = templates[error.code] ?? error.code
-		return interpolateTemplateString(template, error.context)
+export function statusDetailsToMessages(
+	statusDetails: DeviceStatusDetail[],
+	templates: Record<string, string> = {}
+): string[] {
+	return statusDetails.map((detail) => {
+		const template = templates[detail.code] ?? detail.code
+		return interpolateTemplateString(template, detail.context)
 	})
 }
+
+// Backward compatibility alias
+/** @deprecated Use statusDetailsToMessages instead */
+export const errorsToMessages = statusDetailsToMessages

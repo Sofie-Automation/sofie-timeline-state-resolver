@@ -9,9 +9,9 @@ import {
 	DeviceStatus,
 	SofieChefDeviceTypes,
 	SofieChefActions,
-	SofieChefErrorCode,
-	SofieChefErrorMessages,
-	errorsToMessages,
+	SofieChefStatusCode,
+	SofieChefStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 import WebSocket from 'ws'
 import {
@@ -28,7 +28,7 @@ import { t } from '../../lib.js'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates.js'
 import { buildSofieChefState } from './stateBuilder.js'
-import { createSofieChefError } from './errors.js'
+import { createSofieChefStatusDetail } from './errors.js'
 
 export type SofieChefCommandWithContext = CommandWithContext<ReceiveWSMessageAny, string>
 export interface SofieChefState {
@@ -205,20 +205,20 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const errors: DeviceStatus['errors'] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
 		const deviceName = 'SofieChef'
 
 		if (!this.connected) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createSofieChefError(SofieChefErrorCode.NOT_CONNECTED, {
+			statusDetails.push(
+				createSofieChefStatusDetail(SofieChefStatusCode.NOT_CONNECTED, {
 					deviceName,
 				})
 			)
 		} else if (this._status.app.statusCode !== ChefStatusCode.GOOD) {
 			statusCode = this.convertStatusCode(this._status.app.statusCode)
-			errors.push(
-				createSofieChefError(SofieChefErrorCode.APP_STATUS, {
+			statusDetails.push(
+				createSofieChefStatusDetail(SofieChefStatusCode.APP_STATUS, {
 					deviceName,
 					message: this._status.app.message,
 				})
@@ -228,8 +228,8 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 				const windowStatusCode = this.convertStatusCode(window.statusCode)
 				if (windowStatusCode > statusCode) {
 					statusCode = windowStatusCode
-					errors.push(
-						createSofieChefError(SofieChefErrorCode.WINDOW_STATUS, {
+					statusDetails.push(
+						createSofieChefStatusDetail(SofieChefStatusCode.WINDOW_STATUS, {
 							deviceName,
 							windowIndex: parseInt(index, 10),
 							message: window.message,
@@ -241,8 +241,8 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 
 		return {
 			statusCode,
-			messages: errorsToMessages(errors, SofieChefErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, SofieChefStatusMessages),
+			statusDetails,
 		}
 	}
 	private convertStatusCode(s: ChefStatusCode): StatusCode {

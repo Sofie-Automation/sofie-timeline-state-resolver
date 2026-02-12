@@ -31,11 +31,11 @@ import {
 	CasparCGDeviceTypes,
 	CasparCGActions,
 	StatusCode,
-	CasparCGErrorCode,
-	CasparCGErrorMessages,
-	errorsToMessages,
+	CasparCGStatusCode,
+	CasparCGStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
-import { createCasparCGError } from './errors'
+import { createCasparCGStatusDetail } from './errors.js'
 
 import {
 	CasparCGState,
@@ -773,11 +773,11 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		}
 	}
 	/**
-	 * Returns the current device status, including structured errors for blueprint customization.
+	 * Returns the current device status, including structured status details for blueprint customization.
 	 */
 	getStatus(): DeviceStatus {
 		let statusCode = StatusCode.GOOD
-		const errors: DeviceStatus['errors'] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
 
 		// Safely read host/port with fallbacks for when _ccg is uninitialized
 		const host = this._ccg?.host ?? this.initOptions?.host ?? ''
@@ -786,8 +786,8 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		if (statusCode === StatusCode.GOOD) {
 			if (!this._connected) {
 				statusCode = StatusCode.BAD
-				errors.push(
-					createCasparCGError(CasparCGErrorCode.DISCONNECTED, {
+				statusDetails.push(
+					createCasparCGStatusDetail(CasparCGStatusCode.DISCONNECTED, {
 						deviceName: this.deviceName,
 						host,
 						port,
@@ -798,8 +798,8 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 		if (this._queueOverflow) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createCasparCGError(CasparCGErrorCode.QUEUE_OVERFLOW, {
+			statusDetails.push(
+				createCasparCGStatusDetail(CasparCGStatusCode.QUEUE_OVERFLOW, {
 					deviceName: this.deviceName,
 					host,
 					port,
@@ -809,8 +809,8 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 		return {
 			statusCode,
-			messages: errorsToMessages(errors, CasparCGErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, CasparCGStatusMessages),
+			statusDetails,
 			active: this.isActive,
 		}
 	}

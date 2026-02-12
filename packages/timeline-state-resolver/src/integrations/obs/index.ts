@@ -1,20 +1,20 @@
 import {
 	DeviceStatus,
-	errorsToMessages,
+	statusDetailsToMessages,
 	Mappings,
 	ObsOptions,
 	ObsDeviceTypes,
 	StatusCode,
 	TSRTimelineContent,
-	OBSErrorCode,
-	OBSErrorMessages,
+	OBSStatusCode,
+	OBSStatusMessages,
 } from 'timeline-state-resolver-types'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { OBSDeviceState, convertStateToOBS, getDefaultState } from './state.js'
 import { OBSRequestTypes } from 'obs-websocket-js'
 import { diffStates } from './diff.js'
 import { OBSConnection, OBSConnectionEvents } from './connection.js'
-import { createOBSError } from './errors.js'
+import { createOBSStatusDetail } from './errors.js'
 
 export type OBSCommandWithContext = OBSCommandWithContextTyped<keyof OBSRequestTypes>
 export type OBSCommandWithContextTyped<Type extends keyof OBSRequestTypes> = CommandWithContext<
@@ -61,21 +61,21 @@ export class OBSDevice implements Device<ObsDeviceTypes, OBSDeviceState, OBSComm
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
-		const errors: DeviceStatus['errors'] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
 
 		if (this._obs?.connected) {
 			return {
 				statusCode: StatusCode.GOOD,
 				messages: [],
-				errors,
+				statusDetails,
 			}
 		}
 
 		const host = this._options?.host ?? ''
 		const port = this._options?.port ?? 0
 
-		errors.push(
-			createOBSError(OBSErrorCode.DISCONNECTED, {
+		statusDetails.push(
+			createOBSStatusDetail(OBSStatusCode.DISCONNECTED, {
 				deviceName: 'OBS',
 				host,
 				port,
@@ -85,8 +85,8 @@ export class OBSDevice implements Device<ObsDeviceTypes, OBSDeviceState, OBSComm
 
 		return {
 			statusCode: StatusCode.BAD,
-			messages: errorsToMessages(errors, OBSErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, OBSStatusMessages),
+			statusDetails,
 		}
 	}
 

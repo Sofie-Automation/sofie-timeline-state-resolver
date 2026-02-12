@@ -1,22 +1,22 @@
 import { DeviceType } from '../generated/index.js'
-import { DeviceStatusError } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceError.js'
 
 /**
- * Error codes for OBS device issues.
- * These codes can be customized in blueprints via deviceErrorMessages.
+ * Status codes for OBS device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
  */
-export const OBSErrorCode = {
+export const OBSStatusCode = {
 	DISCONNECTED: 'DEVICE_OBS_DISCONNECTED',
 } as const
 
-export type OBSErrorCode = (typeof OBSErrorCode)[keyof typeof OBSErrorCode]
+export type OBSStatusCode = (typeof OBSStatusCode)[keyof typeof OBSStatusCode]
 
 /**
- * Context data for each OBS error type.
+ * Context data for each OBS status.
  * These fields are available for message template interpolation.
  */
-export interface OBSErrorContextMap {
-	[OBSErrorCode.DISCONNECTED]: {
+export interface OBSStatusContextMap {
+	[OBSStatusCode.DISCONNECTED]: {
 		deviceName: string
 		host: string
 		port: number
@@ -24,14 +24,14 @@ export interface OBSErrorContextMap {
 	}
 }
 
-export type OBSError<T extends OBSErrorCode = OBSErrorCode> = DeviceStatusError<T, OBSErrorContextMap[T]>
+export type OBSStatusDetail<T extends OBSStatusCode = OBSStatusCode> = DeviceStatusDetail<T, OBSStatusContextMap[T]>
 
 /**
- * Default error message templates for OBS devices.
- * Can be overridden in blueprints via deviceErrorMessages.
+ * Default status message templates for OBS devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
  */
-export const OBSErrorMessages: Record<OBSErrorCode, string> = {
-	[OBSErrorCode.DISCONNECTED]: 'Disconnected: {{error}}',
+export const OBSStatusMessages: Record<OBSStatusCode, string> = {
+	[OBSStatusCode.DISCONNECTED]: 'Disconnected: {{error}}',
 }
 
 export type TimelineContentOBSAny =

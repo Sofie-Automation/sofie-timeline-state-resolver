@@ -6,13 +6,13 @@ import {
 	TelemetricsOptions,
 	TimelineContentTelemetrics,
 	TSRTimelineContent,
-	TelemetricsErrorCode,
-	TelemetricsErrorMessages,
-	errorsToMessages,
+	TelemetricsStatusCode,
+	TelemetricsStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 import { Socket } from 'net'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { createTelemetricsError } from './errors'
+import { createTelemetricsStatusDetail } from './errors.js'
 
 const TELEMETRICS_COMMAND_PREFIX = 'P0C'
 const DEFAULT_SOCKET_PORT = 5000
@@ -50,7 +50,7 @@ export class TelemetricsDevice implements Device<
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
-		const errors: DeviceStatus['errors'] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
 		const deviceName = 'Telemetrics'
 
 		switch (this.statusCode) {
@@ -58,16 +58,16 @@ export class TelemetricsDevice implements Device<
 				this.errorMessage = ''
 				break
 			case StatusCode.BAD:
-				errors.push(
-					createTelemetricsError(TelemetricsErrorCode.NOT_CONNECTED, {
+				statusDetails.push(
+					createTelemetricsStatusDetail(TelemetricsStatusCode.NOT_CONNECTED, {
 						deviceName,
 					})
 				)
 				break
 			case StatusCode.UNKNOWN:
 				this.errorMessage = ''
-				errors.push(
-					createTelemetricsError(TelemetricsErrorCode.NOT_INITIALIZED, {
+				statusDetails.push(
+					createTelemetricsStatusDetail(TelemetricsStatusCode.NOT_INITIALIZED, {
 						deviceName,
 					})
 				)
@@ -75,8 +75,8 @@ export class TelemetricsDevice implements Device<
 		}
 
 		if (this.errorMessage) {
-			errors.push(
-				createTelemetricsError(TelemetricsErrorCode.GENERAL_ERROR, {
+			statusDetails.push(
+				createTelemetricsStatusDetail(TelemetricsStatusCode.GENERAL_ERROR, {
 					deviceName,
 					message: this.errorMessage,
 				})
@@ -85,8 +85,8 @@ export class TelemetricsDevice implements Device<
 
 		return {
 			statusCode: this.statusCode,
-			messages: errorsToMessages(errors, TelemetricsErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, TelemetricsStatusMessages),
+			statusDetails,
 		}
 	}
 

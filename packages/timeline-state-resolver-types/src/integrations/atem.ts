@@ -1,27 +1,27 @@
 import { DeviceType } from '../generated/index.js'
-import { DeviceStatusError } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceError.js'
 
 /**
- * Error codes for ATEM device issues.
- * These codes can be customized in blueprints via deviceErrorMessages.
+ * Status codes for ATEM device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
  */
-export const AtemErrorCode = {
+export const AtemStatusCode = {
 	DISCONNECTED: 'DEVICE_ATEM_DISCONNECTED',
 	PSU_FAULT: 'DEVICE_ATEM_PSU_FAULT',
 } as const
 
-export type AtemErrorCode = (typeof AtemErrorCode)[keyof typeof AtemErrorCode]
+export type AtemStatusCode = (typeof AtemStatusCode)[keyof typeof AtemStatusCode]
 
 /**
- * Context data for each ATEM error type.
+ * Context data for each ATEM status type.
  * These fields are available for message template interpolation.
  */
-export interface AtemErrorContextMap {
-	[AtemErrorCode.DISCONNECTED]: {
+export interface AtemStatusContextMap {
+	[AtemStatusCode.DISCONNECTED]: {
 		deviceName: string
 		host: string
 	}
-	[AtemErrorCode.PSU_FAULT]: {
+	[AtemStatusCode.PSU_FAULT]: {
 		deviceName: string
 		host: string
 		psuNumber: number
@@ -29,15 +29,15 @@ export interface AtemErrorContextMap {
 	}
 }
 
-export type AtemError<T extends AtemErrorCode = AtemErrorCode> = DeviceStatusError<T, AtemErrorContextMap[T]>
+export type AtemStatusDetail<T extends AtemStatusCode = AtemStatusCode> = DeviceStatusDetail<T, AtemStatusContextMap[T]>
 
 /**
- * Default error message templates for ATEM devices.
- * Can be overridden in blueprints via deviceErrorMessages.
+ * Default status message templates for ATEM devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
  */
-export const AtemErrorMessages: Record<AtemErrorCode, string> = {
-	[AtemErrorCode.DISCONNECTED]: 'ATEM disconnected',
-	[AtemErrorCode.PSU_FAULT]: 'ATEM PSU {{psuNumber}} is faulty. The device has {{totalPsus}} PSU(s) in total.',
+export const AtemStatusMessages: Record<AtemStatusCode, string> = {
+	[AtemStatusCode.DISCONNECTED]: 'ATEM disconnected',
+	[AtemStatusCode.PSU_FAULT]: 'ATEM PSU {{psuNumber}} is faulty. The device has {{totalPsus}} PSU(s) in total.',
 }
 
 export enum TimelineContentTypeAtem {

@@ -1,46 +1,46 @@
 import { DeviceType, TemplateString } from '../index.js'
-import { DeviceStatusError } from '../deviceError'
+import { DeviceStatusDetail } from '../deviceError.js'
 
 /**
- * Error codes for CasparCG device issues.
- * These codes can be customized in blueprints via deviceErrorMessages.
+ * Status codes for CasparCG device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
  */
-export const CasparCGErrorCode = {
+export const CasparCGStatusCode = {
 	DISCONNECTED: 'DEVICE_CASPARCG_DISCONNECTED',
 	QUEUE_OVERFLOW: 'DEVICE_CASPARCG_QUEUE_OVERFLOW',
 } as const
 
-export type CasparCGErrorCode = (typeof CasparCGErrorCode)[keyof typeof CasparCGErrorCode]
+export type CasparCGStatusCode = (typeof CasparCGStatusCode)[keyof typeof CasparCGStatusCode]
 
 /**
- * Context data for each CasparCG error type.
+ * Context data for each CasparCG status.
  * These fields are available for message template interpolation.
  */
-export interface CasparCGErrorContextMap {
-	[CasparCGErrorCode.DISCONNECTED]: {
+export interface CasparCGStatusContextMap {
+	[CasparCGStatusCode.DISCONNECTED]: {
 		deviceName: string
 		host: string
 		port: number
 	}
-	[CasparCGErrorCode.QUEUE_OVERFLOW]: {
+	[CasparCGStatusCode.QUEUE_OVERFLOW]: {
 		deviceName: string
 		host: string
 		port: number
 	}
 }
 
-export type CasparCGError<T extends CasparCGErrorCode = CasparCGErrorCode> = DeviceStatusError<
+export type CasparCGStatusDetail<T extends CasparCGStatusCode = CasparCGStatusCode> = DeviceStatusDetail<
 	T,
-	CasparCGErrorContextMap[T]
+	CasparCGStatusContextMap[T]
 >
 
 /**
- * Default error message templates for CasparCG devices.
- * Can be overridden in blueprints via deviceErrorMessages.
+ * Default status message templates for CasparCG devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
  */
-export const CasparCGErrorMessages: Record<CasparCGErrorCode, string> = {
-	[CasparCGErrorCode.DISCONNECTED]: 'CasparCG disconnected',
-	[CasparCGErrorCode.QUEUE_OVERFLOW]: 'CasparCG command queue overflow',
+export const CasparCGStatusMessages: Record<CasparCGStatusCode, string> = {
+	[CasparCGStatusCode.DISCONNECTED]: 'CasparCG disconnected',
+	[CasparCGStatusCode.QUEUE_OVERFLOW]: 'CasparCG command queue overflow',
 }
 
 export enum TimelineContentTypeCasparCg {

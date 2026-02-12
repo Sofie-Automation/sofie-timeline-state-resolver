@@ -5,14 +5,14 @@ import {
 	DeviceStatus,
 	HttpWatcherDeviceTypes,
 	HttpMethod,
-	HTTPWatcherError,
-	HTTPWatcherErrorCode,
-	HTTPWatcherErrorMessages,
-	errorsToMessages,
+	HTTPWatcherStatusDetail,
+	HTTPWatcherStatusCode,
+	HTTPWatcherStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 import got, { Headers, Response } from 'got'
 import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
-import { createHTTPWatcherError } from './errors'
+import { createHTTPWatcherStatusDetail } from './errors.js'
 
 type HTTPWatcherDeviceState = Record<string, never>
 
@@ -22,9 +22,11 @@ type HTTPWatcherCommandWithContext = CommandWithContext<never, never>
  * This is a HTTPWatcherDevice, requests a uri on a regular interval and watches
  * it's response.
  */
-export class HTTPWatcherDevice
-	implements Device<HttpWatcherDeviceTypes, HTTPWatcherDeviceState, HTTPWatcherCommandWithContext>
-{
+export class HTTPWatcherDevice implements Device<
+	HttpWatcherDeviceTypes,
+	HTTPWatcherDeviceState,
+	HTTPWatcherCommandWithContext
+> {
 	readonly actions = null
 
 	private uri?: string
@@ -37,7 +39,7 @@ export class HTTPWatcherDevice
 	private intervalTime!: number
 	private interval: NodeJS.Timeout | undefined
 	private status: StatusCode = StatusCode.UNKNOWN
-	private errors: HTTPWatcherError[] = []
+	private statusDetails: HTTPWatcherStatusDetail[] = []
 
 	constructor(protected context: DeviceContextAPI<HTTPWatcherDeviceState>) {
 		// Nothing
@@ -45,7 +47,7 @@ export class HTTPWatcherDevice
 
 	private onInterval() {
 		if (!this.uri) {
-			this._setStatus(StatusCode.BAD, [createHTTPWatcherError(HTTPWatcherErrorCode.URI_NOT_SET, {})])
+			this._setStatus(StatusCode.BAD, [createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.URI_NOT_SET, {})])
 			return
 		}
 
@@ -64,11 +66,11 @@ export class HTTPWatcherDevice
 						context.statusCode = error.response.statusCode
 						context.body = error.response.body
 					}
-					this._setStatus(StatusCode.BAD, [createHTTPWatcherError(HTTPWatcherErrorCode.REQUEST_ERROR, context)])
+					this._setStatus(StatusCode.BAD, [createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.REQUEST_ERROR, context)])
 				})
 		} else {
 			this._setStatus(StatusCode.BAD, [
-				createHTTPWatcherError(HTTPWatcherErrorCode.BAD_METHOD, { method: this.httpMethod }),
+				createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.BAD_METHOD, { method: this.httpMethod }),
 			])
 		}
 	}
@@ -88,7 +90,7 @@ export class HTTPWatcherDevice
 	private handleResponse(response: Response<string>) {
 		if (this.expectedHttpResponse && this.expectedHttpResponse !== response.statusCode) {
 			this._setStatus(StatusCode.BAD, [
-				createHTTPWatcherError(HTTPWatcherErrorCode.UNEXPECTED_STATUS_CODE, {
+				createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.UNEXPECTED_STATUS_CODE, {
 					expected: this.expectedHttpResponse,
 					actual: response.statusCode,
 					uri: this.uri!,
@@ -98,7 +100,7 @@ export class HTTPWatcherDevice
 			])
 		} else if (this.keyword && response.body && response.body.indexOf(this.keyword) === -1) {
 			this._setStatus(StatusCode.BAD, [
-				createHTTPWatcherError(HTTPWatcherErrorCode.KEYWORD_NOT_FOUND, {
+				createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.KEYWORD_NOT_FOUND, {
 					keyword: this.keyword,
 					uri: this.uri!,
 					body: response.body,
@@ -146,15 +148,15 @@ export class HTTPWatcherDevice
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		return {
 			statusCode: this.status,
-			messages: errorsToMessages(this.errors, HTTPWatcherErrorMessages),
-			errors: this.errors,
+			messages: statusDetailsToMessages(this.statusDetails, HTTPWatcherStatusMessages),
+			statusDetails: this.statusDetails,
 		}
 	}
-	private _setStatus(status: StatusCode, errors: HTTPWatcherError[]) {
-		const errorsChanged = JSON.stringify(this.errors) !== JSON.stringify(errors)
+	private _setStatus(status: StatusCode, errors: HTTPWatcherStatusDetail[]) {
+		const errorsChanged = JSON.stringify(this.statusDetails) !== JSON.stringify(errors)
 		if (this.status !== status || errorsChanged) {
 			this.status = status
-			this.errors = errors
+			this.statusDetails = errors
 
 			this.context.connectionChanged(this.getStatus())
 		}

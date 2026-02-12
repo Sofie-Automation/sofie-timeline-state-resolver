@@ -1,11 +1,15 @@
-import { HTTPWatcherError, HTTPWatcherErrorCode, HTTPWatcherErrorContextMap } from 'timeline-state-resolver-types'
+import {
+	HTTPWatcherStatusDetail,
+	HTTPWatcherStatusCode,
+	HTTPWatcherStatusContextMap,
+} from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating HTTPWatcher device errors
+ * Type-safe helper for creating HTTPWatcher device status details
  */
-export function createHTTPWatcherError<T extends HTTPWatcherErrorCode>(
+export function createHTTPWatcherStatusDetail<T extends HTTPWatcherStatusCode>(
 	code: T,
-	context: HTTPWatcherErrorContextMap[T]
-): HTTPWatcherError<T> {
+	context: HTTPWatcherStatusContextMap[T]
+): HTTPWatcherStatusDetail<T> {
 	return { code, context }
 }

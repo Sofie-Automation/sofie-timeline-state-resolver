@@ -1,49 +1,49 @@
 import { DeviceType } from '../generated/index.js'
-import { DeviceStatusError } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceError.js'
 
 /**
- * Error codes for Sisyfos device issues.
- * These codes can be customized in blueprints via deviceErrorMessages.
+ * Status codes for Sisyfos device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
  */
-export const SisyfosErrorCode = {
+export const SisyfosStatusCode = {
 	NOT_CONNECTED: 'DEVICE_SISYFOS_NOT_CONNECTED',
 	NOT_INITIALIZED: 'DEVICE_SISYFOS_NOT_INITIALIZED',
 	NO_MIXER_CONNECTION: 'DEVICE_SISYFOS_NO_MIXER_CONNECTION',
 } as const
 
-export type SisyfosErrorCode = (typeof SisyfosErrorCode)[keyof typeof SisyfosErrorCode]
+export type SisyfosStatusCode = (typeof SisyfosStatusCode)[keyof typeof SisyfosStatusCode]
 
 /**
- * Context data for each Sisyfos error type.
+ * Context data for each Sisyfos status.
  * These fields are available for message template interpolation.
  */
-export interface SisyfosErrorContextMap {
-	[SisyfosErrorCode.NOT_CONNECTED]: {
+export interface SisyfosStatusContextMap {
+	[SisyfosStatusCode.NOT_CONNECTED]: {
 		deviceName: string
 		host: string
 		port: number
 	}
-	[SisyfosErrorCode.NOT_INITIALIZED]: {
+	[SisyfosStatusCode.NOT_INITIALIZED]: {
 		deviceName: string
 	}
-	[SisyfosErrorCode.NO_MIXER_CONNECTION]: {
+	[SisyfosStatusCode.NO_MIXER_CONNECTION]: {
 		deviceName: string
 	}
 }
 
-export type SisyfosError<T extends SisyfosErrorCode = SisyfosErrorCode> = DeviceStatusError<
+export type SisyfosStatusDetail<T extends SisyfosStatusCode = SisyfosStatusCode> = DeviceStatusDetail<
 	T,
-	SisyfosErrorContextMap[T]
+	SisyfosStatusContextMap[T]
 >
 
 /**
- * Default error message templates for Sisyfos devices.
- * Can be overridden in blueprints via deviceErrorMessages.
+ * Default status message templates for Sisyfos devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
  */
-export const SisyfosErrorMessages: Record<SisyfosErrorCode, string> = {
-	[SisyfosErrorCode.NOT_CONNECTED]: 'Not connected',
-	[SisyfosErrorCode.NOT_INITIALIZED]: 'Sisyfos device connection not initialized (restart required)',
-	[SisyfosErrorCode.NO_MIXER_CONNECTION]: 'Sisyfos has no connection to Audiomixer',
+export const SisyfosStatusMessages: Record<SisyfosStatusCode, string> = {
+	[SisyfosStatusCode.NOT_CONNECTED]: 'Not connected',
+	[SisyfosStatusCode.NOT_INITIALIZED]: 'Sisyfos device connection not initialized (restart required)',
+	[SisyfosStatusCode.NO_MIXER_CONNECTION]: 'Sisyfos has no connection to Audiomixer',
 }
 
 /*

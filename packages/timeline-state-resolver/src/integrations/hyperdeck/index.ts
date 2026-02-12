@@ -9,9 +9,9 @@ import {
 	HyperdeckActions,
 	DeviceStatus,
 	StatusCode,
-	HyperdeckErrorCode,
-	HyperdeckErrorMessages,
-	errorsToMessages,
+	HyperdeckStatusCode,
+	HyperdeckStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 import {
 	Hyperdeck,
@@ -23,7 +23,7 @@ import {
 import { deferAsync } from '../../lib.js'
 import { HyperdeckCommandWithContext, diffHyperdeckStates } from './diffState.js'
 import { HyperdeckDeviceState, convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from './stateBuilder.js'
-import { createHyperdeckError } from './errors.js'
+import { createHyperdeckStatusDetail } from './errors.js'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 /**
@@ -258,13 +258,13 @@ export class HyperdeckDevice implements Device<
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const errors: DeviceStatus['errors'] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
 		const deviceName = 'Hyperdeck'
 
 		if (!this._connected) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createHyperdeckError(HyperdeckErrorCode.NOT_CONNECTED, {
+			statusDetails.push(
+				createHyperdeckStatusDetail(HyperdeckStatusCode.NOT_CONNECTED, {
 					deviceName,
 					host: this._initOptions?.host ?? '',
 					port: this._initOptions?.port ?? 9993,
@@ -278,8 +278,8 @@ export class HyperdeckDevice implements Device<
 				} else {
 					statusCode = StatusCode.WARNING_MAJOR
 				}
-				errors.push(
-					createHyperdeckError(HyperdeckErrorCode.LOW_RECORDING_TIME, {
+				statusDetails.push(
+					createHyperdeckStatusDetail(HyperdeckStatusCode.LOW_RECORDING_TIME, {
 						deviceName,
 						minutes: Math.floor(this._recordingTime / 60),
 						seconds: this._recordingTime % 60,
@@ -295,8 +295,8 @@ export class HyperdeckDevice implements Device<
 					this._slotStatus[slot].status !== SlotStatus.MOUNTED &&
 					!this._suppressEmptySlotWarnings
 				) {
-					errors.push(
-						createHyperdeckError(HyperdeckErrorCode.SLOT_NOT_MOUNTED, {
+					statusDetails.push(
+						createHyperdeckStatusDetail(HyperdeckStatusCode.SLOT_NOT_MOUNTED, {
 							deviceName,
 							slot,
 						})
@@ -314,15 +314,15 @@ export class HyperdeckDevice implements Device<
 			if (this._expectedTransportStatus !== this._transportStatus) {
 				if (this._expectedTransportStatus === TransportStatus.RECORD) {
 					if (statusCode < StatusCode.WARNING_MAJOR) statusCode = StatusCode.WARNING_MAJOR
-					errors.push(
-						createHyperdeckError(HyperdeckErrorCode.NOT_RECORDING, {
+					statusDetails.push(
+						createHyperdeckStatusDetail(HyperdeckStatusCode.NOT_RECORDING, {
 							deviceName,
 						})
 					)
 				} else if (this._expectedTransportStatus === TransportStatus.PLAY) {
 					if (statusCode < StatusCode.WARNING_MAJOR) statusCode = StatusCode.WARNING_MAJOR
-					errors.push(
-						createHyperdeckError(HyperdeckErrorCode.NOT_PLAYING, {
+					statusDetails.push(
+						createHyperdeckStatusDetail(HyperdeckStatusCode.NOT_PLAYING, {
 							deviceName,
 						})
 					)
@@ -332,8 +332,8 @@ export class HyperdeckDevice implements Device<
 
 		return {
 			statusCode,
-			messages: errorsToMessages(errors, HyperdeckErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, HyperdeckStatusMessages),
+			statusDetails,
 		}
 	}
 

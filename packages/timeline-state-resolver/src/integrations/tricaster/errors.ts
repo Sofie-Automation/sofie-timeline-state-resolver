@@ -1,11 +1,11 @@
-import { TriCasterError, TriCasterErrorCode, TriCasterErrorContextMap } from 'timeline-state-resolver-types'
+import { TriCasterStatusDetail, TriCasterStatusCode, TriCasterStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating TriCaster device errors
+ * Type-safe helper for creating TriCaster device status details
  */
-export function createTriCasterError<T extends TriCasterErrorCode>(
+export function createTriCasterStatusDetail<T extends TriCasterStatusCode>(
 	code: T,
-	context: TriCasterErrorContextMap[T]
-): TriCasterError<T> {
+	context: TriCasterStatusContextMap[T]
+): TriCasterStatusDetail<T> {
 	return { code, context }
 }

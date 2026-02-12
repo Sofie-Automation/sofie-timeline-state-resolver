@@ -1,9 +1,12 @@
-import { OSCError, OSCErrorCode, OSCErrorContextMap } from 'timeline-state-resolver-types'
+import { OSCStatusDetail, OSCStatusCode, OSCStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating OSC device errors with proper context.
+ * Type-safe helper for creating OSC device status details with proper context.
  */
-export function createOSCError<T extends OSCErrorCode>(code: T, context: OSCErrorContextMap[T]): OSCError<T> {
+export function createOSCStatusDetail<T extends OSCStatusCode>(
+	code: T,
+	context: OSCStatusContextMap[T]
+): OSCStatusDetail<T> {
 	return {
 		code,
 		context,

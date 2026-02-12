@@ -17,13 +17,13 @@ import {
 	SisyfosDeviceTypes,
 	DeviceStatus,
 	StatusCode,
-	SisyfosErrorCode,
-	SisyfosErrorMessages,
-	errorsToMessages,
+	SisyfosStatusCode,
+	SisyfosStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 
 import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection.js'
-import { createSisyfosError } from './errors.js'
+import { createSisyfosStatusDetail } from './errors.js'
 import Debug from 'debug'
 import { t } from '../../lib.js'
 import { CommandWithContext, Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
@@ -120,12 +120,12 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 
 	public getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const errors: DeviceStatus['errors'] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
 
 		if (!this._sisyfos.connected) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createSisyfosError(SisyfosErrorCode.NOT_CONNECTED, {
+			statusDetails.push(
+				createSisyfosStatusDetail(SisyfosStatusCode.NOT_CONNECTED, {
 					deviceName: this.deviceName,
 					host: this._initOptions?.host ?? '',
 					port: this._initOptions?.port ?? 0,
@@ -135,8 +135,8 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 
 		if (!this._sisyfos.state && !this._isResyncPending) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createSisyfosError(SisyfosErrorCode.NOT_INITIALIZED, {
+			statusDetails.push(
+				createSisyfosStatusDetail(SisyfosStatusCode.NOT_INITIALIZED, {
 					deviceName: this.deviceName,
 				})
 			)
@@ -144,8 +144,8 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 
 		if (!this._sisyfos.mixerOnline) {
 			statusCode = StatusCode.BAD
-			errors.push(
-				createSisyfosError(SisyfosErrorCode.NO_MIXER_CONNECTION, {
+			statusDetails.push(
+				createSisyfosStatusDetail(SisyfosStatusCode.NO_MIXER_CONNECTION, {
 					deviceName: this.deviceName,
 				})
 			)
@@ -153,8 +153,8 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 
 		return {
 			statusCode,
-			messages: errorsToMessages(errors, SisyfosErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, SisyfosStatusMessages),
+			statusDetails,
 		}
 	}
 

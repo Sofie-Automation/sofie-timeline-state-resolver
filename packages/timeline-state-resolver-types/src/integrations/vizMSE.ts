@@ -1,48 +1,51 @@
 import { DeviceType } from '../generated/index.js'
-import { DeviceStatusError } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceError.js'
 
 /**
- * Error codes for Viz MSE device issues.
- * These codes can be customized in blueprints via deviceErrorMessages.
+ * Status codes for Viz MSE device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
  */
-export const VizMSEErrorCode = {
+export const VizMSEStatusCode = {
 	NOT_CONNECTED: 'DEVICE_VIZMSE_NOT_CONNECTED',
 	ELEMENTS_LOADING: 'DEVICE_VIZMSE_ELEMENTS_LOADING',
 	ENGINE_DISCONNECTED: 'DEVICE_VIZMSE_ENGINE_DISCONNECTED',
 } as const
 
-export type VizMSEErrorCode = (typeof VizMSEErrorCode)[keyof typeof VizMSEErrorCode]
+export type VizMSEStatusCode = (typeof VizMSEStatusCode)[keyof typeof VizMSEStatusCode]
 
 /**
- * Context data for each Viz MSE error type.
+ * Context data for each Viz MSE status.
  * These fields are available for message template interpolation.
  */
-export interface VizMSEErrorContextMap {
-	[VizMSEErrorCode.NOT_CONNECTED]: {
+export interface VizMSEStatusContextMap {
+	[VizMSEStatusCode.NOT_CONNECTED]: {
 		deviceName: string
 	}
-	[VizMSEErrorCode.ELEMENTS_LOADING]: {
+	[VizMSEStatusCode.ELEMENTS_LOADING]: {
 		deviceName: string
 		notLoadedCount: number
 		loadingCount: number
 	}
-	[VizMSEErrorCode.ENGINE_DISCONNECTED]: {
+	[VizMSEStatusCode.ENGINE_DISCONNECTED]: {
 		deviceName: string
 		engineName: string
 	}
 }
 
-export type VizMSEError<T extends VizMSEErrorCode = VizMSEErrorCode> = DeviceStatusError<T, VizMSEErrorContextMap[T]>
+export type VizMSEStatusDetail<T extends VizMSEStatusCode = VizMSEStatusCode> = DeviceStatusDetail<
+	T,
+	VizMSEStatusContextMap[T]
+>
 
 /**
- * Default error message templates for Viz MSE devices.
- * Can be overridden in blueprints via deviceErrorMessages.
+ * Default status message templates for Viz MSE devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
  */
-export const VizMSEErrorMessages: Record<VizMSEErrorCode, string> = {
-	[VizMSEErrorCode.NOT_CONNECTED]: 'Not connected',
-	[VizMSEErrorCode.ELEMENTS_LOADING]:
+export const VizMSEStatusMessages: Record<VizMSEStatusCode, string> = {
+	[VizMSEStatusCode.NOT_CONNECTED]: 'Not connected',
+	[VizMSEStatusCode.ELEMENTS_LOADING]:
 		'Got {{notLoadedCount}} elements not yet loaded to the Viz Engine ({{loadingCount}} are currently loading)',
-	[VizMSEErrorCode.ENGINE_DISCONNECTED]: 'Viz Engine {{engineName}} disconnected',
+	[VizMSEStatusCode.ENGINE_DISCONNECTED]: 'Viz Engine {{engineName}} disconnected',
 }
 
 export enum TimelineContentTypeVizMSE {

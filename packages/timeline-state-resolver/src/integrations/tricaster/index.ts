@@ -1,6 +1,6 @@
 import {
 	DeviceType,
-	errorsToMessages,
+	statusDetailsToMessages,
 	TriCasterOptions,
 	SomeMappingTricaster,
 	TSRTimelineContent,
@@ -8,15 +8,15 @@ import {
 	StatusCode,
 	DeviceStatus,
 	TricasterDeviceTypes,
-	TriCasterError,
-	TriCasterErrorCode,
-	TriCasterErrorMessages,
+	TriCasterStatusDetail,
+	TriCasterStatusCode,
+	TriCasterStatusMessages,
 } from 'timeline-state-resolver-types'
 import { WithContext, MappingsTriCaster, TriCasterState, TriCasterStateDiffer } from './triCasterStateDiffer.js'
 import { TriCasterCommandWithContext } from './triCasterCommands.js'
 import { TriCasterConnection } from './triCasterConnection.js'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { createTriCasterError } from './errors'
+import { createTriCasterStatusDetail } from './errors.js'
 
 const DEFAULT_PORT = 5951
 
@@ -131,17 +131,17 @@ export class TriCasterDevice implements Device<
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const errors: TriCasterError[] = []
+		const statusDetails: TriCasterStatusDetail[] = []
 
 		if (!this._connected) {
 			statusCode = StatusCode.BAD
-			errors.push(createTriCasterError(TriCasterErrorCode.NOT_CONNECTED, {}))
+			statusDetails.push(createTriCasterStatusDetail(TriCasterStatusCode.NOT_CONNECTED, {}))
 		}
 
 		return {
 			statusCode: statusCode,
-			messages: errorsToMessages(errors, TriCasterErrorMessages),
-			errors,
+			messages: statusDetailsToMessages(statusDetails, TriCasterStatusMessages),
+			statusDetails,
 		}
 	}
 

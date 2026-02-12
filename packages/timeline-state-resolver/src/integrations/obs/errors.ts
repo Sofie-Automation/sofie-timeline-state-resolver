@@ -1,9 +1,12 @@
-import { OBSError, OBSErrorCode, OBSErrorContextMap } from 'timeline-state-resolver-types'
+import { OBSStatusDetail, OBSStatusCode, OBSStatusContextMap } from 'timeline-state-resolver-types'
 
 /**
- * Type-safe helper for creating OBS device errors with proper context.
+ * Type-safe helper for creating OBS device status details with proper context.
  */
-export function createOBSError<T extends OBSErrorCode>(code: T, context: OBSErrorContextMap[T]): OBSError<T> {
+export function createOBSStatusDetail<T extends OBSStatusCode>(
+	code: T,
+	context: OBSStatusContextMap[T]
+): OBSStatusDetail<T> {
 	return {
 		code,
 		context,
