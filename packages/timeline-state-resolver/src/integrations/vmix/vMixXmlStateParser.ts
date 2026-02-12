@@ -43,7 +43,7 @@ export class VMixXmlStateParser {
 
 			let fixedListFilePaths: VMixInput['listFilePaths'] = undefined
 			if (input['_attributes']['type'] === 'VideoList' && input['list']['item'] != null) {
-				fixedListFilePaths = this.ensureArray(input['list']['item']).map((item) => item['_text'])
+				fixedListFilePaths = { value: this.ensureArray(input['list']['item']).map((item) => item['_text']) }
 			}
 
 			const layers: VMixInput['layers'] = {}
@@ -87,16 +87,18 @@ export class VMixXmlStateParser {
 				type: inputType,
 				name: isAddedByUs ? title : undefined,
 				state: input['_attributes']['state'],
-				playing: input['_attributes']['state'] === 'Running',
-				position: Number(input['_attributes']['position']) || 0,
+				playing: { value: input['_attributes']['state'] === 'Running' },
+				position: { value: Number(input['_attributes']['position']) || 0 },
 				duration: Number(input['_attributes']['duration']) || 0,
-				loop: input['_attributes']['loop'] !== 'False',
+				loop: { value: input['_attributes']['loop'] !== 'False' },
 
 				transform: {
-					panX: Number(input['position']?.['_attributes']['panX'] ?? 0),
-					panY: Number(input['position']?.['_attributes']['panY'] ?? 0),
-					alpha: -1, // unavailable
-					zoom: Number(input['position']?.['_attributes']['zoomX'] ?? 1), // assume that zoomX==zoomY
+					value: {
+						panX: Number(input['position']?.['_attributes']['panX'] ?? 0),
+						panY: Number(input['position']?.['_attributes']['panY'] ?? 0),
+						alpha: -1, // unavailable
+						zoom: Number(input['position']?.['_attributes']['zoomX'] ?? 1), // assume that zoomX==zoomY
+					},
 				},
 				layers,
 				listFilePaths: fixedListFilePaths!,

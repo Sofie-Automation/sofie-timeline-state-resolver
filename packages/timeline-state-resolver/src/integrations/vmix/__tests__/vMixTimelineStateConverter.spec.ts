@@ -25,18 +25,26 @@ function createTestee(): VMixTimelineStateConverter {
 	return new VMixTimelineStateConverter(stateDiffer)
 }
 
-function wrapInTimelineState(layers: Record<string, TimelineContentVMixAny>): DeviceTimelineState<TSRTimelineContent> {
+function wrapInTimelineState(
+	layers: Record<string, TimelineContentVMixAny | DeviceTimelineStateObject<TimelineContentVMixAny>>
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: Date.now(),
-		objects: Object.entries<TimelineContentVMixAny>(layers).map(([layer, content]) =>
-			wrapInTimelineObject(layer, content)
+		objects: Object.entries<TimelineContentVMixAny | DeviceTimelineStateObject<TimelineContentVMixAny>>(layers).map(
+			([layer, o]) => {
+				if ('content' in o) {
+					return o
+				}
+				return wrapInTimelineObject(layer, o)
+			}
 		),
 	}
 }
 
 function wrapInTimelineObject(
 	layer: string,
-	content: TimelineContentVMixAny
+	content: TimelineContentVMixAny,
+	props?: Partial<DeviceTimelineStateObject<TimelineContentVMixAny>>
 ): DeviceTimelineStateObject<TimelineContentVMixAny> {
 	return {
 		id: '',
@@ -45,6 +53,7 @@ function wrapInTimelineObject(
 		content,
 		layer,
 		instance: { id: '@0', start: 0, end: null, references: [] } as Timeline.TimelineObjectInstance,
+		...props,
 	} as DeviceTimelineStateObject<TimelineContentVMixAny>
 }
 
@@ -241,7 +250,7 @@ describe('VMixTimelineStateConverter', () => {
 					}),
 				}
 			)
-			expect(result.reportedState.existingInputs['1'].url).toEqual(url)
+			expect(result.reportedState.existingInputs['1'].url?.value).toEqual(url)
 		})
 		it('supports index', () => {
 			const converter = createTestee()
@@ -261,7 +270,7 @@ describe('VMixTimelineStateConverter', () => {
 					}),
 				}
 			)
-			expect(result.reportedState.existingInputs['1'].index).toEqual(index)
+			expect(result.reportedState.existingInputs['1'].index?.value).toEqual(index)
 		})
 
 		it('supports images (titles)', () => {
@@ -332,6 +341,60 @@ describe('VMixTimelineStateConverter', () => {
 		// 	expect(result.reportedState.inputsAddedByUs[prefixAddedInput(filePath)]).toBeDefined()
 		// 	expect(result.reportedState.inputsAddedByUsAudio[prefixAddedInput(filePath)]).toBeDefined()
 		// })
+
+		test('isLookahead is true when object is a lookahead', () => {
+			const converter = createTestee()
+			const list = ['clip.mp4']
+			const result = converter.getVMixStateFromTimelineState(
+				wrapInTimelineState({
+					inp0: wrapInTimelineObject(
+						'inp0',
+						{
+							deviceType: DeviceType.VMIX,
+							listFilePaths: list,
+							type: TimelineContentTypeVMix.INPUT,
+						},
+						{
+							isLookahead: true,
+						}
+					),
+				}),
+				{
+					inp0: wrapInMapping({
+						mappingType: MappingVmixType.Input,
+						index: '1',
+					}),
+				}
+			)
+			expect(result.reportedState.existingInputs['1'].listFilePaths?.isLookahead).toEqual(true)
+		})
+
+		test('isLookahead is false when object is not a lookahead', () => {
+			const converter = createTestee()
+			const list = ['clip.mp4']
+			const result = converter.getVMixStateFromTimelineState(
+				wrapInTimelineState({
+					inp0: wrapInTimelineObject(
+						'inp0',
+						{
+							deviceType: DeviceType.VMIX,
+							listFilePaths: list,
+							type: TimelineContentTypeVMix.INPUT,
+						},
+						{
+							isLookahead: false,
+						}
+					),
+				}),
+				{
+					inp0: wrapInMapping({
+						mappingType: MappingVmixType.Input,
+						index: '1',
+					}),
+				}
+			)
+			expect(result.reportedState.existingInputs['1'].listFilePaths?.isLookahead).toEqual(false)
+		})
 	})
 
 	describe('replay', () => {

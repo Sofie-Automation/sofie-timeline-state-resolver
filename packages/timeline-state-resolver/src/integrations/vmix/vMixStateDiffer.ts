@@ -85,20 +85,26 @@ export interface VMixInput {
 	number?: number
 	type?: VMixInputType | string
 	name?: string
-	filePath?: string
+	filePath?: PropertyWithContext<string>
 	state?: 'Paused' | 'Running' | 'Completed'
-	playing?: boolean
-	position?: number
+	playing?: PropertyWithContext<boolean>
+	position?: PropertyWithContext<number>
 	duration?: number
-	loop?: boolean
-	transform?: VMixTransform
+	loop?: PropertyWithContext<boolean>
+	transform?: PropertyWithContext<VMixTransform>
 	layers?: VMixLayers
-	listFilePaths?: string[]
-	restart?: boolean
+	listFilePaths?: PropertyWithContext<string[]>
+	restart?: PropertyWithContext<boolean | string>
 	text?: VMixText
-	url?: string
-	index?: number
+	url?: PropertyWithContext<string>
+	index?: PropertyWithContext<number>
 	images?: VMixImages
+}
+
+export interface PropertyWithContext<T> {
+	value: T
+	timelineObjId?: string
+	isLookahead?: boolean
 }
 
 export interface VMixInputAudio {
@@ -240,14 +246,16 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 	getDefaultInputState(inputNumber: number | string | undefined): VMixInput {
 		return {
 			number: Number(inputNumber) || undefined,
-			position: 0,
-			loop: false,
-			playing: false,
+			position: { value: 0 },
+			loop: { value: false },
+			playing: { value: false },
 			transform: {
-				zoom: 1,
-				panX: 0,
-				panY: 0,
-				alpha: 255,
+				value: {
+					zoom: 1,
+					panX: 0,
+					panY: 0,
+					alpha: 255,
+				},
 			},
 			layers: {},
 		}
@@ -423,14 +431,16 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		 * things take place over the course of a few frames.
 		 */
 		const commands =
-			oldVMixState && this._isInUse(oldVMixState, oldInput) ? postTransitionCommands : preTransitionCommands
+			(oldVMixState && this._isInUse(oldVMixState, oldInput)) || this._isLookaheadUpdatingSlowProperties(input)
+				? postTransitionCommands
+				: preTransitionCommands
 
 		// It is important that the operations on listFilePaths happen before most other operations.
 		// Consider the case where we want to change the contents of a List input AND set it to playing.
 		// If we set it to playing first, it will automatically be forced to stop playing when
 		// we dispatch LIST_REMOVE_ALL.
 		// So, order of operations matters here.
-		if (!_.isEqual(oldInput.listFilePaths, input.listFilePaths)) {
+		if (!_.isEqual(oldInput.listFilePaths?.value, input.listFilePaths?.value)) {
 			// vMix has a quirk that we are working around here:
 			// When a List input has no items, its Play/Pause button becomes inactive and
 			// clicking it does nothing. However, if the List was playing when it was emptied,
@@ -439,14 +449,17 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 			// bug/mistake/otherwise unwanted behavior in every scenario. To work around this,
 			// we automatically dispatch a PAUSE_INPUT command before emptying the playlist,
 			// but only if there's no new content being added afterward.
-			if (!input.listFilePaths || (Array.isArray(input.listFilePaths) && input.listFilePaths.length <= 0)) {
+			if (
+				!input.listFilePaths?.value ||
+				(Array.isArray(input.listFilePaths?.value) && input.listFilePaths.value.length <= 0)
+			) {
 				commands.push({
 					command: {
 						command: VMixCommand.PAUSE_INPUT,
 						input: input.name,
 					},
 					context: CommandContext.None,
-					timelineObjId: '',
+					timelineObjId: input.listFilePaths?.timelineObjId ?? '',
 				})
 			}
 			commands.push({
@@ -455,10 +468,10 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 					input: input.name,
 				},
 				context: CommandContext.None,
-				timelineObjId: '',
+				timelineObjId: input.listFilePaths?.timelineObjId ?? '',
 			})
-			if (Array.isArray(input.listFilePaths)) {
-				for (const filePath of input.listFilePaths) {
+			if (input.listFilePaths?.value && Array.isArray(input.listFilePaths.value)) {
+				for (const filePath of input.listFilePaths.value) {
 					commands.push({
 						command: {
 							command: VMixCommand.LIST_ADD,
@@ -466,51 +479,55 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 							value: filePath,
 						},
 						context: CommandContext.None,
-						timelineObjId: '',
+						timelineObjId: input.listFilePaths.timelineObjId ?? '',
 					})
 				}
 			}
 		}
-		if (input.playing !== undefined && oldInput.playing !== input.playing && !input.playing) {
+		if (
+			input.playing?.value !== undefined &&
+			oldInput.playing?.value !== input.playing?.value &&
+			!input.playing?.value
+		) {
 			commands.push({
 				command: {
 					command: VMixCommand.PAUSE_INPUT,
 					input: input.name,
 				},
 				context: CommandContext.None,
-				timelineObjId: '',
+				timelineObjId: input.playing.timelineObjId ?? '',
 			})
 		}
-		if (oldInput.position !== input.position) {
+		if (input.position?.value !== undefined && oldInput.position?.value !== input.position?.value) {
 			commands.push({
 				command: {
 					command: VMixCommand.SET_POSITION,
 					input: key,
-					value: input.position ? input.position : 0,
+					value: input.position?.value || 0,
 				},
 				context: CommandContext.None,
-				timelineObjId: '',
+				timelineObjId: input.position?.timelineObjId ?? '',
 			})
 		}
-		if (input.restart !== undefined && oldInput.restart !== input.restart && input.restart) {
+		if (input.restart?.value !== undefined && oldInput.restart?.value !== input.restart.value && input.restart.value) {
 			commands.push({
 				command: {
 					command: VMixCommand.RESTART_INPUT,
 					input: key,
 				},
 				context: CommandContext.None,
-				timelineObjId: '',
+				timelineObjId: input.restart.timelineObjId ?? '',
 			})
 		}
-		if (input.loop !== undefined && oldInput.loop !== input.loop) {
-			if (input.loop) {
+		if (input.loop?.value !== undefined && oldInput.loop?.value !== input.loop?.value) {
+			if (input.loop.value) {
 				commands.push({
 					command: {
 						command: VMixCommand.LOOP_ON,
 						input: input.name,
 					},
 					context: CommandContext.None,
-					timelineObjId: '',
+					timelineObjId: input.loop.timelineObjId ?? '',
 				})
 			} else {
 				commands.push({
@@ -519,53 +536,53 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 						input: input.name,
 					},
 					context: CommandContext.None,
-					timelineObjId: '',
+					timelineObjId: input.loop.timelineObjId ?? '',
 				})
 			}
 		}
-		if (input.transform !== undefined && !_.isEqual(oldInput.transform, input.transform)) {
-			if (oldInput.transform === undefined || input.transform.zoom !== oldInput.transform.zoom) {
+		if (input.transform?.value !== undefined && !_.isEqual(oldInput.transform?.value, input.transform?.value)) {
+			if (input.transform.value.zoom !== oldInput.transform?.value.zoom) {
 				commands.push({
 					command: {
 						command: VMixCommand.SET_ZOOM,
 						input: key,
-						value: input.transform.zoom,
+						value: input.transform.value.zoom,
 					},
 					context: CommandContext.None,
-					timelineObjId: '',
+					timelineObjId: input.transform.timelineObjId ?? '',
 				})
 			}
-			if (oldInput.transform === undefined || input.transform.alpha !== oldInput.transform.alpha) {
+			if (input.transform.value.alpha !== oldInput.transform?.value.alpha) {
 				commands.push({
 					command: {
 						command: VMixCommand.SET_ALPHA,
 						input: key,
-						value: input.transform.alpha,
+						value: input.transform.value.alpha,
 					},
 					context: CommandContext.None,
-					timelineObjId: '',
+					timelineObjId: input.transform.timelineObjId ?? '',
 				})
 			}
-			if (oldInput.transform === undefined || input.transform.panX !== oldInput.transform.panX) {
+			if (input.transform.value.panX !== oldInput.transform?.value.panX) {
 				commands.push({
 					command: {
 						command: VMixCommand.SET_PAN_X,
 						input: key,
-						value: input.transform.panX,
+						value: input.transform.value.panX,
 					},
 					context: CommandContext.None,
-					timelineObjId: '',
+					timelineObjId: input.transform.timelineObjId ?? '',
 				})
 			}
-			if (oldInput.transform === undefined || input.transform.panY !== oldInput.transform.panY) {
+			if (input.transform.value.panY !== oldInput.transform?.value.panY) {
 				commands.push({
 					command: {
 						command: VMixCommand.SET_PAN_Y,
 						input: key,
-						value: input.transform.panY,
+						value: input.transform.value.panY,
 					},
 					context: CommandContext.None,
-					timelineObjId: '',
+					timelineObjId: input.transform.timelineObjId ?? '',
 				})
 			}
 		}
@@ -661,14 +678,18 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 				}
 			}
 		}
-		if (input.playing !== undefined && oldInput.playing !== input.playing && input.playing) {
+		if (
+			input.playing?.value !== undefined &&
+			oldInput.playing?.value !== input.playing?.value &&
+			input.playing?.value
+		) {
 			commands.push({
 				command: {
 					command: VMixCommand.PLAY_INPUT,
 					input: input.name,
 				},
 				context: CommandContext.None,
-				timelineObjId: '',
+				timelineObjId: input.playing.timelineObjId ?? '',
 			})
 		}
 		if (input.text !== undefined) {
@@ -687,26 +708,26 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 				}
 			}
 		}
-		if (input.url !== undefined && oldInput.url !== input.url) {
+		if (input.url?.value !== undefined && oldInput.url?.value !== input.url?.value) {
 			commands.push({
 				command: {
 					command: VMixCommand.BROWSER_NAVIGATE,
 					input: key,
-					value: input.url,
+					value: input.url.value,
 				},
 				context: CommandContext.None,
-				timelineObjId: '',
+				timelineObjId: input.url.timelineObjId ?? '',
 			})
 		}
-		if (input.index !== undefined && oldInput.index !== input.index) {
+		if (input.index?.value !== undefined && oldInput.index?.value !== input.index?.value) {
 			commands.push({
 				command: {
 					command: VMixCommand.SELECT_INDEX,
 					input: key,
-					value: input.index,
+					value: input.index.value,
 				},
 				context: CommandContext.None,
-				timelineObjId: '',
+				timelineObjId: input.index.timelineObjId ?? '',
 			})
 		}
 		if (input.images !== undefined) {
@@ -1205,5 +1226,14 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		}
 
 		return false
+	}
+
+	/**
+	 * Whether a lookahead object updated slow (blocking) properties of an input.
+	 * Commands for such inputs need to be sent after the transition, otherwise they might
+	 * stall the queue for a noticeable amount of time
+	 */
+	private _isLookaheadUpdatingSlowProperties(input: VMixInput) {
+		return input.filePath?.isLookahead || input.listFilePaths?.isLookahead
 	}
 }

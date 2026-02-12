@@ -6,14 +6,14 @@ describe('VMixStateSynchronizer', () => {
 		const synchronizer = new VMixStateSynchronizer()
 
 		const realState = makeMockReportedState()
-		realState.existingInputs[1].listFilePaths = ['C:\\lingeringFile.mp4']
-		realState.existingInputs[2].loop = true
+		realState.existingInputs[1].listFilePaths = { value: ['C:\\lingeringFile.mp4'] }
+		realState.existingInputs[2].loop = { value: true }
 
 		const updatedState = synchronizer.applyRealState(makeMockFullState(), realState)
 
 		const expectedState = makeMockFullState()
-		expectedState.reportedState.existingInputs[1].listFilePaths = ['C:\\lingeringFile.mp4']
-		expectedState.reportedState.existingInputs[2].loop = true
+		expectedState.reportedState.existingInputs[1].listFilePaths = { value: ['C:\\lingeringFile.mp4'] }
+		expectedState.reportedState.existingInputs[2].loop = { value: true }
 
 		expect(updatedState).toEqual(expectedState)
 	})
@@ -23,23 +23,27 @@ describe('VMixStateSynchronizer', () => {
 
 		const realState = makeMockReportedState()
 		realState.inputsAddedByUs[ADDED_INPUT_NAME_1].transform = {
-			alpha: -1,
-			panX: 1.1,
-			panY: -0.2,
-			zoom: 0.5,
+			value: {
+				alpha: -1,
+				panX: 1.1,
+				panY: -0.2,
+				zoom: 0.5,
+			},
 		}
-		realState.inputsAddedByUs[ADDED_INPUT_NAME_2].loop = true
+		realState.inputsAddedByUs[ADDED_INPUT_NAME_2].loop = { value: true }
 
 		const updatedState = synchronizer.applyRealState(makeMockFullState(), realState)
 
 		const expectedState = makeMockFullState()
 		expectedState.reportedState.inputsAddedByUs[ADDED_INPUT_NAME_1].transform = {
-			alpha: -1,
-			panX: 1.1,
-			panY: -0.2,
-			zoom: 0.5,
+			value: {
+				alpha: -1,
+				panX: 1.1,
+				panY: -0.2,
+				zoom: 0.5,
+			},
 		}
-		expectedState.reportedState.inputsAddedByUs[ADDED_INPUT_NAME_2].loop = true
+		expectedState.reportedState.inputsAddedByUs[ADDED_INPUT_NAME_2].loop = { value: true }
 
 		expect(updatedState).toEqual(expectedState)
 	})
@@ -50,8 +54,8 @@ describe('VMixStateSynchronizer', () => {
 		const synchronizer = new VMixStateSynchronizer()
 
 		const realState = makeMockReportedState()
-		realState.existingInputs[1].playing = false
-		realState.existingInputs[2].position = 10
+		realState.existingInputs[1].playing = { value: false }
+		realState.existingInputs[2].position = { value: 10 }
 
 		const updatedState = synchronizer.applyRealState(makeMockFullState(), realState)
 
@@ -66,8 +70,8 @@ describe('VMixStateSynchronizer', () => {
 		const synchronizer = new VMixStateSynchronizer()
 
 		const realState = makeMockReportedState()
-		realState.inputsAddedByUs[ADDED_INPUT_NAME_1].playing = false
-		realState.inputsAddedByUs[ADDED_INPUT_NAME_2].position = 10
+		realState.inputsAddedByUs[ADDED_INPUT_NAME_1].playing = { value: false }
+		realState.inputsAddedByUs[ADDED_INPUT_NAME_2].position = { value: 10 }
 
 		const updatedState = synchronizer.applyRealState(makeMockFullState(), realState)
 

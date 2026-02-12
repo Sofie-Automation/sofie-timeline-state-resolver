@@ -223,8 +223,11 @@ export interface TimelineContentVMixInput extends TimelineContentVMixBase {
 	/** An array of file paths to load into a List input. Uses Windows-style path separators (\\). Only applies to List inputs. */
 	listFilePaths?: string[]
 
-	/** If media should start from the beginning or resume from where it left off */
-	restart?: boolean
+	/**
+	 * If media should start from the beginning or resume from where it left off
+	 * When given a truthy string, it will restart whenever the value changes
+	 */
+	restart?: boolean | string
 
 	/**
 	 * Titles (GT): Sets the values of text fields by name

@@ -30,15 +30,17 @@ describe('VMixStateDiffer', () => {
 		const filePath = 'C:/videos/My Clip.mp4'
 		newState.reportedState.inputsAddedByUs[prefixAddedInput(filePath)] = {
 			type: VMixInputType.Video,
-			filePath,
-			playing: true,
-			loop: true,
-			position: 10000,
+			filePath: { value: filePath },
+			playing: { value: true },
+			loop: { value: true },
+			position: { value: 10000 },
 			transform: {
-				zoom: 0.5,
-				panX: 0.3,
-				panY: 1.2,
-				alpha: 123,
+				value: {
+					zoom: 0.5,
+					panX: 0.3,
+					panY: 1.2,
+					alpha: 123,
+				},
 			},
 			layers: {
 				1: { input: 'G:/videos/My Other Clip.mp4' },
@@ -121,9 +123,9 @@ describe('VMixStateDiffer', () => {
 		oldState.reportedState.existingInputs['2'] = differ.getDefaultInputState(2)
 		newState.reportedState.existingInputs['2'] = {
 			...differ.getDefaultInputState(2),
-			restart: true,
-			loop: true,
-			playing: true,
+			restart: { value: true },
+			loop: { value: true },
+			playing: { value: true },
 			layers: {
 				1: { input: 'G:/videos/My Other Clip.mp4' },
 				3: { input: 5 },
@@ -164,9 +166,9 @@ describe('VMixStateDiffer', () => {
 
 		oldState.reportedState.existingInputs['2'] = {
 			...differ.getDefaultInputState(2),
-			restart: true,
-			loop: true,
-			playing: true,
+			restart: { value: true },
+			loop: { value: true },
+			playing: { value: true },
 			layers: {
 				1: { input: 'G:/videos/My Other Clip.mp4' },
 				3: { input: 5 },
@@ -209,7 +211,7 @@ describe('VMixStateDiffer', () => {
 		newState.reportedState.inputsAddedByUs[prefixAddedInput(filePath)] = {
 			...differ.getDefaultInputState(prefixAddedInput(filePath)),
 			type: VMixInputType.Video,
-			filePath,
+			filePath: { value: filePath },
 		}
 		newState.reportedState.inputsAddedByUsAudio[prefixAddedInput(filePath)] = {
 			...differ.getDefaultInputAudioState(prefixAddedInput(filePath)),
@@ -252,7 +254,7 @@ describe('VMixStateDiffer', () => {
 		oldState.reportedState.inputsAddedByUs[prefixAddedInput(filePath)] = {
 			...differ.getDefaultInputState(prefixAddedInput(filePath)),
 			type: VMixInputType.Video,
-			filePath,
+			filePath: { value: filePath },
 		}
 		oldState.reportedState.inputsAddedByUsAudio[prefixAddedInput(filePath)] = {
 			...differ.getDefaultInputAudioState(prefixAddedInput(filePath)),
@@ -274,7 +276,7 @@ describe('VMixStateDiffer', () => {
 		newState.reportedState.inputsAddedByUs[prefixAddedInput(newFilePath)] = {
 			...differ.getDefaultInputState(prefixAddedInput(newFilePath)),
 			type: VMixInputType.Video,
-			filePath,
+			filePath: { value: filePath },
 		}
 		newState.reportedState.inputsAddedByUsAudio[prefixAddedInput(newFilePath)] = {
 			...differ.getDefaultInputAudioState(prefixAddedInput(newFilePath)),
@@ -814,7 +816,7 @@ describe('VMixStateDiffer', () => {
 			}
 			newState.reportedState.existingInputs['1'] = {
 				...differ.getDefaultInputState('1'),
-				listFilePaths: ['C:\\foo.mov'],
+				listFilePaths: { value: ['C:\\foo.mov'] },
 			}
 
 			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
@@ -839,7 +841,7 @@ describe('VMixStateDiffer', () => {
 			}
 			newState.reportedState.existingInputs['1'] = {
 				...differ.getDefaultInputState('1'),
-				listFilePaths: [],
+				listFilePaths: { value: [] },
 			}
 
 			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
@@ -1122,7 +1124,7 @@ describe('VMixStateDiffer', () => {
 
 		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
 		const url = 'https://example.com'
-		newState.reportedState.existingInputs['99'].url = url
+		newState.reportedState.existingInputs['99'].url = { value: url }
 
 		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 
@@ -1140,7 +1142,7 @@ describe('VMixStateDiffer', () => {
 
 		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
 		const index = 3
-		newState.reportedState.existingInputs['99'].index = index
+		newState.reportedState.existingInputs['99'].index = { value: index }
 
 		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 
@@ -1349,7 +1351,7 @@ describe('VMixStateDiffer', () => {
 		}
 		newState.reportedState.existingInputs['11'] = {
 			...differ.getDefaultInputState(11),
-			listFilePaths: [], // we want the list to be cleared after input 1 goes off PGM
+			listFilePaths: { value: [] }, // we want the list to be cleared after input 1 goes off PGM
 		}
 		newState.reportedState.existingInputs['12'] = {
 			...differ.getDefaultInputState(12),
