@@ -39,6 +39,13 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 
 	constructor(protected context: DeviceContextAPI<TcpSendDeviceState>) {
 		// Nothing
+
+		this.tcpConnection.on('error', (errContext, err) => {
+			this.context.logger.error(errContext, err)
+		})
+		this.tcpConnection.on('connectionChanged', () => {
+			this.context.connectionChanged(this.getStatus())
+		})
 	}
 
 	async init(options: TcpSendOptions): Promise<boolean> {
@@ -60,9 +67,16 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 		return this.tcpConnection.connected
 	}
 	getStatus(): Omit<DeviceStatus, 'active'> {
-		return {
-			statusCode: StatusCode.GOOD,
-			messages: [],
+		if (!this.connected) {
+			return {
+				statusCode: StatusCode.BAD,
+				messages: [`Disconnected`],
+			}
+		} else {
+			return {
+				statusCode: StatusCode.GOOD,
+				messages: [],
+			}
 		}
 	}
 
@@ -137,9 +151,10 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 				})
 			}
 		}
-		commands.sort((a, b) => a.command.layer.localeCompare(b.command.layer))
 		commands.sort((a, b) => {
-			return (a.command.content.temporalPriority || 0) - (b.command.content.temporalPriority || 0)
+			const priorityDiff = (a.command.content.temporalPriority || 0) - (b.command.content.temporalPriority || 0)
+			if (priorityDiff !== 0) return priorityDiff
+			return a.command.layer.localeCompare(b.command.layer)
 		})
 		return commands
 	}

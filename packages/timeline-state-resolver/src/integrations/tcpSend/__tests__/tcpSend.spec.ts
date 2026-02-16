@@ -297,6 +297,206 @@ describe('TCP-Send', () => {
 
 			await device.terminate()
 		})
+
+		test('Send multiple messages', async () => {
+			const device = await getInitializedTcpDevice()
+
+			const content1 = literal<TimelineContentTCPSendAny>({
+				...DEFAULT_TL_CONTENT,
+				message: 'message 1',
+			})
+			const content2 = literal<TimelineContentTCPSendAny>({
+				...DEFAULT_TL_CONTENT,
+				message: 'message 2',
+			})
+
+			const commands = device.diffStates(
+				createTimelineState({}),
+				createTimelineState({
+					layer0: {
+						id: 'obj0',
+						layer: 'layer0',
+						content: content1,
+					},
+					layer1: {
+						id: 'obj1',
+						layer: 'layer1',
+						content: content2,
+					},
+				})
+			)
+
+			expect(commands).toHaveLength(2)
+			await device.sendCommand(commands[0])
+			await device.sendCommand(commands[1])
+
+			expect(onSocketWrite).toHaveBeenCalledTimes(2)
+			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('message 1'))
+			expect(onSocketWrite.mock.calls[1][0]).toEqual(Buffer.from('message 2'))
+
+			await device.terminate()
+		})
+
+		test('Temporal priority sorting', async () => {
+			const device = await getInitializedTcpDevice()
+
+			const content1 = literal<TimelineContentTCPSendAny>({
+				...DEFAULT_TL_CONTENT,
+				message: 'low priority',
+				temporalPriority: 10,
+			})
+			const content2 = literal<TimelineContentTCPSendAny>({
+				...DEFAULT_TL_CONTENT,
+				message: 'high priority',
+				temporalPriority: 1,
+			})
+
+			const commands = device.diffStates(
+				createTimelineState({}),
+				createTimelineState({
+					layer0: {
+						id: 'obj0',
+						layer: 'layer0',
+						content: content1,
+					},
+					layer1: {
+						id: 'obj1',
+						layer: 'layer1',
+						content: content2,
+					},
+				})
+			)
+
+			// High priority (lower number) should come first
+			expect(commands).toHaveLength(2)
+			expect(commands[0].command.content.temporalPriority).toBe(1)
+			expect(commands[1].command.content.temporalPriority).toBe(10)
+
+			await device.terminate()
+		})
+	})
+
+	describe('Buffer encoding', () => {
+		test('Default encoding (utf8)', async () => {
+			const device = await getInitializedTcpDevice()
+
+			const content = literal<TimelineContentTCPSendAny>({
+				...DEFAULT_TL_CONTENT,
+				message: 'test message',
+			})
+			const commands = device.diffStates(
+				createTimelineState({}),
+				createTimelineState({
+					layer0: { id: 'obj0', layer: 'layer0', content },
+				})
+			)
+
+			await device.sendCommand(commands[0])
+
+			expect(onSocketWrite).toHaveBeenCalledTimes(1)
+			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('test message', 'utf8'))
+
+			await device.terminate()
+		})
+
+		test('ASCII encoding', async () => {
+			const dev = new TcpSendDevice(getDeviceContext())
+			await dev.init({
+				host: '192.168.0.254',
+				port: 1234,
+				bufferEncoding: 'ascii',
+			})
+			await sleep(10)
+
+			const content = literal<TimelineContentTCPSendAny>({
+				...DEFAULT_TL_CONTENT,
+				message: 'test',
+			})
+			const commands = dev.diffStates(
+				createTimelineState({}),
+				createTimelineState({
+					layer0: { id: 'obj0', layer: 'layer0', content },
+				})
+			)
+
+			await dev.sendCommand(commands[0])
+
+			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('test', 'ascii'))
+
+			await dev.terminate()
+		})
+
+		test('Hex encoding', async () => {
+			const dev = new TcpSendDevice(getDeviceContext())
+			await dev.init({
+				host: '192.168.0.254',
+				port: 1234,
+				bufferEncoding: 'hex',
+			})
+			await sleep(10)
+
+			const content = literal<TimelineContentTCPSendAny>({
+				...DEFAULT_TL_CONTENT,
+				message: '48656c6c6f', // "Hello" in hex
+			})
+			const commands = dev.diffStates(
+				createTimelineState({}),
+				createTimelineState({
+					layer0: { id: 'obj0', layer: 'layer0', content },
+				})
+			)
+
+			await dev.sendCommand(commands[0])
+
+			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('48656c6c6f', 'hex'))
+
+			await dev.terminate()
+		})
+	})
+
+	describe('Error handling', () => {
+		test('Connection errors are reported', async () => {
+			const device = await getInitializedTcpDevice()
+			const errorHandler = jest.fn()
+			device['context'].logger.error = errorHandler
+
+			const sockets = SocketMock.openSockets()
+			expect(sockets).toHaveLength(1)
+
+			const error = new Error('Connection error') as NodeJS.ErrnoException
+			error.code = 'ECONNRESET'
+
+			sockets[0].emit('error', error)
+
+			// Error should be logged
+			expect(errorHandler).toHaveBeenCalledWith('TCP socket error', error)
+
+			await device.terminate()
+		})
+
+		test('Socket close triggers reconnection', async () => {
+			const device = await getInitializedTcpDevice()
+
+			expect(device.connected).toBe(true)
+
+			const sockets = SocketMock.openSockets()
+			expect(sockets).toHaveLength(1)
+
+			// Simulate that the socket is closed:
+			sockets[0].mockClose()
+			await sleep(10)
+
+			// The device should have disconnected:
+			expect(device.connected).toBe(false)
+
+			// Wait for reconnect
+			await sleep(600)
+
+			// The device should have reconnected:
+			expect(device.connected).toBe(true)
+
+			await device.terminate()
+		})
 	})
 })
 function createTimelineState(
