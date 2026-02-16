@@ -432,7 +432,8 @@ function createContainer(
 		case DeviceType.VISCA_OVER_IP:
 		case DeviceType.WEBSOCKET_CLIENT:
 		case DeviceType.KAIROS:
-		case DeviceType.QUANTEL: {
+		case DeviceType.QUANTEL:
+		case DeviceType.UDP_SEND: {
 			ensureIsImplementedAsService(deviceOptions.type)
 
 			// presumably this device is implemented in the new service handler

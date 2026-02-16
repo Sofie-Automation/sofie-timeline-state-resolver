@@ -1,0 +1,24 @@
+{
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/action-schema.json",
+	"actions": [
+		{
+			"id": "resetState",
+			"name": "Reset state",
+			"destructive": true
+		},
+		{
+			"id": "sendUdpCommand",
+			"name": "Send command",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"message": { "type": "string" },
+					"temporalPriority": { "type": "number" },
+					"queueId": { "type": "string" }
+				},
+				"required": ["message"]
+			}
+		}
+	]
+}
