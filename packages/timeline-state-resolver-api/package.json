@@ -41,7 +41,8 @@
 		}
 	],
 	"scripts": {
-		"test": "run lint && run unit",
+		"lint": "run -T lint packages/timeline-state-resolver-api",
+		"test": "run unit",
 		"unit": "run -T jest",
 		"unitci": "run -T jest --coverage",
 		"cov": "run -T jest --coverage && run cov-open",
