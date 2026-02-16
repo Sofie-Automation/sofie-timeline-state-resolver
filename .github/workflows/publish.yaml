@@ -171,7 +171,7 @@ jobs:
           node-version-file: '.node-version'
 
       - name: Download release artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: publish-dist
 
