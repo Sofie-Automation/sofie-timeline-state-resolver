@@ -5,10 +5,10 @@ import {
 	SomeMappingKairos,
 	TimelineContentTypeKairos,
 } from 'timeline-state-resolver-types'
-import { KairosCommandWithContext } from '..'
-import { diffKairosStates } from '../diffState'
-import { KairosDeviceState, KairosStateBuilder } from '../stateBuilder'
-import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
+import { KairosCommandWithContext } from '../index.js'
+import { diffKairosStates } from '../diffState.js'
+import { KairosDeviceState, KairosStateBuilder } from '../stateBuilder.js'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 import { refIpInput } from 'kairos-connection'
 
 describe('diffState', () => {

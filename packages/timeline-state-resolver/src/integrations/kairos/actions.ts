@@ -7,7 +7,6 @@ import {
 	refAuxId,
 	refGfxScene,
 	refSceneSnapshot,
-	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
 import { ActionExecutionResultCode, KairosActionMethods, KairosActions } from 'timeline-state-resolver-types'
 

@@ -9,10 +9,10 @@ import {
 	VIZMSETransitionType,
 } from 'timeline-state-resolver-types'
 import { ExternalElement, InternalElement, MSE, VElement, VRundown } from '@tv2media/v-connection'
-import { ExpectedPlayoutItem } from '../../expectedPlayoutItems'
+import { ExpectedPlayoutItem } from '../../expectedPlayoutItems.js'
 import got from 'got'
-import { deferAsync, literal } from '../../lib'
-import { VizMSEDevice } from './index'
+import { deferAsync, literal } from '../../lib.js'
+import { VizMSEDevice } from './index.js'
 import {
 	CachedVElement,
 	isVizMSEPlayoutItemContentInternalInstance,
@@ -37,11 +37,11 @@ import {
 	isVIZMSEPlayoutItemContentExternal,
 	VizMSEPlayoutItemContentExternalInstance,
 	isVIZMSEPlayoutItemContentInternal,
-} from './types'
-import { VizEngineTcpSender } from './vizEngineTcpSender'
+} from './types.js'
+import { VizEngineTcpSender } from './vizEngineTcpSender.js'
 import * as crypto from 'crypto'
 import * as path from 'path'
-import { WaitGroup } from '../../waitGroup'
+import { WaitGroup } from '../../waitGroup.js'
 
 /** Minimum time to wait before removing an element after an expectedPlayoutItem has been removed */
 const DELETE_TIME_WAIT = 20 * 1000
@@ -1020,7 +1020,7 @@ export class VizMSEManager extends EventEmitter {
 					return this._msePingConnected ? this._monitorEngines() : Promise.resolve()
 				})
 		}
-		return Promise.reject()
+		throw new Error('Not initialized')
 	}
 	private async _monitorEngines() {
 		if (!this.engineRestPort) {
@@ -1109,7 +1109,6 @@ export class VizMSEManager extends EventEmitter {
 		let i = 0
 		const maxNumberOfTries = 5
 
-		// eslint-disable-next-line no-constant-condition
 		while (true) {
 			try {
 				this._triggerCommandSent()

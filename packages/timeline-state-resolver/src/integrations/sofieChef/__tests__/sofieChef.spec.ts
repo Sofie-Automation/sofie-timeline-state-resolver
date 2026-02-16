@@ -1,10 +1,10 @@
-import { SofieChefDevice } from '..'
+import { SofieChefDevice } from '../index.js'
 import { StatusCode } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
-import WebSocket from '../../../__mocks__/ws'
-import { literal } from '../../../lib'
-import { SendWSMessageAny, SendWSMessageType, StatusCode as ChefStatusCode } from '../api'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import WebSocket from '../../../__mocks__/ws.js'
+import { literal } from '../../../lib.js'
+import { SendWSMessageAny, SendWSMessageType, StatusCode as ChefStatusCode } from '../api.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 
 describe('SofieChef', () => {
 	jest.mock('ws', () => WebSocket)

@@ -78,7 +78,7 @@ export enum MappingObsType {
 export type SomeMappingObs = MappingObsCurrentScene | MappingObsCurrentTransition | MappingObsRecording | MappingObsStreaming | MappingObsSceneItem | MappingObsInputAudio | MappingObsInputSettings | MappingObsInputMedia
 
 export interface ObsDeviceTypes {
-	Type: DeviceType.OBS,
+	Type: DeviceType.OBS
 	Options: ObsOptions
 	Mappings: SomeMappingObs
 	Actions: null

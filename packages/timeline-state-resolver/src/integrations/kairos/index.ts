@@ -8,14 +8,13 @@ import {
 	KairosDeviceTypes,
 	KairosActionMethods,
 } from 'timeline-state-resolver-types'
-// eslint-disable-next-line node/no-missing-import
 import { KairosConnection } from 'kairos-connection'
 import type { Device, DeviceContextAPI, CommandWithContext, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { KairosDeviceState, KairosStateBuilder } from './stateBuilder'
-import { diffKairosStates } from './diffState'
-import { sendCommand, type KairosCommandAny } from './commands'
-import { getActions } from './actions'
-import { KairosRamLoader } from './lib/kairosRamLoader'
+import { KairosDeviceState, KairosStateBuilder } from './stateBuilder.js'
+import { diffKairosStates } from './diffState.js'
+import { sendCommand, type KairosCommandAny } from './commands.js'
+import { getActions } from './actions.js'
+import { KairosRamLoader } from './lib/kairosRamLoader.js'
 
 export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, string>
 

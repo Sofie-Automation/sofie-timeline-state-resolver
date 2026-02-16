@@ -1,4 +1,4 @@
-import { TelemetricsDevice } from '..'
+import { TelemetricsDevice } from '../index.js'
 import {
 	DeviceType,
 	Mappings,
@@ -7,9 +7,9 @@ import {
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
 import { Socket } from 'net'
-import { DoOrderFunctionNothing } from '../../../devices/doOnTime'
-import { literal } from '../../../lib'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { DoOrderFunctionNothing } from '../../../devices/doOnTime.js'
+import { literal } from '../../../lib.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 const SERVER_PORT = 5000

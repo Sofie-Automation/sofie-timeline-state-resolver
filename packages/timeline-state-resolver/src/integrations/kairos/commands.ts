@@ -13,11 +13,10 @@ import {
 	type UpdateAudioPlayerObject,
 	type UpdateImageStoreObject,
 	isRef,
-	// eslint-disable-next-line node/no-missing-import
 } from 'kairos-connection'
-import { assertNever } from '../../lib'
+import { assertNever } from '../../lib.js'
 import { isEqual } from 'underscore'
-import type { KairosRamLoader } from './lib/kairosRamLoader'
+import type { KairosRamLoader } from './lib/kairosRamLoader.js'
 
 export type KairosCommandAny =
 	| KairosSceneCommand

@@ -161,7 +161,7 @@ export class DoOnTime extends EventEmitter<DoOnTimeEvents> {
 							sentTooSlow = this._verifySendCommand(o, startSend, queueId)
 							return p
 						} catch (e) {
-							return Promise.reject(e)
+							return Promise.reject(e as Error)
 						}
 					})
 					this._remove(queueId, id)

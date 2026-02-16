@@ -17,9 +17,9 @@ import {
 	TcpSendDeviceTypes,
 	TcpSendActions,
 } from 'timeline-state-resolver-types'
-import { t } from '../../lib'
-import _ = require('underscore')
-import { TcpConnection } from './tcpConnection'
+import { t } from '../../lib.js'
+import _ from 'underscore'
+import { TcpConnection } from './tcpConnection.js'
 
 export type TcpSendDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 

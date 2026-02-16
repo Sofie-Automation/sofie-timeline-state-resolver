@@ -1,4 +1,4 @@
-import { DeviceType } from '../index'
+import { DeviceType } from '../index.js'
 
 export type TimelineContentTelemetricsAny = TimelineContentTelemetrics
 

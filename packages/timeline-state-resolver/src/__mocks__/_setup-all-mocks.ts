@@ -1,13 +1,13 @@
-import * as atemConnection from './atem-connection'
-import * as casparcgConnection from './casparcg-connection'
-import * as emberplusConnection from './emberplus-connection'
-import * as emberplus from './emberplus'
-import * as got from './got'
-import * as hyperdeckConnection from './hyperdeck-connection'
-import * as net from './net'
-import * as osc from './osc'
-import * as vConnection from './v-connection'
-import * as ws from './ws'
+import * as atemConnection from './atem-connection.js'
+import * as casparcgConnection from './casparcg-connection.js'
+import * as emberplusConnection from './emberplus-connection.js'
+import * as emberplus from './emberplus.js'
+import * as got from './got.js'
+import * as hyperdeckConnection from './hyperdeck-connection.js'
+import * as net from './net.js'
+import * as osc from './osc.js'
+import * as vConnection from './v-connection.js'
+import * as ws from './ws.js'
 
 // Note: Due to the nature of threadedClass, jests' normal module-mocks
 // (just adding the mock-file in an adjecent __mocks__ directory)

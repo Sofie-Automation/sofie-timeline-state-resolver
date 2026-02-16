@@ -19,10 +19,11 @@ import {
 	StatusCode,
 } from 'timeline-state-resolver-types'
 
-import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection'
+import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection.js'
 import Debug from 'debug'
-import { t } from '../../lib'
+import { t } from '../../lib.js'
 import { CommandWithContext, Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+
 const debug = Debug('timeline-state-resolver:sisyfos')
 
 type Command = CommandWithContext<SisyfosCommand, string>
@@ -309,6 +310,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 			// @ts-ignore backwards-compatibility:
 			if (!foundMapping.mappingType) foundMapping.mappingType = MappingSisyfosType.CHANNEL
 			// @ts-ignore backwards-compatibility:
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
 			if (content.type === 'sisyfos') content.type = TimelineContentTypeSisyfos.CHANNEL
 
 			debug(
@@ -595,7 +597,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 
 				return Promise.resolve()
 			} catch (e) {
-				return Promise.reject(e)
+				return Promise.reject(e as Error)
 			}
 		}
 	}

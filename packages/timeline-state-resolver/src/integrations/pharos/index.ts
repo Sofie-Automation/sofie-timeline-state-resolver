@@ -6,7 +6,7 @@ import {
 	StatusCode,
 	PharosDeviceTypes,
 } from 'timeline-state-resolver-types'
-import { Pharos } from './connection'
+import { Pharos } from './connection.js'
 import type {
 	Device,
 	CommandWithContext,
@@ -14,7 +14,7 @@ import type {
 	DeviceTimelineState,
 	DeviceTimelineStateObject,
 } from 'timeline-state-resolver-api'
-import { diffStates } from './diffStates'
+import { diffStates } from './diffStates.js'
 
 export type PharosCommandWithContext = CommandWithContext<CommandContent, string>
 export type PharosState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>

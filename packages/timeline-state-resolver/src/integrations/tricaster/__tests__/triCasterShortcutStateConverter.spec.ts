@@ -1,4 +1,4 @@
-import { TriCasterShortcutStateConverter } from '../triCasterShortcutStateConverter'
+import { TriCasterShortcutStateConverter } from '../triCasterShortcutStateConverter.js'
 
 function setUpShortcutStateConverter() {
 	return new TriCasterShortcutStateConverter({

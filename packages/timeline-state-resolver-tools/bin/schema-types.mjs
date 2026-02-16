@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable */
 
 import { compile } from 'json-schema-to-typescript'
 import * as fs from 'fs/promises'
@@ -122,7 +121,7 @@ const genericActionTypes = [] // TODO - should this be usable for plugins?
 if (isMainRepository) {
 	// Perform some special handling for the main repository. Ideally this would be a dedicated script, but that gets complicated due to needing to share the `genericActionTypes` array with the latter parts of this script
 
-	deviceOptionsFile += `import type { DeviceOptionsBase } from '../device'\n`
+	deviceOptionsFile += `import type { DeviceOptionsBase } from '../device.js'\n`
 
 	// convert action-schema
 	try {
@@ -212,9 +211,9 @@ if (isMainRepository) {
 	}
 
 	// Inject the generated types into the index.ts file
-	indexFile += `export * from './action-schema'
-export * from './generic-ptz-actions'
-export * from './device-options'
+	indexFile += `export * from './action-schema.js'
+export * from './generic-ptz-actions.js'
+export * from './device-options.js'
 `
 }
 
@@ -369,7 +368,7 @@ for (const dir of dirs) {
 	}
 
 	if (importGenericTypes.size > 0) {
-		output = `import type { ${Array.from(importGenericTypes).join(', ')} } from './generic-ptz-actions'\n\n` + output
+		output = `import type { ${Array.from(importGenericTypes).join(', ')} } from './generic-ptz-actions.js'\n\n` + output
 	}
 
 	if (actionDefinitions.length > 0) {
@@ -396,9 +395,9 @@ ${actionDefinitions
 `
 		// Prepend import:
 		output =
-			`import type { ActionExecutionResult } from "${
-				isMainRepository ? '../actions' : 'timeline-state-resolver-types'
-			}"\n` + output
+			`import type { ActionExecutionResult } from '${
+				isMainRepository ? '../actions.js' : 'timeline-state-resolver-types'
+			}'\n` + output
 	}
 
 	let deviceTypeId = toConstantCase(dir)
@@ -416,14 +415,14 @@ ${actionDefinitions
 
 	output += `
 export interface ${dirId}DeviceTypes {
-	Type: DeviceType.${deviceTypeId},
+	Type: DeviceType.${deviceTypeId}
 	Options: ${dirId}Options
 	Mappings: SomeMapping${dirId}
 	Actions: ${actionDefinitions.length > 0 ? `${dirId}ActionMethods` : 'null'}
 }
 `
 
-	deviceOptionsFile += `import type { ${dirId}Options } from './${dir}'
+	deviceOptionsFile += `import type { ${dirId}Options } from './${dir}.js'
 export type DeviceOptions${dirId} = DeviceOptionsBase<DeviceType.${deviceTypeId}, ${dirId}Options>\n\n`
 	deviceOptionsTypes.push(`DeviceOptions${dirId}`)
 
@@ -454,7 +453,7 @@ export type DeviceOptions${dirId} = DeviceOptionsBase<DeviceType.${deviceTypeId}
 		await fs.writeFile(outputFilePath, output)
 
 		indexFile += `\nexport * from './${dir}'`
-		indexFile += `\nimport type { ${someMappingName} } from './${dir}'`
+		indexFile += `\nimport type { ${someMappingName} } from './${dir}.js'`
 		indexFile += '\n'
 	} else {
 		if (await fsUnlink(outputFilePath)) console.log('Removed ' + outputFilePath)
@@ -486,8 +485,8 @@ export enum DeviceType {\n\t${deviceTypeEnum.map((type) => `${type} = '${toConst
 		`
 import { DeviceType } from 'timeline-state-resolver-types'
 import CommonOptions = require('./$schemas/common-options.json')
-import { generateTranslation } from './lib'
-import { stringifyActionSchema, stringifyMappingSchema, TSRManifest } from './manifestLib'
+import { generateTranslation } from './lib.js'
+import { stringifyActionSchema, stringifyMappingSchema, TSRManifest } from './manifestLib.js'
 `
 	manifestFile += manifestFileImports + '\n'
 	manifestFile += `export const builtinDeviceManifest: TSRManifest = {

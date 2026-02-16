@@ -1,6 +1,7 @@
-import { DeviceType } from '..'
+import { DeviceType } from '../generated/index.js'
 
-export enum TimelineContentTypeAtem { //  Atem-state
+export enum TimelineContentTypeAtem {
+	//  Atem-state
 	ControlValue = 'controlValue',
 	ME = 'me',
 	USK = 'usk',
@@ -15,7 +16,8 @@ export enum TimelineContentTypeAtem { //  Atem-state
 	COLORGENERATOR = 'colorGenerator',
 }
 
-export enum AtemTransitionStyle { // Note: copied from atem-state
+export enum AtemTransitionStyle {
+	// Note: copied from atem-state
 	MIX = 0,
 	DIP = 1,
 	WIPE = 2,
@@ -24,11 +26,13 @@ export enum AtemTransitionStyle { // Note: copied from atem-state
 	CUT = 5,
 	DUMMY = 6,
 }
-export enum MediaSourceType { // Note: copied from atem-state
+export enum MediaSourceType {
+	// Note: copied from atem-state
 	Still = 1,
 	Clip = 2,
 }
-export enum BorderBevel { // Note: copied from atem-state
+export enum BorderBevel {
+	// Note: copied from atem-state
 	None = 0,
 	InOut = 1,
 	In = 2,
@@ -147,7 +151,6 @@ export interface TimelineContentAtemControlValue extends TimelineContentAtemBase
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
-// eslint-disable-next-line @typescript-eslint/ban-types
 type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
 export interface TimelineContentAtemME extends TimelineContentAtemBase {

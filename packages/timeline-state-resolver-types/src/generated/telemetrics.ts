@@ -14,7 +14,7 @@ export interface TelemetricsOptions {
 export type SomeMappingTelemetrics = Record<string, never>
 
 export interface TelemetricsDeviceTypes {
-	Type: DeviceType.TELEMETRICS,
+	Type: DeviceType.TELEMETRICS
 	Options: TelemetricsOptions
 	Mappings: SomeMappingTelemetrics
 	Actions: null

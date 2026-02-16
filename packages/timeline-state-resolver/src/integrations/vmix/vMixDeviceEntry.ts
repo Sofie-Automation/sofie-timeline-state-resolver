@@ -1,5 +1,5 @@
 import { DeviceEntry } from 'timeline-state-resolver-api'
-import { VMixDevice } from '.'
+import { VMixDevice } from './index.js'
 
 export class vMixDeviceEntry implements DeviceEntry {
 	public readonly deviceClass = VMixDevice

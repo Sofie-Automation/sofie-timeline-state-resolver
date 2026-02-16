@@ -1,4 +1,5 @@
-import { PanasonicPtzDevice } from '..'
+/* eslint-disable jest/expect-expect */
+import { PanasonicPtzDevice } from '../index.js'
 import {
 	Mappings,
 	DeviceType,
@@ -9,12 +10,12 @@ import {
 	TimelineContentPanasonicPtzAny,
 	TimelineContentTypePanasonicPtz,
 } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
-import got from '../../../__mocks__/got'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import got from '../../../__mocks__/got.js'
 import { Response } from 'got'
-import { PanasonicPtzState } from '../state'
-import { getDeviceContext } from '../../__tests__/testlib'
-import { PanasonicPtzCommandWithContext } from '../diff'
+import { PanasonicPtzState } from '../state.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
+import { PanasonicPtzCommandWithContext } from '../diff.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const orgSetTimeout = setTimeout

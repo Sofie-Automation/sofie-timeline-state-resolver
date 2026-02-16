@@ -4,7 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions.js'
 import type { DeviceType } from './device-options.js'
 
 export interface AtemOptions {
@@ -21,7 +21,7 @@ export interface AtemMediaPoolAsset {
 export enum AtemMediaPoolType {
 	Still = 'still',
 	Clip = 'clip',
-	Audio = 'audio'
+	Audio = 'audio',
 }
 
 export interface MappingAtemControlValue {
@@ -114,7 +114,7 @@ export interface AtemActionMethods {
 }
 
 export interface AtemDeviceTypes {
-	Type: DeviceType.ATEM,
+	Type: DeviceType.ATEM
 	Options: AtemOptions
 	Mappings: SomeMappingAtem
 	Actions: AtemActionMethods

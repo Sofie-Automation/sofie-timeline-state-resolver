@@ -27,10 +27,10 @@ import {
 	TimelineContentAtemSsrcProps,
 	TimelineContentTypeAtem,
 } from 'timeline-state-resolver-types'
-import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
-import { AtemStateBuilder, InternalAtemConnectionState } from '../stateBuilder'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
+import { AtemStateBuilder, InternalAtemConnectionState } from '../stateBuilder.js'
 import { SuperSourceArtOption } from 'atem-connection/dist/enums'
-import { cloneDeep } from '../../../lib'
+import { cloneDeep } from '../../../lib.js'
 import { Defaults } from 'atem-state'
 import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 

@@ -1,5 +1,5 @@
 // These imports are pointed to what external libraries will import
-import { DeviceType as Types_DeviceType, TSRTimeline, TimelineContentEmpty, TSRTimelineObj } from '../../dist'
+import { DeviceType as Types_DeviceType, TSRTimeline, TimelineContentEmpty, TSRTimelineObj } from '../../src/index.js'
 
 describe('Usage of library', () => {
 	// These tests test that the library can be imported and used by the library consumers.

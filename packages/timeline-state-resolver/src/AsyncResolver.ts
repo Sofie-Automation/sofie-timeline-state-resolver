@@ -7,7 +7,7 @@ import {
 	ResolveError,
 	ResolveOptions,
 } from 'superfly-timeline'
-import { TimelineTriggerTimeResult } from './conductor'
+import { TimelineTriggerTimeResult } from './conductor.js'
 import { TSRTimeline, TSRTimelineContent, TSRTimelineObj } from 'timeline-state-resolver-types'
 import { EventEmitter } from 'node:events'
 

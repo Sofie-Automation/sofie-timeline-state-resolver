@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceWithState } from './../../devices/device'
+import { DeviceWithState } from './../../devices/device.js'
 
 import {
 	ActionExecutionResult,
@@ -29,12 +29,12 @@ import {
 
 import { createMSE, MSE } from '@tv2media/v-connection'
 
-import { DoOnTime, SendMode } from '../../devices/doOnTime'
+import { DoOnTime, SendMode } from '../../devices/doOnTime.js'
 
-import { ExpectedPlayoutItem } from '../../expectedPlayoutItems'
-import { endTrace, startTrace, t, literal } from '../../lib'
+import { ExpectedPlayoutItem } from '../../expectedPlayoutItems.js'
+import { endTrace, startTrace, t, literal } from '../../lib.js'
 import { HTTPClientError, HTTPServerError } from '@tv2media/v-connection/dist/msehttp'
-import { VizMSEManager } from './vizMSEManager'
+import { VizMSEManager } from './vizMSEManager.js'
 import {
 	VizMSECommand,
 	VizMSEState,
@@ -60,7 +60,7 @@ import {
 	VizMSECommandTakeOut,
 	VizMSECommandClearAllElements,
 	VizMSECommandClearAllEngines,
-} from './types'
+} from './types.js'
 import type { CommandWithContext } from 'timeline-state-resolver-api'
 
 /** The ideal time to prepare elements before going on air */

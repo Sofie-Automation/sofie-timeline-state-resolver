@@ -1,5 +1,5 @@
-import { VMixStateSynchronizer } from '../vMixStateSynchronizer'
-import { ADDED_INPUT_NAME_1, ADDED_INPUT_NAME_2, makeMockFullState, makeMockReportedState } from './mockState'
+import { VMixStateSynchronizer } from '../vMixStateSynchronizer.js'
+import { ADDED_INPUT_NAME_1, ADDED_INPUT_NAME_2, makeMockFullState, makeMockReportedState } from './mockState.js'
 
 describe('VMixStateSynchronizer', () => {
 	it('applies properties of existing inputs', () => {

@@ -15,7 +15,7 @@ import {
 	TriCasterMatrixOutputName,
 	Mapping,
 } from 'timeline-state-resolver-types'
-import { isStateEntry, MappingsTriCaster, TriCasterState, WithContext } from './triCasterStateDiffer'
+import { isStateEntry, MappingsTriCaster, TriCasterState, WithContext } from './triCasterStateDiffer.js'
 import {
 	isTimelineObjTriCaster,
 	isTimelineObjTriCasterAudioChannel,
@@ -24,7 +24,7 @@ import {
 	isTimelineObjTriCasterMatrixOutput,
 	isTimelineObjTriCasterME,
 	isTimelineObjTriCasterMixOutput,
-} from './types'
+} from './types.js'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 type DeepPartial<T> = { [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P] }
@@ -162,7 +162,7 @@ export class TriCasterTimelineStateConverter {
 							value: tlObject.content.meClean,
 							timelineObjId: tlObject.id,
 							temporalPriority: tlObject.content.temporalPriority,
-					  }
+						}
 					: resultState.mixOutputs[mapping.name]?.meClean,
 		}
 	}

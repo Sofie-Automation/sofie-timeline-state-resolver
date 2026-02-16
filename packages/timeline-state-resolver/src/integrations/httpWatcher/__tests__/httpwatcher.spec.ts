@@ -1,5 +1,5 @@
 import { HttpMethod, HttpWatcherOptions, StatusCode } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
+import { MockTime } from '../../../__tests__/mockTime.js'
 
 const MOCKED_SOCKET_GET = jest.fn()
 const MOCKED_SOCKET_POST = jest.fn()
@@ -16,8 +16,8 @@ jest.mock('got', () => {
 })
 
 // note - this import should be below the got mock
-import { HTTPWatcherDevice } from '..'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { HTTPWatcherDevice } from '../index.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 
 async function getInitialisedDevice(options: HttpWatcherOptions) {
 	const dev = new HTTPWatcherDevice(getDeviceContext())

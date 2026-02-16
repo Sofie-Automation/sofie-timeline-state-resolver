@@ -19,9 +19,9 @@ import {
 	VMixInputAudio,
 	VMixState,
 	VMixStateExtended,
-} from './vMixStateDiffer'
+} from './vMixStateDiffer.js'
 import deepMerge from 'deepmerge'
-import _ = require('underscore')
+import _ from 'underscore'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 const mappingPriority: { [k in MappingVmixType]: number } = {
@@ -65,7 +65,7 @@ export class VMixTimelineStateConverter {
 			})).sort((a, b) => a.layerName.localeCompare(b.layerName)),
 			(o) =>
 				o.mapping
-					? mappingPriority[o.mapping?.options.mappingType] ?? Number.POSITIVE_INFINITY
+					? (mappingPriority[o.mapping?.options.mappingType] ?? Number.POSITIVE_INFINITY)
 					: Number.POSITIVE_INFINITY
 		)
 

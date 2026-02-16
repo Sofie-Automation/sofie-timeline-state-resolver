@@ -1,7 +1,7 @@
 import { klona } from 'klona'
 import { ITranslatableMessage, ActionExecutionResultCode, ActionExecutionResult } from 'timeline-state-resolver-types'
 import { PartialDeep } from 'type-fest'
-import deepmerge = require('deepmerge')
+import deepmerge from 'deepmerge'
 import type { FinishedTrace, Trace } from 'timeline-state-resolver-api'
 
 export function literal<T>(o: T) {
@@ -18,7 +18,7 @@ export type Complete<T> = {
 
 /** Deeply extend an object with some partial objects */
 export function deepMerge<T extends object>(destination: T, source: PartialDeep<T>): T {
-	return deepmerge<T>(destination, source)
+	return deepmerge<T>(destination, source as Partial<T>)
 }
 
 export function startTrace(measurement: string, tags?: Record<string, string>): Trace {

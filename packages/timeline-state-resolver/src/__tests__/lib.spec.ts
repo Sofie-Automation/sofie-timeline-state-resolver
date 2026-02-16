@@ -1,4 +1,4 @@
-import { set } from '../lib'
+import { set } from '../lib.js'
 
 describe('set', () => {
 	test('simplest path', () => {

@@ -10,9 +10,9 @@ import {
 	ActionExecutionResult,
 } from 'timeline-state-resolver-types'
 import { EventEmitter } from 'node:events'
-import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo } from './doOnTime'
-import { ExpectedPlayoutItem } from '../expectedPlayoutItems'
-import { actionNotFoundMessage } from '../lib'
+import { CommandReport, DoOnTime, SlowFulfilledCommandInfo, SlowSentCommandInfo } from './doOnTime.js'
+import { ExpectedPlayoutItem } from '../expectedPlayoutItems.js'
+import { actionNotFoundMessage } from '../lib.js'
 import type { FinishedTrace } from 'timeline-state-resolver-api'
 import type { CommandWithContext, DeviceEvents } from 'timeline-state-resolver-api'
 
@@ -98,9 +98,9 @@ export interface IDevice<TOptions extends DeviceOptionsBase<any, any>> {
  * class will use.
  */
 export abstract class Device<
-		DeviceTypes extends { Type: DeviceType; Options: any; Mappings: any; Actions: Record<string, any> }, // TODO: This type is not used as much as it should be, but as this class is deprecated it is not worth the effort to fix it
-		TOptions extends DeviceOptionsBase<DeviceTypes['Type'], DeviceTypes['Options']>
-	>
+	DeviceTypes extends { Type: DeviceType; Options: any; Mappings: any; Actions: Record<string, any> }, // TODO: This type is not used as much as it should be, but as this class is deprecated it is not worth the effort to fix it
+	TOptions extends DeviceOptionsBase<DeviceTypes['Type'], DeviceTypes['Options']>,
+>
 	extends EventEmitter<DeviceEvents>
 	implements IDevice<TOptions>
 {
@@ -320,7 +320,7 @@ export abstract class Device<
 export abstract class DeviceWithState<
 	TState,
 	DeviceTypes extends { Type: DeviceType; Options: any; Mappings: any; Actions: Record<string, any> },
-	TOptions extends DeviceOptionsBase<DeviceTypes['Type'], DeviceTypes['Options']>
+	TOptions extends DeviceOptionsBase<DeviceTypes['Type'], DeviceTypes['Options']>,
 > extends Device<DeviceTypes, TOptions> {
 	private _states: { [time: string]: TState } = {}
 	private _setStateCount = 0
@@ -364,7 +364,7 @@ export abstract class DeviceWithState<
 		let foundState: TState | null = null
 		_.each(this._states, (state: TState, stateTimeStr: string) => {
 			const stateTime = parseFloat(stateTimeStr)
-			if (stateTime > foundTime && stateTime <= time!) {
+			if (stateTime > foundTime && stateTime <= time) {
 				foundState = state
 				foundTime = stateTime
 			}

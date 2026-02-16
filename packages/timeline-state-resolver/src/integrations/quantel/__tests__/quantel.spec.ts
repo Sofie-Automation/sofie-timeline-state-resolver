@@ -11,17 +11,17 @@ import {
 	TSRTimeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { QuantelCommandWithContext, QuantelDevice } from '..'
-import { QuantelCommandType, QuantelState } from '../types'
-import { setupQuantelGatewayMock } from './quantelGatewayMock'
-import { MockTime } from '../../../__tests__/mockTime'
-import { getDeviceContext } from '../../../integrations/__tests__/testlib'
-import { StateHandler } from '../../../service/stateHandler'
-import { CommandWithContext } from '../../..'
+import { QuantelCommandWithContext, QuantelDevice } from '../index.js'
+import { QuantelCommandType, QuantelState } from '../types.js'
+import { setupQuantelGatewayMock } from './quantelGatewayMock.js'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import { getDeviceContext } from '../../../integrations/__tests__/testlib.js'
+import { StateHandler } from '../../../service/stateHandler.js'
+import { CommandWithContext } from '../../../index.js'
 import { getResolvedState, resolveTimeline } from 'superfly-timeline'
-import { DevicesDict } from '../../../service/devices'
-import { setSoftJumpWaitTime } from '../connection'
-import { waitUntil } from '../../../__tests__/lib'
+import { DevicesDict } from '../../../service/devices.js'
+import { setSoftJumpWaitTime } from '../connection.js'
+import { waitUntil } from '../../../__tests__/lib.js'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 async function getInitialisedQuantelDevice(clearMock?: jest.Mock) {
@@ -1577,8 +1577,7 @@ describe('Quantel Device', () => {
 			getCurrentTime: () => Date.now(),
 		}
 		function getNewStateHandler(device: QuantelDevice): StateHandler<QuantelState, CommandWithContext<any, any>> {
-			// eslint-disable-next-line @typescript-eslint/unbound-method
-			const orgSendCommand = device.sendCommand
+			const orgSendCommand = device.sendCommand.bind(device)
 			device.sendCommand = async function mockFunction(...args) {
 				MOCK_SEND_COMMAND(...args)
 				return orgSendCommand.apply(device, args)
@@ -2098,8 +2097,10 @@ describe('Quantel Device', () => {
 	})
 })
 
-interface DeviceTimelineStateObjectQuantelWithPartialInstance
-	extends Omit<Partial<DeviceTimelineStateObject<TimelineContentQuantelAny>>, 'instance'> {
+interface DeviceTimelineStateObjectQuantelWithPartialInstance extends Omit<
+	Partial<DeviceTimelineStateObject<TimelineContentQuantelAny>>,
+	'instance'
+> {
 	instance?: Partial<Timeline.TimelineObjectInstance>
 }
 

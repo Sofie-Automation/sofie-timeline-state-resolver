@@ -1,6 +1,6 @@
 import { Commands, TransportStatus } from 'hyperdeck-connection'
-import { diffHyperdeckStates } from '../diffState'
-import { HyperdeckDeviceState, HyperdeckDeviceTransportState, getDefaultHyperdeckState } from '../stateBuilder'
+import { diffHyperdeckStates } from '../diffState.js'
+import { HyperdeckDeviceState, HyperdeckDeviceTransportState, getDefaultHyperdeckState } from '../stateBuilder.js'
 
 describe('Diff States', () => {
 	function createStoppedState(): HyperdeckDeviceState {

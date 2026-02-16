@@ -7,7 +7,7 @@ import {
 	TimelineContentTypePharos,
 	type Mappings,
 } from 'timeline-state-resolver-types'
-import type { PharosState, PharosCommandWithContext } from '.'
+import type { PharosState, PharosCommandWithContext } from './index.js'
 import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 type TimelineObjAny = DeviceTimelineStateObject<TSRTimelineContent>

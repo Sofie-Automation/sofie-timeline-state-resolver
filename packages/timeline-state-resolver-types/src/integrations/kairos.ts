@@ -1,4 +1,4 @@
-import type { DeviceType } from '..'
+import type { DeviceType } from '../index.js'
 import type {
 	RefPath,
 	MediaClipRef,
@@ -163,8 +163,9 @@ export interface TimelineContentKairosSoundPlayer {
 }
 
 // Note: This is quite inspired from the CasparCG Media type:
-export interface TimelineContentKairosPlayerState<TClip>
-	extends Partial<Pick<UpdateClipPlayerObject, 'colorOverwrite' | 'color'>> {
+export interface TimelineContentKairosPlayerState<TClip> extends Partial<
+	Pick<UpdateClipPlayerObject, 'colorOverwrite' | 'color'>
+> {
 	// clip player / ramrec player
 
 	/**

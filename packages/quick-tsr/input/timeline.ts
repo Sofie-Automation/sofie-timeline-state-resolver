@@ -4,7 +4,7 @@ import {
 	TimelineContentCCGMedia,
 	TSRTimelineObj,
 } from 'timeline-state-resolver'
-import { TSRInput } from '../src'
+import { TSRInput } from '../src/index.js'
 import { literal } from 'timeline-state-resolver/dist/lib'
 
 export const input: TSRInput = {

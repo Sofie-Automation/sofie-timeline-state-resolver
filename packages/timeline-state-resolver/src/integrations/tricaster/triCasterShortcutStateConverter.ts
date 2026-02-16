@@ -21,8 +21,8 @@ import {
 	wrapStateInContext,
 	TriCasterMixOutputState,
 	TriCasterMatrixOutputState,
-} from './triCasterStateDiffer'
-import { CommandName, TriCasterGenericCommandName } from './triCasterCommands'
+} from './triCasterStateDiffer.js'
+import { CommandName, TriCasterGenericCommandName } from './triCasterCommands.js'
 
 type ShortcutStates = {
 	[key: string]: string | number

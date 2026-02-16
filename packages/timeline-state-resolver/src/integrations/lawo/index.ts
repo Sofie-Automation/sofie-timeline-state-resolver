@@ -10,9 +10,9 @@ import {
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 import Debug from 'debug'
-import { convertTimelineStateToLawoState, LawoState } from './state'
-import { LawoCommandWithContext, diffLawoStates, LawoCommandType } from './diff'
-import { LawoConnection } from './connection'
+import { convertTimelineStateToLawoState, LawoState } from './state.js'
+import { LawoCommandWithContext, diffLawoStates, LawoCommandType } from './diff.js'
+import { LawoConnection } from './connection.js'
 const debug = Debug('timeline-state-resolver:lawo')
 
 export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoCommandWithContext> {

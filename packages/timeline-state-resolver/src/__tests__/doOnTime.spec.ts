@@ -1,5 +1,5 @@
-import { MockTime } from './mockTime'
-import { DoOnTime, SendMode } from '../devices/doOnTime'
+import { MockTime } from './mockTime.js'
+import { DoOnTime, SendMode } from '../devices/doOnTime.js'
 
 describe('DoOnTime', () => {
 	const mockTime = new MockTime()

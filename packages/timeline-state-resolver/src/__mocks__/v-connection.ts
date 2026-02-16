@@ -20,7 +20,7 @@ import {
 import { EventEmitter } from 'events'
 import { CommandResult } from '@tv2media/v-connection/dist/msehttp'
 import { PepResponse } from '@tv2media/v-connection/dist/peptalk'
-import _ = require('underscore')
+import _ from 'underscore'
 
 interface MockShow {
 	id: string
@@ -157,9 +157,8 @@ export class MSEMock extends EventEmitter implements MSE {
 			response: 'mock',
 		}
 	}
-	timeout(t?: number): number {
+	timeout(_t?: number): number {
 		throw new Error('Not implemented')
-		return t || 0
 	}
 	async close(): Promise<boolean> {
 		return true
@@ -189,7 +188,11 @@ export type VRundownMocked = MockClass<VRundown>
 export class VRundownMock implements VRundown {
 	private elements: { [key: string]: VElement } = {}
 	private _isActive = false
-	constructor(public readonly profile: string, public readonly playlist: string, public readonly description?: string) {
+	constructor(
+		public readonly profile: string,
+		public readonly playlist: string,
+		public readonly description?: string
+	) {
 		// Hack: replace methods with jest-ified ones
 		_.each(Object.getOwnPropertyNames(VRundownMock.prototype), (key) => {
 			if (key !== 'prototype') {
@@ -217,7 +220,7 @@ export class VRundownMock implements VRundown {
 	}
 
 	async cleanupAllSofieShows(): Promise<CommandResult[]> {
-		throw [{ path: '', status: 200, response: 'mock' }]
+		return [{ path: '', status: 200, response: 'mock' }]
 	}
 
 	async listTemplates(): Promise<string[]> {

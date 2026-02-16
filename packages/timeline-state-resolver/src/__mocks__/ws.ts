@@ -3,7 +3,7 @@ import { EventEmitter } from 'events'
 const orgSetTimeout = setTimeout
 
 const instances: Array<WebSocket> = []
-let mockConstructor: Function
+let mockConstructor: (s: WebSocket) => void
 
 class WebSocket extends EventEmitter {
 	public CONNECTING = 1

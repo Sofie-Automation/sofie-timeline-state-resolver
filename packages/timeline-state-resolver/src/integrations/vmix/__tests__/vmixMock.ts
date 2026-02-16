@@ -1,4 +1,4 @@
-import * as net from '../../../__mocks__/net'
+import * as net from '../../../__mocks__/net.js'
 
 jest.mock('net', () => net)
 

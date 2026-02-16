@@ -1,5 +1,5 @@
-import { Expression } from './expression'
-import { ObjectId } from './types'
+import { Expression } from './expression.js'
+import { ObjectId } from './types.js'
 
 export interface TimelineObject<TContent extends Content = Content> {
 	/** ID of the object. Must be unique! */

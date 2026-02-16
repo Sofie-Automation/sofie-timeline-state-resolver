@@ -60,7 +60,7 @@ export class Hyperdeck extends EventEmitter {
 			try {
 				return resolve()
 			} catch (e) {
-				return reject(e)
+				return reject(e as Error)
 			}
 		})
 	}
@@ -73,7 +73,7 @@ export class Hyperdeck extends EventEmitter {
 			(command instanceof Commands.SlotSelectCommand || command instanceof Commands.SlotInfoCommand) &&
 			(command.slotId || 0) > 2
 		) {
-			return Promise.reject()
+			throw new Error('Slot does not exist')
 		} else if (command instanceof Commands.DeviceInfoCommand) {
 			const res: Commands.DeviceInfoCommandResponse = {
 				protocolVersion: 1.9,

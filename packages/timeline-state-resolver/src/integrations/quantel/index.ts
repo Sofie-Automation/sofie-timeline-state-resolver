@@ -14,11 +14,11 @@ import {
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 import Debug from 'debug'
-import { QuantelCommand, QuantelCommandType, QuantelState } from './types'
+import { QuantelCommand, QuantelCommandType, QuantelState } from './types.js'
 import { QuantelGateway } from 'tv-automation-quantel-gateway-client'
-import { QuantelManager } from './connection'
-import { convertTimelineStateToQuantelState, getMappedPorts } from './state'
-import { diffStates } from './diff'
+import { QuantelManager } from './connection.js'
+import { convertTimelineStateToQuantelState, getMappedPorts } from './state.js'
+import { diffStates } from './diff.js'
 const debug = Debug('timeline-state-resolver:quantel')
 
 export interface OscDeviceState {
