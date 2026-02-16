@@ -192,7 +192,7 @@ export class StateHandler<
 		this.stateQueue.unshift({
 			deviceState: 'deviceState' in deviceState ? deviceState.deviceState : deviceState,
 			addressStates: 'addressStates' in deviceState ? deviceState.addressStates : undefined,
-			state: this.currentState?.state || { time: this.context.getCurrentTime(), layers: {}, nextEvents: [] },
+			state: this.currentState?.state || { time: this.context.getCurrentTime(), objects: [] },
 			mappings: this.currentState?.mappings || {},
 		})
 
