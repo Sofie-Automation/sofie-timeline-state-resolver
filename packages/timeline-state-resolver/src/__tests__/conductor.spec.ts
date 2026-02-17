@@ -608,7 +608,8 @@ describe('Conductor', () => {
 			})
 
 			const device0 = await getMockDeviceWrapper(conductor, 'device0')
-			device0.handleState.mockImplementation(async () => Promise.resolve())
+			const handleStateMock = device0.handleState as unknown as jest.Mock<Promise<void>, [unknown, unknown]>
+			handleStateMock.mockResolvedValue(undefined)
 
 			conductor.setTimelineAndMappings(
 				[
@@ -634,7 +635,8 @@ describe('Conductor', () => {
 			device0.handleState.mockClear()
 
 			const resyncTime = mockTime.now
-			;(conductor as any).resyncDeviceStates('device0')
+			const conductorWithResync = conductor as unknown as { resyncDeviceStates: (deviceId: string) => void }
+			conductorWithResync.resyncDeviceStates('device0')
 			await mockTime.tick()
 
 			expect(device0.handleState).toHaveBeenCalled()
