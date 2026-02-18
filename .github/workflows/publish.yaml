@@ -184,14 +184,6 @@ jobs:
           git add .
           git commit -m "chore: temp commit" --no-verify --allow-empty
 
-          # If an npm token is provided, use it (for simpler setup in forks)
-          # if [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
-          #  echo "Using provided NPM token"
-          #  echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-          #else
-          #  echo "No NPM token provided, using trusted publishing"
-          #fi
-
           corepack enable
           yarn install
 
