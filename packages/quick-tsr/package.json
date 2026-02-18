@@ -29,7 +29,7 @@
 		"test": "echo \"Note: no test specified for quick-tsr\" && exit 0"
 	},
 	"engines": {
-		"node": ">= 20.5"
+		"node": ">= 22.18"
 	},
 	"keywords": [
 		"broadcast",

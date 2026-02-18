@@ -56,7 +56,7 @@
 		"license-validate": "run -T  sofie-licensecheck"
 	},
 	"engines": {
-		"node": ">= 20.5"
+		"node": ">= 22.18"
 	},
 	"files": [
 		"/dist",
