@@ -1,0 +1,16 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "OGraf Options",
+	"type": "object",
+	"properties": {
+		"url": {
+			"type": "string",
+			"description": "URL of the OGraf server (http://my.ograf.server:8080)",
+			"ui:title": "Server URL (JSON)"
+		}
+	},
+	"required": [
+		"url"
+	],
+	"additionalProperties": false
+}

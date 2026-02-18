@@ -1,0 +1,192 @@
+{
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/action-schema.json",
+	"actions": [
+		{
+			"id": "resync",
+			"name": "Resync OGraf device",
+			"destructive": true
+		},
+		{
+			"id": "clearGraphics",
+			"name": "Clear graphics on a renderTarget",
+			"destructive": true,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"rendererId": {
+						"type": "string",
+						"description": "RendererId"
+					},
+					"renderTarget": {
+						"type": "string",
+						"description": "RenderTarget"
+					},
+					"graphicId": {
+						"type": "string",
+						"description": "ID of the graphic to trigger the customAction on"
+					},
+					"graphicInstanceId": {
+						"type": "string",
+						"description": "ID of the graphicInstance to trigger the customAction on"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"rendererId",
+					"renderTarget"
+				]
+			}
+		},
+		{
+			"id": "deltaStep",
+			"name": "Step Forwards or backwards",
+			"destructive": true,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"rendererId": {
+						"type": "string",
+						"description": "RendererId"
+					},
+					"renderTarget": {
+						"type": "string",
+						"description": "RenderTarget"
+					},
+					"graphicId": {
+						"type": "string",
+						"description": "ID of the graphic to trigger the customAction on"
+					},
+					"graphicInstanceId": {
+						"type": "string",
+						"description": "ID of the graphicInstance to trigger the customAction on"
+					},
+					"delta": {
+						"type": "number",
+						"description": "Number of steps to move, positive or negative"
+					},
+					"skipAnimation": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"rendererId",
+					"renderTarget",
+					"delta"
+				]
+			}
+		},
+		{
+			"id": "gotoStep",
+			"name": "Go to a step",
+			"destructive": true,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"rendererId": {
+						"type": "string",
+						"description": "RendererId"
+					},
+					"renderTarget": {
+						"type": "string",
+						"description": "RenderTarget"
+					},
+					"graphicId": {
+						"type": "string",
+						"description": "ID of the graphic to trigger the customAction on"
+					},
+					"graphicInstanceId": {
+						"type": "string",
+						"description": "ID of the graphicInstance to trigger the customAction on"
+					},
+					"gotoStep": {
+						"type": "number",
+						"description": "The step to go to"
+					},
+					"skipAnimation": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"rendererId",
+					"renderTarget",
+					"gotoStep"
+				]
+			}
+		},
+		{
+			"id": "customAction",
+			"name": "CustomAction",
+			"destructive": true,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"rendererId": {
+						"type": "string",
+						"description": "RendererId"
+					},
+					"renderTarget": {
+						"type": "string",
+						"description": "RenderTarget"
+					},
+					"graphicId": {
+						"type": "string",
+						"description": "ID of the graphic to trigger the customAction on"
+					},
+					"graphicInstanceId": {
+						"type": "string",
+						"description": "ID of the graphicInstance to trigger the customAction on"
+					},
+					"actionId": {
+						"type": "string",
+						"description": "ID of the customAction to trigger"
+					},
+					"payload": {
+						"description": "The payload to send to the customAction"
+					},
+					"skipAnimation": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"rendererId",
+					"renderTarget",
+					"actionId",
+					"payload"
+				]
+			}
+		},
+		{
+			"id": "rendererCustomAction",
+			"name": "Renderer customAction",
+			"destructive": true,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"rendererId": {
+						"type": "string",
+						"description": "RendererId"
+					},
+					"actionId": {
+						"type": "string",
+						"description": "ID of the customAction to trigger"
+					},
+					"payload": {
+						"description": "The payload to send to the customAction"
+					},
+					"skipAnimation": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"required": [
+					"rendererId",
+					"actionId",
+					"payload"
+				]
+			}
+		}
+	]
+}

@@ -39,6 +39,9 @@ import type { SomeMappingMultiOsc } from './multiOsc.js'
 export * from './obs'
 import type { SomeMappingObs } from './obs.js'
 
+export * from './ograf'
+import type { SomeMappingOgraf } from './ograf.js'
+
 export * from './osc'
 import type { SomeMappingOsc } from './osc.js'
 
@@ -95,6 +98,7 @@ export type TSRMappingOptions =
 	| SomeMappingLawo
 	| SomeMappingMultiOsc
 	| SomeMappingObs
+	| SomeMappingOgraf
 	| SomeMappingOsc
 	| SomeMappingPanasonicPTZ
 	| SomeMappingPharos
