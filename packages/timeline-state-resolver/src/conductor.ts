@@ -536,8 +536,8 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 				_.each(o.objectsFixed, (o) => (nowIdsTime[o.id] = o.time))
 				const fixNow = (o: TimelineObject) => {
 					if (nowIdsTime[o.id]) {
-						if (!_.isArray(o.enable)) {
-							o.enable.start = nowIdsTime[o.id]
+						if (!_.isArray(o.enable) && typeof o.enable === 'object' && o.enable !== null) {
+							;(o.enable as { start?: number }).start = nowIdsTime[o.id]
 						}
 					}
 				}
