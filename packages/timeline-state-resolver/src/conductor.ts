@@ -8,7 +8,7 @@ import {
 } from 'superfly-timeline'
 import { EventEmitter } from 'node:events'
 import { MemUsageReport, threadedClass, ThreadedClass, ThreadedClassManager } from 'threadedclass'
-import PQueue from 'p-queue'
+import { CancellableQueue } from './lib/cancellableQueue.js'
 import PAll from 'p-all'
 
 import {
@@ -29,7 +29,7 @@ import {
 
 import { DoOnTime } from './devices/doOnTime.js'
 import { AsyncResolver } from './AsyncResolver.js'
-import { convertResolvedTimelineObjectToDeviceTimelineStateObject, endTrace, startTrace } from './lib.js'
+import { cloneDeep, convertResolvedTimelineObjectToDeviceTimelineStateObject, endTrace, startTrace } from './lib.js'
 import type {
 	FinishedTrace,
 	CommandWithContext,
@@ -184,9 +184,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	private _triggerSendStartStopCallbacksTimeout: NodeJS.Timeout | null = null
 	private _sentCallbacks: TimelineCallbacks = {}
 
-	private _actionQueue: PQueue = new PQueue({
-		concurrency: 1,
-	})
+	private _actionQueue = new CancellableQueue()
 
 	private _statMeasureStart = 0
 	private _statMeasureReason = ''
@@ -354,7 +352,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	public resetResolver() {
 		// reset the resolver through the action queue to make sure it is reset after any currently running timelineResolves
 		this._actionQueue
-			.add(async () => {
+			.add('resetResolver', async () => {
 				this._nextResolveTime = 0 // This will cause _resolveTimeline() to generate the state for NOW
 				this._resolved = {
 					resolvedTimeline: null,
@@ -413,7 +411,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	private _resolveTimeline() {
 		// this adds it to a queue, make sure it never runs more than once at a time:
 		this._actionQueue
-			.add(async () => {
+			.add('resolveTimeline', async () => {
 				return this._resolveTimelineInner()
 					.then((nextResolveTime) => {
 						this._nextResolveTime = nextResolveTime ?? 0
@@ -770,9 +768,13 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		return this.connectionManager.getConnection(deviceId)?.device.handleState(filledState, mappings)
 	}
 
-	setDatastore(newStore: Datastore) {
+	setDatastore(newStore0: Datastore) {
+		// Clone it to make sure that if the caller mutates the object after calling setDatastore,
+		// it doesn't mess with our internal state
+		const newStore = cloneDeep(newStore0)
+
 		this._actionQueue
-			.add(() => {
+			.add('setDatastore', () => {
 				const allKeys = new Set([...Object.keys(newStore), ...Object.keys(this._datastore)])
 
 				const affectedDevices: string[] = []
@@ -813,7 +815,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 	private resyncDeviceStates(deviceId: string) {
 		this._actionQueue
-			.add(() => {
+			.add(`resyncDeviceStates${deviceId}`, () => {
 				const toBeFilled = _.compact([
 					// shallow clone so we don't reverse the array in place
 					[...this._deviceStates[deviceId]].reverse().find((s) => s.state.time <= this.getCurrentTime()), // one state before now
