@@ -670,6 +670,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				response: t('Cannot clear CasparCG channels: no channels found'),
 			}
 		}
+		this.updateDetectedFpsFromInfo(response.data as InfoEntry[] | undefined)
 
 		await Promise.all(
 			response.data.map(async (_, i) => {
@@ -693,7 +694,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			this._currentState.channels[obj.channel] = {
 				channelNo: obj.channel,
 				videoMode: this.getVideMode(obj),
-				fps: obj.frameRate,
+				fps: this.getChannelFps(obj.channel),
 				layers: {},
 			}
 		})
