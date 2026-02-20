@@ -775,6 +775,17 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		return filledState
 	}
 
+	private _getReplayStatesForDevice(deviceId: string, now: number): DeviceState[] {
+		const deviceStates = this._deviceStates[deviceId]
+		if (!Array.isArray(deviceStates) || deviceStates.length === 0) return []
+
+		return _.compact([
+			// shallow clone so we don't reverse the array in place
+			[...deviceStates].reverse().find((s) => s.time <= now), // one state before now
+			...deviceStates.filter((s) => s.time > now), // all states after now
+		])
+	}
+
 	setDatastore(newStore: Datastore) {
 		this._actionQueue
 			.add(() => {
@@ -794,13 +805,10 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 				this._datastore = newStore
 
+				const now = this.getCurrentTime()
+
 				for (const deviceId of affectedDevices) {
-					const now = this.getCurrentTime()
-					const toBeFilled = _.compact([
-						// shallow clone so we don't reverse the array in place
-						[...this._deviceStates[deviceId]].reverse().find((s) => s.time <= now), // one state before now
-						...this._deviceStates[deviceId].filter((s) => s.time > now), // all states after now
-					])
+					const toBeFilled = this._getReplayStatesForDevice(deviceId, now)
 
 					for (const s of toBeFilled) {
 						const filledState = this._getReplayStateWithCurrentTime(s, now)
@@ -821,11 +829,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		this._actionQueue
 			.add(() => {
 				const now = this.getCurrentTime()
-				const toBeFilled = _.compact([
-					// shallow clone so we don't reverse the array in place
-					[...this._deviceStates[deviceId]].reverse().find((s) => s.time <= now), // one state before now
-					...this._deviceStates[deviceId].filter((s) => s.time > now), // all states after now
-				])
+				const toBeFilled = this._getReplayStatesForDevice(deviceId, now)
 
 				for (const s of toBeFilled) {
 					const filledState = this._getReplayStateWithCurrentTime(s, now)
