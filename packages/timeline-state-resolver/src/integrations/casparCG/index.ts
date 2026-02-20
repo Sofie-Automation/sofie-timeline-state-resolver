@@ -94,6 +94,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 	private _retryTimeout: NodeJS.Timeout | undefined
 	private _retryTime: number | null = null
 	private _currentState: InternalState = { channels: {} }
+	private _detectedChannelFps: { [channel: number]: number } = {}
 
 	constructor(deviceId: string, deviceOptions: DeviceOptionsCasparCGInternal, getCurrentTime: () => Promise<number>) {
 		super(deviceId, deviceOptions, getCurrentTime)
@@ -137,6 +138,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 					if (error) return true
 
 					const response = await request
+					this.updateDetectedFpsFromInfo(response?.data as InfoEntry[] | undefined)
 
 					const channelPromises: Promise<Response<InfoChannelEntry | undefined>>[] = []
 					const channelLength: number = response?.data?.['length'] ?? 0
@@ -148,7 +150,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 							this._currentState.channels[obj.channel] = {
 								channelNo: obj.channel,
 								videoMode: this.getVideMode(obj),
-								fps: obj.frameRate,
+								fps: this.getChannelFps(obj.channel),
 								layers: {},
 							}
 						}
@@ -530,7 +532,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				// create a channel in state if necessary, or reuse existing channel
 				const channel = caspar.channels[mapping.options.channel] || { channelNo: mapping.options.channel, layers: {} }
 				channel.channelNo = mapping.options.channel
-				channel.fps = this.initOptions ? this.initOptions.fps || 25 : 25
+				channel.fps = this.getChannelFps(mapping.options.channel)
 				caspar.channels[channel.channelNo] = channel
 
 				let foregroundObj = timelineState.objects.find((obj) => obj.layer === layerName)
@@ -586,10 +588,20 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 					const currentTemplateData = (channel.layers[mapping.options.layer] as any as TemplateLayer | undefined)
 						?.templateData
 					const foregroundTemplateData = (foregroundStateLayer as any as TemplateLayer | undefined)?.templateData
+					const hasObjectTemplateData =
+						typeof currentTemplateData === 'object' &&
+						currentTemplateData !== null &&
+						typeof foregroundTemplateData === 'object' &&
+						foregroundTemplateData !== null
 					channel.layers[mapping.options.layer] = merge(channel.layers[mapping.options.layer], {
 						...foregroundStateLayer,
-						...(_.isObject(currentTemplateData) && _.isObject(foregroundTemplateData)
-							? { templateData: deepMerge(currentTemplateData, foregroundTemplateData) }
+						...(hasObjectTemplateData
+							? {
+									templateData: deepMerge(
+										currentTemplateData as Record<string, any>,
+										foregroundTemplateData as Record<string, any>
+									),
+							  }
 							: {}),
 						nextUp: backgroundStateLayer
 							? merge(
@@ -1069,6 +1081,34 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 	private _connectionChanged() {
 		this.emit('connectionChanged', this.getStatus())
+	}
+
+	private updateDetectedFpsFromInfo(infoEntries: InfoEntry[] | undefined) {
+		if (!infoEntries?.length) return
+
+		for (const entry of infoEntries) {
+			const channelRate = Number(entry.channelRate) || 0
+			const frameRate = Number(entry.frameRate) || 0
+			const detected = entry.interlaced ? channelRate || frameRate : frameRate || channelRate
+
+			if (detected > 0) {
+				this._detectedChannelFps[entry.channel] = detected
+			}
+		}
+	}
+
+	private getChannelFps(channel?: number): number {
+		if (this.initOptions?.fps && this.initOptions.fps > 0) return this.initOptions.fps
+
+		if (channel !== undefined) {
+			const channelFps = this._detectedChannelFps[channel]
+			if (channelFps && channelFps > 0) return channelFps
+		}
+
+		const firstDetectedFps = Object.values(this._detectedChannelFps).find((fps) => fps > 0)
+		if (firstDetectedFps) return firstDetectedFps
+
+		return 25
 	}
 
 	private getVideMode(info: InfoEntry): string {
