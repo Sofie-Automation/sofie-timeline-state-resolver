@@ -51,6 +51,14 @@ describe('Conductor', () => {
 		return mockDevice
 	}
 
+	function createConductor(options: Partial<ConstructorParameters<typeof Conductor>[0]> = {}): Conductor {
+		return new Conductor({
+			multiThreadedResolver: false,
+			getCurrentTime: mockTime.getCurrentTime,
+			...options,
+		})
+	}
+
 	test('Abstract-device functionality', async () => {
 		const myLayerMapping0: Mapping<SomeMappingAbstract> = {
 			device: DeviceType.ABSTRACT,
@@ -73,10 +81,7 @@ describe('Conductor', () => {
 			...device1Mappings,
 		}
 
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
+		const conductor = createConductor()
 
 		try {
 			await conductor.init()
@@ -230,10 +235,7 @@ describe('Conductor', () => {
 			myLayer0: myLayerMapping0,
 		}
 
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
+		const conductor = createConductor()
 
 		try {
 			await conductor.init()
@@ -408,10 +410,7 @@ describe('Conductor', () => {
 			myLayer0: myLayerMapping0,
 		}
 
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
+		const conductor = createConductor()
 		conductor.on('error', console.error)
 
 		try {
@@ -450,10 +449,7 @@ describe('Conductor', () => {
 			myLayer0: myLayerMapping0,
 		}
 
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
+		const conductor = createConductor()
 
 		await conductor.init()
 		await addConnections(conductor.connectionManager, {
@@ -593,10 +589,7 @@ describe('Conductor', () => {
 			myLayer0: myLayerMapping0,
 		}
 
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
+		const conductor = createConductor()
 
 		try {
 			await conductor.init()
