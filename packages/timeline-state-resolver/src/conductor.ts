@@ -8,7 +8,6 @@ import {
 } from 'superfly-timeline'
 import { EventEmitter } from 'eventemitter3'
 import { MemUsageReport, threadedClass, ThreadedClass, ThreadedClassManager } from 'threadedclass'
-import PQueue from 'p-queue'
 import * as PAll from 'p-all'
 import PTimeout from 'p-timeout'
 
@@ -48,7 +47,7 @@ import {
 
 import { DoOnTime } from './devices/doOnTime'
 import { AsyncResolver } from './AsyncResolver'
-import { endTrace, fillStateFromDatastore, FinishedTrace, startTrace } from './lib'
+import { cloneDeep, endTrace, fillStateFromDatastore, FinishedTrace, startTrace } from './lib'
 
 import { CommandWithContext } from './devices/device'
 import { DeviceContainer } from './devices/deviceContainer'
@@ -59,6 +58,7 @@ import { DeviceOptionsVMixInternal } from './integrations/vmix'
 import { DeviceOptionsVizMSEInternal } from './integrations/vizMSE'
 import { BaseRemoteDeviceIntegration } from './service/remoteDeviceInstance'
 import { ConnectionManager } from './service/ConnectionManager'
+import { CancellableQueue } from './lib/cancellableQueue'
 
 export { DeviceContainer }
 export { CommandWithContext }
@@ -200,9 +200,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	private _triggerSendStartStopCallbacksTimeout: NodeJS.Timer | null = null
 	private _sentCallbacks: TimelineCallbacks = {}
 
-	private _actionQueue: PQueue = new PQueue({
-		concurrency: 1,
-	})
+	private _actionQueue = new CancellableQueue()
 
 	private _statMeasureStart = 0
 	private _statMeasureReason = ''
@@ -360,7 +358,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	public resetResolver() {
 		// reset the resolver through the action queue to make sure it is reset after any currently running timelineResolves
 		this._actionQueue
-			.add(async () => {
+			.add('resetResolver', async () => {
 				this._nextResolveTime = 0 // This will cause _resolveTimeline() to generate the state for NOW
 				this._resolved = {
 					resolvedTimeline: null,
@@ -388,7 +386,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 				activationId ? activationId : 'undefined'
 			}`
 		)
-		await this._actionQueue.add(async () => {
+		await this._actionQueue.add(null, async () => {
 			await this._mapAllConnections(false, async (d) =>
 				PTimeout(
 					(async () => {
@@ -413,7 +411,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	public async devicesStandDown(okToDestroyStuff?: boolean): Promise<void> {
 		this.activationId = undefined
 		this.emit('debug', `devicesStandDown, ${okToDestroyStuff ? 'okToDestroyStuff' : 'undefined'}`)
-		await this._actionQueue.add(async () => {
+		await this._actionQueue.add(null, async () => {
 			await this._mapAllConnections(false, async (d) =>
 				PTimeout(
 					(async () => {
@@ -472,7 +470,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	private _resolveTimeline() {
 		// this adds it to a queue, make sure it never runs more than once at a time:
 		this._actionQueue
-			.add(async () => {
+			.add('resolveTimeline', async () => {
 				return this._resolveTimelineInner()
 					.then((nextResolveTime) => {
 						this._nextResolveTime = nextResolveTime ?? 0
@@ -833,9 +831,13 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		return this.connectionManager.getConnection(deviceId)?.device.handleState(filledState, mappings)
 	}
 
-	setDatastore(newStore: Datastore) {
+	setDatastore(newStore0: Datastore) {
+		// Clone it to make sure that if the caller mutates the object after calling setDatastore,
+		// it doesn't mess with our internal state
+		const newStore = cloneDeep(newStore0)
+
 		this._actionQueue
-			.add(() => {
+			.add('setDatastore', () => {
 				const allKeys = new Set([...Object.keys(newStore), ...Object.keys(this._datastore)])
 
 				const affectedDevices: string[] = []
@@ -876,7 +878,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 	private resyncDeviceStates(deviceId: string) {
 		this._actionQueue
-			.add(() => {
+			.add(`resyncDeviceStates${deviceId}`, () => {
 				const toBeFilled = _.compact([
 					// shallow clone so we don't reverse the array in place
 					[...this._deviceStates[deviceId]].reverse().find((s) => s.time <= this.getCurrentTime()), // one state before now

@@ -27,6 +27,7 @@ jest.mock('../service/DeviceInstance', () => ({
 
 import { Conductor, TimelineTriggerTimeResult } from '../conductor'
 import type { DeviceInstanceWrapper } from '../service/DeviceInstance'
+import { cloneDeep } from '../lib'
 
 describe('Conductor', () => {
 	const mockTime = new MockTime()
@@ -642,5 +643,189 @@ describe('Conductor', () => {
 			200, // 1000
 			200, // 10000
 		])
+	})
+	describe('Datastore', () => {
+		test('state consistency', async () => {
+			// Ensure that the state passed to devices are the same after a setDatastore() and a resetTimeline()
+
+			const myLayerMapping0: Mapping<SomeMappingAbstract> = {
+				device: DeviceType.ABSTRACT,
+				deviceId: 'device0',
+				options: {},
+			}
+			const mappings: Mappings = { myLayer0: myLayerMapping0 }
+
+			const conductor = new Conductor({
+				multiThreadedResolver: false,
+				getCurrentTime: mockTime.getCurrentTime,
+			})
+
+			try {
+				await conductor.init()
+				await addConnections(conductor.connectionManager, {
+					device0: {
+						type: DeviceType.ABSTRACT,
+						options: {},
+					},
+					device1: {
+						type: DeviceType.ABSTRACT,
+						options: {},
+					},
+				})
+
+				// add something that will play in a seconds time
+				const obj0: TSRTimelineObj<any> = {
+					id: 'a0',
+					enable: {
+						start: mockTime.now,
+						// duration: 1000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.ABSTRACT,
+						myAttr1: 'one',
+						$references: {
+							myAttr1: {
+								// Local path to overwrite
+								datastoreKey: 'datastore-myAttr1', // Reference key in datastore
+								overwrite: true,
+							},
+						},
+					},
+				}
+
+				const device0 = await getMockDeviceWrapper(conductor, 'device0')
+
+				// The queues should be empty
+				expect(device0.handleState).toHaveBeenCalledTimes(0)
+				expect(device0.clearFuture).toHaveBeenCalledTimes(0)
+
+				conductor.setTimelineAndMappings([obj0], mappings)
+
+				// Move forward in time, so that all states can be queued
+				await mockTime.advanceTimeTicks(500)
+
+				// Ensure device0 has been fed sensible states
+				expect(device0.clearFuture).toHaveBeenCalledTimes(1)
+				expect(device0.handleState).toHaveBeenCalledTimes(1)
+				expect(device0.handleState).toHaveBeenNthCalledWith(
+					1,
+					expect.objectContaining({
+						layers: {
+							[obj0.layer]: expect.objectContaining({
+								...obj0,
+								instance: expect.objectContaining({
+									start: 10000,
+									// end: 11000,
+								}),
+							}),
+						},
+						// time: 10025,
+					}),
+					mappings
+				)
+				device0.handleState.mockClear()
+
+				conductor.setDatastore({
+					'datastore-myAttr1': { value: 'two', modified: mockTime.now },
+				})
+				await mockTime.advanceTimeTicks(100) // Move forward in time, so that all states can be queued
+
+				expect(device0.handleState).toHaveBeenCalledTimes(1)
+				expect(device0.handleState).toHaveBeenNthCalledWith(
+					1,
+					expect.objectContaining({
+						layers: {
+							[obj0.layer]: expect.objectContaining({
+								...obj0,
+								content: expect.objectContaining({
+									myAttr1: 'two',
+								}),
+							}),
+						},
+						// time: 10025,
+					}),
+					mappings
+				)
+				device0.handleState.mockClear()
+
+				conductor.resetResolver()
+				await mockTime.advanceTimeTicks(100) // Move forward in time, so that all states can be queued
+
+				expect(device0.handleState).toHaveBeenCalledTimes(1)
+				expect(device0.handleState).toHaveBeenNthCalledWith(
+					1,
+					expect.objectContaining({
+						layers: {
+							[obj0.layer]: expect.objectContaining({
+								...obj0,
+								content: expect.objectContaining({
+									myAttr1: 'two',
+								}),
+							}),
+						},
+					}),
+					mappings
+				)
+				device0.handleState.mockClear()
+
+				conductor.setDatastore({
+					'datastore-myAttr1': { value: 'three', modified: mockTime.now },
+				})
+				const ojb1 = cloneDeep(obj0)
+				ojb1.content.myAttr1 = 'three'
+				ojb1.id = 'a1'
+				conductor.setTimelineAndMappings([obj0], mappings)
+
+				await mockTime.advanceTimeTicks(100) // Move forward in time, so that all states can be queued
+
+				expect(device0.handleState).toHaveBeenCalledTimes(2)
+				expect(device0.handleState).toHaveBeenNthCalledWith(
+					1,
+					expect.objectContaining({
+						layers: {
+							[obj0.layer]: expect.objectContaining({
+								...obj0,
+								content: expect.objectContaining({
+									myAttr1: 'three',
+								}),
+							}),
+						},
+					}),
+					mappings
+				)
+				expect(device0.handleState).toHaveBeenNthCalledWith(
+					2,
+					expect.objectContaining({
+						layers: {
+							[obj0.layer]: expect.objectContaining({
+								...obj0,
+								content: expect.objectContaining({
+									myAttr1: 'three',
+								}),
+							}),
+						},
+					}),
+					mappings
+				)
+				device0.handleState.mockClear()
+
+				// Remove the device
+				await removeConnections(
+					conductor.connectionManager,
+					{
+						device0: {
+							type: DeviceType.ABSTRACT,
+							options: {},
+						},
+					},
+					['device1']
+				)
+				expect(conductor.connectionManager.getConnection('device1')).toBeFalsy()
+				expect(ConstructedMockDevices['device1']).toBeFalsy()
+			} finally {
+				await conductor.destroy()
+			}
+		})
 	})
 })
