@@ -10,6 +10,7 @@ import {
 	Timeline,
 	TSRTimelineContent,
 	TimelineContentSisyfosAny,
+	StatusCode,
 } from 'timeline-state-resolver-types'
 import * as OSC from '../../../__mocks__/osc'
 const MockOSC = OSC.MockOSC
@@ -101,6 +102,12 @@ describe('Sisyfos', () => {
 
 		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
 		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
+
+		// Wait for Sisyfos device to be initialized before continuing:
+		await waitUntil(async () => {
+			const status = await device.getStatus()
+			if (status.statusCode !== StatusCode.GOOD) throw new Error(`Device not ready, status code: ${status.statusCode}`)
+		}, 1000)
 
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
@@ -208,7 +215,7 @@ describe('Sisyfos', () => {
 		] as TSRTimeline)
 
 		expect(commandReceiver0.mock.calls.length).toEqual(0)
-		await mockTime.advanceTimeTicks(100) // now-ish
+		await mockTime.advanceTimeTicks(300) // now-ish
 		expect(commandReceiver0.mock.calls.length).toEqual(1)
 
 		// set pgm
@@ -331,6 +338,12 @@ describe('Sisyfos', () => {
 		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
 		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
 
+		// Wait for Sisyfos device to be initialized before continuing:
+		await waitUntil(async () => {
+			const status = await device.getStatus()
+			if (status.statusCode !== StatusCode.GOOD) throw new Error(`Device not ready, status code: ${status.statusCode}`)
+		}, 1000)
+
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
 		commandReceiver0.mockClear()
@@ -436,7 +449,7 @@ describe('Sisyfos', () => {
 			},
 		])
 
-		await mockTime.advanceTimeTicks(100) // now-ish
+		await mockTime.advanceTimeTicks(300) // now-ish
 		expect(commandReceiver0.mock.calls.length).toEqual(1)
 		// set pgm
 		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
@@ -559,6 +572,12 @@ describe('Sisyfos', () => {
 		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
 		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
 
+		// Wait for Sisyfos device to be initialized before continuing:
+		await waitUntil(async () => {
+			const status = await device.getStatus()
+			if (status.statusCode !== StatusCode.GOOD) throw new Error(`Device not ready, status code: ${status.statusCode}`)
+		}, 1000)
+
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
 		commandReceiver0.mockClear()
@@ -612,7 +631,7 @@ describe('Sisyfos', () => {
 			},
 		])
 
-		await mockTime.advanceTimeTicks(100) // now-ish
+		await mockTime.advanceTimeTicks(300) // now-ish
 		expect(commandReceiver0.mock.calls.length).toEqual(1)
 		// set pst
 		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
@@ -699,6 +718,12 @@ describe('Sisyfos', () => {
 		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
 		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
 
+		// Wait for Sisyfos device to be initialized before continuing:
+		await waitUntil(async () => {
+			const status = await device.getStatus()
+			if (status.statusCode !== StatusCode.GOOD) throw new Error(`Device not ready, status code: ${status.statusCode}`)
+		}, 1000)
+
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
 		commandReceiver0.mockClear()
@@ -784,7 +809,7 @@ describe('Sisyfos', () => {
 		])
 
 		// baseline:
-		await mockTime.advanceTimeTicks(100) // 100
+		await mockTime.advanceTimeTicks(300) // 100
 		expect(commandReceiver0.mock.calls.length).toEqual(2)
 		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
 			type: 'setFader',
@@ -921,11 +946,18 @@ describe('Sisyfos', () => {
 				commandReceiver: commandReceiver0,
 			},
 		})
+
 		myConductor.setTimelineAndMappings([], myChannelMapping)
 		await mockTime.advanceTimeToTicks(10100)
 
 		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
 		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
+
+		// Wait for Sisyfos device to be initialized before continuing:
+		await waitUntil(async () => {
+			const status = await device.getStatus()
+			if (status.statusCode !== StatusCode.GOOD) throw new Error(`Device not ready, status code: ${status.statusCode}`)
+		}, 1000)
 
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
@@ -999,8 +1031,10 @@ describe('Sisyfos', () => {
 		])
 
 		// baseline:
-		await mockTime.advanceTimeTicks(100) // 100
+		await mockTime.advanceTimeTicks(30) // 100
+
 		expect(commandReceiver0.mock.calls.length).toEqual(2)
+
 		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
 			type: 'setChannel',
 			channel: 1,
@@ -1119,6 +1153,12 @@ describe('Sisyfos', () => {
 		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
 		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
 
+		// Wait for Sisyfos device to be initialized before continuing:
+		await waitUntil(async () => {
+			const status = await device.getStatus()
+			if (status.statusCode !== StatusCode.GOOD) throw new Error(`Device not ready, status code: ${status.statusCode}`)
+		}, 1000)
+
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
 		commandReceiver0.mockClear()
@@ -1167,7 +1207,7 @@ describe('Sisyfos', () => {
 		])
 
 		// baseline:
-		await mockTime.advanceTimeTicks(100) // 100
+		await mockTime.advanceTimeTicks(300) // 100
 		expect(commandReceiver0.mock.calls.length).toEqual(2)
 		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
 			type: 'setChannel',
@@ -1271,6 +1311,12 @@ describe('Sisyfos', () => {
 		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
 		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
 
+		// Wait for Sisyfos device to be initialized before continuing:
+		await waitUntil(async () => {
+			const status = await device.getStatus()
+			if (status.statusCode !== StatusCode.GOOD) throw new Error(`Device not ready, status code: ${status.statusCode}`)
+		}, 1000)
+
 		// Check that no commands has been scheduled:
 		expect(await device.queue).toHaveLength(0)
 		commandReceiver0.mockClear()
@@ -1319,7 +1365,7 @@ describe('Sisyfos', () => {
 		])
 
 		// baseline:
-		await mockTime.advanceTimeTicks(100) // 100
+		await mockTime.advanceTimeTicks(300) // 100
 		expect(commandReceiver0.mock.calls.length).toEqual(2)
 		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
 			type: 'setFader',
@@ -1378,6 +1424,12 @@ describe('Sisyfos', () => {
 
 		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
 		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
+
+		// Wait for Sisyfos device to be initialized before continuing:
+		await waitUntil(async () => {
+			const status = await device.getStatus()
+			if (status.statusCode !== StatusCode.GOOD) throw new Error(`Device not ready, status code: ${status.statusCode}`)
+		}, 1000)
 
 		const onConnectionChanged = jest.fn()
 		await device.on('connectionChanged', onConnectionChanged)
