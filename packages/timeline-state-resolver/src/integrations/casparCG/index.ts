@@ -452,7 +452,6 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			switch (baseContent.type) {
 				case TimelineContentTypeCasparCg.MEDIA:
 				case TimelineContentTypeCasparCg.IP:
-				case TimelineContentTypeCasparCg.TEMPLATE:
 				case TimelineContentTypeCasparCg.INPUT:
 				case TimelineContentTypeCasparCg.ROUTE:
 				case TimelineContentTypeCasparCg.HTMLPAGE: {
