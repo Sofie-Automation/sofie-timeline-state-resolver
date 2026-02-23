@@ -11,7 +11,7 @@ import {
 	SomeMappingAtem,
 	RunMacroPayload,
 } from 'timeline-state-resolver-types'
-import { AtemState, State as DeviceState, ExtendedMixEffect } from 'atem-state'
+import { AtemState, State as DeviceState } from 'atem-state'
 import {
 	BasicAtem,
 	Commands as AtemCommands,
@@ -23,7 +23,6 @@ import { CommandWithContext, Device } from '../../service/device'
 import { AtemStateBuilder } from './stateBuilder'
 import { createDiffOptions } from './diffState'
 import { t } from '../../lib'
-import { MixEffect } from 'atem-connection/dist/state/video'
 
 export interface AtemCommandWithContext extends CommandWithContext {
 	command: AtemCommands.ISerializableCommand[]
@@ -191,12 +190,13 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 					2001, // Color1
 					2002, // Color2
 				]
-				const me0 = newAtemState.video.mixEffects[0]
-				if (me0) {
-					if ('programInput' in me0) {
-						if (lookForSource.includes(me0.programInput)) {
+				const meIndex = 1
+				const me2 = newAtemState.video.mixEffects[1]
+				if (me2) {
+					if ('programInput' in me2) {
+						if (lookForSource.includes(me2.programInput)) {
 							this.context.logger.warning(
-								`ATEM_DEBUG: MixEffect.programInput changed to ${me0.programInput}! newAtemState: ${JSON.stringify(
+								`ATEM_DEBUG: MixEffect.programInput changed to ${me2.programInput}! newAtemState: ${JSON.stringify(
 									newAtemState
 								)}, oldAtemState: ${JSON.stringify(oldAtemState)}`
 							)
@@ -206,7 +206,7 @@ export class AtemDevice extends Device<AtemOptions, AtemDeviceState, AtemCommand
 				for (const command of commands) {
 					if (
 						command instanceof AtemCommands.ProgramInputCommand &&
-						command.mixEffect === 0 &&
+						command.mixEffect === meIndex &&
 						lookForSource.includes(command.properties.source)
 					) {
 						this.context.logger.warning(
