@@ -51,6 +51,14 @@ describe('Conductor', () => {
 		return mockDevice
 	}
 
+	function createConductor(options: Partial<ConstructorParameters<typeof Conductor>[0]> = {}): Conductor {
+		return new Conductor({
+			multiThreadedResolver: false,
+			getCurrentTime: mockTime.getCurrentTime,
+			...options,
+		})
+	}
+
 	test('Abstract-device functionality', async () => {
 		const myLayerMapping0: Mapping<SomeMappingAbstract> = {
 			device: DeviceType.ABSTRACT,
@@ -73,10 +81,7 @@ describe('Conductor', () => {
 			...device1Mappings,
 		}
 
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
+		const conductor = createConductor()
 
 		try {
 			await conductor.init()
@@ -230,10 +235,7 @@ describe('Conductor', () => {
 			myLayer0: myLayerMapping0,
 		}
 
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
+		const conductor = createConductor()
 
 		try {
 			await conductor.init()
@@ -408,10 +410,7 @@ describe('Conductor', () => {
 			myLayer0: myLayerMapping0,
 		}
 
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
+		const conductor = createConductor()
 		conductor.on('error', console.error)
 
 		try {
@@ -450,10 +449,7 @@ describe('Conductor', () => {
 			myLayer0: myLayerMapping0,
 		}
 
-		const conductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
+		const conductor = createConductor()
 
 		await conductor.init()
 		await addConnections(conductor.connectionManager, {
@@ -581,6 +577,66 @@ describe('Conductor', () => {
 			},
 		})
 		// }
+	})
+
+	test('resync states uses current time for state before now', async () => {
+		const myLayerMapping0: Mapping<SomeMappingAbstract> = {
+			device: DeviceType.ABSTRACT,
+			deviceId: 'device0',
+			options: {},
+		}
+		const myLayerMapping: Mappings = {
+			myLayer0: myLayerMapping0,
+		}
+
+		const conductor = createConductor()
+
+		try {
+			await conductor.init()
+			await addConnections(conductor.connectionManager, {
+				device0: {
+					type: DeviceType.ABSTRACT,
+					options: {},
+				},
+			})
+
+			const device0 = await getMockDeviceWrapper(conductor, 'device0')
+			const handleStateMock = device0.handleState as unknown as jest.Mock<Promise<void>, [unknown, unknown]>
+			handleStateMock.mockResolvedValue(undefined)
+
+			conductor.setTimelineAndMappings(
+				[
+					{
+						id: 'obj0',
+						enable: {
+							start: mockTime.now,
+							duration: 20000,
+						},
+						layer: 'myLayer0',
+						content: {
+							deviceType: DeviceType.ABSTRACT,
+							foo: 'bar',
+						},
+					},
+				],
+				myLayerMapping
+			)
+
+			await mockTime.advanceTimeTicks(200)
+
+			await mockTime.advanceTimeToTicks(15000)
+			device0.handleState.mockClear()
+
+			const resyncTime = mockTime.now
+			const conductorWithResync = conductor as unknown as { resyncDeviceStates: (deviceId: string) => void }
+			conductorWithResync.resyncDeviceStates('device0')
+			await mockTime.tick()
+
+			expect(device0.handleState).toHaveBeenCalled()
+			expect(getMockCall(device0.handleState, 0, 0).time).toEqual(resyncTime)
+		} finally {
+			await conductor.destroy()
+		}
 	})
 
 	test('estimateResolveTime', () => {

@@ -536,8 +536,8 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 				_.each(o.objectsFixed, (o) => (nowIdsTime[o.id] = o.time))
 				const fixNow = (o: TimelineObject) => {
 					if (nowIdsTime[o.id]) {
-						if (!_.isArray(o.enable)) {
-							o.enable.start = nowIdsTime[o.id]
+						if (!_.isArray(o.enable) && typeof o.enable === 'object' && o.enable !== null) {
+							;(o.enable as { start?: number }).start = nowIdsTime[o.id]
 						}
 					}
 				}
@@ -765,6 +765,27 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		return this.connectionManager.getConnection(deviceId)?.device.handleState(filledState, mappings)
 	}
 
+	private _getReplayStateWithCurrentTime(state: DeviceState, now: number): Timeline.TimelineState<TSRTimelineContent> {
+		const filledState = fillStateFromDatastore(state.state, this._datastore)
+
+		if (state.time <= now && filledState.time < now) {
+			filledState.time = now
+		}
+
+		return filledState
+	}
+
+	private _getReplayStatesForDevice(deviceId: string, now: number): DeviceState[] {
+		const deviceStates = this._deviceStates[deviceId]
+		if (!Array.isArray(deviceStates) || deviceStates.length === 0) return []
+
+		return _.compact([
+			// shallow clone so we don't reverse the array in place
+			[...deviceStates].reverse().find((s) => s.time <= now), // one state before now
+			...deviceStates.filter((s) => s.time > now), // all states after now
+		])
+	}
+
 	setDatastore(newStore: Datastore) {
 		this._actionQueue
 			.add(() => {
@@ -784,15 +805,13 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 				this._datastore = newStore
 
+				const now = this.getCurrentTime()
+
 				for (const deviceId of affectedDevices) {
-					const toBeFilled = _.compact([
-						// shallow clone so we don't reverse the array in place
-						[...this._deviceStates[deviceId]].reverse().find((s) => s.time <= this.getCurrentTime()), // one state before now
-						...this._deviceStates[deviceId].filter((s) => s.time > this.getCurrentTime()), // all states after now
-					])
+					const toBeFilled = this._getReplayStatesForDevice(deviceId, now)
 
 					for (const s of toBeFilled) {
-						const filledState = fillStateFromDatastore(s.state, this._datastore)
+						const filledState = this._getReplayStateWithCurrentTime(s, now)
 
 						this.connectionManager
 							.getConnection(deviceId)
@@ -809,14 +828,11 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	private resyncDeviceStates(deviceId: string) {
 		this._actionQueue
 			.add(() => {
-				const toBeFilled = _.compact([
-					// shallow clone so we don't reverse the array in place
-					[...this._deviceStates[deviceId]].reverse().find((s) => s.time <= this.getCurrentTime()), // one state before now
-					...this._deviceStates[deviceId].filter((s) => s.time > this.getCurrentTime()), // all states after now
-				])
+				const now = this.getCurrentTime()
+				const toBeFilled = this._getReplayStatesForDevice(deviceId, now)
 
 				for (const s of toBeFilled) {
-					const filledState = fillStateFromDatastore(s.state, this._datastore)
+					const filledState = this._getReplayStateWithCurrentTime(s, now)
 
 					this.connectionManager
 						.getConnection(deviceId)
