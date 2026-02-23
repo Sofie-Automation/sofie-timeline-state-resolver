@@ -53,9 +53,9 @@ describe('CancellableQueue', () => {
 
 	describe('Cancel group functionality', () => {
 		test('cancels previous action with same cancel group', async () => {
-			const action1 = jest.fn(() => sleep(10))
-			const action2 = jest.fn(() => sleep(10))
-			const action3 = jest.fn(() => sleep(10))
+			const action1 = jest.fn(async () => sleep(10))
+			const action2 = jest.fn(async () => sleep(10))
+			const action3 = jest.fn(async () => sleep(10))
 
 			// Add first action with cancel group 'group1'
 			const promise1 = queue.add('group1', action1)
@@ -78,25 +78,25 @@ describe('CancellableQueue', () => {
 
 		test('different cancel groups do not interfere', async () => {
 			const execOrder: number[] = []
-			const action1 = jest.fn(() => {
+			const action1 = jest.fn(async () => {
 				execOrder.push(1)
-				sleep(10)
+				await sleep(10)
 			})
-			const action2 = jest.fn(() => {
+			const action2 = jest.fn(async () => {
 				execOrder.push(2)
-				sleep(10)
+				await sleep(10)
 			})
-			const action3 = jest.fn(() => {
+			const action3 = jest.fn(async () => {
 				execOrder.push(3)
-				sleep(10)
+				await sleep(10)
 			})
-			const action4 = jest.fn(() => {
+			const action4 = jest.fn(async () => {
 				execOrder.push(4)
-				sleep(10)
+				await sleep(10)
 			})
-			const action5 = jest.fn(() => {
+			const action5 = jest.fn(async () => {
 				execOrder.push(5)
-				sleep(10)
+				await sleep(10)
 			})
 
 			const promise1 = queue.add('group1', action1)
@@ -122,9 +122,9 @@ describe('CancellableQueue', () => {
 		})
 
 		test('null cancel group always executes', async () => {
-			const action1 = jest.fn(() => sleep(10))
-			const action2 = jest.fn(() => sleep(10))
-			const action3 = jest.fn(() => sleep(10))
+			const action1 = jest.fn(async () => sleep(10))
+			const action2 = jest.fn(async () => sleep(10))
+			const action3 = jest.fn(async () => sleep(10))
 
 			const promise1 = queue.add(null, action1)
 			const promise2 = queue.add(null, action2)
@@ -139,12 +139,12 @@ describe('CancellableQueue', () => {
 		})
 
 		test('mix of null and non-null cancel groups', async () => {
-			const action1 = jest.fn(() => sleep(10))
-			const action2 = jest.fn(() => sleep(10))
-			const action3 = jest.fn(() => sleep(10))
-			const action4 = jest.fn(() => sleep(10))
-			const action5 = jest.fn(() => sleep(10))
-			const action6 = jest.fn(() => sleep(10))
+			const action1 = jest.fn(async () => sleep(10))
+			const action2 = jest.fn(async () => sleep(10))
+			const action3 = jest.fn(async () => sleep(10))
+			const action4 = jest.fn(async () => sleep(10))
+			const action5 = jest.fn(async () => sleep(10))
+			const action6 = jest.fn(async () => sleep(10))
 
 			const promise1 = queue.add('group1', action1)
 			const promise2 = queue.add(null, action2)
@@ -168,8 +168,8 @@ describe('CancellableQueue', () => {
 		})
 
 		test('cancelled action still resolves promise', async () => {
-			const action1 = jest.fn(() => sleep(10))
-			const action2 = jest.fn(() => sleep(10))
+			const action1 = jest.fn(async () => sleep(10))
+			const action2 = jest.fn(async () => sleep(10))
 
 			const promise1 = queue.add('group1', action1)
 			const promise2 = queue.add('group1', action2)
@@ -182,49 +182,52 @@ describe('CancellableQueue', () => {
 
 	describe('Clear functionality', () => {
 		test('clears the queue', async () => {
-			const action1 = jest.fn(async () => {
-				await sleep(50)
-			})
-			const action2 = jest.fn(() => sleep(10))
+			const action1 = jest.fn(async () => sleep(50))
+			const action2 = jest.fn(async () => sleep(10))
 
-			// Add first action and let it start executing
-			void queue.add(null, action1)
-
-			// Add second action (should be in queue)
-			void queue.add(null, action2)
+			const promises = [
+				// Add first action and let it start executing
+				queue.add(null, action1),
+				// Add second action (should be in queue)
+				queue.add(null, action2),
+			]
 
 			// Clear the queue
 			queue.clear()
 
 			// Wait a bit to ensure nothing executes
+			await Promise.all(promises)
 			await sleep(20)
 
+			expect(action1).toHaveBeenCalledTimes(1)
 			// Second action should not execute (was cleared from queue)
 			expect(action2).not.toHaveBeenCalled()
 		})
 
 		test('clears scheduled actions', async () => {
-			const action1 = jest.fn(() => sleep(10))
-			const action2 = jest.fn(() => sleep(10))
+			const action1 = jest.fn(async () => sleep(10))
+			const action2 = jest.fn(async () => sleep(10))
+			const action3 = jest.fn(async () => sleep(10))
 
-			queue.add('group1', action1)
-			queue.add('group1', action2)
+			const promises = [queue.add('group1', action1), queue.add('group1', action2), queue.add('group1', action3)]
 			queue.clear()
 
-			await queue.waitForQueue()
+			await Promise.all(promises)
 
 			// action1 should have been called, since it starts executing immediately
 			expect(action1).toHaveBeenCalledTimes(1)
 			// action2 should be cancelled by the clear
 			expect(action2).not.toHaveBeenCalled()
+			// action3 should be cancelled by the clear
+			expect(action3).not.toHaveBeenCalled()
 		})
 	})
 
 	describe('Edge cases', () => {
 		test('handles empty cancel group string', async () => {
-			const action1 = jest.fn(() => sleep(10))
-			const action2 = jest.fn(() => sleep(10))
-			const action3 = jest.fn(() => sleep(10))
+			const action1 = jest.fn(async () => sleep(10))
+			const action2 = jest.fn(async () => sleep(10))
+			const action3 = jest.fn(async () => sleep(10))
 
 			const promise1 = queue.add('', action1)
 			const promise2 = queue.add('', action2)
