@@ -1,5 +1,4 @@
 {
   "version": "9.3.1-nrk.1",
-  "npmClient": "yarn",
-  "useWorkspaces": true
+  "npmClient": "yarn"
 }

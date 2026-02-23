@@ -19,6 +19,7 @@ import { TelemetricsDevice } from '../integrations/telemetrics'
 import { TriCasterDevice } from '../integrations/tricaster'
 import { SingularLiveDevice } from '../integrations/singularLive'
 import { MultiOSCMessageDevice } from '../integrations/multiOsc'
+import { KairosDevice } from '../integrations/kairos'
 
 export interface DeviceEntry {
 	deviceClass: new (context: DeviceContextAPI<any>) => Device<any, any, any>
@@ -47,6 +48,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.TRICASTER
 	| DeviceType.QUANTEL
 	| DeviceType.VISCA_OVER_IP
+	| DeviceType.KAIROS
 
 // TODO - move all device implementations here and remove the old Device classes
 export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
@@ -79,6 +81,12 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		canConnect: true,
 		deviceName: (deviceId: string) => 'Hyperdeck ' + deviceId,
 		executionMode: () => 'salvo',
+	},
+	[DeviceType.KAIROS]: {
+		deviceClass: KairosDevice,
+		canConnect: true,
+		deviceName: (deviceId: string) => 'Kairos ' + deviceId,
+		executionMode: () => 'sequential',
 	},
 	[DeviceType.LAWO]: {
 		deviceClass: LawoDevice,

@@ -24,8 +24,8 @@ const capitalise = (s) => {
 	if (!s) return s
 	const base = s.slice(0, 1).toUpperCase() + s.slice(1)
 
-	// replace `_a` with `A`
-	return base.replace(/_[a-z]/gi, (v) => {
+	// replace `_a` and `-a` with `A`
+	return base.replace(/[_|-][a-z]/gi, (v) => {
 		return v.slice(1).toUpperCase()
 	})
 }
@@ -61,36 +61,37 @@ try {
 		const actionDefinition = {
 			id: action.id,
 			payloadId: undefined,
-			resultId: undefined
+			resultId: undefined,
 		}
 		actionDefinitions.push(actionDefinition)
 		// Payload:
 		if (action.payload) {
 			actionDefinition.payloadId = action.payload.id || capitalise(action.id + 'Payload')
-			actionTypes.push(await compile(action.payload, actionDefinition.payloadId, {
-				additionalProperties: false,
-				style: PrettierConf,
-				bannerComment: '',
-				enableConstEnums: false,
-			}))
+			actionTypes.push(
+				await compile(action.payload, actionDefinition.payloadId, {
+					additionalProperties: false,
+					style: PrettierConf,
+					bannerComment: '',
+					enableConstEnums: false,
+				})
+			)
 		}
 		// Return Data:
 		if (action.result) {
 			actionDefinition.resultId = action.result.id || capitalise(action.id + 'Result')
-			actionTypes.push(await compile(action.result, actionDefinition.resultId, {
-				additionalProperties: false,
-				style: PrettierConf,
-				bannerComment: '',
-				enableConstEnums: false,
-			}))
+			actionTypes.push(
+				await compile(action.result, actionDefinition.resultId, {
+					additionalProperties: false,
+					style: PrettierConf,
+					bannerComment: '',
+					enableConstEnums: false,
+				})
+			)
 		}
 		output += '\n' + actionTypes.join('\n')
 	}
 
-	await fs.writeFile(
-		'../timeline-state-resolver-types/src/generated/generic-ptz-actions.ts',
-		BANNER + '\n' + output
-	)
+	await fs.writeFile('../timeline-state-resolver-types/src/generated/generic-ptz-actions.ts', BANNER + '\n' + output)
 } catch (e) {
 	console.error('Error while generating common-options.json, continuing...')
 	console.error(e)
@@ -118,7 +119,9 @@ try {
 
 const basePath = path.resolve('./src/integrations')
 const basePathOfDereferencedShemas = path.resolve(`./src/${DEREFERENCED_SCHEMA_DIRECTORY}`)
-const dirs = (await fs.readdir(basePath, { withFileTypes: true })).filter((c) => c.isDirectory() && !c.name.includes('__tests__')).map((d) => d.name)
+const dirs = (await fs.readdir(basePath, { withFileTypes: true }))
+	.filter((c) => c.isDirectory() && !c.name.includes('__tests__'))
+	.map((d) => d.name)
 
 // Create output folder for dereferenced schemas
 try {
@@ -237,32 +240,35 @@ for (const dir of dirs) {
 				const actionDefinition = {
 					id: action.id,
 					payloadId: undefined,
-					resultId: undefined
+					resultId: undefined,
 				}
 				actionDefinitions.push(actionDefinition)
 				if (action.generic) continue
-
 
 				const actionTypes = []
 				// Payload:
 				if (action.payload) {
 					actionDefinition.payloadId = action.payload.id || capitalise(action.id + 'Payload')
-					actionTypes.push(await compile(action.payload, actionDefinition.payloadId, {
-						additionalProperties: false,
-						style: PrettierConf,
-						bannerComment: '',
-						enableConstEnums: false,
-					}))
+					actionTypes.push(
+						await compile(action.payload, actionDefinition.payloadId, {
+							additionalProperties: false,
+							style: PrettierConf,
+							bannerComment: '',
+							enableConstEnums: false,
+						})
+					)
 				}
 				// Return Data:
 				if (action.result) {
 					actionDefinition.resultId = action.result.id || capitalise(action.id + 'Result')
-					actionTypes.push(await compile(action.result, actionDefinition.resultId, {
-						additionalProperties: false,
-						style: PrettierConf,
-						bannerComment: '',
-						enableConstEnums: false,
-					}))
+					actionTypes.push(
+						await compile(action.result, actionDefinition.resultId, {
+							additionalProperties: false,
+							style: PrettierConf,
+							bannerComment: '',
+							enableConstEnums: false,
+						})
+					)
 				}
 
 				if (actionTypes.length) {
@@ -281,20 +287,24 @@ for (const dir of dirs) {
 
 		output += `
 export enum ${dirId}Actions {
-${actionDefinitions.map(
-			(actionDefinition) => `\t${capitalise(actionDefinition.id)} = '${actionDefinition.id}'`
-		).join(',\n')}
+${actionDefinitions
+	.map((actionDefinition) => `\t${capitalise(actionDefinition.id)} = '${actionDefinition.id}'`)
+	.join(',\n')}
 }`
 		// An interface for all the action methods:
 		output += `
 export interface ${dirId}ActionExecutionResults {
-${actionDefinitions.map(
-			(actionDefinition) => `\t${actionDefinition.id}: (${actionDefinition.payloadId ? `payload: ${actionDefinition.payloadId}` : ''}) => ${actionDefinition.resultId || 'void'}`
-		).join(',\n')}
+${actionDefinitions
+	.map(
+		(actionDefinition) =>
+			`\t${actionDefinition.id}: (${actionDefinition.payloadId ? `payload: ${actionDefinition.payloadId}` : ''}) => ${
+				actionDefinition.resultId || 'void'
+			}`
+	)
+	.join(',\n')}
 }`
 		// Prepend import:
 		output = 'import { ActionExecutionResult } from ".."\n' + output
-
 
 		// A helper type used to access the action methods payload:
 		output += `

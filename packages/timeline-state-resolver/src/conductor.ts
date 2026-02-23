@@ -8,8 +8,8 @@ import {
 } from 'superfly-timeline'
 import { EventEmitter } from 'eventemitter3'
 import { MemUsageReport, threadedClass, ThreadedClass, ThreadedClassManager } from 'threadedclass'
-import * as PAll from 'p-all'
 import PTimeout from 'p-timeout'
+import PAll from 'p-all'
 
 import {
 	Mappings,
@@ -56,6 +56,7 @@ import { DeviceOptionsCasparCGInternal } from './integrations/casparCG'
 import { DeviceOptionsSisyfosInternal } from './integrations/sisyfos'
 import { DeviceOptionsVMixInternal } from './integrations/vmix'
 import { DeviceOptionsVizMSEInternal } from './integrations/vizMSE'
+import { DeviceOptionsKairos } from 'timeline-state-resolver-types/src'
 import { BaseRemoteDeviceIntegration } from './service/remoteDeviceInstance'
 import { ConnectionManager } from './service/ConnectionManager'
 import { CancellableQueue } from './lib/cancellableQueue'
@@ -1220,6 +1221,7 @@ export type DeviceOptionsAnyInternal =
 	| DeviceOptionsTelemetrics
 	| DeviceOptionsTriCaster
 	| DeviceOptionsViscaOverIP
+	| DeviceOptionsKairos
 
 function removeParentFromState(
 	o: Timeline.TimelineState<TSRTimelineContent>

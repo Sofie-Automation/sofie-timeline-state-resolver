@@ -1,0 +1,691 @@
+{
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/action-schema.json",
+	"actions": [
+		{
+			"id": "listScenes",
+			"name": "List Scenes",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"scenePath": {
+						"$ref": "./lib/refs.json#/SceneRef/properties/scenePath"
+					},
+					"deep": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"scenePath"
+				],
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/SceneRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listSceneLayers",
+			"name": "List Scene Layers",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"scenePath": {
+						"$ref": "./lib/refs.json#/SceneLayerRef/properties/scenePath"
+					},
+					"layerPath": {
+						"$ref": "./lib/refs.json#/SceneLayerRef/properties/layerPath"
+					},
+					"deep": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"scenePath",
+					"layerPath"
+				],
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/SceneLayerRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listSceneLayerEffects",
+			"name": "List Scene Layer Effects",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"scenePath": {
+						"$ref": "./lib/refs.json#/SceneLayerRef/properties/scenePath"
+					},
+					"layerPath": {
+						"$ref": "./lib/refs.json#/SceneLayerRef/properties/layerPath"
+					},
+					"deep": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"scenePath",
+					"layerPath"
+				],
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/SceneLayerEffectRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listSceneTransitions",
+			"name": "List Scene Transitions",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"scenePath": {
+						"$ref": "./lib/refs.json#/SceneRef/properties/scenePath"
+					}
+				},
+				"required": [
+					"scenePath"
+				],
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"$ref": "./lib/refs.json#/SceneTransitionRef"
+				}
+			}
+		},
+		{
+			"id": "listSceneSnapshots",
+			"name": "List Scene Snapshots",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"scenePath": {
+						"$ref": "./lib/refs.json#/SceneRef/properties/scenePath"
+					}
+				},
+				"required": [
+					"scenePath"
+				],
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/SceneSnapshotRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listFxInputs",
+			"name": "List FX Inputs",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/FxInputRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listMattes",
+			"name": "List Mattes",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MatteRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listMediaClips",
+			"name": "List Media Clips",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaClipRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listMediaStills",
+			"name": "List Media Stills",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaStillRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listMediaRamRec",
+			"name": "List Media Ram Recordings",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaRamRecRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listMediaImage",
+			"name": "List Media Images",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaImageRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listMediaSounds",
+			"name": "List Media Sounds",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MediaSoundRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listMacros",
+			"name": "List Macros",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"macroPath": {
+						"$ref": "./lib/refs.json#/MacroRef/properties/macroPath"
+					},
+					"deep": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/MacroRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listAuxes",
+			"name": "List Auxes",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"$ref": "./lib/refs.json#/AuxRef"
+				}
+			}
+		},
+		{
+			"id": "listAuxEffects",
+			"name": "List Aux Effects",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"$ref": "./lib/refs.json#/AuxRef/properties/path"
+					},
+					"pathIsName": {
+						"$ref": "./lib/refs.json#/AuxRef/properties/pathIsName"
+					},
+					"deep": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"path",
+					"pathIsName"
+				],
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/AuxEffectRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listGfxScenes",
+			"name": "List GFX Scenes",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"scenePath": {
+						"$ref": "./lib/refs.json#/GfxSceneRef/properties/scenePath"
+					},
+					"deep": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/GfxSceneRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listGfxSceneItems",
+			"name": "List GFX Scene Items",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"scenePath": {
+						"$ref": "./lib/refs.json#/GfxSceneRef/properties/scenePath"
+					}
+				},
+				"required": [
+					"scenePath"
+				],
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/GfxSceneItemRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "listAudioMixerChannels",
+			"name": "List Audio Mixer Channels",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"result": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"allOf": [
+						{
+							"properties": {
+								"name": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"name"
+							],
+							"additionalProperties": false
+						},
+						{
+							"$ref": "./lib/refs.json#/AudioMixerChannelRef"
+						}
+					]
+				}
+			}
+		},
+		{
+			"id": "macroPlay",
+			"name": "Play a macro",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"macroPath": {
+						"$ref": "./lib/refs.json#/MacroRef/properties/macroPath"
+					}
+				},
+				"required": [
+					"macroPath"
+				],
+				"additionalProperties": false
+			}
+		},
+		{
+			"id": "macroStop",
+			"name": "Stop a macro",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"macroPath": {
+						"$ref": "./lib/refs.json#/MacroRef/properties/macroPath"
+					}
+				},
+				"required": [
+					"macroPath"
+				],
+				"additionalProperties": false
+			}
+		},
+		{
+			"id": "sceneSnapshotRecall",
+			"name": "Recall a Scene Snapshot",
+			"destructive": false,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"scenePath": {
+						"$ref": "./lib/refs.json#/SceneSnapshotRef/properties/scenePath"
+					},
+					"snapshotPath": {
+						"$ref": "./lib/refs.json#/SceneSnapshotRef/properties/snapshotPath"
+					}
+				},
+				"required": [
+					"scenePath",
+					"snapshotPath"
+				],
+				"additionalProperties": false
+			}
+		}
+	]
+}

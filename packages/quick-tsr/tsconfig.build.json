@@ -10,6 +10,9 @@
 			"{{PACKAGE-NAME}}": ["./src/index.ts"]
 		},
 		"types": ["node"],
-		"skipLibCheck": true
+		"skipLibCheck": true,
+
+		"moduleResolution": "node16",
+		"esModuleInterop": true
 	}
 }

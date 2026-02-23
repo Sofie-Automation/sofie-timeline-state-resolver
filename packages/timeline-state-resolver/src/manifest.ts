@@ -15,6 +15,9 @@ import HTTPWatcherMappings = require('./$schemas/generated/httpWatcher/mappings.
 import HyperdeckActions = require('./$schemas/generated/hyperdeck/actions.json')
 import HyperdeckOptions = require('./$schemas/generated/hyperdeck/options.json')
 import HyperdeckMappings = require('./$schemas/generated/hyperdeck/mappings.json')
+import KairosActions = require('./$schemas/generated/kairos/actions.json')
+import KairosOptions = require('./$schemas/generated/kairos/options.json')
+import KairosMappings = require('./$schemas/generated/kairos/mappings.json')
 import LawoOptions = require('./$schemas/generated/lawo/options.json')
 import LawoMappings = require('./$schemas/generated/lawo/mappings.json')
 import MultiOSCOptions = require('./$schemas/generated/multiOsc/options.json')
@@ -122,6 +125,12 @@ export const manifest: TSRManifest = {
 			actions: HyperdeckActions.actions.map(stringifyActionSchema),
 			configSchema: JSON.stringify(HyperdeckOptions),
 			mappingsSchemas: stringifyMappingSchema(HyperdeckMappings),
+		},
+		[DeviceType.KAIROS]: {
+			displayName: generateTranslation('Kairos'),
+			actions: KairosActions.actions.map(stringifyActionSchema),
+			configSchema: JSON.stringify(KairosOptions),
+			mappingsSchemas: stringifyMappingSchema(KairosMappings),
 		},
 		[DeviceType.LAWO]: {
 			displayName: generateTranslation('Lawo'),

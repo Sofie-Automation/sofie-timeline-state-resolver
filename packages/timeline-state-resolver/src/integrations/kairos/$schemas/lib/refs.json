@@ -1,0 +1,630 @@
+{
+    "RefPath": {
+        "type": "array",
+        "items": {
+            "type": "string"
+        }
+    },
+    "RefPathSingle": {
+        "type": "array",
+        "prefixItems": [
+            {
+                "type": "string"
+            }
+        ]
+    },
+    "SceneRef": {
+        "id": "SceneRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "scene"
+            },
+            "scenePath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "scenePath"
+        ],
+        "additionalProperties": false
+    },
+    "SceneLayerRef": {
+        "id": "SceneLayerRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "scene-layer"
+            },
+            "scenePath": {
+                "$ref": "#/RefPath"
+            },
+            "layerPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "scenePath",
+            "layerPath"
+        ],
+        "additionalProperties": false
+    },
+    "SceneLayerEffectRef": {
+        "id": "SceneLayerEffectRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "scene-layer-effect"
+            },
+            "scenePath": {
+                "$ref": "#/RefPath"
+            },
+            "layerPath": {
+                "$ref": "#/RefPath"
+            },
+            "effectPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "scenePath",
+            "layerPath",
+            "effectPath"
+        ],
+        "additionalProperties": false
+    },
+    "SceneSnapshotRef": {
+        "id": "SceneSnapshotRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "scene-snapshot"
+            },
+            "scenePath": {
+                "$ref": "#/RefPath"
+            },
+            "snapshotPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "scenePath",
+            "snapshotPath"
+        ],
+        "additionalProperties": false
+    },
+    "SceneTransitionRef": {
+        "id": "SceneTransitionRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "scene-transition"
+            },
+            "scenePath": {
+                "$ref": "#/RefPath"
+            },
+            "transitionPath": {
+                "$ref": "#/RefPathSingle"
+            }
+        },
+        "required": [
+            "realm",
+            "scenePath",
+            "transitionPath"
+        ],
+        "additionalProperties": false
+    },
+    "SceneTransitionMixRef": {
+        "id": "SceneTransitionMixRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "scene-transition-mix"
+            },
+            "scenePath": {
+                "$ref": "#/RefPath"
+            },
+            "transitionPath": {
+                "$ref": "#/RefPathSingle"
+            },
+            "mixPath": {
+                "$ref": "#/RefPathSingle"
+            }
+        },
+        "required": [
+            "realm",
+            "scenePath",
+            "transitionPath",
+            "mixPath"
+        ],
+        "additionalProperties": false
+    },
+    "SceneTransitionMixEffectRef": {
+        "id": "SceneTransitionMixEffectRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "scene-transition-mix-effect"
+            },
+            "scenePath": {
+                "$ref": "#/RefPath"
+            },
+            "transitionPath": {
+                "$ref": "#/RefPathSingle"
+            },
+            "mixPath": {
+                "$ref": "#/RefPathSingle"
+            },
+            "effectPath": {
+                "$ref": "#/RefPathSingle"
+            }
+        },
+        "required": [
+            "realm",
+            "scenePath",
+            "transitionPath",
+            "mixPath",
+            "effectPath"
+        ],
+        "additionalProperties": false
+    },
+    "FxInputRef": {
+        "id": "FxInputRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "fxInput"
+            },
+            "fxInputPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "fxInputPath"
+        ],
+        "additionalProperties": false
+    },
+    "MatteRef": {
+        "id": "MatteRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "matte"
+            },
+            "mattePath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "mattePath"
+        ],
+        "additionalProperties": false
+    },
+    "MediaClipRef": {
+        "id": "MediaClipRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "media-clip"
+            },
+            "clipPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "clipPath"
+        ],
+        "additionalProperties": false
+    },
+    "MediaStillRef": {
+        "id": "MediaStillRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "media-still"
+            },
+            "clipPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "clipPath"
+        ],
+        "additionalProperties": false
+    },
+    "MediaRamRecRef": {
+        "id": "MediaRamRecRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "media-ramrec"
+            },
+            "clipPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "clipPath"
+        ],
+        "additionalProperties": false
+    },
+    "MediaImageRef": {
+        "id": "MediaImageRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "media-image"
+            },
+            "clipPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "clipPath"
+        ],
+        "additionalProperties": false
+    },
+    "MediaSoundRef": {
+        "id": "MediaSoundRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "media-sound"
+            },
+            "clipPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "clipPath"
+        ],
+        "additionalProperties": false
+    },
+    "MacroRef": {
+        "id": "MacroRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "macro"
+            },
+            "macroPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "macroPath"
+        ],
+        "additionalProperties": false
+    },
+    "RamRecorderRef": {
+        "id": "RamRecorderRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "ramRecorder"
+            },
+            "path": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "type": "string",
+                        "enum": [
+                            "RR1",
+                            "RR2",
+                            "RR3",
+                            "RR4",
+                            "RR5",
+                            "RR6",
+                            "RR7",
+                            "RR8"
+                        ]
+                    }
+                ]
+            }
+        },
+        "required": [
+            "realm",
+            "path"
+        ],
+        "additionalProperties": false
+    },
+    "ClipPlayerRef": {
+        "id": "ClipPlayerRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "clipPlayer"
+            },
+            "path": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "type": "string",
+                        "enum": [
+                            "CP1",
+                            "CP2"
+                        ]
+                    }
+                ]
+            }
+        },
+        "required": [
+            "realm",
+            "path"
+        ],
+        "additionalProperties": false
+    },
+    "ImageStoreRef": {
+        "id": "ImageStoreRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "imageStore"
+            },
+            "path": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "type": "string",
+                        "enum": [
+                            "IS1",
+                            "IS2",
+                            "IS3",
+                            "IS4",
+                            "IS5",
+                            "IS6",
+                            "IS7",
+                            "IS8"
+                        ]
+                    }
+                ]
+            }
+        },
+        "required": [
+            "realm",
+            "path"
+        ],
+        "additionalProperties": false
+    },
+    "GfxSceneRef": {
+        "id": "GfxSceneRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "gfxScene"
+            },
+            "scenePath": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "required": [
+            "realm",
+            "scenePath"
+        ],
+        "additionalProperties": false
+    },
+    "GfxSceneItemRef": {
+        "id": "GfxSceneItemRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "gfxScene-item"
+            },
+            "scenePath": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "sceneItemPath": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "required": [
+            "realm",
+            "scenePath",
+            "sceneItemPath"
+        ],
+        "additionalProperties": false
+    },
+    "SourceBaseRef": {
+        "id": "SourceBaseRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "source-base"
+            },
+            "path": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "type": "string",
+                        "enum": [
+                            "BLACK",
+                            "WHITE"
+                        ]
+                    }
+                ]
+            }
+        },
+        "required": [
+            "realm",
+            "path"
+        ],
+        "additionalProperties": false
+    },
+    "SourceIntRef": {
+        "id": "SourceIntRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "source-int"
+            },
+            "path": {
+                "type": "array",
+                "prefixItems": [
+                    {
+                        "type": "string",
+                        "enum": [
+                            "ColorBar",
+                            "ColorCircle",
+                            "MV1",
+                            "MV2",
+                            "MV3",
+                            "MV4"
+                        ]
+                    }
+                ]
+            }
+        },
+        "required": [
+            "realm",
+            "path"
+        ],
+        "additionalProperties": false
+    },
+    "AudioMixerChannelRef": {
+        "id": "AudioMixerChannelRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "audioMixer-channel"
+            },
+            "channelPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "channelPath"
+        ],
+        "additionalProperties": false
+    },
+    "MattesRef": {
+        "id": "MattesRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "mattes"
+            },
+            "path": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "path"
+        ],
+        "additionalProperties": false
+    },
+    "AuxRef": {
+        "id": "AuxRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "aux"
+            },
+            "path": {
+                "type": "string"
+            },
+            "pathIsName": {
+                "type": "boolean",
+                "description": "true if the path is a name, false if it is an id"
+            }
+        },
+        "required": [
+            "realm",
+            "path",
+            "pathIsName"
+        ],
+        "additionalProperties": false
+    },
+    "InputRef": {
+        "id": "InputRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "input"
+            },
+            "path": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "realm",
+            "path"
+        ],
+        "additionalProperties": false
+    },
+    "AuxEffectRef": {
+        "id": "AuxEffectRef",
+        "type": "object",
+        "properties": {
+            "realm": {
+                "type": "string",
+                "const": "aux-effect"
+            },
+            "auxPath": {
+                "type": "string"
+            },
+            "auxPathIsName": {
+                "type": "boolean",
+                "description": "true if the path is a name, false if it is an id"
+            },
+            "effectPath": {
+                "$ref": "#/RefPath"
+            }
+        },
+        "required": [
+            "realm",
+            "auxPath",
+            "auxPathIsName",
+            "effectPath"
+        ],
+        "additionalProperties": false
+    }
+}

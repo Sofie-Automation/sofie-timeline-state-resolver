@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Kairos Options",
+	"type": "object",
+	"properties": {
+		"host": {
+			"type": "string",
+			"description": "Host of KAIROS server",
+			"ui:title": "Host",
+			"default": ""
+		},
+		"port": {
+			"type": "integer",
+			"description": "Port of KAIROS server",
+			"ui:title": "Port",
+			"default": 3005
+		}
+	},
+	"required": ["host"],
+	"additionalProperties": false
+}

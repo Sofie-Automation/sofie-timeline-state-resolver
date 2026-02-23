@@ -23,12 +23,14 @@ import { TimelineContentSingularLiveAny } from './integrations/singularLive'
 import { TimelineContentVMixAny } from './integrations/vmix'
 import { TimelineContentOBSAny } from './integrations/obs'
 import { TimelineContentTriCasterAny } from './integrations/tricaster'
+import { TimelineContentKairosAny } from './integrations/kairos'
 
 export * from './integrations/abstract'
 export * from './integrations/atem'
 export * from './integrations/casparcg'
 export * from './integrations/httpSend'
 export * from './integrations/hyperdeck'
+export * from './integrations/kairos'
 export * from './integrations/lawo'
 export * from './integrations/osc'
 export * from './integrations/pharos'
@@ -70,6 +72,7 @@ export enum DeviceType {
 	ATEM = 'ATEM',
 	LAWO = 'LAWO',
 	HTTPSEND = 'HTTPSEND',
+	KAIROS = 'KAIROS',
 	PANASONIC_PTZ = 'PANASONIC_PTZ',
 	TCPSEND = 'TCPSEND',
 	HYPERDECK = 'HYPERDECK',
@@ -149,6 +152,7 @@ export type TSRTimelineContent =
 	| TimelineContentVIZMSEAny
 	| TimelineContentTelemetricsAny
 	| TimelineContentTriCasterAny
+	| TimelineContentKairosAny
 
 /**
  * A simple key value store that can be referred to from the timeline objects
