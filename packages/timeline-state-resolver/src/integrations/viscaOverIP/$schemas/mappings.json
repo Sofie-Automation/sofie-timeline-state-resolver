@@ -1,5 +1,12 @@
 {
 	"$schema": "../../../../../timeline-state-resolver-api/$schemas/mapping-schema.json",
-	"default": "",
-	"mappings": {}
+	"default": "camera",
+	"mappings": {
+		"camera": {
+			"type": "object",
+			"properties": {},
+			"required": [],
+			"additionalProperties": false
+		}
+	}
 }

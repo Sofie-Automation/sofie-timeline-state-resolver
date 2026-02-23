@@ -1,8 +1,9 @@
-import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
 	DeviceStatus,
+	Mappings,
 	StatusCode,
 	TSRTimelineContent,
 	ViscaOverIPActionMethods,
@@ -24,19 +25,21 @@ import {
 	ZoomPositionInquiryCommand,
 } from './connection/commands/inquiry/index.js'
 import { ViscaValueConverter } from './connection/lib/ViscaValueConverter.js'
+import { ViscaOverIpDeviceState, convertStateToVisca, getDefaultState } from './state.js'
+import { ViscaOverIpCommandWithContext, diffViscaStates } from './diff.js'
 
-export type ViscaDeviceState = DeviceTimelineState<TSRTimelineContent>
-
-export type ViscaDeviceCommand = CommandWithContext<Record<string, never>, string>
-
-export class ViscaOverIpDevice implements Device<ViscaOverIPDeviceTypes, ViscaDeviceState, ViscaDeviceCommand> {
+export class ViscaOverIpDevice implements Device<
+	ViscaOverIPDeviceTypes,
+	ViscaOverIpDeviceState,
+	ViscaOverIpCommandWithContext
+> {
 	protected _terminated = false
 
 	protected connection: ViscaDevice | undefined
 
-	protected converter = new ViscaValueConverter()
+	protected readonly converter = new ViscaValueConverter()
 
-	constructor(protected context: DeviceContextAPI<ViscaDeviceState>) {
+	constructor(protected context: DeviceContextAPI<ViscaOverIpDeviceState>) {
 		// Nothing
 	}
 
@@ -157,17 +160,25 @@ export class ViscaOverIpDevice implements Device<ViscaOverIPDeviceTypes, ViscaDe
 		}
 	}
 
-	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): ViscaDeviceState {
-		return state
+	convertTimelineStateToDeviceState(
+		state: DeviceTimelineState<TSRTimelineContent>,
+		newMappings: Mappings
+	): ViscaOverIpDeviceState {
+		return convertStateToVisca(state, newMappings)
 	}
 
-	diffStates(_oldState: ViscaDeviceState | undefined, _newState: ViscaDeviceState): Array<ViscaDeviceCommand> {
-		const commands: Array<ViscaDeviceCommand> = []
-
-		return commands
+	diffStates(
+		oldState: ViscaOverIpDeviceState | undefined,
+		newState: ViscaOverIpDeviceState
+	): Array<ViscaOverIpCommandWithContext> {
+		return diffViscaStates(this.converter, oldState ?? getDefaultState(), newState)
 	}
 
-	async sendCommand(): Promise<void> {
-		return Promise.resolve()
+	async sendCommand(command: ViscaOverIpCommandWithContext): Promise<void> {
+		try {
+			await this.connection?.sendCommand(command.command)
+		} catch (e) {
+			this.context.logger.error('ViscaOverIP: sendCommand error', e as Error)
+		}
 	}
 }

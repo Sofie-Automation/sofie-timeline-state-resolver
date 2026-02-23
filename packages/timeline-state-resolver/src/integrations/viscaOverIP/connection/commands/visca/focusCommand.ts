@@ -3,8 +3,8 @@ import { ViscaCommand } from '../abstractCommand.js'
 
 export class FocusCommand extends ViscaCommand {
 	constructor(
-		private readonly direction: FocusDirection,
-		private readonly speed: number = 0
+		readonly direction: FocusDirection,
+		readonly speed: number = 0
 	) {
 		super()
 	}
