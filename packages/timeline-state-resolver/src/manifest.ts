@@ -63,6 +63,9 @@ import TelemetricsOptions = require('./$schemas/generated/telemetrics/options.js
 import TelemetricsMappings = require('./$schemas/generated/telemetrics/mappings.json')
 import TricasterOptions = require('./$schemas/generated/tricaster/options.json')
 import TricasterMappings = require('./$schemas/generated/tricaster/mappings.json')
+import UdpSendActions = require('./$schemas/generated/udpSend/actions.json')
+import UdpSendOptions = require('./$schemas/generated/udpSend/options.json')
+import UdpSendMappings = require('./$schemas/generated/udpSend/mappings.json')
 import ViscaOverIPActions = require('./$schemas/generated/viscaOverIP/actions.json')
 import ViscaOverIPOptions = require('./$schemas/generated/viscaOverIP/options.json')
 import ViscaOverIPMappings = require('./$schemas/generated/viscaOverIP/mappings.json')
@@ -194,6 +197,12 @@ export const builtinDeviceManifest: TSRManifest = {
 			displayName: generateTranslation('Tricaster'),
 			configSchema: JSON.stringify(TricasterOptions),
 			mappingsSchemas: stringifyMappingSchema(TricasterMappings),
+		},
+		[DeviceType.UDP_SEND]: {
+			displayName: generateTranslation('Udp Send'),
+			actions: UdpSendActions.actions.map(stringifyActionSchema),
+			configSchema: JSON.stringify(UdpSendOptions),
+			mappingsSchemas: stringifyMappingSchema(UdpSendMappings),
 		},
 		[DeviceType.VISCA_OVER_IP]: {
 			displayName: generateTranslation('Visca Over IP'),

@@ -69,6 +69,9 @@ export type DeviceOptionsTelemetrics = DeviceOptionsBase<DeviceType.TELEMETRICS,
 import type { TricasterOptions } from './tricaster.js'
 export type DeviceOptionsTricaster = DeviceOptionsBase<DeviceType.TRICASTER, TricasterOptions>
 
+import type { UdpSendOptions } from './udpSend.js'
+export type DeviceOptionsUdpSend = DeviceOptionsBase<DeviceType.UDP_SEND, UdpSendOptions>
+
 import type { ViscaOverIPOptions } from './viscaOverIP.js'
 export type DeviceOptionsViscaOverIP = DeviceOptionsBase<DeviceType.VISCA_OVER_IP, ViscaOverIPOptions>
 
@@ -103,6 +106,7 @@ export type DeviceOptionsAny =
 	| DeviceOptionsTcpSend
 	| DeviceOptionsTelemetrics
 	| DeviceOptionsTricaster
+	| DeviceOptionsUdpSend
 	| DeviceOptionsViscaOverIP
 	| DeviceOptionsVizMSE
 	| DeviceOptionsVmix
@@ -136,6 +140,7 @@ export enum DeviceType {
 	TCPSEND = 'TCPSEND',
 	TELEMETRICS = 'TELEMETRICS',
 	TRICASTER = 'TRICASTER',
+	UDP_SEND = 'UDP_SEND',
 	VISCA_OVER_IP = 'VISCA_OVER_IP',
 	VIZMSE = 'VIZMSE',
 	VMIX = 'VMIX',

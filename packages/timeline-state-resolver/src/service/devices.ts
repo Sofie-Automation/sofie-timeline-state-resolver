@@ -23,6 +23,7 @@ import { WebSocketClientDevice } from '../integrations/websocketClient/index.js'
 import { vMixDeviceEntry } from '../integrations/vmix/vMixDeviceEntry.js'
 import { KairosDevice } from '../integrations/kairos/index.js'
 import { SisyfosDeviceEntry } from '../integrations/sisyfos/entry.js'
+import { UdpSendDevice } from '../integrations/udpSend/index.js'
 
 export type ImplementedServiceDeviceTypes =
 	| DeviceType.ABSTRACT
@@ -48,6 +49,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.WEBSOCKET_CLIENT
 	| DeviceType.VMIX
 	| DeviceType.KAIROS
+	| DeviceType.UDP_SEND
 
 // TODO - move all device implementations here and remove the old Device classes
 export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
@@ -179,4 +181,10 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 	},
 	[DeviceType.SISYFOS]: new SisyfosDeviceEntry(),
 	[DeviceType.VMIX]: new vMixDeviceEntry(),
+	[DeviceType.UDP_SEND]: {
+		deviceClass: UdpSendDevice,
+		canConnect: false,
+		deviceName: (deviceId: string) => 'UDP ' + deviceId,
+		executionMode: () => 'sequential',
+	},
 }
