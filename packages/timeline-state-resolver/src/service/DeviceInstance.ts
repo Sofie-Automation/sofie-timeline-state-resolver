@@ -7,13 +7,13 @@ import type {
 	CommandWithContext,
 	DeviceContextAPI,
 	DeviceEvents,
+	DeviceTimelineState,
 } from 'timeline-state-resolver-api'
 import {
 	type DeviceStatus,
 	type DeviceType,
 	type Mappings,
 	type MediaObject,
-	type Timeline,
 	type TSRTimelineContent,
 } from 'timeline-state-resolver-types'
 import { StateHandler } from './stateHandler.js'
@@ -208,7 +208,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		return this._device.init(this.config.options)
 	}
 	async terminate() {
-		await this._stateHandler.terminate()
+		this._stateHandler.terminate()
 		return this._device.terminate()
 	}
 
@@ -227,7 +227,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		//
 	}
 
-	handleState(newState: Timeline.TimelineState<TSRTimelineContent>, newMappings: Mappings) {
+	handleState(newState: DeviceTimelineState<TSRTimelineContent>, newMappings: Mappings) {
 		this._stateHandler.handleState(newState, newMappings)
 
 		this._isActive = Object.keys(newMappings).length > 0

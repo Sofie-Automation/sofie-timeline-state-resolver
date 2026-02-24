@@ -1,4 +1,6 @@
 import {
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
 	DeviceType,
 	Mapping,
 	MappingVmixType,
@@ -10,7 +12,6 @@ import {
 	VMixInputType,
 	VMixTransitionType,
 } from 'timeline-state-resolver-types'
-import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 import { VMixTimelineStateConverter } from '../vMixTimelineStateConverter.js'
 import { VMixOutput, VMixStateDiffer } from '../vMixStateDiffer.js'
 import { prefixAddedInput } from './mockState.js'

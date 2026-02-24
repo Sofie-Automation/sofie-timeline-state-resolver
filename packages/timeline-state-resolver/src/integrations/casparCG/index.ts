@@ -17,12 +17,9 @@ import {
 	SomeMappingCasparCG,
 	CasparCGOptions,
 	TimelineContentCCGProducerBase,
-	ResolvedTimelineObjectInstanceExtended,
 	DeviceOptionsCasparCG,
 	Mappings,
 	TimelineContentCasparCGAny,
-	TSRTimelineObjProps,
-	Timeline,
 	TSRTimelineContent,
 	ActionExecutionResult,
 	ActionExecutionResultCode,
@@ -61,7 +58,12 @@ import { InternalTransitionHandler } from '../../devices/transitions/transitionH
 import Debug from 'debug'
 import { deepMerge, endTrace, literal, startTrace, t } from '../../lib.js'
 import { ClsParameters } from 'casparcg-connection/dist/parameters'
-import type { DeviceStatus, CommandWithContext } from 'timeline-state-resolver-api'
+import type {
+	DeviceStatus,
+	CommandWithContext,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 
 const debug = Debug('timeline-state-resolver:casparcg')
 
@@ -241,7 +243,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 	/**
 	 * Generates an array of CasparCG commands by comparing the newState against the oldState, or the current device state.
 	 */
-	handleState(newState: Timeline.TimelineState<TSRTimelineContent>, newMappings: Mappings) {
+	handleState(newState: DeviceTimelineState<TSRTimelineContent>, newMappings: Mappings) {
 		super.onHandleState(newState, newMappings)
 
 		const previousStateTime = Math.max(this.getCurrentTime(), newState.time)
@@ -298,14 +300,14 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 	private convertObjectToCasparState(
 		mappings: Mappings,
-		layer: Timeline.ResolvedTimelineObjectInstance,
+		layer: DeviceTimelineStateObject,
 		mapping: MappingCasparCGLayer,
 		isForeground: boolean
 	): LayerBase {
 		let startTime = layer.instance.originalStart || layer.instance.start
 		if (startTime === 0) startTime = 1 // @todo: startTime === 0 will make ccg-state seek to the current time
 
-		const layerProps = layer as Timeline.ResolvedTimelineObjectInstance & TSRTimelineObjProps
+		const layerProps = layer
 		const content = layer.content as TimelineContentCasparCGAny
 
 		let stateLayer: LayerBase | null = null
@@ -495,7 +497,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 	 * Takes a timeline state and returns a CasparCG State that will work with the state lib.
 	 * @param timelineState The timeline state to generate from.
 	 */
-	convertStateToCaspar(timelineState: Timeline.TimelineState<TSRTimelineContent>, mappings: Mappings): State {
+	convertStateToCaspar(timelineState: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings): State {
 		const caspar: State = {
 			channels: {},
 		}
@@ -518,12 +520,11 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				channel.fps = this.initOptions ? this.initOptions.fps || 25 : 25
 				caspar.channels[channel.channelNo] = channel
 
-				let foregroundObj: ResolvedTimelineObjectInstanceExtended | undefined = timelineState.layers[layerName]
+				let foregroundObj = timelineState.objects.find((obj) => obj.layer === layerName)
 				let backgroundObj = _.last(
-					_.filter(timelineState.layers, (obj) => {
+					timelineState.objects.filter((obj) => {
 						// Takes the last one, to be consistent with previous behaviour
-						const objExt: ResolvedTimelineObjectInstanceExtended = obj
-						return !!objExt.isLookahead && objExt.lookaheadForLayer === layerName
+						return !!obj.isLookahead && obj.lookaheadForLayer === layerName
 					})
 				)
 
