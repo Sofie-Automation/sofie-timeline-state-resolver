@@ -81,32 +81,39 @@ export type DeviceOptionsVmix = DeviceOptionsBase<DeviceType.VMIX, VmixOptions>
 import type { WebsocketClientOptions } from './websocketClient'
 export type DeviceOptionsWebsocketClient = DeviceOptionsBase<DeviceType.WEBSOCKET_CLIENT, WebsocketClientOptions>
 
-export type DeviceOptionsAny =
-	| DeviceOptionsAbstract
-	| DeviceOptionsAtem
-	| DeviceOptionsCasparCG
-	| DeviceOptionsHttpSend
-	| DeviceOptionsHttpWatcher
-	| DeviceOptionsHyperdeck
-	| DeviceOptionsKairos
-	| DeviceOptionsLawo
-	| DeviceOptionsMultiOsc
-	| DeviceOptionsObs
-	| DeviceOptionsOsc
-	| DeviceOptionsPanasonicPTZ
-	| DeviceOptionsPharos
-	| DeviceOptionsQuantel
-	| DeviceOptionsShotoku
-	| DeviceOptionsSingularLive
-	| DeviceOptionsSisyfos
-	| DeviceOptionsSofieChef
-	| DeviceOptionsTcpSend
-	| DeviceOptionsTelemetrics
-	| DeviceOptionsTricaster
-	| DeviceOptionsViscaOverIP
-	| DeviceOptionsVizMSE
-	| DeviceOptionsVmix
-	| DeviceOptionsWebsocketClient
+/**
+ * A map of available DeviceOptions type.
+ * TSR plugins can augment this interface to add their own device options:
+ */
+export interface DeviceOptionsMap {
+	[DeviceType.ABSTRACT]: DeviceOptionsAbstract
+	[DeviceType.ATEM]: DeviceOptionsAtem
+	[DeviceType.CASPARCG]: DeviceOptionsCasparCG
+	[DeviceType.HTTPSEND]: DeviceOptionsHttpSend
+	[DeviceType.HTTPWATCHER]: DeviceOptionsHttpWatcher
+	[DeviceType.HYPERDECK]: DeviceOptionsHyperdeck
+	[DeviceType.KAIROS]: DeviceOptionsKairos
+	[DeviceType.LAWO]: DeviceOptionsLawo
+	[DeviceType.MULTI_OSC]: DeviceOptionsMultiOsc
+	[DeviceType.OBS]: DeviceOptionsObs
+	[DeviceType.OSC]: DeviceOptionsOsc
+	[DeviceType.PANASONIC_PTZ]: DeviceOptionsPanasonicPTZ
+	[DeviceType.PHAROS]: DeviceOptionsPharos
+	[DeviceType.QUANTEL]: DeviceOptionsQuantel
+	[DeviceType.SHOTOKU]: DeviceOptionsShotoku
+	[DeviceType.SINGULAR_LIVE]: DeviceOptionsSingularLive
+	[DeviceType.SISYFOS]: DeviceOptionsSisyfos
+	[DeviceType.SOFIE_CHEF]: DeviceOptionsSofieChef
+	[DeviceType.TCPSEND]: DeviceOptionsTcpSend
+	[DeviceType.TELEMETRICS]: DeviceOptionsTelemetrics
+	[DeviceType.TRICASTER]: DeviceOptionsTricaster
+	[DeviceType.VISCA_OVER_IP]: DeviceOptionsViscaOverIP
+	[DeviceType.VIZMSE]: DeviceOptionsVizMSE
+	[DeviceType.VMIX]: DeviceOptionsVmix
+	[DeviceType.WEBSOCKET_CLIENT]: DeviceOptionsWebsocketClient
+}
+
+export type DeviceOptionsAny = DeviceOptionsMap[keyof DeviceOptionsMap]
 
 /**
  * An identifier of a particular device class
