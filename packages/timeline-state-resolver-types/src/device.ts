@@ -1,4 +1,4 @@
-import type { DeviceType } from '.'
+import type { DeviceTypeExt } from '.'
 import type { DeviceCommonOptions } from './generated/common-options'
 
 export enum StatusCode {
@@ -15,7 +15,9 @@ export interface DeviceStatus {
 	active: boolean
 }
 
-export interface DeviceOptionsBase<TType extends DeviceType, TOptions> extends SlowReportOptions, DeviceCommonOptions {
+export interface DeviceOptionsBase<TType extends DeviceTypeExt, TOptions>
+	extends SlowReportOptions,
+		DeviceCommonOptions {
 	type: TType
 	isMultiThreaded?: boolean
 	reportAllCommands?: boolean

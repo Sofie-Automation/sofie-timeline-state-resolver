@@ -469,7 +469,12 @@ if (baseMappingsTypes.length) {
 await fs.writeFile(path.join(resolvedOutputPath, 'index.ts'), indexFile + '\n')
 
 if (isMainRepository) {
-	deviceOptionsFile += `export type DeviceOptionsAny =\n\t| ${deviceOptionsTypes.join('\n\t| ')}\n\n`
+	const deviceOptionsMapEntries = deviceOptionsTypes.map((type, i) => `\t[DeviceType.${deviceTypeEnum[i]}]: ${type}`)
+	deviceOptionsFile += `/**
+ * A map of available DeviceOptions type.
+ * TSR plugins can augment this interface to add their own device options:
+ */
+export interface DeviceOptionsMap {\n${deviceOptionsMapEntries.join('\n')}\n}\n\nexport type DeviceOptionsAny = DeviceOptionsMap[keyof DeviceOptionsMap]\n\n`
 
 	deviceOptionsFile += `/**
  * An identifier of a particular device class
