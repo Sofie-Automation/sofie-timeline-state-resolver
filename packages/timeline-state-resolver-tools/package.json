@@ -40,7 +40,7 @@
 		}
 	],
 	"scripts": {
-		"test": "run lint",
+		"lint": "run -T lint packages/timeline-state-resolver-tools",
 		"validate:dependencies": "yarn npm  audit --environment production && yarn license-validate",
 		"validate:dev-dependencies": "yarn npm audit --environment development",
 		"license-validate": "run -T  sofie-licensecheck"
@@ -52,7 +52,7 @@
 		"tsr-schema-types": "bin/schema-types.mjs"
 	},
 	"engines": {
-		"node": ">= 20.5"
+		"node": ">= 22.18"
 	},
 	"files": [
 		"/lib",

@@ -49,10 +49,11 @@
 	"scripts": {
 		"unlink:all": "yarn unlink atem-connection & yarn unlink atem-state & yarn unlink casparcg-connection & yarn unlink casparcg-state & yarn unlink superfly-timeline",
 		"license-validate": "run -T sofie-licensecheck",
+		"lint": "run -T lint packages/timeline-state-resolver",
 		"unit": "run -T jest --forceExit",
 		"unitci": "run -T jest --forceExit --coverage",
-		"test": "run lint && run unit",
-		"test:integration": "run lint && run -T jest --config=jest-integration.config.js",
+		"test": "run unit",
+		"test:integration": "run -T jest --config=jest-integration.config.js",
 		"watch": "run -T jest --watch",
 		"cov": "run -T jest --coverage && run cov-open",
 		"cov-open": "run -T open-cli coverage/lcov-report/index.html",
@@ -65,7 +66,7 @@
 		"schema:types": "tsr-schema-types ./src/\\$schemas/generated ../timeline-state-resolver-types/src/generated --isMainRepository"
 	},
 	"engines": {
-		"node": ">= 20.5"
+		"node": ">= 22.18"
 	},
 	"files": [
 		"/dist",

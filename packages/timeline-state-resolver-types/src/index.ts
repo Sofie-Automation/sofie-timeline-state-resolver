@@ -25,6 +25,7 @@ import { TimelineContentTriCasterAny } from './integrations/tricaster.js'
 import { TimelineContentWebSocketClientAny } from './integrations/websocketClient.js'
 import { TimelineContentKairosAny } from './integrations/kairos.js'
 import { DeviceType } from './generated/index.js'
+import { TimelineContentUDPSendAny } from './integrations/udpSend.js'
 
 export * from './integrations/abstract.js'
 export * from './integrations/atem.js'
@@ -48,6 +49,7 @@ export * from './integrations/obs.js'
 export * from './integrations/tricaster.js'
 export * from './integrations/telemetrics.js'
 export * from './integrations/multiOsc.js'
+export * from './integrations/udpSend.js'
 export * from './integrations/viscaOverIP.js'
 export * from './integrations/websocketClient.js'
 
@@ -128,6 +130,7 @@ export interface TimelineContentMap {
 	[DeviceType.TELEMETRICS]: TimelineContentTelemetricsAny
 	[DeviceType.TRICASTER]: TimelineContentTriCasterAny
 	[DeviceType.WEBSOCKET_CLIENT]: TimelineContentWebSocketClientAny
+	[DeviceType.UDP_SEND]: TimelineContentUDPSendAny
 }
 
 export type TSRTimelineContent = TimelineContentMap[keyof TimelineContentMap]

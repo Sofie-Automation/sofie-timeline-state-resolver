@@ -78,6 +78,7 @@ exports[`index imports 1`] = `
   "Transition",
   "TranslationsBundleType",
   "TransportStatus",
+  "UdpSendActions",
   "VIZMSETransitionType",
   "VMixCommand",
   "VMixInputType",
