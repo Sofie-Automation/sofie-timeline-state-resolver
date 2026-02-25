@@ -14,14 +14,10 @@
 					"ui:description": "The Scene to use",
 					"ui:summaryTitle": "Scene",
 					"ui:displayType": "breadcrumbs",
-					"default": [
-						"Main"
-					]
+					"default": ["Main"]
 				}
 			},
-			"required": [
-				"sceneName"
-			],
+			"required": ["sceneName"],
 			"additionalProperties": false
 		},
 		"scene-layer": {
@@ -36,9 +32,7 @@
 					"ui:description": "The Scene to use",
 					"ui:summaryTitle": "Scene",
 					"ui:displayType": "breadcrumbs",
-					"default": [
-						"Main"
-					]
+					"default": ["Main"]
 				},
 				"layerName": {
 					"type": "array",
@@ -49,15 +43,10 @@
 					"ui:description": "The layer in a scene to use",
 					"ui:summaryTitle": "Layer",
 					"ui:displayType": "breadcrumbs",
-					"default": [
-						"Background"
-					]
+					"default": ["Background"]
 				}
 			},
-			"required": [
-				"sceneName",
-				"layerName"
-			],
+			"required": ["sceneName", "layerName"],
 			"additionalProperties": false
 		},
 		"aux": {
@@ -72,9 +61,7 @@
 					"default": "IP-AUX1"
 				}
 			},
-			"required": [
-				"auxName"
-			],
+			"required": ["auxName"],
 			"additionalProperties": false
 		},
 		"macro": {
@@ -113,9 +100,7 @@
 					"default": false
 				}
 			},
-			"required": [
-				"playerId"
-			],
+			"required": ["playerId"],
 			"additionalProperties": false
 		},
 		"ram-rec-player": {
@@ -148,9 +133,7 @@
 					"default": false
 				}
 			},
-			"required": [
-				"playerId"
-			],
+			"required": ["playerId"],
 			"additionalProperties": false
 		},
 		"image-store": {
@@ -174,9 +157,7 @@
 					"default": false
 				}
 			},
-			"required": [
-				"playerId"
-			],
+			"required": ["playerId"],
 			"additionalProperties": false
 		},
 		"sound-player": {
@@ -209,9 +190,7 @@
 					"default": false
 				}
 			},
-			"required": [
-				"playerId"
-			],
+			"required": ["playerId"],
 			"additionalProperties": false
 		}
 	}

@@ -1,7 +1,7 @@
-import _ = require('underscore')
-import { OBSCommandWithContext, OBSCommandWithContextTyped } from '.'
-import { OBSDeviceState, OBSScene, OBSSceneItem, OBSInputState } from './state'
-import { literal } from '../../lib'
+import _ from 'underscore'
+import { OBSCommandWithContext, OBSCommandWithContextTyped } from './index.js'
+import { OBSDeviceState, OBSScene, OBSSceneItem, OBSInputState } from './state.js'
+import { literal } from '../../lib.js'
 
 export function diffStates(
 	oldState: OBSDeviceState,

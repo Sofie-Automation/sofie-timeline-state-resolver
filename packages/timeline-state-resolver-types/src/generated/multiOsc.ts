@@ -4,6 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
+import type { DeviceType } from './device-options.js'
 
 export interface MultiOscOptions {
 	connections: {
@@ -17,7 +18,7 @@ export interface MultiOscOptions {
 
 export enum MultiOSCDeviceType {
 	TCP = 'tcp',
-	UDP = 'udp'
+	UDP = 'udp',
 }
 
 export interface MappingMultiOscLayer {
@@ -32,6 +33,7 @@ export enum MappingMultiOscType {
 export type SomeMappingMultiOsc = MappingMultiOscLayer
 
 export interface MultiOscDeviceTypes {
+	Type: DeviceType.MULTI_OSC
 	Options: MultiOscOptions
 	Mappings: SomeMappingMultiOsc
 	Actions: null

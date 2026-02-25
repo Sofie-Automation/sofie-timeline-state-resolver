@@ -48,14 +48,12 @@
 	],
 	"scripts": {
 		"unlink:all": "yarn unlink atem-connection & yarn unlink atem-state & yarn unlink casparcg-connection & yarn unlink casparcg-state & yarn unlink superfly-timeline",
-		"lint:raw": "run -T eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
-		"lint": "run lint:raw .",
-		"lint-fix": "run lint --fix",
 		"license-validate": "run -T sofie-licensecheck",
+		"lint": "run -T lint packages/timeline-state-resolver",
 		"unit": "run -T jest --forceExit",
 		"unitci": "run -T jest --forceExit --coverage",
-		"test": "run lint && run unit",
-		"test:integration": "run lint && run -T jest --config=jest-integration.config.js",
+		"test": "run unit",
+		"test:integration": "run -T jest --config=jest-integration.config.js",
 		"watch": "run -T jest --watch",
 		"cov": "run -T jest --coverage && run cov-open",
 		"cov-open": "run -T open-cli coverage/lcov-report/index.html",
@@ -68,7 +66,7 @@
 		"schema:types": "tsr-schema-types ./src/\\$schemas/generated ../timeline-state-resolver-types/src/generated --isMainRepository"
 	},
 	"engines": {
-		"node": ">= 20.5"
+		"node": ">= 22.18"
 	},
 	"files": [
 		"/dist",
@@ -122,14 +120,6 @@
 	},
 	"publishConfig": {
 		"access": "public"
-	},
-	"lint-staged": {
-		"*.{css,json,md,scss}": [
-			"yarn run -T prettier --write"
-		],
-		"*.{ts,tsx,mjs,js,jsx}": [
-			"yarn lint:raw --fix"
-		]
 	},
 	"devDependencies": {
 		"@types/simple-oauth2": "^5.0.8",

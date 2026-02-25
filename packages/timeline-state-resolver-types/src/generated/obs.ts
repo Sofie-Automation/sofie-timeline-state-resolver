@@ -4,6 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
+import type { DeviceType } from './device-options.js'
 
 export interface ObsOptions {
 	host: string
@@ -77,6 +78,7 @@ export enum MappingObsType {
 export type SomeMappingObs = MappingObsCurrentScene | MappingObsCurrentTransition | MappingObsRecording | MappingObsStreaming | MappingObsSceneItem | MappingObsInputAudio | MappingObsInputSettings | MappingObsInputMedia
 
 export interface ObsDeviceTypes {
+	Type: DeviceType.OBS
 	Options: ObsOptions
 	Mappings: SomeMappingObs
 	Actions: null

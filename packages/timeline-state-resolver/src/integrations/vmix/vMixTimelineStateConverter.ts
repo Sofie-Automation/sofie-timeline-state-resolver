@@ -1,4 +1,6 @@
 import {
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
 	DeviceType,
 	Mapping,
 	MappingVmixType,
@@ -12,16 +14,16 @@ import {
 	VMixTransitionType,
 } from 'timeline-state-resolver-types'
 import {
+	PropertyWithContext,
 	TSR_INPUT_PREFIX,
 	VMixDefaultStateFactory,
 	VMixInput,
 	VMixInputAudio,
 	VMixState,
 	VMixStateExtended,
-} from './vMixStateDiffer'
+} from './vMixStateDiffer.js'
 import deepMerge from 'deepmerge'
-import _ = require('underscore')
-import { DeviceTimelineState } from 'timeline-state-resolver-api'
+import _ from 'underscore'
 
 const mappingPriority: { [k in MappingVmixType]: number } = {
 	[MappingVmixType.Program]: 0,
@@ -36,7 +38,9 @@ const mappingPriority: { [k in MappingVmixType]: number } = {
 	[MappingVmixType.FadeToBlack]: 9,
 	[MappingVmixType.Fader]: 10,
 	[MappingVmixType.Script]: 11,
-	[MappingVmixType.AudioBus]: 11,
+	[MappingVmixType.AudioBus]: 12,
+	[MappingVmixType.Replay]: 13,
+	[MappingVmixType.ReplayEvent]: 15,
 }
 
 export type MappingsVmix = Mappings<SomeMappingVmix>
@@ -55,18 +59,20 @@ export class VMixTimelineStateConverter {
 
 		// Sort layer based on Mapping type (to make sure audio is after inputs) and Layer name
 		const sortedLayers = _.sortBy(
-			_.map(state.objects, (tlObject) => ({
-				layerName: tlObject.layer.toString(),
-				tlObject,
-				mapping: mappings[tlObject.layer.toString()] as Mapping<SomeMappingVmix, DeviceType> | undefined,
-			})).sort((a, b) => a.layerName.localeCompare(b.layerName)),
+			state.objects
+				.map((tlObject) => ({
+					layerName: tlObject.layer.toString(),
+					tlObject,
+					mapping: mappings[tlObject.layer.toString()] as Mapping<SomeMappingVmix, DeviceType> | undefined,
+				}))
+				.sort((a, b) => a.layerName.localeCompare(b.layerName)),
 			(o) =>
 				o.mapping
-					? mappingPriority[o.mapping?.options.mappingType] ?? Number.POSITIVE_INFINITY
+					? (mappingPriority[o.mapping?.options.mappingType] ?? Number.POSITIVE_INFINITY)
 					: Number.POSITIVE_INFINITY
 		)
 
-		_.each(sortedLayers, ({ tlObject, layerName, mapping }) => {
+		sortedLayers.forEach(({ tlObject, mapping }) => {
 			const content = tlObject.content
 
 			if (!mapping || content.deviceType !== DeviceType.VMIX) return
@@ -138,22 +144,22 @@ export class VMixTimelineStateConverter {
 							deviceState,
 							{
 								type: content.inputType,
-								playing: content.playing,
-								loop: content.loop,
-								position: content.seek,
-								transform: content.transform,
+								playing: this._wrapInContext(content.playing, tlObject),
+								loop: this._wrapInContext(content.loop, tlObject),
+								position: this._wrapInContext(content.seek, tlObject),
+								transform: this._wrapInContext(content.transform, tlObject),
 								layers:
 									content.layers ??
 									(content.overlays ? this._convertDeprecatedInputOverlays(content.overlays) : undefined),
-								listFilePaths: content.listFilePaths,
-								restart: content.restart,
+								listFilePaths: this._wrapInContext(content.listFilePaths, tlObject),
+								restart: this._wrapInContext(content.restart, tlObject),
 								text: content.text,
-								url: content.url,
-								index: content.index,
+								url: this._wrapInContext(content.url, tlObject),
+								index: this._wrapInContext(content.index, tlObject),
 								images: content.images,
 							},
 							{ key: mapping.options.index, filePath: content.filePath },
-							layerName
+							tlObject.layer.toString()
 						)
 					}
 					break
@@ -186,9 +192,35 @@ export class VMixTimelineStateConverter {
 						existingBus.muted = content.muted ?? existingBus.muted
 						existingBus.volume = content.volume ?? existingBus.volume
 					}
+					break
+				case MappingVmixType.Replay:
+					if (content.type === TimelineContentTypeVMix.REPLAY) {
+						deviceState.reportedState.replay = {
+							...deviceState.reportedState.replay,
+							recording: content.recording,
+						}
+					}
+					break
+				case MappingVmixType.ReplayEvent:
+					if (content.type === TimelineContentTypeVMix.REPLAY_EVENT) {
+						deviceState.recordedEventName = content.name
+					}
+					break
 			}
 		})
 		return deviceState
+	}
+
+	private _wrapInContext<T>(
+		value: T | undefined,
+		timelineObj: DeviceTimelineStateObject
+	): PropertyWithContext<T> | undefined {
+		if (value === undefined) return
+		return {
+			value,
+			isLookahead: timelineObj.isLookahead,
+			timelineObjId: timelineObj.id,
+		}
 	}
 
 	private _modifyInput(
@@ -265,6 +297,7 @@ export class VMixTimelineStateConverter {
 
 	private _fillStateWithMappingsDefaults(state: VMixStateExtended, mappings: MappingsVmix) {
 		for (const mapping of Object.values<Mapping<SomeMappingVmix>>(mappings)) {
+			if (mapping.options.disableDefaults) continue
 			switch (mapping.options.mappingType) {
 				case MappingVmixType.Program:
 				case MappingVmixType.Preview: {
@@ -310,6 +343,14 @@ export class VMixTimelineStateConverter {
 					break
 				case MappingVmixType.AudioBus:
 					state.reportedState.audioBuses[mapping.options.index] = this.defaultStateFactory.getDefaultAudioBusState()
+					break
+				case MappingVmixType.Replay:
+					state.reportedState.replay = {
+						recording: false,
+					}
+					break
+				case MappingVmixType.ReplayEvent:
+					state.recordedEventName = undefined
 					break
 			}
 		}

@@ -10,12 +10,17 @@ import {
 	SomeMappingCasparCG,
 	MappingCasparCGType,
 } from 'timeline-state-resolver-types'
-import { MockTime } from './mockTime'
+import { MockTime } from './mockTime.js'
 import { ThreadedClass } from 'threadedclass'
-import { addConnections, getMockCall, removeConnections } from './lib'
-import { setupAllMocks } from '../__mocks__/_setup-all-mocks'
+import { addConnections, getMockCall, removeConnections } from './lib.js'
+import { setupAllMocks } from '../__mocks__/_setup-all-mocks.js'
 import { Commands } from 'casparcg-connection'
-import { MockDeviceInstanceWrapper, ConstructedMockDevices, DiscardAllMockDevices } from './mockDeviceInstanceWrapper'
+import {
+	MockDeviceInstanceWrapper,
+	ConstructedMockDevices,
+	DiscardAllMockDevices,
+} from './mockDeviceInstanceWrapper.js'
+import _ from 'underscore'
 
 // Mock explicitly the 'dist' version, as that is what threadedClass is being told to load
 jest.mock('../../dist/service/DeviceInstance', () => ({
@@ -25,8 +30,8 @@ jest.mock('../service/DeviceInstance', () => ({
 	DeviceInstanceWrapper: MockDeviceInstanceWrapper,
 }))
 
-import { Conductor, TimelineTriggerTimeResult } from '../conductor'
-import type { DeviceInstanceWrapper } from '../service/DeviceInstance'
+import { Conductor, TimelineTriggerTimeResult } from '../conductor.js'
+import type { DeviceInstanceWrapper } from '../service/DeviceInstance.js'
 
 describe('Conductor', () => {
 	const mockTime = new MockTime()
@@ -136,15 +141,15 @@ describe('Conductor', () => {
 			expect(device0.handleState).toHaveBeenNthCalledWith(
 				1,
 				expect.objectContaining({
-					layers: {
-						[abstractThing0.layer]: expect.objectContaining({
-							...abstractThing0,
+					objects: [
+						expect.objectContaining({
+							..._.omit(abstractThing0, 'enable'),
 							instance: expect.objectContaining({
 								start: 10000,
 								end: 11000,
 							}),
 						}),
-					},
+					],
 					time: 10005,
 				}),
 				device0Mappings
@@ -159,7 +164,7 @@ describe('Conductor', () => {
 			expect(device0.handleState).toHaveBeenNthCalledWith(
 				3,
 				expect.objectContaining({
-					layers: {},
+					objects: [],
 					time: 12000,
 				}),
 				device0Mappings
@@ -171,29 +176,29 @@ describe('Conductor', () => {
 			expect(device1.handleState).toHaveBeenNthCalledWith(
 				1,
 				expect.objectContaining({
-					layers: {},
+					objects: [],
 				}),
 				device1Mappings
 			)
 			expect(device1.handleState).toHaveBeenNthCalledWith(
 				2,
 				expect.objectContaining({
-					layers: {
-						[abstractThing1.layer]: expect.objectContaining({
-							...abstractThing1,
+					objects: [
+						expect.objectContaining({
+							..._.omit(abstractThing1, 'enable'),
 							instance: expect.objectContaining({
 								start: 11000,
 								end: 12000,
 							}),
 						}),
-					},
+					],
 				}),
 				device1Mappings
 			)
 			expect(device1.handleState).toHaveBeenNthCalledWith(
 				3,
 				expect.objectContaining({
-					layers: {},
+					objects: [],
 				}),
 				device1Mappings
 			)
@@ -321,15 +326,15 @@ describe('Conductor', () => {
 			expect(device0.handleState).toHaveBeenNthCalledWith(
 				1, // Initial timeline
 				expect.objectContaining({
-					layers: {
-						[abstractThing0.layer]: expect.objectContaining({
-							...abstractThing0,
+					objects: [
+						expect.objectContaining({
+							..._.omit(abstractThing0, 'enable'),
 							instance: expect.objectContaining({
 								start: 10000,
 								end: 10300,
 							}),
 						}),
-					},
+					],
 					time: 10000,
 				}),
 				myLayerMapping
@@ -337,15 +342,15 @@ describe('Conductor', () => {
 			expect(device0.handleState).toHaveBeenNthCalledWith(
 				2, // setTimelineTriggerTime
 				expect.objectContaining({
-					layers: {
-						[abstractThing0.layer]: expect.objectContaining({
-							...abstractThing0,
+					objects: [
+						expect.objectContaining({
+							..._.omit(abstractThing0, 'enable'),
 							instance: expect.objectContaining({
 								start: 10000,
 								end: 10300,
 							}),
 						}),
-					},
+					],
 					time: 10000,
 				}),
 				myLayerMapping
@@ -353,15 +358,15 @@ describe('Conductor', () => {
 			expect(device0.handleState).toHaveBeenNthCalledWith(
 				3, // End of object
 				expect.objectContaining({
-					layers: {
-						[abstractThing1.layer]: expect.objectContaining({
-							...abstractThing1,
+					objects: [
+						expect.objectContaining({
+							..._.omit(abstractThing1, 'enable'),
 							instance: expect.objectContaining({
 								start: 10300,
 								end: 15300,
 							}),
 						}),
-					},
+					],
 					time: 10300,
 				}),
 				myLayerMapping
@@ -376,7 +381,7 @@ describe('Conductor', () => {
 			expect(device0.handleState).toHaveBeenNthCalledWith(
 				1,
 				expect.objectContaining({
-					layers: {},
+					objects: [],
 					time: 15300,
 				}),
 				myLayerMapping
@@ -384,7 +389,7 @@ describe('Conductor', () => {
 			expect(device0.handleState).toHaveBeenNthCalledWith(
 				1,
 				expect.objectContaining({
-					layers: {},
+					objects: [],
 					time: 15300,
 				}),
 				myLayerMapping

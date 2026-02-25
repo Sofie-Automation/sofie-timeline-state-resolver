@@ -5,131 +5,84 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 
-import type { DeviceOptionsBase } from '../device'
-import type { AbstractOptions } from './abstract'
-export interface DeviceOptionsAbstract extends DeviceOptionsBase<AbstractOptions> {
-	type: DeviceType.ABSTRACT
-}
+import type { DeviceOptionsBase } from '../device.js'
+import type { AbstractOptions } from './abstract.js'
+export type DeviceOptionsAbstract = DeviceOptionsBase<DeviceType.ABSTRACT, AbstractOptions>
 
-import type { AtemOptions } from './atem'
-export interface DeviceOptionsAtem extends DeviceOptionsBase<AtemOptions> {
-	type: DeviceType.ATEM
-}
+import type { AtemOptions } from './atem.js'
+export type DeviceOptionsAtem = DeviceOptionsBase<DeviceType.ATEM, AtemOptions>
 
-import type { CasparCGOptions } from './casparCG'
-export interface DeviceOptionsCasparCG extends DeviceOptionsBase<CasparCGOptions> {
-	type: DeviceType.CASPARCG
-}
+import type { CasparCGOptions } from './casparCG.js'
+export type DeviceOptionsCasparCG = DeviceOptionsBase<DeviceType.CASPARCG, CasparCGOptions>
 
-import type { HttpSendOptions } from './httpSend'
-export interface DeviceOptionsHttpSend extends DeviceOptionsBase<HttpSendOptions> {
-	type: DeviceType.HTTPSEND
-}
+import type { HttpSendOptions } from './httpSend.js'
+export type DeviceOptionsHttpSend = DeviceOptionsBase<DeviceType.HTTPSEND, HttpSendOptions>
 
-import type { HttpWatcherOptions } from './httpWatcher'
-export interface DeviceOptionsHttpWatcher extends DeviceOptionsBase<HttpWatcherOptions> {
-	type: DeviceType.HTTPWATCHER
-}
+import type { HttpWatcherOptions } from './httpWatcher.js'
+export type DeviceOptionsHttpWatcher = DeviceOptionsBase<DeviceType.HTTPWATCHER, HttpWatcherOptions>
 
-import type { HyperdeckOptions } from './hyperdeck'
-export interface DeviceOptionsHyperdeck extends DeviceOptionsBase<HyperdeckOptions> {
-	type: DeviceType.HYPERDECK
-}
+import type { HyperdeckOptions } from './hyperdeck.js'
+export type DeviceOptionsHyperdeck = DeviceOptionsBase<DeviceType.HYPERDECK, HyperdeckOptions>
 
-import type { KairosOptions } from './kairos'
-export interface DeviceOptionsKairos extends DeviceOptionsBase<KairosOptions> {
-	type: DeviceType.KAIROS
-}
+import type { KairosOptions } from './kairos.js'
+export type DeviceOptionsKairos = DeviceOptionsBase<DeviceType.KAIROS, KairosOptions>
 
-import type { LawoOptions } from './lawo'
-export interface DeviceOptionsLawo extends DeviceOptionsBase<LawoOptions> {
-	type: DeviceType.LAWO
-}
+import type { LawoOptions } from './lawo.js'
+export type DeviceOptionsLawo = DeviceOptionsBase<DeviceType.LAWO, LawoOptions>
 
-import type { MultiOscOptions } from './multiOsc'
-export interface DeviceOptionsMultiOsc extends DeviceOptionsBase<MultiOscOptions> {
-	type: DeviceType.MULTI_OSC
-}
+import type { MultiOscOptions } from './multiOsc.js'
+export type DeviceOptionsMultiOsc = DeviceOptionsBase<DeviceType.MULTI_OSC, MultiOscOptions>
 
-import type { ObsOptions } from './obs'
-export interface DeviceOptionsObs extends DeviceOptionsBase<ObsOptions> {
-	type: DeviceType.OBS
-}
+import type { ObsOptions } from './obs.js'
+export type DeviceOptionsObs = DeviceOptionsBase<DeviceType.OBS, ObsOptions>
 
-import type { OscOptions } from './osc'
-export interface DeviceOptionsOsc extends DeviceOptionsBase<OscOptions> {
-	type: DeviceType.OSC
-}
+import type { OscOptions } from './osc.js'
+export type DeviceOptionsOsc = DeviceOptionsBase<DeviceType.OSC, OscOptions>
 
-import type { PanasonicPTZOptions } from './panasonicPTZ'
-export interface DeviceOptionsPanasonicPTZ extends DeviceOptionsBase<PanasonicPTZOptions> {
-	type: DeviceType.PANASONIC_PTZ
-}
+import type { PanasonicPTZOptions } from './panasonicPTZ.js'
+export type DeviceOptionsPanasonicPTZ = DeviceOptionsBase<DeviceType.PANASONIC_PTZ, PanasonicPTZOptions>
 
-import type { PharosOptions } from './pharos'
-export interface DeviceOptionsPharos extends DeviceOptionsBase<PharosOptions> {
-	type: DeviceType.PHAROS
-}
+import type { PharosOptions } from './pharos.js'
+export type DeviceOptionsPharos = DeviceOptionsBase<DeviceType.PHAROS, PharosOptions>
 
-import type { QuantelOptions } from './quantel'
-export interface DeviceOptionsQuantel extends DeviceOptionsBase<QuantelOptions> {
-	type: DeviceType.QUANTEL
-}
+import type { QuantelOptions } from './quantel.js'
+export type DeviceOptionsQuantel = DeviceOptionsBase<DeviceType.QUANTEL, QuantelOptions>
 
-import type { ShotokuOptions } from './shotoku'
-export interface DeviceOptionsShotoku extends DeviceOptionsBase<ShotokuOptions> {
-	type: DeviceType.SHOTOKU
-}
+import type { ShotokuOptions } from './shotoku.js'
+export type DeviceOptionsShotoku = DeviceOptionsBase<DeviceType.SHOTOKU, ShotokuOptions>
 
-import type { SingularLiveOptions } from './singularLive'
-export interface DeviceOptionsSingularLive extends DeviceOptionsBase<SingularLiveOptions> {
-	type: DeviceType.SINGULAR_LIVE
-}
+import type { SingularLiveOptions } from './singularLive.js'
+export type DeviceOptionsSingularLive = DeviceOptionsBase<DeviceType.SINGULAR_LIVE, SingularLiveOptions>
 
-import type { SisyfosOptions } from './sisyfos'
-export interface DeviceOptionsSisyfos extends DeviceOptionsBase<SisyfosOptions> {
-	type: DeviceType.SISYFOS
-}
+import type { SisyfosOptions } from './sisyfos.js'
+export type DeviceOptionsSisyfos = DeviceOptionsBase<DeviceType.SISYFOS, SisyfosOptions>
 
-import type { SofieChefOptions } from './sofieChef'
-export interface DeviceOptionsSofieChef extends DeviceOptionsBase<SofieChefOptions> {
-	type: DeviceType.SOFIE_CHEF
-}
+import type { SofieChefOptions } from './sofieChef.js'
+export type DeviceOptionsSofieChef = DeviceOptionsBase<DeviceType.SOFIE_CHEF, SofieChefOptions>
 
-import type { TcpSendOptions } from './tcpSend'
-export interface DeviceOptionsTcpSend extends DeviceOptionsBase<TcpSendOptions> {
-	type: DeviceType.TCPSEND
-}
+import type { TcpSendOptions } from './tcpSend.js'
+export type DeviceOptionsTcpSend = DeviceOptionsBase<DeviceType.TCPSEND, TcpSendOptions>
 
-import type { TelemetricsOptions } from './telemetrics'
-export interface DeviceOptionsTelemetrics extends DeviceOptionsBase<TelemetricsOptions> {
-	type: DeviceType.TELEMETRICS
-}
+import type { TelemetricsOptions } from './telemetrics.js'
+export type DeviceOptionsTelemetrics = DeviceOptionsBase<DeviceType.TELEMETRICS, TelemetricsOptions>
 
-import type { TricasterOptions } from './tricaster'
-export interface DeviceOptionsTricaster extends DeviceOptionsBase<TricasterOptions> {
-	type: DeviceType.TRICASTER
-}
+import type { TricasterOptions } from './tricaster.js'
+export type DeviceOptionsTricaster = DeviceOptionsBase<DeviceType.TRICASTER, TricasterOptions>
 
-import type { ViscaOverIPOptions } from './viscaOverIP'
-export interface DeviceOptionsViscaOverIP extends DeviceOptionsBase<ViscaOverIPOptions> {
-	type: DeviceType.VISCA_OVER_IP
-}
+import type { UdpSendOptions } from './udpSend.js'
+export type DeviceOptionsUdpSend = DeviceOptionsBase<DeviceType.UDP_SEND, UdpSendOptions>
 
-import type { VizMSEOptions } from './vizMSE'
-export interface DeviceOptionsVizMSE extends DeviceOptionsBase<VizMSEOptions> {
-	type: DeviceType.VIZMSE
-}
+import type { ViscaOverIPOptions } from './viscaOverIP.js'
+export type DeviceOptionsViscaOverIP = DeviceOptionsBase<DeviceType.VISCA_OVER_IP, ViscaOverIPOptions>
 
-import type { VmixOptions } from './vmix'
-export interface DeviceOptionsVmix extends DeviceOptionsBase<VmixOptions> {
-	type: DeviceType.VMIX
-}
+import type { VizMSEOptions } from './vizMSE.js'
+export type DeviceOptionsVizMSE = DeviceOptionsBase<DeviceType.VIZMSE, VizMSEOptions>
 
-import type { WebsocketClientOptions } from './websocketClient'
-export interface DeviceOptionsWebsocketClient extends DeviceOptionsBase<WebsocketClientOptions> {
-	type: DeviceType.WEBSOCKET_CLIENT
-}
+import type { VmixOptions } from './vmix.js'
+export type DeviceOptionsVmix = DeviceOptionsBase<DeviceType.VMIX, VmixOptions>
+
+import type { WebsocketClientOptions } from './websocketClient.js'
+export type DeviceOptionsWebsocketClient = DeviceOptionsBase<DeviceType.WEBSOCKET_CLIENT, WebsocketClientOptions>
 
 export type DeviceOptionsAny =
 	| DeviceOptionsAbstract
@@ -153,6 +106,7 @@ export type DeviceOptionsAny =
 	| DeviceOptionsTcpSend
 	| DeviceOptionsTelemetrics
 	| DeviceOptionsTricaster
+	| DeviceOptionsUdpSend
 	| DeviceOptionsViscaOverIP
 	| DeviceOptionsVizMSE
 	| DeviceOptionsVmix
@@ -186,6 +140,7 @@ export enum DeviceType {
 	TCPSEND = 'TCPSEND',
 	TELEMETRICS = 'TELEMETRICS',
 	TRICASTER = 'TRICASTER',
+	UDP_SEND = 'UDP_SEND',
 	VISCA_OVER_IP = 'VISCA_OVER_IP',
 	VIZMSE = 'VIZMSE',
 	VMIX = 'VMIX',

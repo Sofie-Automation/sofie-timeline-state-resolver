@@ -4,6 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
+import type { DeviceType } from './device-options.js'
 
 export interface HttpWatcherOptions {
 	uri: string
@@ -20,12 +21,13 @@ export enum HttpMethod {
 	GET = 'get',
 	POST = 'post',
 	PUT = 'put',
-	DELETE = 'delete'
+	DELETE = 'delete',
 }
 
 export type SomeMappingHttpWatcher = Record<string, never>
 
 export interface HttpWatcherDeviceTypes {
+	Type: DeviceType.HTTPWATCHER
 	Options: HttpWatcherOptions
 	Mappings: SomeMappingHttpWatcher
 	Actions: null

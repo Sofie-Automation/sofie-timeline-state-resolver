@@ -1,5 +1,5 @@
-import { ViscaCommand } from '../abstractCommand'
-import { FocusMode } from '../../enums'
+import { ViscaCommand } from '../abstractCommand.js'
+import { FocusMode } from '../../enums.js'
 
 export class FocusModeCommand extends ViscaCommand {
 	constructor(private readonly mode: FocusMode) {

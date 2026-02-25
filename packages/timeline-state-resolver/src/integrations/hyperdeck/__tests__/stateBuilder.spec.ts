@@ -9,8 +9,8 @@ import {
 	TimelineContentTypeHyperdeck,
 	TransportStatus,
 } from 'timeline-state-resolver-types'
-import { convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from '../stateBuilder'
-import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects'
+import { convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from '../stateBuilder.js'
+import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 describe('State Builder', () => {

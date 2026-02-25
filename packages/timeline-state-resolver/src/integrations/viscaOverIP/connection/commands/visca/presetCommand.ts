@@ -1,8 +1,11 @@
-import { ViscaCommand } from '../abstractCommand'
-import { PresetOperation } from '../../enums'
+import { ViscaCommand } from '../abstractCommand.js'
+import { PresetOperation } from '../../enums.js'
 
 export class PresetCommand extends ViscaCommand {
-	constructor(private readonly operation: PresetOperation, private readonly memoryNumber: number) {
+	constructor(
+		private readonly operation: PresetOperation,
+		private readonly memoryNumber: number
+	) {
 		super()
 	}
 	serialize() {

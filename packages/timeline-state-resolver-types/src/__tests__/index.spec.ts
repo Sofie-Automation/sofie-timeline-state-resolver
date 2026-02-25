@@ -1,4 +1,4 @@
-import * as TSR_types from '../index'
+import * as TSR_types from '../index.js'
 
 describe('index', () => {
 	test('imports', () => {

@@ -1,9 +1,9 @@
 import { EmberClient, Model as EmberModel } from 'emberplus-connection'
 import { EventEmitter } from 'node:events'
-import { deferAsync } from '../../lib'
+import { deferAsync } from '../../lib.js'
 import { LawoDeviceMode, LawoOptions } from 'timeline-state-resolver-types'
-import _ = require('underscore')
-import { LawoFaderRampCommand, LawoSetValueCommand } from './diff'
+import _ from 'underscore'
+import { LawoFaderRampCommand, LawoSetValueCommand } from './diff.js'
 import { EmberValue } from 'emberplus-connection/dist/types'
 
 export class LawoConnection extends EventEmitter {
@@ -30,7 +30,10 @@ export class LawoConnection extends EventEmitter {
 	} = {}
 	private transitionInterval: NodeJS.Timeout | undefined
 
-	constructor(options: LawoOptions, private getCurrentTime: () => number) {
+	constructor(
+		options: LawoOptions,
+		private getCurrentTime: () => number
+	) {
 		super()
 		if (options.faderInterval) {
 			this._faderIntervalTime = options.faderInterval

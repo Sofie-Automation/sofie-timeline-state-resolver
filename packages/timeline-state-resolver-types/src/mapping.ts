@@ -1,5 +1,4 @@
-import { Content, ResolvedTimelineObjectInstance } from './superfly-timeline'
-import { DeviceType, TSRTimelineContent } from '.'
+import type { DeviceType } from './index.js'
 
 export interface Mappings<TOptions extends { mappingType: string } | unknown = unknown> {
 	[layerName: string]: Mapping<TOptions>
@@ -15,11 +14,6 @@ export interface Mapping<TOptions extends { mappingType: string } | unknown, TTy
 	/** Mapping specific options */
 	options: TOptions
 }
-
-/** @deprecated */
-export interface ResolvedTimelineObjectInstanceExtended<TContent extends Content = TSRTimelineContent>
-	extends ResolvedTimelineObjectInstance<TContent>,
-		TSRTimelineObjProps {}
 
 export interface TSRTimelineObjProps {
 	/** Only set to true when an object is inserted by lookahead */

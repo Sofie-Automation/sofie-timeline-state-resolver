@@ -1,6 +1,7 @@
-import { Commands as HyperdeckCommands, TransportStatus } from 'hyperdeck-connection'
+import { Commands as HyperdeckCommands } from 'hyperdeck-connection'
 import type { CommandWithContext } from 'timeline-state-resolver-api'
-import type { HyperdeckDeviceState } from './stateBuilder'
+import type { HyperdeckDeviceState } from './stateBuilder.js'
+import { TransportStatus } from 'timeline-state-resolver-types'
 
 export interface HyperdeckCommandContext {
 	oldState: HyperdeckDeviceState['transport'] | HyperdeckDeviceState['notify'] | undefined

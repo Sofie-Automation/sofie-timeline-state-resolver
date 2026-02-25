@@ -1,6 +1,6 @@
-import { ResolvedTimelineObjects } from './resolvedTimeline'
-import { Content } from './timeline'
-import { Time } from './types'
+import { ResolvedTimelineObjects } from './resolvedTimeline.js'
+import { Content } from './timeline.js'
+import { Time } from './types.js'
 
 export interface ResolveOptions {
 	/**

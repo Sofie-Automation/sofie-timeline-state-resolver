@@ -1,4 +1,4 @@
-import { TriCasterInfoParser } from '../triCasterInfoParser'
+import { TriCasterInfoParser } from '../triCasterInfoParser.js'
 
 describe('TriCasterInfoParser', () => {
 	test('parseSwitcher returns info', () => {

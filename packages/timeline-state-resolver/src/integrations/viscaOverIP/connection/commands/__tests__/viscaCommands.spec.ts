@@ -1,4 +1,4 @@
-import { FocusDirection, FocusMode, PanTiltDirection, PresetOperation, ZoomDirection } from '../../enums'
+import { FocusDirection, FocusMode, PanTiltDirection, PresetOperation, ZoomDirection } from '../../enums.js'
 import {
 	FocusCommand,
 	FocusModeCommand,
@@ -8,9 +8,9 @@ import {
 	PresetDriveSpeedCommand,
 	ZoomCommand,
 	ZoomDirectCommand,
-} from '../visca'
-import { FocusDirectCommand } from '../visca/focusDirectCommand'
-import { PanTiltDriveAbsoluteCommand } from '../visca/panTiltDriveAbsoluteCommand'
+} from '../visca/index.js'
+import { FocusDirectCommand } from '../visca/focusDirectCommand.js'
+import { PanTiltDriveAbsoluteCommand } from '../visca/panTiltDriveAbsoluteCommand.js'
 
 describe('Visca Commands', () => {
 	describe('FocusCommand', () => {

@@ -1,4 +1,4 @@
-import { ViscaCommand } from '../abstractCommand'
+import { ViscaCommand } from '../abstractCommand.js'
 
 export class PanTiltDriveAbsoluteCommand extends ViscaCommand {
 	constructor(

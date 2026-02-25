@@ -1,10 +1,10 @@
-import { HyperdeckDevice } from '..'
-import * as HyperdeckConnection from '../../../__mocks__/hyperdeck-connection'
+import { HyperdeckDevice } from '../index.js'
+import * as HyperdeckConnection from '../../../__mocks__/hyperdeck-connection.js'
 import { StatusCode } from 'timeline-state-resolver-types'
-import { MockTime } from '../../../__tests__/mockTime'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 import { promisify } from 'util'
-import { literal } from '../../../lib'
+import { literal } from '../../../lib.js'
 
 const sleep = promisify(setTimeout)
 

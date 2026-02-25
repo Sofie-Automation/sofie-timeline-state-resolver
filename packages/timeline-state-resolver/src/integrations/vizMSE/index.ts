@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { DeviceWithState } from './../../devices/device'
+import { DeviceWithState } from './../../devices/device.js'
 
 import {
 	ActionExecutionResult,
@@ -9,8 +9,6 @@ import {
 	Mapping,
 	Mappings,
 	MediaObject,
-	ResolvedTimelineObjectInstanceExtended,
-	Timeline,
 	TimelineContentTypeVizMSE,
 	TimelineContentVIZMSEAny,
 	TSRTimelineContent,
@@ -25,16 +23,17 @@ import {
 	VizMSEActions,
 	DeviceStatus,
 	StatusCode,
+	DeviceTimelineState,
 } from 'timeline-state-resolver-types'
 
 import { createMSE, MSE } from '@tv2media/v-connection'
 
-import { DoOnTime, SendMode } from '../../devices/doOnTime'
+import { DoOnTime, SendMode } from '../../devices/doOnTime.js'
 
-import { ExpectedPlayoutItem } from '../../expectedPlayoutItems'
-import { endTrace, startTrace, t, literal } from '../../lib'
+import { ExpectedPlayoutItem } from '../../expectedPlayoutItems.js'
+import { endTrace, startTrace, t, literal } from '../../lib.js'
 import { HTTPClientError, HTTPServerError } from '@tv2media/v-connection/dist/msehttp'
-import { VizMSEManager } from './vizMSEManager'
+import { VizMSEManager } from './vizMSEManager.js'
 import {
 	VizMSECommand,
 	VizMSEState,
@@ -60,7 +59,7 @@ import {
 	VizMSECommandTakeOut,
 	VizMSECommandClearAllElements,
 	VizMSECommandClearAllEngines,
-} from './types'
+} from './types.js'
 import type { CommandWithContext } from 'timeline-state-resolver-api'
 
 /** The ideal time to prepare elements before going on air */
@@ -177,7 +176,7 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 	/**
 	 * Generates an array of VizMSE commands by comparing the newState against the oldState, or the current device state.
 	 */
-	handleState(newState: Timeline.TimelineState<TSRTimelineContent>, newMappings: Mappings) {
+	handleState(newState: DeviceTimelineState<TSRTimelineContent>, newMappings: Mappings) {
 		super.onHandleState(newState, newMappings)
 		// check if initialized:
 		if (!this._vizmseManager || !this._vizmseManager.initialized) {
@@ -344,29 +343,28 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 	 * Takes a timeline state and returns a VizMSE State that will work with the state lib.
 	 * @param timelineState The timeline state to generate from.
 	 */
-	convertStateToVizMSE(timelineState: Timeline.TimelineState<TSRTimelineContent>, mappings: Mappings): VizMSEState {
+	convertStateToVizMSE(timelineState: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings): VizMSEState {
 		const state: VizMSEState = {
 			time: timelineState.time,
 			layer: {},
 		}
 
-		_.each(timelineState.layers, (layer, layerName: string) => {
-			const layerExt: ResolvedTimelineObjectInstanceExtended = layer
-			let foundMapping = mappings[layerName] as Mapping<SomeMappingVizMSE>
+		timelineState.objects.forEach((tlObj) => {
+			let foundMapping = mappings[tlObj.layer] as Mapping<SomeMappingVizMSE>
 
 			let isLookahead = false
-			if (!foundMapping && layerExt.isLookahead && layerExt.lookaheadForLayer) {
-				foundMapping = mappings[layerExt.lookaheadForLayer] as Mapping<SomeMappingVizMSE>
+			if (!foundMapping && tlObj.isLookahead && tlObj.lookaheadForLayer) {
+				foundMapping = mappings[tlObj.lookaheadForLayer] as Mapping<SomeMappingVizMSE>
 				isLookahead = true
 			}
 			if (foundMapping && foundMapping.device === DeviceType.VIZMSE && foundMapping.deviceId === this.deviceId) {
-				if (layer.content) {
-					const content = layer.content as TimelineContentVIZMSEAny
+				if (tlObj.content) {
+					const content = tlObj.content as TimelineContentVIZMSEAny
 
 					switch (content.type) {
 						case TimelineContentTypeVizMSE.LOAD_ALL_ELEMENTS:
-							state.layer[layerName] = literal<VizMSEStateLayerLoadAllElements>({
-								timelineObjId: layer.id,
+							state.layer[tlObj.layer] = literal<VizMSEStateLayerLoadAllElements>({
+								timelineObjId: tlObj.id,
 								contentType: TimelineContentTypeVizMSE.LOAD_ALL_ELEMENTS,
 							})
 							break
@@ -381,23 +379,23 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 								break
 							}
 							state.isClearAll = {
-								timelineObjId: layer.id,
+								timelineObjId: tlObj.id,
 								showId,
 								channelsToSendCommands: content.channelsToSendCommands,
 							}
 							break
 						}
 						case TimelineContentTypeVizMSE.CONTINUE:
-							state.layer[layerName] = literal<VizMSEStateLayerContinue>({
-								timelineObjId: layer.id,
+							state.layer[tlObj.layer] = literal<VizMSEStateLayerContinue>({
+								timelineObjId: tlObj.id,
 								contentType: TimelineContentTypeVizMSE.CONTINUE,
 								direction: content.direction,
 								reference: content.reference,
 							})
 							break
 						case TimelineContentTypeVizMSE.INITIALIZE_SHOWS:
-							state.layer[layerName] = literal<VizMSEStateLayerInitializeShows>({
-								timelineObjId: layer.id,
+							state.layer[tlObj.layer] = literal<VizMSEStateLayerInitializeShows>({
+								timelineObjId: tlObj.id,
 								contentType: TimelineContentTypeVizMSE.INITIALIZE_SHOWS,
 								showIds: _.compact(
 									content.showNames.map((showName) => this._vizmseManager?.resolveShowNameToId(showName))
@@ -405,8 +403,8 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 							})
 							break
 						case TimelineContentTypeVizMSE.CLEANUP_SHOWS:
-							state.layer[layerName] = literal<VizMSEStateLayerCleanupShows>({
-								timelineObjId: layer.id,
+							state.layer[tlObj.layer] = literal<VizMSEStateLayerCleanupShows>({
+								timelineObjId: tlObj.id,
 								contentType: TimelineContentTypeVizMSE.CLEANUP_SHOWS,
 								showIds: _.compact(
 									content.showNames.map((showName) => this._vizmseManager?.resolveShowNameToId(showName))
@@ -414,18 +412,18 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 							})
 							break
 						case TimelineContentTypeVizMSE.CONCEPT:
-							state.layer[layerName] = literal<VizMSEStateLayerConcept>({
-								timelineObjId: layer.id,
+							state.layer[tlObj.layer] = literal<VizMSEStateLayerConcept>({
+								timelineObjId: tlObj.id,
 								contentType: TimelineContentTypeVizMSE.CONCEPT,
 								concept: content.concept,
 							})
 							break
 						default: {
-							const stateLayer = this._contentToStateLayer(layer.id, content)
+							const stateLayer = this._contentToStateLayer(tlObj.id, content)
 							if (stateLayer) {
 								if (isLookahead) stateLayer.lookahead = true
 
-								state.layer[layerName] = stateLayer
+								state.layer[tlObj.layer] = stateLayer
 							}
 							break
 						}

@@ -11,18 +11,19 @@ import {
 	TSRTimeline,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { QuantelCommandWithContext, QuantelDevice } from '..'
-import { QuantelCommandType, QuantelState } from '../types'
-import { setupQuantelGatewayMock } from './quantelGatewayMock'
-import { MockTime } from '../../../__tests__/mockTime'
-import { getDeviceContext } from '../../../integrations/__tests__/testlib'
-import { StateHandler } from '../../../service/stateHandler'
-import { CommandWithContext } from '../../..'
+import { QuantelCommandWithContext, QuantelDevice } from '../index.js'
+import { QuantelCommandType, QuantelState } from '../types.js'
+import { setupQuantelGatewayMock } from './quantelGatewayMock.js'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import { getDeviceContext } from '../../../integrations/__tests__/testlib.js'
+import { StateHandler } from '../../../service/stateHandler.js'
+import { CommandWithContext } from '../../../index.js'
 import { getResolvedState, resolveTimeline } from 'superfly-timeline'
-import { DevicesDict } from '../../../service/devices'
-import { setSoftJumpWaitTime } from '../connection'
-import { waitUntil } from '../../../__tests__/lib'
+import { DevicesDict } from '../../../service/devices.js'
+import { setSoftJumpWaitTime } from '../connection.js'
+import { waitUntil } from '../../../__tests__/lib.js'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
+import { convertResolvedTimelineObjectToDeviceTimelineStateObject } from '../../../lib.js'
 
 async function getInitialisedQuantelDevice(clearMock?: jest.Mock) {
 	const dev = new QuantelDevice(getDeviceContext())
@@ -1577,8 +1578,7 @@ describe('Quantel Device', () => {
 			getCurrentTime: () => Date.now(),
 		}
 		function getNewStateHandler(device: QuantelDevice): StateHandler<QuantelState, CommandWithContext<any, any>> {
-			// eslint-disable-next-line @typescript-eslint/unbound-method
-			const orgSendCommand = device.sendCommand
+			const orgSendCommand = device.sendCommand.bind(device)
 			device.sendCommand = async function mockFunction(...args) {
 				MOCK_SEND_COMMAND(...args)
 				return orgSendCommand.apply(device, args)
@@ -1659,7 +1659,7 @@ describe('Quantel Device', () => {
 
 			// Handle state at time 0 (nothing is playing)
 			{
-				const state = getResolvedState(resolved, now)
+				const state = getResolvedDeviceState(resolved, now)
 				stateHandler.handleState(state, mappings)
 
 				// Give QuantelManager some time to process the commands
@@ -1698,7 +1698,7 @@ describe('Quantel Device', () => {
 
 			// Handle state at time 1000 (myClip0 starts to play)
 			{
-				const state = getResolvedState(resolved, now + 100)
+				const state = getResolvedDeviceState(resolved, now + 100)
 				stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
 				await sleep(200)
@@ -1748,7 +1748,7 @@ describe('Quantel Device', () => {
 			}
 			// Handle state at time 2000 (myClip0 should stop (but is delayed due to outTransition))
 			{
-				const state = getResolvedState(resolved, now + 200)
+				const state = getResolvedDeviceState(resolved, now + 200)
 				stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
 				await sleep(100)
@@ -1782,7 +1782,7 @@ describe('Quantel Device', () => {
 			}
 			// Handle state at time 2100 (myClip1 starts playing)
 			{
-				const state = getResolvedState(resolved, now + 210)
+				const state = getResolvedDeviceState(resolved, now + 210)
 				stateHandler.handleState(state, mappings)
 
 				// Wait enough time to ensure that the outTransition from previous clip would have finished (had it not been cancelled)
@@ -1911,7 +1911,7 @@ describe('Quantel Device', () => {
 
 			// Handle state at time 0 (nothing is playing)
 			{
-				const state = getResolvedState(resolved, now)
+				const state = getResolvedDeviceState(resolved, now)
 				stateHandler.handleState(state, mappings)
 
 				// Give QuantelManager some time to process the commands
@@ -1950,7 +1950,7 @@ describe('Quantel Device', () => {
 
 			// Handle state at time 1000 (myClip0 starts to play)
 			{
-				const state = getResolvedState(resolved, now + 100)
+				const state = getResolvedDeviceState(resolved, now + 100)
 				stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
 				await waitUntil(() => {
@@ -1999,7 +1999,7 @@ describe('Quantel Device', () => {
 			}
 			// Handle state at time 2000 (myClip0 should stop (but is delayed due to outTransition))
 			{
-				const state = getResolvedState(resolved, now + 200)
+				const state = getResolvedDeviceState(resolved, now + 200)
 				stateHandler.handleState(state, mappings)
 				// Give QuantelManager some time to process the commands
 				await waitUntil(() => {
@@ -2037,7 +2037,7 @@ describe('Quantel Device', () => {
 			}
 			// Handle state at time 2500 (myClip1 starts playing)
 			{
-				const state = getResolvedState(resolved, now + 250)
+				const state = getResolvedDeviceState(resolved, now + 250)
 				stateHandler.handleState(state, mappings)
 
 				// Wait enough time to ensure that the outTransition from previous clip would have finished (had it not been cancelled)
@@ -2098,9 +2098,23 @@ describe('Quantel Device', () => {
 	})
 })
 
-interface DeviceTimelineStateObjectQuantelWithPartialInstance
-	extends Omit<Partial<DeviceTimelineStateObject<TimelineContentQuantelAny>>, 'instance'> {
+interface DeviceTimelineStateObjectQuantelWithPartialInstance extends Omit<
+	Partial<DeviceTimelineStateObject<TimelineContentQuantelAny>>,
+	'instance'
+> {
 	instance?: Partial<Timeline.TimelineObjectInstance>
+}
+
+function getResolvedDeviceState(
+	resolvedTimeline: Timeline.ResolvedTimeline<TSRTimelineContent>,
+	time: Timeline.Time
+): DeviceTimelineState {
+	const state = getResolvedState(resolvedTimeline, time)
+
+	return {
+		time: state.time,
+		objects: Object.values<any>(state.layers).map(convertResolvedTimelineObjectToDeviceTimelineStateObject),
+	}
 }
 
 function createTimelineState(

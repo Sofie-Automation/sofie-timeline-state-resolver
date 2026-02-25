@@ -1,7 +1,7 @@
 import { VMixCommand, VMixInputType, VMixTransitionType } from 'timeline-state-resolver-types'
-import { VMixStateDiffer } from '../vMixStateDiffer'
-import { makeMockFullState, prefixAddedInput } from './mockState'
-import { VMixStateCommand } from '../vMixCommands'
+import { VMixStateDiffer } from '../vMixStateDiffer.js'
+import { makeMockFullState, prefixAddedInput } from './mockState.js'
+import { VMixStateCommand } from '../vMixCommands.js'
 
 function createTestee(): VMixStateDiffer {
 	return new VMixStateDiffer(() => Date.now(), jest.fn())
@@ -30,15 +30,17 @@ describe('VMixStateDiffer', () => {
 		const filePath = 'C:/videos/My Clip.mp4'
 		newState.reportedState.inputsAddedByUs[prefixAddedInput(filePath)] = {
 			type: VMixInputType.Video,
-			filePath,
-			playing: true,
-			loop: true,
-			position: 10000,
+			filePath: { value: filePath },
+			playing: { value: true },
+			loop: { value: true },
+			position: { value: 10000 },
 			transform: {
-				zoom: 0.5,
-				panX: 0.3,
-				panY: 1.2,
-				alpha: 123,
+				value: {
+					zoom: 0.5,
+					panX: 0.3,
+					panY: 1.2,
+					alpha: 123,
+				},
 			},
 			layers: {
 				1: { input: 'G:/videos/My Other Clip.mp4' },
@@ -121,9 +123,9 @@ describe('VMixStateDiffer', () => {
 		oldState.reportedState.existingInputs['2'] = differ.getDefaultInputState(2)
 		newState.reportedState.existingInputs['2'] = {
 			...differ.getDefaultInputState(2),
-			restart: true,
-			loop: true,
-			playing: true,
+			restart: { value: true },
+			loop: { value: true },
+			playing: { value: true },
 			layers: {
 				1: { input: 'G:/videos/My Other Clip.mp4' },
 				3: { input: 5 },
@@ -164,9 +166,9 @@ describe('VMixStateDiffer', () => {
 
 		oldState.reportedState.existingInputs['2'] = {
 			...differ.getDefaultInputState(2),
-			restart: true,
-			loop: true,
-			playing: true,
+			restart: { value: true },
+			loop: { value: true },
+			playing: { value: true },
 			layers: {
 				1: { input: 'G:/videos/My Other Clip.mp4' },
 				3: { input: 5 },
@@ -209,7 +211,7 @@ describe('VMixStateDiffer', () => {
 		newState.reportedState.inputsAddedByUs[prefixAddedInput(filePath)] = {
 			...differ.getDefaultInputState(prefixAddedInput(filePath)),
 			type: VMixInputType.Video,
-			filePath,
+			filePath: { value: filePath },
 		}
 		newState.reportedState.inputsAddedByUsAudio[prefixAddedInput(filePath)] = {
 			...differ.getDefaultInputAudioState(prefixAddedInput(filePath)),
@@ -252,7 +254,7 @@ describe('VMixStateDiffer', () => {
 		oldState.reportedState.inputsAddedByUs[prefixAddedInput(filePath)] = {
 			...differ.getDefaultInputState(prefixAddedInput(filePath)),
 			type: VMixInputType.Video,
-			filePath,
+			filePath: { value: filePath },
 		}
 		oldState.reportedState.inputsAddedByUsAudio[prefixAddedInput(filePath)] = {
 			...differ.getDefaultInputAudioState(prefixAddedInput(filePath)),
@@ -274,7 +276,7 @@ describe('VMixStateDiffer', () => {
 		newState.reportedState.inputsAddedByUs[prefixAddedInput(newFilePath)] = {
 			...differ.getDefaultInputState(prefixAddedInput(newFilePath)),
 			type: VMixInputType.Video,
-			filePath,
+			filePath: { value: filePath },
 		}
 		newState.reportedState.inputsAddedByUsAudio[prefixAddedInput(newFilePath)] = {
 			...differ.getDefaultInputAudioState(prefixAddedInput(newFilePath)),
@@ -814,7 +816,7 @@ describe('VMixStateDiffer', () => {
 			}
 			newState.reportedState.existingInputs['1'] = {
 				...differ.getDefaultInputState('1'),
-				listFilePaths: ['C:\\foo.mov'],
+				listFilePaths: { value: ['C:\\foo.mov'] },
 			}
 
 			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
@@ -839,7 +841,7 @@ describe('VMixStateDiffer', () => {
 			}
 			newState.reportedState.existingInputs['1'] = {
 				...differ.getDefaultInputState('1'),
-				listFilePaths: [],
+				listFilePaths: { value: [] },
 			}
 
 			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
@@ -1122,7 +1124,7 @@ describe('VMixStateDiffer', () => {
 
 		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
 		const url = 'https://example.com'
-		newState.reportedState.existingInputs['99'].url = url
+		newState.reportedState.existingInputs['99'].url = { value: url }
 
 		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 
@@ -1140,7 +1142,7 @@ describe('VMixStateDiffer', () => {
 
 		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
 		const index = 3
-		newState.reportedState.existingInputs['99'].index = index
+		newState.reportedState.existingInputs['99'].index = { value: index }
 
 		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 
@@ -1349,7 +1351,7 @@ describe('VMixStateDiffer', () => {
 		}
 		newState.reportedState.existingInputs['11'] = {
 			...differ.getDefaultInputState(11),
-			listFilePaths: [], // we want the list to be cleared after input 1 goes off PGM
+			listFilePaths: { value: [] }, // we want the list to be cleared after input 1 goes off PGM
 		}
 		newState.reportedState.existingInputs['12'] = {
 			...differ.getDefaultInputState(12),
@@ -1380,6 +1382,124 @@ describe('VMixStateDiffer', () => {
 		expect(commands[3].command).toMatchObject<VMixStateCommand>({
 			command: VMixCommand.LIST_REMOVE_ALL,
 			input: '11',
+		})
+	})
+
+	describe('Replay Recording', () => {
+		test('on', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.reportedState.replay = undefined
+			newState.reportedState.replay = { recording: true }
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(1)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_START_RECORDING,
+			})
+		})
+
+		test('off', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			newState.reportedState.replay = { recording: true }
+			newState.reportedState.replay = { recording: false }
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(1)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_STOP_RECORDING,
+			})
+		})
+
+		test('same state', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.reportedState.replay = { recording: true }
+			newState.reportedState.replay = { recording: true }
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(0)
+		})
+
+		test('uncontrolled', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			newState.reportedState.replay = { recording: true }
+			newState.reportedState.replay = undefined
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(0)
+		})
+	})
+
+	describe('Replay Event', () => {
+		test('mark in', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.recordedEventName = undefined
+			newState.recordedEventName = 'my event'
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(2)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_MARK_IN_LIVE,
+			})
+			expect(commands[1].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_SET_LAST_EVENT_TEXT,
+				value: 'my event',
+			})
+		})
+
+		test('mark out', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.recordedEventName = 'my event'
+			newState.recordedEventName = undefined
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(1)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_MARK_OUT,
+			})
+		})
+
+		test('mark out and mark in', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.recordedEventName = 'my event'
+			newState.recordedEventName = 'my other event'
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(3)
+			expect(commands[0].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_MARK_OUT,
+			})
+			expect(commands[1].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_MARK_IN_LIVE,
+			})
+			expect(commands[2].command).toMatchObject<VMixStateCommand>({
+				command: VMixCommand.REPLAY_SET_LAST_EVENT_TEXT,
+				value: 'my other event',
+			})
+		})
+
+		test('same state', async () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			oldState.recordedEventName = 'my event'
+			newState.recordedEventName = 'my event'
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands.length).toBe(0)
 		})
 	})
 })

@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events'
-import { actionNotFoundMessage, cloneDeep } from '../lib'
+import { actionNotFoundMessage, cloneDeep } from '../lib.js'
 import type {
 	FinishedTrace,
 	DeviceEntry,
@@ -7,20 +7,20 @@ import type {
 	CommandWithContext,
 	DeviceContextAPI,
 	DeviceEvents,
+	DeviceTimelineState,
 } from 'timeline-state-resolver-api'
 import {
 	type DeviceStatus,
 	type DeviceType,
 	type Mappings,
 	type MediaObject,
-	type Timeline,
 	type TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { StateHandler } from './stateHandler'
-import { DevicesDict } from './devices'
-import type { DeviceOptionsAny, ExpectedPlayoutItem } from '..'
-import type { StateChangeReport } from './measure'
-import { StateTracker } from './stateTracker'
+import { StateHandler } from './stateHandler.js'
+import { DevicesDict } from './devices.js'
+import type { DeviceOptionsAny, ExpectedPlayoutItem } from '../index.js'
+import type { StateChangeReport } from './measure.js'
+import { StateTracker } from './stateTracker.js'
 
 type Config = DeviceOptionsAny
 type DeviceState = object
@@ -50,7 +50,7 @@ function loadDeviceIntegration(pluginPath: string | null, deviceType: DeviceType
 	}
 
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		const plugin = require(pluginPath)
 
 		const pluginDevices = plugin.Devices
@@ -208,7 +208,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		return this._device.init(this.config.options)
 	}
 	async terminate() {
-		await this._stateHandler.terminate()
+		this._stateHandler.terminate()
 		return this._device.terminate()
 	}
 
@@ -227,7 +227,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		//
 	}
 
-	handleState(newState: Timeline.TimelineState<TSRTimelineContent>, newMappings: Mappings) {
+	handleState(newState: DeviceTimelineState<TSRTimelineContent>, newMappings: Mappings) {
 		this._stateHandler.handleState(newState, newMappings)
 
 		this._isActive = Object.keys(newMappings).length > 0

@@ -1,5 +1,5 @@
 import { VMixTransitionType } from 'timeline-state-resolver-types'
-import { TSR_INPUT_PREFIX, VMixState, VMixStateExtended } from '../vMixStateDiffer'
+import { TSR_INPUT_PREFIX, VMixState, VMixStateExtended } from '../vMixStateDiffer.js'
 
 export const ADDED_INPUT_NAME_1 = `${TSR_INPUT_PREFIX}C:\\someVideo.mp4`
 export const ADDED_INPUT_NAME_2 = `${TSR_INPUT_PREFIX}C:\\anotherVideo.mp4`
@@ -13,35 +13,39 @@ export function makeMockReportedState(): VMixState {
 				number: 1,
 				type: 'Capture',
 				state: 'Running',
-				position: 0,
+				position: { value: 0 },
 				duration: 0,
-				loop: false,
+				loop: { value: false },
 				transform: {
-					alpha: -1,
-					panX: 0,
-					panY: 0,
-					zoom: 1,
+					value: {
+						alpha: -1,
+						panX: 0,
+						panY: 0,
+						zoom: 1,
+					},
 				},
 				listFilePaths: undefined,
 				layers: undefined,
-				playing: true,
+				playing: { value: true },
 			},
 			'2': {
 				number: 2,
 				type: 'Capture',
 				state: 'Running',
-				position: 0,
+				position: { value: 0 },
 				duration: 0,
-				loop: false,
+				loop: { value: false },
 				transform: {
-					alpha: -1,
-					panX: 0,
-					panY: 0,
-					zoom: 1,
+					value: {
+						alpha: -1,
+						panX: 0,
+						panY: 0,
+						zoom: 1,
+					},
 				},
 				listFilePaths: undefined,
 				layers: undefined,
-				playing: true,
+				playing: { value: true },
 			},
 		},
 		existingInputsAudio: {
@@ -65,36 +69,40 @@ export function makeMockReportedState(): VMixState {
 				number: 1,
 				type: 'Video',
 				state: 'Running',
-				position: 0,
+				position: { value: 0 },
 				duration: 0,
-				loop: false,
+				loop: { value: false },
 				transform: {
-					alpha: -1,
-					panX: 0,
-					panY: 0,
-					zoom: 1,
+					value: {
+						alpha: -1,
+						panX: 0,
+						panY: 0,
+						zoom: 1,
+					},
 				},
 				listFilePaths: undefined,
 				layers: undefined,
-				playing: true,
+				playing: { value: true },
 				name: ADDED_INPUT_NAME_1,
 			},
 			[ADDED_INPUT_NAME_2]: {
 				number: 1,
 				type: 'Video',
 				state: 'Running',
-				position: 0,
+				position: { value: 0 },
 				duration: 0,
-				loop: false,
+				loop: { value: false },
 				transform: {
-					alpha: -1,
-					panX: 0,
-					panY: 0,
-					zoom: 1,
+					value: {
+						alpha: -1,
+						panX: 0,
+						panY: 0,
+						zoom: 1,
+					},
 				},
 				listFilePaths: undefined,
 				layers: undefined,
-				playing: true,
+				playing: { value: true },
 				name: ADDED_INPUT_NAME_2,
 			},
 		},
@@ -174,6 +182,7 @@ export function makeMockReportedState(): VMixState {
 				volume: 100,
 			},
 		},
+		replay: undefined,
 	}
 }
 
@@ -190,6 +199,7 @@ export function makeMockFullState(): VMixStateExtended {
 		},
 		runningScripts: [],
 		reportedState: makeMockReportedState(),
+		recordedEventName: undefined,
 	}
 }
 

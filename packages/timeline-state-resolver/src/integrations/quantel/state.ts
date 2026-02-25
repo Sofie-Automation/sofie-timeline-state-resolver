@@ -7,7 +7,7 @@ import {
 	TSRTimelineContent,
 	TimelineContentQuantelClip,
 } from 'timeline-state-resolver-types'
-import { MappedPorts, QuantelState, QuantelStatePort } from './types'
+import { MappedPorts, QuantelState, QuantelStatePort } from './types.js'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 export function getMappedPorts(mappings: Mappings<SomeMappingQuantel>): MappedPorts {
@@ -127,7 +127,7 @@ function setPortStateFromLayer(
 		const inPointSeekOffsetByLookahead =
 			content.inPoint !== undefined && layer.lookaheadOffset !== undefined
 				? content.inPoint + layer.lookaheadOffset
-				: content.inPoint ?? layer.lookaheadOffset
+				: (content.inPoint ?? layer.lookaheadOffset)
 
 		port.timelineObjId = layer.id
 		port.notOnAir = content.notOnAir || isLookahead
@@ -140,7 +140,7 @@ function setPortStateFromLayer(
 			// clipId // set later
 
 			pauseTime: content.pauseTime,
-			playing: isLookahead ? false : content.playing ?? true,
+			playing: isLookahead ? false : (content.playing ?? true),
 
 			inPoint: !isLookahead ? content.inPoint : inPointSeekOffsetByLookahead,
 			length: content.length,

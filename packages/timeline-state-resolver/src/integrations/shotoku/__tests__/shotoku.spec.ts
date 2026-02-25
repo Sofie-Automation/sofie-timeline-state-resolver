@@ -5,9 +5,9 @@ import {
 	TimelineContentTypeShotoku,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { ShotokuCommandWithContext, ShotokuDevice, ShotokuDeviceState } from '..'
-import { getDeviceContext } from '../../__tests__/testlib'
-import { ShotokuCommandType } from '../connection'
+import { ShotokuCommandWithContext, ShotokuDevice, ShotokuDeviceState } from '../index.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
+import { ShotokuCommandType } from '../connection.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const MOCKED_SOCKET_CONNECT = jest.fn((_: any, _2: any, cb: any) => cb())

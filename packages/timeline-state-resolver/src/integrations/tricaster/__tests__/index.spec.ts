@@ -9,11 +9,11 @@ import {
 	TSRTimelineContent,
 	TriCasterMixEffect,
 } from 'timeline-state-resolver-types'
-import { TriCasterDevice } from '..'
-import { TriCasterConnectionEvents, TriCasterConnection } from '../triCasterConnection'
-import { literal } from '../../../lib'
-import { wrapIntoResolvedInstance } from './helpers'
-import { getDeviceContext } from '../../__tests__/testlib'
+import { TriCasterDevice } from '../index.js'
+import { TriCasterConnectionEvents, TriCasterConnection } from '../triCasterConnection.js'
+import { literal } from '../../../lib.js'
+import { wrapIntoResolvedInstance } from './helpers.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 const MOCK_CONNECT = jest.fn()

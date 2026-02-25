@@ -1,5 +1,5 @@
-import { MockTime } from '../../__tests__/mockTime'
-import { StateTracker } from '../stateTracker'
+import { MockTime } from '../../__tests__/mockTime.js'
+import { StateTracker } from '../stateTracker.js'
 
 interface AddressState {
 	id: string

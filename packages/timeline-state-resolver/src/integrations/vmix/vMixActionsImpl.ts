@@ -4,9 +4,10 @@ import {
 	OpenPresetPayload,
 	SavePresetPayload,
 	VmixActionMethods,
+	BrowserReloadPayload,
 } from 'timeline-state-resolver-types'
-import { t } from '../../lib'
-import { VMixCommandSender } from './connection'
+import { t } from '../../lib.js'
+import { VMixCommandSender } from './connection.js'
 
 export class vMixActionsImpl implements VmixActionMethods {
 	constructor(private getVMixCommandSender: () => VMixCommandSender) {}
@@ -56,6 +57,36 @@ export class vMixActionsImpl implements VmixActionMethods {
 		return {
 			result: ActionExecutionResultCode.Ok,
 		}
+	}
+
+	public async browserReload(payload: BrowserReloadPayload) {
+		const checkResult = this._validateBrowserActionPaylod(payload)
+		if (checkResult) return checkResult
+
+		await this.getVMixCommandSender().browserReload(payload.input)
+		return {
+			result: ActionExecutionResultCode.Ok,
+		}
+	}
+
+	private _validateBrowserActionPaylod(payload?: any): ActionExecutionResult | void {
+		const connectionError = this._checkConnectionForAction()
+		if (connectionError) return connectionError
+
+		if (!payload || typeof payload !== 'object') {
+			return {
+				result: ActionExecutionResultCode.Error,
+				response: t('Action payload is invalid'),
+			}
+		}
+
+		if ((typeof payload.input !== 'string' && typeof payload.input !== 'number') || payload.input === '') {
+			return {
+				result: ActionExecutionResultCode.Error,
+				response: t('No input specified'),
+			}
+		}
+		return
 	}
 
 	private _checkPresetAction(payload?: any, payloadRequired?: boolean): ActionExecutionResult | void {

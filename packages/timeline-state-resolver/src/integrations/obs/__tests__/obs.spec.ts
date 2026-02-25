@@ -8,11 +8,11 @@ import {
 	TimelineContentTypeOBS,
 	TSRTimelineContent,
 } from 'timeline-state-resolver-types'
-import { OBSCommandWithContext, OBSDevice } from '..'
-import { getDeviceContext } from '../../__tests__/testlib'
-import { getDefaultState, OBSDeviceState } from '../state'
-import { OBSRequestName } from '../diff'
-import '../../../__mocks__/ws'
+import { OBSCommandWithContext, OBSDevice } from '../index.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
+import { getDefaultState, OBSDeviceState } from '../state.js'
+import { OBSRequestName } from '../diff.js'
+import '../../../__mocks__/ws.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 async function getInitialisedObsDevice() {

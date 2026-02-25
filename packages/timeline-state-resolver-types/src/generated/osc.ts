@@ -4,6 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
+import type { DeviceType } from './device-options.js'
 
 export interface OscOptions {
 	host: string
@@ -13,12 +14,13 @@ export interface OscOptions {
 
 export enum OSCDeviceType {
 	TCP = 'tcp',
-	UDP = 'udp'
+	UDP = 'udp',
 }
 
 export type SomeMappingOsc = Record<string, never>
 
 export interface OscDeviceTypes {
+	Type: DeviceType.OSC
 	Options: OscOptions
 	Mappings: SomeMappingOsc
 	Actions: null

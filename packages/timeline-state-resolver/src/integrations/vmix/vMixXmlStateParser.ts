@@ -8,8 +8,9 @@ import {
 	VMixInput,
 	VMixInputAudio,
 	VMixMix,
+	VMixReplayState,
 	VMixState,
-} from './vMixStateDiffer'
+} from './vMixStateDiffer.js'
 import { VMixTransitionType } from 'timeline-state-resolver-types'
 
 const BUS_NAME_REGEX = /^bus([A-Z])$/
@@ -28,6 +29,7 @@ export class VMixXmlStateParser {
 		const existingInputsAudio: Record<string, VMixInputAudio> = {}
 		const inputsAddedByUs: Record<string, VMixInput> = {}
 		const inputsAddedByUsAudio: Record<string, VMixInputAudio> = {}
+		let replay: VMixReplayState | undefined
 
 		const inputKeysToNumbers: Record<string, number> = {}
 		for (const input of xmlState['vmix']['inputs']['input']) {
@@ -41,7 +43,7 @@ export class VMixXmlStateParser {
 
 			let fixedListFilePaths: VMixInput['listFilePaths'] = undefined
 			if (input['_attributes']['type'] === 'VideoList' && input['list']['item'] != null) {
-				fixedListFilePaths = this.ensureArray(input['list']['item']).map((item) => item['_text'])
+				fixedListFilePaths = { value: this.ensureArray(input['list']['item']).map((item) => item['_text']) }
 			}
 
 			const layers: VMixInput['layers'] = {}
@@ -78,26 +80,36 @@ export class VMixXmlStateParser {
 				})
 			}
 
+			const inputType = input['_attributes']['type']
+
 			const result: VMixInput = {
 				number: inputNumber,
-				type: input['_attributes']['type'],
+				type: inputType,
 				name: isAddedByUs ? title : undefined,
 				state: input['_attributes']['state'],
-				playing: input['_attributes']['state'] === 'Running',
-				position: Number(input['_attributes']['position']) || 0,
+				playing: { value: input['_attributes']['state'] === 'Running' },
+				position: { value: Number(input['_attributes']['position']) || 0 },
 				duration: Number(input['_attributes']['duration']) || 0,
-				loop: input['_attributes']['loop'] !== 'False',
+				loop: { value: input['_attributes']['loop'] !== 'False' },
 
 				transform: {
-					panX: Number(input['position']?.['_attributes']['panX'] ?? 0),
-					panY: Number(input['position']?.['_attributes']['panY'] ?? 0),
-					alpha: -1, // unavailable
-					zoom: Number(input['position']?.['_attributes']['zoomX'] ?? 1), // assume that zoomX==zoomY
+					value: {
+						panX: Number(input['position']?.['_attributes']['panX'] ?? 0),
+						panY: Number(input['position']?.['_attributes']['panY'] ?? 0),
+						alpha: -1, // unavailable
+						zoom: Number(input['position']?.['_attributes']['zoomX'] ?? 1), // assume that zoomX==zoomY
+					},
 				},
 				layers,
 				listFilePaths: fixedListFilePaths!,
 				text,
 				images,
+			}
+
+			if (inputType === 'Replay') {
+				replay = {
+					recording: input['replay']?.['_attributes']['recording'] === 'True',
+				}
 			}
 
 			const resultAudio = {
@@ -156,6 +168,7 @@ export class VMixXmlStateParser {
 			multiCorder: xmlState['vmix']['multiCorder']['_text'] === 'True',
 			fullscreen: xmlState['vmix']['fullscreen']['_text'] === 'True',
 			audioBuses: this.parseAudioBuses(xmlState),
+			replay,
 		}
 	}
 

@@ -5,84 +5,87 @@
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
 
-export * from './action-schema'
-export * from './generic-ptz-actions'
-export * from './device-options'
+export * from './action-schema.js'
+export * from './generic-ptz-actions.js'
+export * from './device-options.js'
 
 export * from './abstract'
-import type { SomeMappingAbstract } from './abstract'
+import type { SomeMappingAbstract } from './abstract.js'
 
 export * from './atem'
-import type { SomeMappingAtem } from './atem'
+import type { SomeMappingAtem } from './atem.js'
 
 export * from './casparCG'
-import type { SomeMappingCasparCG } from './casparCG'
+import type { SomeMappingCasparCG } from './casparCG.js'
 
 export * from './httpSend'
-import type { SomeMappingHttpSend } from './httpSend'
+import type { SomeMappingHttpSend } from './httpSend.js'
 
 export * from './httpWatcher'
-import type { SomeMappingHttpWatcher } from './httpWatcher'
+import type { SomeMappingHttpWatcher } from './httpWatcher.js'
 
 export * from './hyperdeck'
-import type { SomeMappingHyperdeck } from './hyperdeck'
+import type { SomeMappingHyperdeck } from './hyperdeck.js'
 
 export * from './kairos'
-import type { SomeMappingKairos } from './kairos'
+import type { SomeMappingKairos } from './kairos.js'
 
 export * from './lawo'
-import type { SomeMappingLawo } from './lawo'
+import type { SomeMappingLawo } from './lawo.js'
 
 export * from './multiOsc'
-import type { SomeMappingMultiOsc } from './multiOsc'
+import type { SomeMappingMultiOsc } from './multiOsc.js'
 
 export * from './obs'
-import type { SomeMappingObs } from './obs'
+import type { SomeMappingObs } from './obs.js'
 
 export * from './osc'
-import type { SomeMappingOsc } from './osc'
+import type { SomeMappingOsc } from './osc.js'
 
 export * from './panasonicPTZ'
-import type { SomeMappingPanasonicPTZ } from './panasonicPTZ'
+import type { SomeMappingPanasonicPTZ } from './panasonicPTZ.js'
 
 export * from './pharos'
-import type { SomeMappingPharos } from './pharos'
+import type { SomeMappingPharos } from './pharos.js'
 
 export * from './quantel'
-import type { SomeMappingQuantel } from './quantel'
+import type { SomeMappingQuantel } from './quantel.js'
 
 export * from './shotoku'
-import type { SomeMappingShotoku } from './shotoku'
+import type { SomeMappingShotoku } from './shotoku.js'
 
 export * from './singularLive'
-import type { SomeMappingSingularLive } from './singularLive'
+import type { SomeMappingSingularLive } from './singularLive.js'
 
 export * from './sisyfos'
-import type { SomeMappingSisyfos } from './sisyfos'
+import type { SomeMappingSisyfos } from './sisyfos.js'
 
 export * from './sofieChef'
-import type { SomeMappingSofieChef } from './sofieChef'
+import type { SomeMappingSofieChef } from './sofieChef.js'
 
 export * from './tcpSend'
-import type { SomeMappingTcpSend } from './tcpSend'
+import type { SomeMappingTcpSend } from './tcpSend.js'
 
 export * from './telemetrics'
-import type { SomeMappingTelemetrics } from './telemetrics'
+import type { SomeMappingTelemetrics } from './telemetrics.js'
 
 export * from './tricaster'
-import type { SomeMappingTricaster } from './tricaster'
+import type { SomeMappingTricaster } from './tricaster.js'
+
+export * from './udpSend'
+import type { SomeMappingUdpSend } from './udpSend.js'
 
 export * from './viscaOverIP'
-import type { SomeMappingViscaOverIP } from './viscaOverIP'
+import type { SomeMappingViscaOverIP } from './viscaOverIP.js'
 
 export * from './vizMSE'
-import type { SomeMappingVizMSE } from './vizMSE'
+import type { SomeMappingVizMSE } from './vizMSE.js'
 
 export * from './vmix'
-import type { SomeMappingVmix } from './vmix'
+import type { SomeMappingVmix } from './vmix.js'
 
 export * from './websocketClient'
-import type { SomeMappingWebsocketClient } from './websocketClient'
+import type { SomeMappingWebsocketClient } from './websocketClient.js'
 
 export type TSRMappingOptions =
 	| SomeMappingAbstract
@@ -106,6 +109,7 @@ export type TSRMappingOptions =
 	| SomeMappingTcpSend
 	| SomeMappingTelemetrics
 	| SomeMappingTricaster
+	| SomeMappingUdpSend
 	| SomeMappingViscaOverIP
 	| SomeMappingVizMSE
 	| SomeMappingVmix

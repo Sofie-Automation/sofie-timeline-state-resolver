@@ -1,6 +1,6 @@
 import { DeviceType, Mapping, MappingCasparCGType, SomeMappingCasparCG } from 'timeline-state-resolver'
 import { literal } from 'timeline-state-resolver/dist/lib'
-import type { TSRInput } from '../src'
+import type { TSRInput } from '../src/index.js'
 
 export const input: TSRInput = {
 	mappings: {

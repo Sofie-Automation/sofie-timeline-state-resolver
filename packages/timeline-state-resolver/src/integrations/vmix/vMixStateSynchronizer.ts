@@ -1,6 +1,5 @@
-import { VMixInput, VMixState, VMixStateExtended } from './vMixStateDiffer'
-import { EnforceableVMixInputStateKeys } from '.'
-import { VMixInputOverlays, VMixLayers, VMixTransform } from 'timeline-state-resolver-types'
+import { VMixInput, VMixState, VMixStateExtended } from './vMixStateDiffer.js'
+import type { EnforceableVMixInputStateKeys } from './index.js'
 
 /**
  * Applies selected properties from the real state to allow retrying to achieve the state
@@ -26,28 +25,30 @@ export class VMixStateSynchronizer {
 		// Enforcing others can lead to issues such as clips replaying, seeking back to the start,
 		// or even outright preventing Sisyfos from working.
 		for (const inputKey of Object.keys(realInputs)) {
-			if (expectedInputs[inputKey] == null) continue
+			const expectedInput = expectedInputs[inputKey]
+			if (expectedInput == null) continue
+			const realInput = realInputs[inputKey]
 			const cherryPickedRealState: Pick<VMixInput, EnforceableVMixInputStateKeys> = {
-				duration: realInputs[inputKey].duration,
-				loop: realInputs[inputKey].loop,
-				transform:
-					realInputs[inputKey].transform && expectedInputs[inputKey].transform
+				duration: realInput.duration,
+				loop: realInput.loop,
+				transform: realInput.transform && {
+					value: expectedInput.transform?.value
 						? {
-								...realInputs[inputKey].transform!,
-								alpha: expectedInputs[inputKey].transform!.alpha, // we don't know the value of alpha - we have to assume it hasn't changed, otherwise we will be sending commands for it all the time
-						  }
-						: realInputs[inputKey].transform,
-				layers: realInputs[inputKey].layers,
+								...realInput.transform.value,
+								alpha: expectedInput.transform.value.alpha, // we don't know the value of alpha - we have to assume it hasn't changed, otherwise we will be sending commands for it all the time
+							}
+						: realInput.transform.value,
+				},
+				layers: realInput.layers,
 
 				// This particular key is what enables the ability to re-load failed/missing media in a List Input.
-				listFilePaths: realInputs[inputKey].listFilePaths,
+				listFilePaths: realInput.listFilePaths,
 			}
 
 			// Shallow merging is sufficient.
-			for (const [key, value] of Object.entries<
-				string | number | boolean | VMixTransform | VMixLayers | VMixInputOverlays
-			>(cherryPickedRealState)) {
-				expectedInputs[inputKey][key] = value
+			expectedInputs[inputKey] = {
+				...expectedInput,
+				...cherryPickedRealState,
 			}
 		}
 	}

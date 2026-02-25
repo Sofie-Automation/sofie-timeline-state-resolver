@@ -15,7 +15,6 @@ import {
 	Mappings,
 	Mapping,
 	DeviceType,
-	ResolvedTimelineObjectInstanceExtended,
 	DeviceOptionsBase,
 	Datastore,
 	TSRTimelineObj,
@@ -25,18 +24,24 @@ import {
 	TimelineDatastoreReferencesContent,
 	TimelineDatastoreReferences,
 	fillStateFromDatastore,
+	TSRTimelineObjProps,
 } from 'timeline-state-resolver-types'
 
-import { DoOnTime } from './devices/doOnTime'
-import { AsyncResolver } from './AsyncResolver'
-import { endTrace, startTrace } from './lib'
-import type { FinishedTrace, CommandWithContext } from 'timeline-state-resolver-api'
+import { DoOnTime } from './devices/doOnTime.js'
+import { AsyncResolver } from './AsyncResolver.js'
+import { convertResolvedTimelineObjectToDeviceTimelineStateObject, endTrace, startTrace } from './lib.js'
+import type {
+	FinishedTrace,
+	CommandWithContext,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
+} from 'timeline-state-resolver-api'
 
-import { DeviceContainer } from './devices/deviceContainer'
+import { DeviceContainer } from './devices/deviceContainer.js'
 
-import { BaseRemoteDeviceIntegration } from './service/remoteDeviceInstance'
-import { ConnectionManager } from './service/ConnectionManager'
-import { DevicesRegistry } from './service/devicesRegistry'
+import { BaseRemoteDeviceIntegration } from './service/remoteDeviceInstance.js'
+import { ConnectionManager } from './service/ConnectionManager.js'
+import { DevicesRegistry } from './service/devicesRegistry.js'
 
 export { DeviceContainer }
 export { CommandWithContext }
@@ -51,7 +56,7 @@ const RESOLVE_LIMIT_TIME = 10 * 1000
 
 export type TimelineTriggerTimeResult = Array<{ id: string; time: number }>
 
-export { Device } from './devices/device'
+export { Device } from './devices/device.js'
 
 export interface ConductorOptions {
 	// devices: {
@@ -129,9 +134,8 @@ export class AbortError extends Error {
 }
 
 interface DeviceState {
-	state: Timeline.TimelineState<TSRTimelineContent>
+	state: DeviceTimelineState<TSRTimelineContent>
 	mappings: Mappings
-	time: number
 	dependencies: string[]
 }
 
@@ -363,7 +367,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 	private async _mapAllConnections<T>(
 		includeUninitialized: boolean,
-		fcn: (d: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>) => Promise<T>
+		fcn: (d: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>) => Promise<T>
 	): Promise<T[]> {
 		return PAll(
 			this.connectionManager.getConnections(includeUninitialized).map((d) => async () => fcn(d)),
@@ -476,7 +480,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			const pPrepareForHandleStates: Promise<unknown> = Promise.all(
 				this.connectionManager
 					.getConnections(false)
-					.map(async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>): Promise<void> => {
+					.map(async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>): Promise<void> => {
 						await device.device.prepareForHandleState(resolveTime)
 					})
 			).catch((error) => {
@@ -565,31 +569,28 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 				)
 			}
 
-			const layersPerDevice = this.filterLayersPerDevice(
-				tlState.layers as Timeline.StateInTime<TSRTimelineContent>,
-				this.connectionManager.getConnections(false)
-			)
+			const layersPerDevice = this.filterLayersPerDevice(tlState.layers, this.connectionManager.getConnections(false))
 
 			// Push state to the right device:
 			await this._mapAllConnections(
 				false,
-				async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>): Promise<void> => {
+				async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>): Promise<void> => {
 					if (this._options.optimizeForProduction) {
 						// Don't send any state to the abstract device, since it doesn't do anything anyway
 						if (device.deviceType === DeviceType.ABSTRACT) return
 					}
 
 					// The subState contains only the parts of the state relevant to that device:
-					const subState: Timeline.TimelineState<TSRTimelineContent> = {
+					const subState: DeviceTimelineState = {
 						time: tlState.time,
-						layers: layersPerDevice[device.deviceId] || {},
-						nextEvents: [],
+						objects: layersPerDevice[device.deviceId] || [],
 					}
+					subState.objects.sort((a, b) => String(a.layer).localeCompare(String(b.layer))) // ensure the objects are sorted in layer order
 
 					// Pass along the state to the device, it will generate its commands and execute them:
 					try {
 						// await device.device.handleState(removeParentFromState(subState), this._mappings)
-						await this._setDeviceState(device.deviceId, tlState.time, removeParentFromState(subState), this._mappings)
+						await this._setDeviceState(device.deviceId, subState, this._mappings)
 					} catch (e) {
 						this.emit('error', 'Error in device "' + device.deviceId + '"' + e + ' ' + (e as Error).stack)
 					}
@@ -604,16 +605,19 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			if (!nextEventTime && tlState.time < this._resolved.validTo) {
 				// There's nothing ahead in the timeline (as far as we can see, ref: this._resolved.validTo)
 				// Tell the devices that the future is clear:
-				await this._mapAllConnections(true, async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>) => {
-					try {
-						await device.device.clearFuture(tlState.time)
-					} catch (e) {
-						this.emit(
-							'error',
-							'Error in device "' + device.deviceId + '", clearFuture: ' + e + ' ' + (e as Error).stack
-						)
+				await this._mapAllConnections(
+					true,
+					async (device: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>) => {
+						try {
+							await device.device.clearFuture(tlState.time)
+						} catch (e) {
+							this.emit(
+								'error',
+								'Error in device "' + device.deviceId + '", clearFuture: ' + e + ' ' + (e as Error).stack
+							)
+						}
 					}
-				})
+				)
 			}
 
 			const nowPostExec = this.getCurrentTime()
@@ -717,8 +721,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	}
 	private async _setDeviceState(
 		deviceId: string,
-		time: number,
-		state: Timeline.TimelineState<TSRTimelineContent>,
+		state: DeviceTimelineState<TSRTimelineContent>,
 		unfilteredMappings: Mappings
 	) {
 		// only take mappings that are for this deviceId
@@ -730,9 +733,7 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 		// find all references to the datastore that are in this state
 		const dependenciesSet = new Set<string>()
-		for (const { content } of Object.values<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(
-			state.layers
-		)) {
+		for (const { content } of state.objects) {
 			const dataStoreContent = content as TimelineDatastoreReferencesContent
 			for (const r of Object.values<TimelineDatastoreReferences[0]>(dataStoreContent.$references || {})) {
 				dependenciesSet.add(r.datastoreKey)
@@ -742,13 +743,12 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 
 		// store all states between the current state and the new state
 		this._deviceStates[deviceId] = _.compact([
-			this._deviceStates[deviceId].reverse().find((s) => s.time <= this.getCurrentTime()),
+			this._deviceStates[deviceId].reverse().find((s) => s.state.time <= this.getCurrentTime()),
 			...this._deviceStates[deviceId]
 				.reverse()
-				.filter((s) => s.time < time && s.time > this.getCurrentTime())
+				.filter((s) => s.state.time < state.time && s.state.time > this.getCurrentTime())
 				.reverse(),
 			{
-				time,
 				state,
 				dependencies,
 				mappings,
@@ -784,8 +784,8 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 				for (const deviceId of affectedDevices) {
 					const toBeFilled = _.compact([
 						// shallow clone so we don't reverse the array in place
-						[...this._deviceStates[deviceId]].reverse().find((s) => s.time <= this.getCurrentTime()), // one state before now
-						...this._deviceStates[deviceId].filter((s) => s.time > this.getCurrentTime()), // all states after now
+						[...this._deviceStates[deviceId]].reverse().find((s) => s.state.time <= this.getCurrentTime()), // one state before now
+						...this._deviceStates[deviceId].filter((s) => s.state.time > this.getCurrentTime()), // all states after now
 					])
 
 					for (const s of toBeFilled) {
@@ -808,8 +808,8 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			.add(() => {
 				const toBeFilled = _.compact([
 					// shallow clone so we don't reverse the array in place
-					[...this._deviceStates[deviceId]].reverse().find((s) => s.time <= this.getCurrentTime()), // one state before now
-					...this._deviceStates[deviceId].filter((s) => s.time > this.getCurrentTime()), // all states after now
+					[...this._deviceStates[deviceId]].reverse().find((s) => s.state.time <= this.getCurrentTime()), // one state before now
+					...this._deviceStates[deviceId].filter((s) => s.state.time > this.getCurrentTime()), // all states after now
 				])
 
 				for (const s of toBeFilled) {
@@ -1084,32 +1084,30 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	 */
 	private filterLayersPerDevice(
 		layers: Timeline.StateInTime<TSRTimelineContent>,
-		devices: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>[]
+		devices: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>[]
 	) {
-		const filteredStates: { [deviceId: string]: { [layerId: string]: ResolvedTimelineObjectInstanceExtended } } = {}
+		const filteredStates: { [deviceId: string]: DeviceTimelineStateObject[] } = {}
 
-		const deviceIdAndTypes: { [idAndTyoe: string]: string } = {}
+		const deviceIdAndTypes = new Set<string>(devices.map((d) => `${d.deviceId}__${d.deviceType}`))
 
-		_.each(devices, (device) => {
-			deviceIdAndTypes[device.deviceId + '__' + device.deviceType] = device.deviceId
-		})
-		_.each(layers, (o, layerId: string) => {
-			const oExt: ResolvedTimelineObjectInstanceExtended = o
-			let mapping: Mapping<unknown> = this._mappings[o.layer + '']
-			if (!mapping && oExt.isLookahead && oExt.lookaheadForLayer) {
-				mapping = this._mappings[oExt.lookaheadForLayer]
+		_.each(layers, (obj) => {
+			const objExt: ResolvedTimelineObjectInstance & TSRTimelineObjProps = obj
+			let mapping: Mapping<unknown> = this._mappings[obj.layer + '']
+			if (!mapping && objExt.isLookahead && objExt.lookaheadForLayer) {
+				mapping = this._mappings[objExt.lookaheadForLayer]
 			}
 			if (mapping) {
-				const deviceIdAndType = mapping.deviceId + '__' + mapping.device
+				const deviceIdAndType = `${mapping.deviceId}__${mapping.device}`
 
-				if (deviceIdAndTypes[deviceIdAndType]) {
+				if (deviceIdAndTypes.has(deviceIdAndType)) {
 					if (!filteredStates[mapping.deviceId]) {
-						filteredStates[mapping.deviceId] = {}
+						filteredStates[mapping.deviceId] = []
 					}
-					filteredStates[mapping.deviceId][layerId] = o
+					filteredStates[mapping.deviceId].push(convertResolvedTimelineObjectToDeviceTimelineStateObject(obj))
 				}
 			}
 		})
+
 		return filteredStates
 	}
 
@@ -1122,17 +1120,4 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			this.emit(eventType, ...args)
 		}
 	}
-}
-
-function removeParentFromState(
-	o: Timeline.TimelineState<TSRTimelineContent>
-): Timeline.TimelineState<TSRTimelineContent> {
-	for (const key in o) {
-		if (key === 'parent') {
-			delete o['parent']
-		} else if (typeof o[key] === 'object') {
-			o[key] = removeParentFromState(o[key])
-		}
-	}
-	return o
 }

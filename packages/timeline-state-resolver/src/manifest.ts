@@ -7,8 +7,8 @@
 
 import { DeviceType } from 'timeline-state-resolver-types'
 import CommonOptions = require('./$schemas/common-options.json')
-import { generateTranslation } from './lib'
-import { stringifyActionSchema, stringifyMappingSchema, TSRManifest } from './manifestLib'
+import { generateTranslation } from './lib.js'
+import { stringifyActionSchema, stringifyMappingSchema, TSRManifest } from './manifestLib.js'
 import AbstractActions = require('./$schemas/generated/abstract/actions.json')
 import AbstractOptions = require('./$schemas/generated/abstract/options.json')
 import AbstractMappings = require('./$schemas/generated/abstract/mappings.json')
@@ -63,6 +63,9 @@ import TelemetricsOptions = require('./$schemas/generated/telemetrics/options.js
 import TelemetricsMappings = require('./$schemas/generated/telemetrics/mappings.json')
 import TricasterOptions = require('./$schemas/generated/tricaster/options.json')
 import TricasterMappings = require('./$schemas/generated/tricaster/mappings.json')
+import UdpSendActions = require('./$schemas/generated/udpSend/actions.json')
+import UdpSendOptions = require('./$schemas/generated/udpSend/options.json')
+import UdpSendMappings = require('./$schemas/generated/udpSend/mappings.json')
 import ViscaOverIPActions = require('./$schemas/generated/viscaOverIP/actions.json')
 import ViscaOverIPOptions = require('./$schemas/generated/viscaOverIP/options.json')
 import ViscaOverIPMappings = require('./$schemas/generated/viscaOverIP/mappings.json')
@@ -194,6 +197,12 @@ export const builtinDeviceManifest: TSRManifest = {
 			displayName: generateTranslation('Tricaster'),
 			configSchema: JSON.stringify(TricasterOptions),
 			mappingsSchemas: stringifyMappingSchema(TricasterMappings),
+		},
+		[DeviceType.UDP_SEND]: {
+			displayName: generateTranslation('Udp Send'),
+			actions: UdpSendActions.actions.map(stringifyActionSchema),
+			configSchema: JSON.stringify(UdpSendOptions),
+			mappingsSchemas: stringifyMappingSchema(UdpSendMappings),
 		},
 		[DeviceType.VISCA_OVER_IP]: {
 			displayName: generateTranslation('Visca Over IP'),

@@ -76,7 +76,7 @@ export interface SetFocusModePayload {
 
 export enum FocusMode {
 	AUTO = 'auto',
-	MANUAL = 'manual'
+	MANUAL = 'manual',
 }
 
 

@@ -4,6 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
+import type { DeviceType } from './device-options.js'
 
 export interface TricasterOptions {
 	host: string
@@ -61,6 +62,7 @@ export enum MappingTricasterType {
 export type SomeMappingTricaster = MappingTricasterME | MappingTricasterDSK | MappingTricasterINPUT | MappingTricasterAUDIOCHANNEL | MappingTricasterMIXOUTPUT | MappingTricasterMATRIXOUTPUT
 
 export interface TricasterDeviceTypes {
+	Type: DeviceType.TRICASTER
 	Options: TricasterOptions
 	Mappings: SomeMappingTricaster
 	Actions: null

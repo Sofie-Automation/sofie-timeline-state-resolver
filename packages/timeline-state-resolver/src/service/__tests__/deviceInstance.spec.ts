@@ -1,9 +1,9 @@
 import { DeviceType, StatusCode } from 'timeline-state-resolver-types'
-import { DeviceInstanceWrapper } from '../DeviceInstance'
+import { DeviceInstanceWrapper } from '../DeviceInstance.js'
 import { ActionExecutionResultCode } from 'timeline-state-resolver-types'
-import { t } from '../../lib'
-import { DevicesDict } from '../devices'
-import { waitTime } from '../../__tests__/lib'
+import { t } from '../../lib.js'
+import { DevicesDict } from '../devices.js'
+import { waitTime } from '../../__tests__/lib.js'
 
 const StateHandler = {
 	terminate: jest.fn(),
@@ -154,7 +154,7 @@ describe('DeviceInstance', () => {
 
 	test('handleState', () => {
 		const dev = getDeviceInstance()
-		dev.handleState({ time: 100, layers: {}, nextEvents: [] }, {})
+		dev.handleState({ time: 100, objects: [] }, {})
 
 		expect(StateHandler.handleState).toHaveBeenCalled()
 	})
@@ -194,7 +194,7 @@ describe('DeviceInstance', () => {
 		})
 
 		dev.handleState(
-			{ time: 1, layers: {}, nextEvents: [] },
+			{ time: 1, objects: [] },
 			{ test: { device: DeviceType.ABSTRACT, deviceId: 'wrapper0', options: {} } }
 		)
 		const status2 = dev.getStatus()

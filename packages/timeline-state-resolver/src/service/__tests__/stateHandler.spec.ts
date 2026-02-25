@@ -1,6 +1,6 @@
-import { Timeline, TSRTimelineContent } from 'timeline-state-resolver-types'
-import { StateHandler } from '../stateHandler'
-import { MockTime } from '../../__tests__/mockTime'
+import { TSRTimelineContent, DeviceTimelineState } from 'timeline-state-resolver-types'
+import { StateHandler } from '../stateHandler.js'
+import { MockTime } from '../../__tests__/mockTime.js'
 
 interface DeviceState {
 	[prop: string]: {
@@ -89,7 +89,7 @@ const deviceTrackerMethodsImpl = {
 	}),
 	addressStateReassertsControl: jest.fn(() => deviceTrackerMethodsImpl.reassertsControl),
 }
-import { StateTracker } from '../stateTracker'
+import { StateTracker } from '../stateTracker.js'
 
 describe('stateHandler', () => {
 	const mockTime = new MockTime()
@@ -140,15 +140,15 @@ describe('stateHandler', () => {
 												type: 'removed',
 												property: e,
 											},
-									  }
+										}
 									: n[e].value !== o?.[e]?.value
-									? {
-											command: {
-												type: 'changed',
-												property: e,
-											},
-									  }
-									: null
+										? {
+												command: {
+													type: 'changed',
+													property: e,
+												},
+											}
+										: null
 							)
 							.filter((c) => c !== null),
 					] as CommandWithContext[]
@@ -160,7 +160,7 @@ describe('stateHandler', () => {
 		)
 	}
 
-	async function getNewStateHandlerWithStates(stateToHandle: Timeline.TimelineState<TSRTimelineContent>) {
+	async function getNewStateHandlerWithStates(stateToHandle: DeviceTimelineState<TSRTimelineContent>) {
 		const stateHandler = getNewStateHandler(true)
 		stateHandler.setCurrentState({
 			entry1: { value: true },
@@ -439,18 +439,12 @@ describe('stateHandler', () => {
 function createTimelineState(
 	time: number,
 	objs: Record<string, { value: boolean; preliminary?: number }>
-): Timeline.TimelineState<TSRTimelineContent> {
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time,
-		layers: Object.fromEntries(
-			Object.entries<any>(objs).map(([id, obj]) => [
-				id,
-				{
-					layer: id,
-					content: obj,
-				},
-			])
-		) as any,
-		nextEvents: [],
+		objects: Object.entries<any>(objs).map(([id, obj]) => ({
+			layer: id,
+			content: obj,
+		})) as any,
 	}
 }

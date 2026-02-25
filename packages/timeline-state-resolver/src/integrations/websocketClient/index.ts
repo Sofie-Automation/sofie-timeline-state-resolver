@@ -16,7 +16,7 @@ import {
 	WebsocketClientDeviceTypes,
 	WebsocketClientActions,
 } from 'timeline-state-resolver-types'
-import { WebSocketConnection } from './connection'
+import { WebSocketConnection } from './connection.js'
 import { WebsocketClientActionMethods } from 'timeline-state-resolver-types'
 
 /** this is not an extends but an implementation of the CommandWithContext */
@@ -29,9 +29,11 @@ export type WebSocketCommand = CommandWithContext<
 >
 export type WebSocketClientDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
-export class WebSocketClientDevice
-	implements Device<WebsocketClientDeviceTypes, WebSocketClientDeviceState, WebSocketCommand>
-{
+export class WebSocketClientDevice implements Device<
+	WebsocketClientDeviceTypes,
+	WebSocketClientDeviceState,
+	WebSocketCommand
+> {
 	// Use ! as the connection will be initialized in init:
 	private connection: WebSocketConnection | undefined
 

@@ -1,27 +1,29 @@
-import { OscDevice } from '../integrations/osc'
+import { OscDevice } from '../integrations/osc/index.js'
 import { DeviceType } from 'timeline-state-resolver-types'
 import type { DeviceEntry } from 'timeline-state-resolver-api'
-import { AuthenticatedHTTPSendDevice } from '../integrations/httpSend/AuthenticatedHTTPSendDevice'
-import { ShotokuDevice } from '../integrations/shotoku'
-import { HTTPWatcherDevice } from '../integrations/httpWatcher'
-import { AbstractDevice } from '../integrations/abstract'
-import { AtemDevice } from '../integrations/atem'
-import { TcpSendDevice } from '../integrations/tcpSend'
-import { QuantelDevice } from '../integrations/quantel'
-import { HyperdeckDevice } from '../integrations/hyperdeck'
-import { OBSDevice } from '../integrations/obs'
-import { PanasonicPtzDevice } from '../integrations/panasonicPTZ'
-import { LawoDevice } from '../integrations/lawo'
-import { SofieChefDevice } from '../integrations/sofieChef'
-import { PharosDevice } from '../integrations/pharos'
-import { ViscaOverIpDevice } from '../integrations/viscaOverIP'
-import { TelemetricsDevice } from '../integrations/telemetrics'
-import { TriCasterDevice } from '../integrations/tricaster'
-import { SingularLiveDevice } from '../integrations/singularLive'
-import { MultiOSCMessageDevice } from '../integrations/multiOsc'
-import { WebSocketClientDevice } from '../integrations/websocketClient'
-import { vMixDeviceEntry } from '../integrations/vmix/vMixDeviceEntry'
-import { KairosDevice } from '../integrations/kairos'
+import { AuthenticatedHTTPSendDevice } from '../integrations/httpSend/AuthenticatedHTTPSendDevice.js'
+import { ShotokuDevice } from '../integrations/shotoku/index.js'
+import { HTTPWatcherDevice } from '../integrations/httpWatcher/index.js'
+import { AbstractDevice } from '../integrations/abstract/index.js'
+import { AtemDevice } from '../integrations/atem/index.js'
+import { TcpSendDevice } from '../integrations/tcpSend/index.js'
+import { QuantelDevice } from '../integrations/quantel/index.js'
+import { HyperdeckDevice } from '../integrations/hyperdeck/index.js'
+import { OBSDevice } from '../integrations/obs/index.js'
+import { PanasonicPtzDevice } from '../integrations/panasonicPTZ/index.js'
+import { LawoDevice } from '../integrations/lawo/index.js'
+import { SofieChefDevice } from '../integrations/sofieChef/index.js'
+import { PharosDevice } from '../integrations/pharos/index.js'
+import { ViscaOverIpDevice } from '../integrations/viscaOverIP/index.js'
+import { TelemetricsDevice } from '../integrations/telemetrics/index.js'
+import { TriCasterDevice } from '../integrations/tricaster/index.js'
+import { SingularLiveDevice } from '../integrations/singularLive/index.js'
+import { MultiOSCMessageDevice } from '../integrations/multiOsc/index.js'
+import { WebSocketClientDevice } from '../integrations/websocketClient/index.js'
+import { vMixDeviceEntry } from '../integrations/vmix/vMixDeviceEntry.js'
+import { KairosDevice } from '../integrations/kairos/index.js'
+import { SisyfosDeviceEntry } from '../integrations/sisyfos/entry.js'
+import { UdpSendDevice } from '../integrations/udpSend/index.js'
 
 export type ImplementedServiceDeviceTypes =
 	| DeviceType.ABSTRACT
@@ -37,6 +39,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.PHAROS
 	| DeviceType.SHOTOKU
 	| DeviceType.SINGULAR_LIVE
+	| DeviceType.SISYFOS
 	| DeviceType.SOFIE_CHEF
 	| DeviceType.TCPSEND
 	| DeviceType.TELEMETRICS
@@ -46,6 +49,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.WEBSOCKET_CLIENT
 	| DeviceType.VMIX
 	| DeviceType.KAIROS
+	| DeviceType.UDP_SEND
 
 // TODO - move all device implementations here and remove the old Device classes
 export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
@@ -175,5 +179,12 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		deviceName: (deviceId: string) => 'WebSocket Client ' + deviceId,
 		executionMode: () => 'sequential',
 	},
+	[DeviceType.SISYFOS]: new SisyfosDeviceEntry(),
 	[DeviceType.VMIX]: new vMixDeviceEntry(),
+	[DeviceType.UDP_SEND]: {
+		deviceClass: UdpSendDevice,
+		canConnect: false,
+		deviceName: (deviceId: string) => 'UDP ' + deviceId,
+		executionMode: () => 'sequential',
+	},
 }

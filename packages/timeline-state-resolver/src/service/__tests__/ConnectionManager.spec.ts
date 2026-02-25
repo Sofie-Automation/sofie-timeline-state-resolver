@@ -1,7 +1,7 @@
 import { DeviceType, OSCDeviceType } from 'timeline-state-resolver-types'
-import { ConstructedMockDevices, MockDeviceInstanceWrapper } from '../../__tests__/mockDeviceInstanceWrapper'
-import { ConnectionManager } from '../ConnectionManager'
-import { DevicesRegistry } from '../devicesRegistry'
+import { ConstructedMockDevices, MockDeviceInstanceWrapper } from '../../__tests__/mockDeviceInstanceWrapper.js'
+import { ConnectionManager } from '../ConnectionManager.js'
+import { DevicesRegistry } from '../devicesRegistry.js'
 
 // Mock explicitly the 'dist' version, as that is what threadedClass is being told to load
 jest.mock('../../../dist/service/DeviceInstance', () => ({

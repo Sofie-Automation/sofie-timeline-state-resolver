@@ -1,23 +1,22 @@
-import { Conductor } from '../../../conductor'
 import {
 	Mappings,
 	DeviceType,
-	TSRTimeline,
 	Mapping,
 	SomeMappingSisyfos,
 	TimelineContentTypeSisyfos,
 	MappingSisyfosType,
-	Timeline,
 	TSRTimelineContent,
 	TimelineContentSisyfosAny,
+	Timeline,
 } from 'timeline-state-resolver-types'
-import * as OSC from '../../../__mocks__/osc'
+import * as OSC from '../../../__mocks__/osc.js'
 const MockOSC = OSC.MockOSC
-import { MockTime } from '../../../__tests__/mockTime'
-import { ThreadedClass } from 'threadedclass'
-import { SisyfosMessageDevice } from '../../../integrations/sisyfos'
-import { addConnections, getMockCall, waitUntil } from '../../../__tests__/lib'
-import { SisyfosCommandType, SisyfosState } from '../connection'
+import { MockTime } from '../../../__tests__/mockTime.js'
+import { SisyfosMessageDevice } from '../../../integrations/sisyfos/index.js'
+import { waitUntil } from '../../../__tests__/lib.js'
+import { SisyfosCommandType, SisyfosState } from '../connection.js'
+import { getDeviceContext } from '../../__tests__/testlib.js'
+import { DeviceContextAPI, DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 
 describe('Sisyfos', () => {
 	jest.mock('osc', () => OSC)
@@ -36,9 +35,6 @@ describe('Sisyfos', () => {
 	})
 
 	test('Sisyfos: set ch1: pgm & ch2: lookahead and then ch1: vo, ch2: pgm (old api)', async () => {
-		const commandReceiver0: any = jest.fn(async () => {
-			return Promise.resolve()
-		})
 		const myChannelMapping0: Mapping<SomeMappingSisyfos> = {
 			device: DeviceType.SISYFOS,
 			deviceId: 'mySisyfos',
@@ -74,74 +70,49 @@ describe('Sisyfos', () => {
 				channel: 3,
 			},
 		}
-		const myChannelMapping: Mappings = {
+		const mappings: Mappings = {
 			sisyfos_channel_1: myChannelMapping0,
 			sisyfos_channel_2: myChannelMapping1,
 			sisyfos_channel_2_lookahead: myChannelMapping2,
 			sisyfos_channel_3: myChannelMapping3,
 		}
 
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
-		await myConductor.init() // we cannot do an await, because setTimeout will never call without jest moving on.
-		await addConnections(myConductor.connectionManager, {
-			mySisyfos: {
-				type: DeviceType.SISYFOS,
-				options: {
-					host: '192.168.0.10',
-					port: 8900,
-				},
-				commandReceiver: commandReceiver0,
-			},
-		})
-		myConductor.setTimelineAndMappings([], myChannelMapping)
-		await mockTime.advanceTimeToTicks(10100)
+		const device = getSisyfosDevice()
 
-		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
-		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
-
-		// Check that no commands has been scheduled:
-		expect(await device.queue).toHaveLength(0)
-		commandReceiver0.mockClear()
-
-		myConductor.setTimelineAndMappings([
-			{
+		const state0 = createTimelineState({})
+		const state1 = createTimelineState({
+			sisyfos_channel_1: {
 				id: 'obj0',
-				enable: {
-					start: mockTime.now - 1000, // 1 seconds in the past
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_1',
 				content: {
 					deviceType: DeviceType.SISYFOS,
-					type: 'sisyfos',
-
+					type: 'sisyfos' as any, // backwards-compatibility
 					isPgm: 1,
 				},
 			},
-			{
-				id: 'obj1',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 4000,
-				},
-				layer: 'sisyfos_channel_1',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
+		})
+		const sisyfosState0 = device.convertTimelineStateToDeviceState(state0, mappings)
+		const sisyfosState1 = device.convertTimelineStateToDeviceState(state1, mappings)
+		const commands1 = device.diffStates(sisyfosState0, sisyfosState1)
+		expect(commands1).toHaveLength(1)
+		expect(commands1[0].command).toMatchObject({
+			type: 'togglePgm',
+			channel: 0,
+			values: [1],
+		})
 
-					isPgm: 2,
-				},
-			},
-			{
+		const obj1 = {
+			id: 'obj1',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNEL,
+
+				isPgm: 2,
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const state2 = createTimelineState({
+			sisyfos_channel_1: obj1,
+			sisyfos_channel_2_lookahead: {
 				id: 'obj2',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_2_lookahead',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -151,13 +122,25 @@ describe('Sisyfos', () => {
 				isLookahead: true,
 				lookaheadForLayer: 'sisyfos_channel_2',
 			},
-			{
+		})
+		const sisyfosState2 = device.convertTimelineStateToDeviceState(state2, mappings)
+		const commands2 = device.diffStates(sisyfosState1, sisyfosState2)
+		expect(commands2).toHaveLength(2)
+		expect(commands2[0].command).toMatchObject({
+			type: 'togglePgm',
+			channel: 0,
+			values: [2],
+		})
+		expect(commands2[1].command).toMatchObject({
+			type: 'togglePst',
+			channel: 1,
+			value: 1,
+		})
+
+		const state3 = createTimelineState({
+			sisyfos_channel_1: obj1,
+			sisyfos_channel_2: {
 				id: 'obj3',
-				enable: {
-					start: mockTime.now + 3000, // 3 seconds in the future
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_2',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -165,13 +148,24 @@ describe('Sisyfos', () => {
 					isPgm: 1,
 				},
 			},
-			{
+		})
+		const sisyfosState3 = device.convertTimelineStateToDeviceState(state3, mappings)
+		const commands3 = device.diffStates(sisyfosState2, sisyfosState3)
+		expect(commands3).toHaveLength(2)
+		expect(commands3[0].command).toMatchObject({
+			type: 'togglePgm',
+			channel: 1,
+			values: [1],
+		})
+		expect(commands3[1].command).toMatchObject({
+			type: 'togglePst',
+			channel: 1,
+			value: 0,
+		})
+
+		const state4 = createTimelineState({
+			sisyfos_channel_1: {
 				id: 'obj5',
-				enable: {
-					start: mockTime.now + 5000, // 5 seconds in the future
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_1',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -179,95 +173,48 @@ describe('Sisyfos', () => {
 					label: 'MY TIME',
 				},
 			},
-			{
-				id: 'obj6',
-				enable: {
-					start: mockTime.now + 6000, // 6 seconds in the future
-					duration: 900,
-				},
-				layer: 'sisyfos_channel_1',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
-					visible: false,
-				},
-			},
-			{
-				id: 'obj7',
-				enable: {
-					start: mockTime.now + 7000, // 7 seconds in the future
-					duration: 900,
-				},
-				layer: 'sisyfos_channel_1',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
-					visible: true,
-				},
-			},
-		] as TSRTimeline)
-
-		expect(commandReceiver0.mock.calls.length).toEqual(0)
-		await mockTime.advanceTimeTicks(100) // now-ish
-		expect(commandReceiver0.mock.calls.length).toEqual(1)
-
-		// set pgm
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
-			type: 'togglePgm',
-			channel: 0,
-			values: [1],
 		})
-
-		await mockTime.advanceTimeTicks(1000) // 1 seconds into the future
-		expect(commandReceiver0.mock.calls.length).toEqual(3)
-		// set VO
-		expect(getMockCall(commandReceiver0, 2, 1)).toMatchObject({
-			type: 'togglePst',
-			channel: 1,
-			value: 1,
-		})
-
-		await mockTime.advanceTimeTicks(2000) // 3 seconds into the future
-		expect(commandReceiver0.mock.calls.length).toEqual(5)
-		// set pst
-		expect(getMockCall(commandReceiver0, 3, 1)).toMatchObject({
-			type: 'togglePgm',
-			channel: 1,
-			values: [1],
-		})
-
-		await mockTime.advanceTimeTicks(3000) // 6 seconds into the future
-		expect(commandReceiver0.mock.calls.length).toEqual(9)
-		// set pst off
-		expect(getMockCall(commandReceiver0, 4, 1)).toMatchObject({
-			type: 'togglePst',
-			channel: 1,
-			value: 0,
-		})
-		// set pst off
-		expect(getMockCall(commandReceiver0, 5, 1)).toMatchObject({
+		const sisyfosState4 = device.convertTimelineStateToDeviceState(state4, mappings)
+		const commands4 = device.diffStates(sisyfosState3, sisyfosState4)
+		expect(commands4).toHaveLength(3)
+		expect(commands4[0].command).toMatchObject({
 			type: 'togglePgm',
 			channel: 0,
 			values: [0],
 		})
-		// set new label
-		expect(getMockCall(commandReceiver0, 6, 1)).toMatchObject({
+		expect(commands4[1].command).toMatchObject({
 			type: 'label',
 			channel: 0,
 			value: 'MY TIME',
 		})
-		// set visible false
-		expect(getMockCall(commandReceiver0, 8, 1)).toMatchObject({
+		expect(commands4[2].command).toMatchObject({
+			type: 'togglePgm',
+			channel: 1,
+			values: [0],
+		})
+
+		const state5 = createTimelineState({
+			sisyfos_channel_1: {
+				id: 'obj5',
+				content: {
+					deviceType: DeviceType.SISYFOS,
+					type: TimelineContentTypeSisyfos.CHANNEL,
+
+					visible: false,
+				},
+			},
+		})
+		const sisyfosState5 = device.convertTimelineStateToDeviceState(state5, mappings)
+		const commands5 = device.diffStates(sisyfosState4, sisyfosState5)
+		expect(commands5).toHaveLength(1)
+		expect(commands5[0].command).toMatchObject({
 			type: 'visible',
 			channel: 0,
 			value: false,
 		})
-		await myConductor.destroy()
 	})
+
 	test('Sisyfos: set ch1: pgm & ch2: lookahead and then ch1: vo, ch2: pgm', async () => {
-		const commandReceiver0: any = jest.fn(async () => {
-			return Promise.resolve()
-		})
 		const myChannelMapping0: Mapping<SomeMappingSisyfos> = {
 			device: DeviceType.SISYFOS,
 			deviceId: 'mySisyfos',
@@ -304,46 +251,19 @@ describe('Sisyfos', () => {
 				setLabelToLayerName: false,
 			},
 		}
-		const myChannelMapping: Mappings = {
+		const mappings: Mappings = {
 			sisyfos_channel_1: myChannelMapping0,
 			sisyfos_channel_2: myChannelMapping1,
 			sisyfos_channel_2_lookahead: myChannelMapping2,
 			sisyfos_channel_3: myChannelMapping3,
 		}
 
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
-		await myConductor.init() // we cannot do an await, because setTimeout will never call without jest moving on.
-		await addConnections(myConductor.connectionManager, {
-			mySisyfos: {
-				type: DeviceType.SISYFOS,
-				options: {
-					host: '192.168.0.10',
-					port: 8900,
-				},
-				commandReceiver: commandReceiver0,
-			},
-		})
-		myConductor.setTimelineAndMappings([], myChannelMapping)
-		await mockTime.advanceTimeToTicks(10100)
+		const device = getSisyfosDevice()
 
-		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
-		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
-
-		// Check that no commands has been scheduled:
-		expect(await device.queue).toHaveLength(0)
-		commandReceiver0.mockClear()
-
-		myConductor.setTimelineAndMappings([
-			{
+		const state0 = createTimelineState({})
+		const state1 = createTimelineState({
+			sisyfos_channel_1: {
 				id: 'obj0',
-				enable: {
-					start: mockTime.now - 1000, // 1 seconds in the past
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_1',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -351,27 +271,30 @@ describe('Sisyfos', () => {
 					isPgm: 1,
 				},
 			},
-			{
-				id: 'obj1',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 4000,
-				},
-				layer: 'sisyfos_channel_1',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
+		})
+		const sisyfosState0 = device.convertTimelineStateToDeviceState(state0, mappings)
+		const sisyfosState1 = device.convertTimelineStateToDeviceState(state1, mappings)
+		const commands1 = device.diffStates(sisyfosState0, sisyfosState1)
+		expect(commands1).toHaveLength(1)
+		expect(commands1[0].command).toMatchObject({
+			type: 'togglePgm',
+			channel: 0,
+			values: [1],
+		})
 
-					isPgm: 2,
-				},
-			},
-			{
+		const obj1 = {
+			id: 'obj1',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNEL,
+
+				isPgm: 2,
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const state2 = createTimelineState({
+			sisyfos_channel_1: obj1,
+			sisyfos_channel_2_lookahead: {
 				id: 'obj2',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_2_lookahead',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -381,13 +304,25 @@ describe('Sisyfos', () => {
 				isLookahead: true,
 				lookaheadForLayer: 'sisyfos_channel_2',
 			},
-			{
+		})
+		const sisyfosState2 = device.convertTimelineStateToDeviceState(state2, mappings)
+		const commands2 = device.diffStates(sisyfosState1, sisyfosState2)
+		expect(commands2).toHaveLength(2)
+		expect(commands2[0].command).toMatchObject({
+			type: 'togglePgm',
+			channel: 0,
+			values: [2],
+		})
+		expect(commands2[1].command).toMatchObject({
+			type: 'togglePst',
+			channel: 1,
+			value: 1,
+		})
+
+		const state3 = createTimelineState({
+			sisyfos_channel_1: obj1,
+			sisyfos_channel_2: {
 				id: 'obj3',
-				enable: {
-					start: mockTime.now + 3000, // 3 seconds in the future
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_2',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -395,13 +330,24 @@ describe('Sisyfos', () => {
 					isPgm: 1,
 				},
 			},
-			{
+		})
+		const sisyfosState3 = device.convertTimelineStateToDeviceState(state3, mappings)
+		const commands3 = device.diffStates(sisyfosState2, sisyfosState3)
+		expect(commands3).toHaveLength(2)
+		expect(commands3[0].command).toMatchObject({
+			type: 'togglePgm',
+			channel: 1,
+			values: [1],
+		})
+		expect(commands3[1].command).toMatchObject({
+			type: 'togglePst',
+			channel: 1,
+			value: 0,
+		})
+
+		const state4 = createTimelineState({
+			sisyfos_channel_1: {
 				id: 'obj5',
-				enable: {
-					start: mockTime.now + 5000, // 5 seconds in the future
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_1',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -409,94 +355,42 @@ describe('Sisyfos', () => {
 					label: 'MY TIME',
 				},
 			},
-			{
+		})
+		const sisyfosState4 = device.convertTimelineStateToDeviceState(state4, mappings)
+		const commands4 = device.diffStates(sisyfosState3, sisyfosState4)
+		expect(commands4).toHaveLength(3)
+		expect(commands4[0].command).toMatchObject({
+			type: 'togglePgm',
+			channel: 0,
+			values: [0],
+		})
+		expect(commands4[1].command).toMatchObject({
+			type: 'label',
+			channel: 0,
+			value: 'MY TIME',
+		})
+
+		const state5 = createTimelineState({
+			sisyfos_channel_1: {
 				id: 'obj6',
-				enable: {
-					start: mockTime.now + 6000, // 6 seconds in the future
-					duration: 900,
-				},
-				layer: 'sisyfos_channel_1',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
 					visible: false,
 				},
 			},
-			{
-				id: 'obj7',
-				enable: {
-					start: mockTime.now + 7000, // 7 seconds in the future
-					duration: 900,
-				},
-				layer: 'sisyfos_channel_1',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
-					visible: true,
-				},
-			},
-		])
-
-		await mockTime.advanceTimeTicks(100) // now-ish
-		expect(commandReceiver0.mock.calls.length).toEqual(1)
-		// set pgm
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
-			type: 'togglePgm',
-			channel: 0,
-			values: [1],
 		})
-
-		await mockTime.advanceTimeTicks(1000) // 1 seconds into the future
-		expect(commandReceiver0.mock.calls.length).toEqual(3)
-		// set VO
-		expect(getMockCall(commandReceiver0, 2, 1)).toMatchObject({
-			type: 'togglePst',
-			channel: 1,
-			value: 1,
-		})
-
-		await mockTime.advanceTimeTicks(2000) // 3 seconds into the future
-		expect(commandReceiver0.mock.calls.length).toEqual(5)
-		// set pst
-		expect(getMockCall(commandReceiver0, 3, 1)).toMatchObject({
-			type: 'togglePgm',
-			channel: 1,
-			values: [1],
-		})
-
-		await mockTime.advanceTimeTicks(3000) // 6 seconds into the future
-		expect(commandReceiver0.mock.calls.length).toEqual(9)
-		// set pst off
-		expect(getMockCall(commandReceiver0, 4, 1)).toMatchObject({
-			type: 'togglePst',
-			channel: 1,
-			value: 0,
-		})
-		// set pst off
-		expect(getMockCall(commandReceiver0, 5, 1)).toMatchObject({
-			type: 'togglePgm',
-			channel: 0,
-			values: [0],
-		})
-		// set new label
-		expect(getMockCall(commandReceiver0, 6, 1)).toMatchObject({
-			type: 'label',
-			channel: 0,
-			value: 'MY TIME',
-		})
-		// set visible false
-		expect(getMockCall(commandReceiver0, 8, 1)).toMatchObject({
+		const sisyfosState5 = device.convertTimelineStateToDeviceState(state5, mappings)
+		const commands5 = device.diffStates(sisyfosState4, sisyfosState5)
+		expect(commands5).toHaveLength(1)
+		expect(commands5[0].command).toMatchObject({
 			type: 'visible',
 			channel: 0,
 			value: false,
 		})
-		await myConductor.destroy()
 	})
 
 	test('Sisyfos: set lookahead and take to pgm, with lookahead still on', async () => {
-		const commandReceiver0: any = jest.fn(async () => {
-			return Promise.resolve()
-		})
 		const myChannelMapping0: Mapping<SomeMappingSisyfos> = {
 			device: DeviceType.SISYFOS,
 			deviceId: 'mySisyfos',
@@ -533,46 +427,18 @@ describe('Sisyfos', () => {
 				setLabelToLayerName: false,
 			},
 		}
-		const myChannelMapping: Mappings = {
+		const mappings: Mappings = {
 			sisyfos_channel_1: myChannelMapping0,
 			sisyfos_channel_2: myChannelMapping1,
 			sisyfos_channel_2_lookahead: myChannelMapping2,
 			sisyfos_channel_3: myChannelMapping3,
 		}
 
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
-		await myConductor.init() // we cannot do an await, because setTimeout will never call without jest moving on.
-		await addConnections(myConductor.connectionManager, {
-			mySisyfos: {
-				type: DeviceType.SISYFOS,
-				options: {
-					host: '192.168.0.10',
-					port: 8900,
-				},
-				commandReceiver: commandReceiver0,
-			},
-		})
-		myConductor.setTimelineAndMappings([], myChannelMapping)
-		await mockTime.advanceTimeToTicks(10100)
+		const device = getSisyfosDevice()
 
-		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
-		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
-
-		// Check that no commands has been scheduled:
-		expect(await device.queue).toHaveLength(0)
-		commandReceiver0.mockClear()
-
-		myConductor.setTimelineAndMappings([
-			{
+		const state0 = createTimelineState({
+			sisyfos_channel_2_lookahead: {
 				id: 'obj0',
-				enable: {
-					start: mockTime.now - 1000, // 1 seconds in the past
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_2_lookahead',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -582,13 +448,10 @@ describe('Sisyfos', () => {
 				isLookahead: true,
 				lookaheadForLayer: 'sisyfos_channel_2',
 			},
-			{
+		})
+		const state1 = createTimelineState({
+			sisyfos_channel_2: {
 				id: 'obj1',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_2',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -596,13 +459,8 @@ describe('Sisyfos', () => {
 					isPgm: 1,
 				},
 			},
-			{
+			sisyfos_channel_2_lookahead: {
 				id: 'obj2',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the past
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_2_lookahead',
 				content: {
 					deviceType: DeviceType.SISYFOS,
 					type: TimelineContentTypeSisyfos.CHANNEL,
@@ -612,36 +470,26 @@ describe('Sisyfos', () => {
 				isLookahead: true,
 				lookaheadForLayer: 'sisyfos_channel_2',
 			},
-		])
-
-		await mockTime.advanceTimeTicks(100) // now-ish
-		expect(commandReceiver0.mock.calls.length).toEqual(1)
-		// set pst
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
-			type: 'togglePst',
-			channel: 1,
-			value: 1,
 		})
 
-		await mockTime.advanceTimeTicks(1000) // 1 seconds into the future
-		expect(commandReceiver0.mock.calls.length).toEqual(3)
+		const sisyfosState0 = device.convertTimelineStateToDeviceState(state0, mappings)
+		const sisyfosState1 = device.convertTimelineStateToDeviceState(state1, mappings)
+		const commands = device.diffStates(sisyfosState0, sisyfosState1)
 
-		await mockTime.advanceTimeTicks(2000) // 3 seconds into the future
-		expect(commandReceiver0.mock.calls.length).toEqual(4)
-
-		// set pst off
-		expect(getMockCall(commandReceiver0, 3, 1)).toMatchObject({
+		expect(commands).toHaveLength(2)
+		expect(commands[0].command).toMatchObject({
 			type: 'togglePgm',
 			channel: 1,
-			values: [0],
+			values: [1],
 		})
-		await myConductor.destroy()
+		expect(commands[1].command).toMatchObject({
+			type: 'togglePst',
+			channel: 1,
+			value: 0,
+		})
 	})
 
 	test('Sisyfos: using CHANNELS', async () => {
-		const commandReceiver0: any = jest.fn(async () => {
-			return Promise.resolve()
-		})
 		const myChannelMapping0: Mapping<SomeMappingSisyfos> = {
 			device: DeviceType.SISYFOS,
 			deviceId: 'mySisyfos',
@@ -674,196 +522,167 @@ describe('Sisyfos', () => {
 				mappingType: MappingSisyfosType.Channels,
 			},
 		}
-		const myChannelMapping: Mappings = {
+		const mappings: Mappings = {
 			sisyfos_channels_base: myChannelMapping0,
 			sisyfos_channel_1: myChannelMapping1,
 			sisyfos_channel_2: myChannelMapping2,
 			sisyfos_channels: myChannelMapping3,
 		}
 
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
+		const device = getSisyfosDevice()
+
+		const baselineObj = {
+			id: 'baseline',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNELS,
+
+				channels: [
+					{
+						mappedLayer: 'sisyfos_channel_1',
+						faderLevel: 0.1,
+						isPgm: 0,
+					},
+					{
+						mappedLayer: 'sisyfos_channel_2',
+						faderLevel: 0.2,
+						isPgm: 0,
+						fadeTime: 500,
+					},
+				],
+				overridePriority: -999,
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const state0 = createTimelineState({})
+		const state1 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
 		})
-		await myConductor.init() // we cannot do an await, because setTimeout will never call without jest moving on.
-		await addConnections(myConductor.connectionManager, {
-			mySisyfos: {
-				type: DeviceType.SISYFOS,
-				options: {
-					host: '192.168.0.10',
-					port: 8900,
-				},
-				commandReceiver: commandReceiver0,
-			},
-		})
-		myConductor.setTimelineAndMappings([], myChannelMapping)
-		await mockTime.advanceTimeToTicks(10100)
+		const sisyfosState0 = device.convertTimelineStateToDeviceState(state0, mappings)
+		const sisyfosState1 = device.convertTimelineStateToDeviceState(state1, mappings)
+		const commands1 = device.diffStates(sisyfosState0, sisyfosState1)
 
-		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
-		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
-
-		// Check that no commands has been scheduled:
-		expect(await device.queue).toHaveLength(0)
-		commandReceiver0.mockClear()
-
-		myConductor.setTimelineAndMappings([
-			{
-				id: 'baseline',
-				enable: {
-					while: 1,
-				},
-				layer: 'sisyfos_channels_base',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNELS,
-
-					channels: [
-						{
-							mappedLayer: 'sisyfos_channel_1',
-							faderLevel: 0.1,
-							isPgm: 0,
-						},
-						{
-							mappedLayer: 'sisyfos_channel_2',
-							faderLevel: 0.2,
-							isPgm: 0,
-							fadeTime: 500,
-						},
-					],
-					overridePriority: -999,
-				},
-			},
-			{
-				id: 'obj1',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 10000,
-				},
-				layer: 'sisyfos_channel_1',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
-					isPgm: 1,
-				},
-			},
-			{
-				id: 'obj2',
-				enable: {
-					start: mockTime.now + 2000, // 2 seconds in the future
-					duration: 2000,
-				},
-				layer: 'sisyfos_channel_2',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
-					isPgm: 1,
-				},
-			},
-			{
-				id: 'obj3',
-				enable: {
-					start: mockTime.now + 3000, // 3 seconds in the future
-					duration: 1000,
-				},
-				layer: 'sisyfos_channels',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNELS,
-
-					channels: [
-						{
-							mappedLayer: 'sisyfos_channel_1',
-							faderLevel: 0.75,
-						},
-						{
-							mappedLayer: 'sisyfos_channel_2',
-							faderLevel: 0.74,
-							fadeTime: 500,
-						},
-					],
-					overridePriority: -999,
-				},
-			},
-		])
-
-		// baseline:
-		await mockTime.advanceTimeTicks(100) // 100
-		expect(commandReceiver0.mock.calls.length).toEqual(2)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		expect(commands1).toHaveLength(2)
+		expect(commands1[0].command).toMatchObject({
 			type: 'setFader',
 			channel: 1,
 			values: [0.1],
 		})
-		expect(getMockCall(commandReceiver0, 1, 1)).toMatchObject({
+		expect(commands1[1].command).toMatchObject({
 			type: 'setFader',
 			channel: 2,
 			values: [0.2, 500],
 		})
-		commandReceiver0.mockClear()
 
-		// obj1 has started
-		await mockTime.advanceTimeTicks(1000) // 1100
-		expect(commandReceiver0.mock.calls.length).toEqual(1)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const obj1 = {
+			id: 'obj1',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNEL,
+				isPgm: 1,
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const state2 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+			sisyfos_channel_1: obj1,
+		})
+		const sisyfosState2 = device.convertTimelineStateToDeviceState(state2, mappings)
+		const commands2 = device.diffStates(sisyfosState1, sisyfosState2)
+
+		expect(commands2).toHaveLength(1)
+		expect(commands2[0].command).toMatchObject({
 			type: 'togglePgm',
 			channel: 1,
 			values: [1],
 		})
-		commandReceiver0.mockClear()
 
-		// obj2 has started
-		await mockTime.advanceTimeTicks(1000) // 2100
-		expect(commandReceiver0.mock.calls.length).toEqual(1)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const obj2 = {
+			id: 'obj2',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNEL,
+				isPgm: 1,
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const state3 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+			sisyfos_channel_1: obj1,
+			sisyfos_channel_2: obj2,
+		})
+		const sisyfosState3 = device.convertTimelineStateToDeviceState(state3, mappings)
+		const commands3 = device.diffStates(sisyfosState2, sisyfosState3)
+		expect(commands3).toHaveLength(1)
+		expect(commands3[0].command).toMatchObject({
 			type: 'togglePgm',
 			channel: 2,
 			values: [1, 500],
 		})
-		commandReceiver0.mockClear()
 
-		// obj3 has started
-		await mockTime.advanceTimeTicks(1000) // 3100
-		expect(commandReceiver0.mock.calls.length).toEqual(2)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const obj3 = {
+			id: 'obj3',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNELS,
+
+				channels: [
+					{
+						mappedLayer: 'sisyfos_channel_1',
+						faderLevel: 0.75,
+					},
+					{
+						mappedLayer: 'sisyfos_channel_2',
+						faderLevel: 0.74,
+						fadeTime: 500,
+					},
+				],
+				overridePriority: -999,
+			} satisfies TimelineContentSisyfosAny,
+		}
+
+		const state4 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+			sisyfos_channel_1: obj1,
+			sisyfos_channel_2: obj2,
+			sisyfos_channels: obj3,
+		})
+		const sisyfosState4 = device.convertTimelineStateToDeviceState(state4, mappings)
+		const commands4 = device.diffStates(sisyfosState3, sisyfosState4)
+		expect(commands4).toHaveLength(2)
+		expect(commands4[0].command).toMatchObject({
 			type: 'setFader',
 			channel: 1,
 			values: [0.75],
 		})
-		expect(getMockCall(commandReceiver0, 1, 1)).toMatchObject({
+		expect(commands4[1].command).toMatchObject({
 			type: 'setFader',
 			channel: 2,
 			values: [0.74, 500],
 		})
-		commandReceiver0.mockClear()
 
-		// obj3 & obj2 has ended
-		await mockTime.advanceTimeTicks(1000) // 4100
-		expect(commandReceiver0.mock.calls.length).toEqual(3)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const state5 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+			sisyfos_channel_1: obj1,
+		})
+		const sisyfosState5 = device.convertTimelineStateToDeviceState(state5, mappings)
+		const commands5 = device.diffStates(sisyfosState4, sisyfosState5)
+		expect(commands5).toHaveLength(3)
+		expect(commands5[0].command).toMatchObject({
 			type: 'setFader',
 			channel: 1,
 			values: [0.1],
 		})
-		expect(getMockCall(commandReceiver0, 1, 1)).toMatchObject({
+		expect(commands5[1].command).toMatchObject({
 			type: 'togglePgm',
 			channel: 2,
 			values: [0, 500],
 		})
-		expect(getMockCall(commandReceiver0, 2, 1)).toMatchObject({
+		expect(commands5[2].command).toMatchObject({
 			type: 'setFader',
 			channel: 2,
 			values: [0.2, 500],
 		})
-
-		commandReceiver0.mockClear()
-
-		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using global triggerValue', async () => {
-		const commandReceiver0: any = jest.fn(async () => {
-			return Promise.resolve()
-		})
 		const myChannelMapping0: Mapping<SomeMappingSisyfos> = {
 			device: DeviceType.SISYFOS,
 			deviceId: 'mySisyfos',
@@ -903,7 +722,7 @@ describe('Sisyfos', () => {
 				mappingType: MappingSisyfosType.Channels,
 			},
 		}
-		const myChannelMapping: Mappings = {
+		const mappings: Mappings = {
 			sisyfos_channels_base: myChannelMapping0,
 			sisyfos_channels_base_trigger: myTriggerMapping0,
 			sisyfos_channel_1: myChannelMapping1,
@@ -911,102 +730,64 @@ describe('Sisyfos', () => {
 			sisyfos_channels: myChannelMapping3,
 		}
 
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
+		const device = getSisyfosDevice()
+
+		const baselineObj = {
+			id: 'baseline',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNELS,
+
+				channels: [
+					{
+						mappedLayer: 'sisyfos_channel_1',
+						faderLevel: 0.1,
+						isPgm: 0,
+					},
+					{
+						mappedLayer: 'sisyfos_channel_2',
+						faderLevel: 0.2,
+						isPgm: 0,
+					},
+				],
+				overridePriority: -999,
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const baselineTriggerObj = {
+			id: 'baseline_trigger',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.TRIGGERVALUE,
+				triggerValue: 'a',
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const obj1 = {
+			id: 'obj1',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.TRIGGERVALUE,
+				triggerValue: 'b',
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const obj2 = {
+			id: 'obj2',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNEL,
+
+				isPgm: 1,
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const state0 = createTimelineState({})
+		const state1 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+			sisyfos_channels_base_trigger: baselineTriggerObj,
 		})
-		await myConductor.init() // we cannot do an await, because setTimeout will never call without jest moving on.
-		await addConnections(myConductor.connectionManager, {
-			mySisyfos: {
-				type: DeviceType.SISYFOS,
-				options: {
-					host: '192.168.0.10',
-					port: 8900,
-				},
-				commandReceiver: commandReceiver0,
-			},
-		})
-		myConductor.setTimelineAndMappings([], myChannelMapping)
-		await mockTime.advanceTimeToTicks(10100)
-
-		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
-		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
-
-		// Check that no commands has been scheduled:
-		expect(await device.queue).toHaveLength(0)
-		commandReceiver0.mockClear()
-
-		myConductor.setTimelineAndMappings([
-			{
-				id: 'baseline',
-				enable: {
-					while: 1,
-				},
-				layer: 'sisyfos_channels_base',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNELS,
-
-					channels: [
-						{
-							mappedLayer: 'sisyfos_channel_1',
-							faderLevel: 0.1,
-							isPgm: 0,
-						},
-						{
-							mappedLayer: 'sisyfos_channel_2',
-							faderLevel: 0.2,
-							isPgm: 0,
-						},
-					],
-					overridePriority: -999,
-				},
-			},
-			{
-				id: 'baseline_trigger',
-				enable: {
-					while: 1,
-				},
-				layer: 'sisyfos_channels_base_trigger',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.TRIGGERVALUE,
-					triggerValue: 'a',
-				},
-			},
-			{
-				id: 'obj1',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 10000,
-				},
-				layer: 'sisyfos_channel_1',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.TRIGGERVALUE,
-					triggerValue: 'b',
-				},
-			},
-			{
-				id: 'obj2',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 10000,
-				},
-				layer: 'sisyfos_channel_2',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
-
-					isPgm: 1,
-				},
-			},
-		])
-
-		// baseline:
-		await mockTime.advanceTimeTicks(100) // 100
-		expect(commandReceiver0.mock.calls.length).toEqual(2)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const sisyfosState0 = device.convertTimelineStateToDeviceState(state0, mappings)
+		const sisyfosState1 = device.convertTimelineStateToDeviceState(state1, mappings)
+		const commands1 = device.diffStates(sisyfosState0, sisyfosState1)
+		expect(commands1).toHaveLength(2)
+		expect(commands1[0].command).toMatchObject({
 			type: 'setChannel',
 			channel: 1,
 			values: {
@@ -1014,7 +795,7 @@ describe('Sisyfos', () => {
 				pgmOn: 0,
 			},
 		})
-		expect(getMockCall(commandReceiver0, 1, 1)).toMatchObject({
+		expect(commands1[1].command).toMatchObject({
 			type: 'setChannel',
 			channel: 2,
 			values: {
@@ -1022,12 +803,17 @@ describe('Sisyfos', () => {
 				pgmOn: 0,
 			},
 		})
-		commandReceiver0.mockClear()
 
-		// obj1 has started
-		await mockTime.advanceTimeTicks(1000) // 1100
-		expect(commandReceiver0.mock.calls.length).toEqual(2)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const state2 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+			sisyfos_channels_base_trigger: baselineTriggerObj,
+			sisyfos_channel_1: obj1,
+			sisyfos_channel_2: obj2,
+		})
+		const sisyfosState2 = device.convertTimelineStateToDeviceState(state2, mappings)
+		const commands2 = device.diffStates(sisyfosState1, sisyfosState2)
+		expect(commands2).toHaveLength(2)
+		expect(commands2[0].command).toMatchObject({
 			type: 'setChannel',
 			channel: 1,
 			values: {
@@ -1035,7 +821,7 @@ describe('Sisyfos', () => {
 				pgmOn: 0,
 			},
 		})
-		expect(getMockCall(commandReceiver0, 1, 1)).toMatchObject({
+		expect(commands2[1].command).toMatchObject({
 			type: 'setChannel',
 			channel: 2,
 			values: {
@@ -1043,12 +829,15 @@ describe('Sisyfos', () => {
 				pgmOn: 1,
 			},
 		})
-		commandReceiver0.mockClear()
 
-		// back to baseline
-		await mockTime.advanceTimeTicks(10000) // 11100
-		expect(commandReceiver0.mock.calls.length).toEqual(2)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const state3 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+			sisyfos_channels_base_trigger: baselineTriggerObj,
+		})
+		const sisyfosState3 = device.convertTimelineStateToDeviceState(state3, mappings)
+		const commands3 = device.diffStates(sisyfosState2, sisyfosState3)
+		expect(commands3).toHaveLength(2)
+		expect(commands3[0].command).toMatchObject({
 			type: 'setChannel',
 			channel: 1,
 			values: {
@@ -1056,7 +845,7 @@ describe('Sisyfos', () => {
 				pgmOn: 0,
 			},
 		})
-		expect(getMockCall(commandReceiver0, 1, 1)).toMatchObject({
+		expect(commands3[1].command).toMatchObject({
 			type: 'setChannel',
 			channel: 2,
 			values: {
@@ -1064,16 +853,9 @@ describe('Sisyfos', () => {
 				pgmOn: 0,
 			},
 		})
-
-		commandReceiver0.mockClear()
-
-		await myConductor.destroy()
 	})
 
 	test('Sisyfos: using per-channel triggerValue - initially defined', async () => {
-		const commandReceiver0: any = jest.fn(async () => {
-			return Promise.resolve()
-		})
 		const myChannelMapping0: Mapping<SomeMappingSisyfos> = {
 			device: DeviceType.SISYFOS,
 			deviceId: 'mySisyfos',
@@ -1099,84 +881,55 @@ describe('Sisyfos', () => {
 				setLabelToLayerName: false,
 			},
 		}
-		const myChannelMapping: Mappings = {
+		const mappings: Mappings = {
 			sisyfos_channels_base: myChannelMapping0,
 			sisyfos_channel_1: myChannelMapping1,
 			sisyfos_channel_2: myChannelMapping2,
 		}
 
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
+		const device = getSisyfosDevice()
+
+		const baselineObj = {
+			id: 'baseline',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNELS,
+
+				channels: [
+					{
+						mappedLayer: 'sisyfos_channel_1',
+						faderLevel: 0.1,
+						isPgm: 0,
+					},
+					{
+						mappedLayer: 'sisyfos_channel_2',
+						faderLevel: 0.2,
+						isPgm: 0,
+					},
+				],
+				overridePriority: -999,
+				triggerValue: 'a',
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const obj1 = {
+			id: 'obj1',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNEL,
+
+				triggerValue: 'b',
+			} satisfies TimelineContentSisyfosAny,
+		}
+
+		const state0 = createTimelineState({})
+		const state1 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
 		})
-		await myConductor.init() // we cannot do an await, because setTimeout will never call without jest moving on.
-		await addConnections(myConductor.connectionManager, {
-			mySisyfos: {
-				type: DeviceType.SISYFOS,
-				options: {
-					host: '192.168.0.10',
-					port: 8900,
-				},
-				commandReceiver: commandReceiver0,
-			},
-		})
-		myConductor.setTimelineAndMappings([], myChannelMapping)
-		await mockTime.advanceTimeToTicks(10100)
-
-		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
-		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
-
-		// Check that no commands has been scheduled:
-		expect(await device.queue).toHaveLength(0)
-		commandReceiver0.mockClear()
-
-		myConductor.setTimelineAndMappings([
-			{
-				id: 'baseline',
-				enable: {
-					while: 1,
-				},
-				layer: 'sisyfos_channels_base',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNELS,
-
-					channels: [
-						{
-							mappedLayer: 'sisyfos_channel_1',
-							faderLevel: 0.1,
-							isPgm: 0,
-						},
-						{
-							mappedLayer: 'sisyfos_channel_2',
-							faderLevel: 0.2,
-							isPgm: 0,
-						},
-					],
-					overridePriority: -999,
-					triggerValue: 'a',
-				},
-			},
-			{
-				id: 'obj1',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 10000,
-				},
-				layer: 'sisyfos_channel_2',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
-
-					triggerValue: 'b',
-				},
-			},
-		])
-
-		// baseline:
-		await mockTime.advanceTimeTicks(100) // 100
-		expect(commandReceiver0.mock.calls.length).toEqual(2)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const sisyfosState0 = device.convertTimelineStateToDeviceState(state0, mappings)
+		const sisyfosState1 = device.convertTimelineStateToDeviceState(state1, mappings)
+		const commands1 = device.diffStates(sisyfosState0, sisyfosState1)
+		expect(commands1).toHaveLength(2)
+		expect(commands1[0].command).toMatchObject({
 			type: 'setChannel',
 			channel: 1,
 			values: {
@@ -1184,33 +937,7 @@ describe('Sisyfos', () => {
 				pgmOn: 0,
 			},
 		})
-		expect(getMockCall(commandReceiver0, 1, 1)).toMatchObject({
-			type: 'setChannel',
-			channel: 2,
-			values: {
-				faderLevel: 0.2,
-				pgmOn: 0,
-			},
-		})
-		commandReceiver0.mockClear()
-
-		// obj1 has started
-		await mockTime.advanceTimeTicks(1000) // 1100
-		expect(commandReceiver0.mock.calls.length).toEqual(1)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
-			type: 'setChannel',
-			channel: 2,
-			values: {
-				faderLevel: 0.2,
-				pgmOn: 0,
-			},
-		})
-		commandReceiver0.mockClear()
-
-		// back to baseline
-		await mockTime.advanceTimeTicks(10000) // 11100
-		expect(commandReceiver0.mock.calls.length).toEqual(1)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		expect(commands1[1].command).toMatchObject({
 			type: 'setChannel',
 			channel: 2,
 			values: {
@@ -1219,15 +946,39 @@ describe('Sisyfos', () => {
 			},
 		})
 
-		commandReceiver0.mockClear()
+		const state2 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+			sisyfos_channel_2: obj1,
+		})
+		const sisyfosState2 = device.convertTimelineStateToDeviceState(state2, mappings)
+		const commands2 = device.diffStates(sisyfosState1, sisyfosState2)
+		expect(commands2).toHaveLength(1)
+		expect(commands2[0].command).toMatchObject({
+			type: 'setChannel',
+			channel: 2,
+			values: {
+				faderLevel: 0.2,
+				pgmOn: 0,
+			},
+		})
 
-		await myConductor.destroy()
+		const state3 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+		})
+		const sisyfosState3 = device.convertTimelineStateToDeviceState(state3, mappings)
+		const commands3 = device.diffStates(sisyfosState2, sisyfosState3)
+		expect(commands3).toHaveLength(1)
+		expect(commands3[0].command).toMatchObject({
+			type: 'setChannel',
+			channel: 2,
+			values: {
+				faderLevel: 0.2,
+				pgmOn: 0,
+			},
+		})
 	})
 
 	test('Sisyfos: using per-channel triggerValue - initially undefined', async () => {
-		const commandReceiver0: any = jest.fn(async () => {
-			return Promise.resolve()
-		})
 		const myChannelMapping0: Mapping<SomeMappingSisyfos> = {
 			device: DeviceType.SISYFOS,
 			deviceId: 'mySisyfos',
@@ -1253,99 +1004,73 @@ describe('Sisyfos', () => {
 				setLabelToLayerName: false,
 			},
 		}
-		const myChannelMapping: Mappings = {
+		const mappings: Mappings = {
 			sisyfos_channels_base: myChannelMapping0,
 			sisyfos_channel_1: myChannelMapping1,
 			sisyfos_channel_2: myChannelMapping2,
 		}
 
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
+		const device = getSisyfosDevice()
+
+		const baselineObj = {
+			id: 'baseline',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNELS,
+
+				channels: [
+					{
+						mappedLayer: 'sisyfos_channel_1',
+						faderLevel: 0.1,
+						isPgm: 0,
+					},
+					{
+						mappedLayer: 'sisyfos_channel_2',
+						faderLevel: 0.2,
+						isPgm: 0,
+					},
+				],
+				overridePriority: -999,
+				// triggerValue: 'a', - the only input-difference between the case above
+			} satisfies TimelineContentSisyfosAny,
+		}
+		const obj1 = {
+			id: 'obj1',
+			content: {
+				deviceType: DeviceType.SISYFOS,
+				type: TimelineContentTypeSisyfos.CHANNEL,
+
+				triggerValue: 'b',
+			} satisfies TimelineContentSisyfosAny,
+		}
+
+		const state0 = createTimelineState({})
+		const state1 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
 		})
-		await myConductor.init() // we cannot do an await, because setTimeout will never call without jest moving on.
-		await addConnections(myConductor.connectionManager, {
-			mySisyfos: {
-				type: DeviceType.SISYFOS,
-				options: {
-					host: '192.168.0.10',
-					port: 8900,
-				},
-				commandReceiver: commandReceiver0,
-			},
-		})
-		myConductor.setTimelineAndMappings([], myChannelMapping)
-		await mockTime.advanceTimeToTicks(10100)
-
-		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
-		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
-
-		// Check that no commands has been scheduled:
-		expect(await device.queue).toHaveLength(0)
-		commandReceiver0.mockClear()
-
-		myConductor.setTimelineAndMappings([
-			{
-				id: 'baseline',
-				enable: {
-					while: 1,
-				},
-				layer: 'sisyfos_channels_base',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNELS,
-
-					channels: [
-						{
-							mappedLayer: 'sisyfos_channel_1',
-							faderLevel: 0.1,
-							isPgm: 0,
-						},
-						{
-							mappedLayer: 'sisyfos_channel_2',
-							faderLevel: 0.2,
-							isPgm: 0,
-						},
-					],
-					overridePriority: -999,
-					// triggerValue: 'a'
-				},
-			},
-			{
-				id: 'obj1',
-				enable: {
-					start: mockTime.now + 1000, // 1 seconds in the future
-					duration: 10000,
-				},
-				layer: 'sisyfos_channel_2',
-				content: {
-					deviceType: DeviceType.SISYFOS,
-					type: TimelineContentTypeSisyfos.CHANNEL,
-
-					triggerValue: 'b',
-				},
-			},
-		])
-
-		// baseline:
-		await mockTime.advanceTimeTicks(100) // 100
-		expect(commandReceiver0.mock.calls.length).toEqual(2)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const sisyfosState0 = device.convertTimelineStateToDeviceState(state0, mappings)
+		const sisyfosState1 = device.convertTimelineStateToDeviceState(state1, mappings)
+		const commands1 = device.diffStates(sisyfosState0, sisyfosState1)
+		expect(commands1).toHaveLength(2)
+		expect(commands1[0].command).toMatchObject({
 			type: 'setFader',
 			channel: 1,
 			values: [0.1],
 		})
-		expect(getMockCall(commandReceiver0, 1, 1)).toMatchObject({
+		expect(commands1[1].command).toMatchObject({
 			type: 'setFader',
 			channel: 2,
 			values: [0.2],
 		})
-		commandReceiver0.mockClear()
 
-		// obj1 has started
-		await mockTime.advanceTimeTicks(1000) // 1100
-		expect(commandReceiver0.mock.calls.length).toEqual(1)
-		expect(getMockCall(commandReceiver0, 0, 1)).toMatchObject({
+		const state2 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+			sisyfos_channel_2: obj1,
+		})
+		const sisyfosState2 = device.convertTimelineStateToDeviceState(state2, mappings)
+		const commands2 = device.diffStates(sisyfosState1, sisyfosState2)
+		expect(commands2).toHaveLength(1)
+		expect(commands2[0].command).toMatchObject({
 			type: 'setChannel',
 			channel: 2,
 			values: {
@@ -1353,53 +1078,30 @@ describe('Sisyfos', () => {
 				pgmOn: 0,
 			},
 		})
-		commandReceiver0.mockClear()
 
-		// back to baseline
-		await mockTime.advanceTimeTicks(10000) // 11100
-		expect(commandReceiver0.mock.calls.length).toEqual(0)
-
-		commandReceiver0.mockClear()
-
-		await myConductor.destroy()
+		const state3 = createTimelineState({
+			sisyfos_channels_base: baselineObj,
+		})
+		const sisyfosState3 = device.convertTimelineStateToDeviceState(state3, mappings)
+		const commands3 = device.diffStates(sisyfosState2, sisyfosState3)
+		expect(commands3).toHaveLength(0)
 	})
 
 	test('Connection status', async () => {
-		const commandReceiver0: any = jest.fn(async () => {
-			return Promise.resolve()
-		})
-
-		const myConductor = new Conductor({
-			multiThreadedResolver: false,
-			getCurrentTime: mockTime.getCurrentTime,
-		})
-		// myConductor.setTimelineAndMappings([], myChannelMapping)
-		await myConductor.init()
-		await addConnections(myConductor.connectionManager, {
-			mySisyfos: {
-				type: DeviceType.SISYFOS,
-				options: {
-					host: '192.168.0.10',
-					port: 8900,
-				},
-				commandReceiver: commandReceiver0,
-			},
-		})
 		await mockTime.advanceTimeToTicks(10100)
 
-		const deviceContainer = myConductor.connectionManager.getConnection('mySisyfos')
-		const device = deviceContainer!.device as ThreadedClass<SisyfosMessageDevice>
+		const context = getDeviceContext()
+		const device = getSisyfosDevice(context)
 
-		const onConnectionChanged = jest.fn()
-		await device.on('connectionChanged', onConnectionChanged)
-
-		// Check that no commands has been scheduled:
-		expect(await device.queue).toHaveLength(0)
+		await device.init({
+			host: '192.168.0.10',
+			port: 8900,
+		})
 
 		// Wait for the connection to be initialized:
 		await waitUntil(
 			async () => {
-				expect(await device.connected).toEqual(true)
+				expect(device.connected).toEqual(true)
 			},
 			1000,
 			mockTime
@@ -1414,10 +1116,10 @@ describe('Sisyfos', () => {
 		await mockTime.advanceTimeTicks(3000)
 		await wait(1)
 
-		expect(await device.connected).toEqual(false)
+		expect(device.connected).toEqual(false)
 
-		expect(onConnectionChanged.mock.calls.length).toBeGreaterThanOrEqual(1)
-		onConnectionChanged.mockClear()
+		expect(context.connectionChanged.mock.calls.length).toBeGreaterThanOrEqual(1)
+		context.connectionChanged.mockClear()
 
 		// Simulate a connection regain:
 		MockOSC.connectionIsGood = true
@@ -1426,17 +1128,16 @@ describe('Sisyfos', () => {
 		await mockTime.advanceTimeTicks(3000)
 		await wait(1)
 
-		expect(await device.connected).toEqual(true)
-		expect(onConnectionChanged.mock.calls.length).toBeGreaterThanOrEqual(1)
-		await myConductor.destroy()
+		expect(device.connected).toEqual(true)
+		expect(context.connectionChanged.mock.calls.length).toBeGreaterThanOrEqual(1)
 	})
 
 	describe('convertTimelineStateToDeviceState', () => {
 		async function convertState(
-			tlState: Timeline.TimelineState<TSRTimelineContent>,
+			tlState: DeviceTimelineState<TSRTimelineContent>,
 			mappings: Mappings<SomeMappingSisyfos>
 		) {
-			const device = await getSisyfosDevice()
+			const device = getSisyfosDevice()
 
 			return device.convertTimelineStateToDeviceState(tlState, mappings)
 		}
@@ -1475,7 +1176,7 @@ describe('Sisyfos', () => {
 			})
 		})
 
-		it('applies mapping defaults for channels when theit disableDefaults!==true', async () => {
+		it('applies mapping defaults for channels when disableDefaults!==true', async () => {
 			expect(
 				await convertState(
 					createTimelineState({
@@ -1690,7 +1391,7 @@ describe('Sisyfos', () => {
 
 	describe('diffState', () => {
 		async function compareStates(oldDevState: SisyfosState | undefined, newDevState: SisyfosState) {
-			const device = await getSisyfosDevice()
+			const device = getSisyfosDevice()
 			return device.diffStates(oldDevState, newDevState)
 		}
 
@@ -1786,27 +1487,27 @@ describe('Sisyfos', () => {
 	})
 })
 
-async function getSisyfosDevice() {
-	const dev = new SisyfosMessageDevice(
-		'sisyfos0',
-		{
-			type: DeviceType.SISYFOS,
-			options: {
-				host: 'localhost',
-				port: 8900,
-			},
-		},
-		async () => Promise.resolve(Date.now())
-	)
+function getSisyfosDevice(mockContext?: DeviceContextAPI<any>) {
+	const dev = new SisyfosMessageDevice(mockContext ?? getDeviceContext())
 	return dev
 }
 
-function createTimelineState(
-	objs: Record<string, { id: string; content: TimelineContentSisyfosAny }>
-): Timeline.TimelineState<TSRTimelineContent> {
+type SisyfosTimelineObject = Pick<
+	DeviceTimelineStateObject<TimelineContentSisyfosAny>,
+	'id' | 'content' | 'isLookahead' | 'lookaheadForLayer'
+>
+
+function createTimelineState(objs: Record<string, SisyfosTimelineObject>): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
-		layers: objs as any,
-		nextEvents: [],
+		objects: Object.entries<SisyfosTimelineObject>(objs).map(([layer, obj]) => {
+			return {
+				...obj,
+				layer,
+				enable: { start: 0 },
+				priority: 1,
+				instance: { id: '@0', start: 0, end: null, references: [] } as Timeline.TimelineObjectInstance,
+			} as DeviceTimelineStateObject<TSRTimelineContent>
+		}),
 	}
 }

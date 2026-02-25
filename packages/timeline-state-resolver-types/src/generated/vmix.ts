@@ -4,7 +4,8 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions.js'
+import type { DeviceType } from './device-options.js'
 
 export interface VmixOptions {
 	host: string
@@ -24,6 +25,7 @@ export interface MappingVmixProgram {
 	 * Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)
 	 */
 	index?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Program
 }
 
@@ -32,6 +34,7 @@ export interface MappingVmixPreview {
 	 * Number of the mix (1 is the main mix, 2-16 are optional Mix Inputs)
 	 */
 	index?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Preview
 }
 
@@ -40,6 +43,7 @@ export interface MappingVmixInput {
 	 * Input number or name. Omit if you plan to use the `filePath` property in `TimelineContentVMixInput`.
 	 */
 	index?: string
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Input
 }
 
@@ -52,6 +56,7 @@ export interface MappingVmixAudioChannel {
 	 * Input layer name
 	 */
 	inputLayer?: string
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.AudioChannel
 }
 
@@ -60,6 +65,7 @@ export interface MappingVmixAudioBus {
 	 * Name (letter) of the bus
 	 */
 	index: 'M' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.AudioBus
 }
 
@@ -68,6 +74,7 @@ export interface MappingVmixOutput {
 	 * Output
 	 */
 	index: '2' | '3' | '4' | 'External2' | 'Fullscreen' | 'Fullscreen2'
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Output
 }
 
@@ -76,31 +83,48 @@ export interface MappingVmixOverlay {
 	 * Overlay number
 	 */
 	index: 1 | 2 | 3 | 4
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Overlay
 }
 
 export interface MappingVmixRecording {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Recording
 }
 
 export interface MappingVmixStreaming {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Streaming
 }
 
 export interface MappingVmixExternal {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.External
 }
 
 export interface MappingVmixFadeToBlack {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.FadeToBlack
 }
 
 export interface MappingVmixFader {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Fader
 }
 
 export interface MappingVmixScript {
+	disableDefaults?: boolean
 	mappingType: MappingVmixType.Script
+}
+
+export interface MappingVmixReplay {
+	disableDefaults?: boolean
+	mappingType: MappingVmixType.Replay
+}
+
+export interface MappingVmixReplayEvent {
+	disableDefaults?: boolean
+	mappingType: MappingVmixType.ReplayEvent
 }
 
 export enum MappingVmixType {
@@ -117,9 +141,11 @@ export enum MappingVmixType {
 	FadeToBlack = 'fadeToBlack',
 	Fader = 'fader',
 	Script = 'script',
+	Replay = 'replay',
+	ReplayEvent = 'replayEvent',
 }
 
-export type SomeMappingVmix = MappingVmixProgram | MappingVmixPreview | MappingVmixInput | MappingVmixAudioChannel | MappingVmixAudioBus | MappingVmixOutput | MappingVmixOverlay | MappingVmixRecording | MappingVmixStreaming | MappingVmixExternal | MappingVmixFadeToBlack | MappingVmixFader | MappingVmixScript
+export type SomeMappingVmix = MappingVmixProgram | MappingVmixPreview | MappingVmixInput | MappingVmixAudioChannel | MappingVmixAudioBus | MappingVmixOutput | MappingVmixOverlay | MappingVmixRecording | MappingVmixStreaming | MappingVmixExternal | MappingVmixFadeToBlack | MappingVmixFader | MappingVmixScript | MappingVmixReplay | MappingVmixReplayEvent
 
 export interface OpenPresetPayload {
 	/**
@@ -135,22 +161,32 @@ export interface SavePresetPayload {
 	filename: string
 }
 
+export interface BrowserReloadPayload {
+	/**
+	 * Input name or number
+	 */
+	input: number | string
+}
+
 export enum VmixActions {
 	LastPreset = 'lastPreset',
 	OpenPreset = 'openPreset',
 	SavePreset = 'savePreset',
 	StartExternal = 'startExternal',
-	StopExternal = 'stopExternal'
+	StopExternal = 'stopExternal',
+	BrowserReload = 'browserReload'
 }
 export interface VmixActionMethods {
 	[VmixActions.LastPreset]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
 	[VmixActions.OpenPreset]: (payload: OpenPresetPayload) => Promise<ActionExecutionResult<void>>,
 	[VmixActions.SavePreset]: (payload: SavePresetPayload) => Promise<ActionExecutionResult<void>>,
 	[VmixActions.StartExternal]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
-	[VmixActions.StopExternal]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
+	[VmixActions.StopExternal]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>,
+	[VmixActions.BrowserReload]: (payload: BrowserReloadPayload) => Promise<ActionExecutionResult<void>>
 }
 
 export interface VmixDeviceTypes {
+	Type: DeviceType.VMIX
 	Options: VmixOptions
 	Mappings: SomeMappingVmix
 	Actions: VmixActionMethods

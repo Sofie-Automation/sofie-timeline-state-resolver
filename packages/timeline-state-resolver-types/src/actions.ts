@@ -1,4 +1,4 @@
-import type { ITranslatableMessage } from './translations'
+import type { ITranslatableMessage } from './translations.js'
 
 export interface ActionExecutionResult<ResultData = void> {
 	result: ActionExecutionResultCode

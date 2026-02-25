@@ -4,7 +4,8 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions.js'
+import type { DeviceType } from './device-options.js'
 
 export interface QuantelOptions {
 	/**
@@ -55,7 +56,7 @@ export interface MappingQuantelPort {
  */
 export enum QuantelControlMode {
 	QUALITY = 'quality',
-	SPEED = 'speed'
+	SPEED = 'speed',
 }
 
 export enum MappingQuantelType {
@@ -74,6 +75,7 @@ export interface QuantelActionMethods {
 }
 
 export interface QuantelDeviceTypes {
+	Type: DeviceType.QUANTEL
 	Options: QuantelOptions
 	Mappings: SomeMappingQuantel
 	Actions: QuantelActionMethods

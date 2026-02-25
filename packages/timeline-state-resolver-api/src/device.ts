@@ -1,14 +1,6 @@
-import type { SlowSentCommandInfo, SlowFulfilledCommandInfo, CommandReport } from './commandReport'
-import type { FinishedTrace } from './trace'
-import type {
-	Timeline,
-	TSRTimelineContent,
-	Mappings,
-	DeviceStatus,
-	MediaObject,
-	Mapping,
-	TSRTimelineObjProps,
-} from 'timeline-state-resolver-types'
+import type { SlowSentCommandInfo, SlowFulfilledCommandInfo, CommandReport } from './commandReport.js'
+import type { FinishedTrace } from './trace.js'
+import type { Mappings, DeviceStatus, MediaObject, Mapping, DeviceTimelineState } from 'timeline-state-resolver-types'
 
 /**
  * The intended usage of this is for each device to define an alias with the generic types provided.
@@ -34,39 +26,6 @@ export type CommandWithContext<TCommand, TContext> = {
 	queueId?: string
 }
 
-export interface DeviceTimelineState<TContent extends TSRTimelineContent = TSRTimelineContent> {
-	/** The timestamp for this state */
-	time: Timeline.Time
-	/** All objects that are active on each respective layer */
-	objects: DeviceTimelineStateObject<TContent>[]
-}
-
-/**
- * A simplified representation of the TimelineObjet that was matched for this device
- */
-export interface DeviceTimelineStateObject<TContent extends TSRTimelineContent = TSRTimelineContent>
-	extends TSRTimelineObjProps {
-	/** ID of the object. Must be unique! */
-	id: string
-	/**
-	 * Priority. Affects which object "wins" when there are two colliding objects on the same layer.
-	 */
-	priority: number
-	/**
-	 * The layer where the object is played.
-	 * */
-	layer: string | number
-	/** The payload of the timeline-object. Can be anything you want. */
-	content: TContent
-
-	instance: Timeline.TimelineObjectInstance
-
-	/** All datastore values applied and the timestamp of when they were applied */
-	datastoreRefs?: Record<string, number>
-	/** Timestamp of the last datastore value applied to this object */
-	lastModified?: number
-}
-
 /**
  * API for use by the DeviceInstance to be able to use a device
  */
@@ -74,7 +33,7 @@ export interface Device<
 	DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> | null },
 	DeviceState,
 	Command extends CommandWithContext<any, any>,
-	AddressState = void
+	AddressState = void,
 > extends BaseDeviceAPI<DeviceState, AddressState, Command> {
 	readonly actions: DeviceTypes['Actions']
 

@@ -12,6 +12,8 @@
 		},
 		"types": ["node"],
 		"composite": true,
+		"skipLibCheck": true,
+		"target": "es2022",
 
 		"moduleResolution": "node16",
 		"esModuleInterop": true,
@@ -21,7 +23,7 @@
 		"resolveJsonModule": true,
 
 		// include dom types for obs
-		"lib": ["dom", "es2020"]
+		"lib": ["dom", "es2022"]
 	},
 	"references": [
 		{ "path": "../timeline-state-resolver-types/tsconfig.build.json" },

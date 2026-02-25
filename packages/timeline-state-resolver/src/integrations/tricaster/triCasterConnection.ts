@@ -1,8 +1,8 @@
 import got from 'got'
 import { EventEmitter } from 'node:events'
-import WebSocket = require('ws')
-import { TriCasterInfoParser, TriCasterProductInfo, TriCasterSwitcherInfo } from './triCasterInfoParser'
-import { serializeToWebSocketMessage, TriCasterCommand } from './triCasterCommands'
+import WebSocket from 'ws'
+import { TriCasterInfoParser, TriCasterProductInfo, TriCasterSwitcherInfo } from './triCasterInfoParser.js'
+import { serializeToWebSocketMessage, TriCasterCommand } from './triCasterCommands.js'
 
 export type TriCasterConnectionEvents = {
 	connected: [info: TriCasterInfo, shortcutStateXml: string]
@@ -24,7 +24,10 @@ export class TriCasterConnection extends EventEmitter<TriCasterConnectionEvents>
 	private _pingTimeout: NodeJS.Timeout | null = null
 	private _isClosing = false
 
-	constructor(private _host: string, private _port: number) {
+	constructor(
+		private _host: string,
+		private _port: number
+	) {
 		super()
 	}
 

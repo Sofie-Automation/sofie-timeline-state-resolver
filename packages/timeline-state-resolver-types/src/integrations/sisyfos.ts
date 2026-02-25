@@ -1,4 +1,4 @@
-import { DeviceType } from '..'
+import { DeviceType } from '../generated/index.js'
 
 /*
  * TRIGGERVALUE is used to SET_CHANNEL in Sisyfos
@@ -42,9 +42,7 @@ export interface TimelineContentSisyfosTriggerValue extends TimelineContentSisyf
 	triggerValue: string
 }
 export interface TimelineContentSisyfosChannel
-	extends SisyfosTimelineObjectProps,
-		TimelineContentSisyfos,
-		SisyfosChannelOptions {
+	extends SisyfosTimelineObjectProps, TimelineContentSisyfos, SisyfosChannelOptions {
 	type: TimelineContentTypeSisyfos.CHANNEL
 }
 export interface TimelineContentSisyfosChannels extends SisyfosTimelineObjectProps, TimelineContentSisyfos {

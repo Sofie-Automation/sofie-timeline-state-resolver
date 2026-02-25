@@ -1,17 +1,16 @@
 import { DeviceOptionsAny, DeviceOptionsBase, DeviceType } from 'timeline-state-resolver-types'
-import { BaseRemoteDeviceIntegration, RemoteDeviceInstance } from './remoteDeviceInstance'
-import _ = require('underscore')
+import { BaseRemoteDeviceIntegration, RemoteDeviceInstance } from './remoteDeviceInstance.js'
+import _ from 'underscore'
 import { ThreadedClassConfig } from 'threadedclass'
-import { DeviceContainer } from '..//devices/deviceContainer'
+import { DeviceContainer } from '..//devices/deviceContainer.js'
 import { assertNever } from 'atem-connection/dist/lib/atemUtil'
-import { CasparCGDevice, DeviceOptionsCasparCGInternal } from '../integrations/casparCG'
-import { DeviceOptionsSisyfosInternal, SisyfosMessageDevice } from '../integrations/sisyfos'
-import { DeviceOptionsVizMSEInternal, VizMSEDevice } from '../integrations/vizMSE'
-import { ImplementedServiceDeviceTypes } from './devices'
+import { CasparCGDevice, DeviceOptionsCasparCGInternal } from '../integrations/casparCG/index.js'
+import { DeviceOptionsVizMSEInternal, VizMSEDevice } from '../integrations/vizMSE/index.js'
+import { ImplementedServiceDeviceTypes } from './devices.js'
 import { EventEmitter } from 'node:events'
-import { DeviceInstanceEvents } from './DeviceInstance'
-import { deferAsync } from '../lib'
-import { DevicesRegistry } from './devicesRegistry'
+import { DeviceInstanceEvents } from './DeviceInstance.js'
+import { deferAsync } from '../lib.js'
+import { DevicesRegistry } from './devicesRegistry.js'
 
 interface Operation {
 	operation: 'create' | 'update' | 'delete' | 'setDebug'
@@ -27,7 +26,7 @@ export interface ConnectionManagerIntEvents {
 	error: [context: string, err?: Error]
 	debug: [...debug: any[]]
 
-	connectionAdded: [id: string, container: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>]
+	connectionAdded: [id: string, container: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>]
 	connectionInitialised: [id: string]
 	connectionRemoved: [id: string]
 }
@@ -68,7 +67,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 		this._updateConnections()
 	}
 
-	public getConnections(includeUninitialized = false): Array<BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>> {
+	public getConnections(includeUninitialized = false): Array<BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>> {
 		if (includeUninitialized) {
 			return Array.from(this._connections.values())
 		} else {
@@ -79,7 +78,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 	public getConnection(
 		connectionId: string,
 		includeUninitialized = false
-	): BaseRemoteDeviceIntegration<DeviceOptionsBase<any>> | undefined {
+	): BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>> | undefined {
 		if (includeUninitialized) {
 			return this._connections.get(connectionId)
 		} else {
@@ -372,15 +371,15 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
  * consideration. In addition, the debug logging flag should be ignored as that can be changed at runtime.
  */
 function connectionConfigHasChanged(
-	connection: BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>,
-	config: DeviceOptionsBase<any>
+	connection: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>,
+	config: DeviceOptionsBase<any, any>
 ): boolean {
 	const oldConfig = connection.deviceOptions
 
 	// now check device specific options
 	return configHasChanged(oldConfig, config)
 }
-function configHasChanged(oldConfig: DeviceOptionsBase<any>, config: DeviceOptionsBase<any>): boolean {
+function configHasChanged(oldConfig: DeviceOptionsBase<any, any>, config: DeviceOptionsBase<any, any>): boolean {
 	// now check device specific options
 	return !_.isEqual(_.omit(oldConfig, 'debug', 'debugState'), _.omit(config, 'debug', 'debugState'))
 }
@@ -391,21 +390,12 @@ function createContainer(
 	deviceId: string,
 	getCurrentTime: () => number,
 	threadedClassOptions: ThreadedClassConfig
-): Promise<BaseRemoteDeviceIntegration<DeviceOptionsBase<any>>> | null {
+): Promise<BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>> | null {
 	switch (deviceOptions.type) {
 		case DeviceType.CASPARCG:
 			return DeviceContainer.create<DeviceOptionsCasparCGInternal, typeof CasparCGDevice>(
 				'../../dist/integrations/casparCG/index.js',
 				'CasparCGDevice',
-				deviceId,
-				deviceOptions,
-				getCurrentTime,
-				threadedClassOptions
-			)
-		case DeviceType.SISYFOS:
-			return DeviceContainer.create<DeviceOptionsSisyfosInternal, typeof SisyfosMessageDevice>(
-				'../../dist/integrations/sisyfos/index.js',
-				'SisyfosMessageDevice',
 				deviceId,
 				deviceOptions,
 				getCurrentTime,
@@ -435,13 +425,15 @@ function createContainer(
 		case DeviceType.OSC:
 		case DeviceType.PANASONIC_PTZ:
 		case DeviceType.SHOTOKU:
+		case DeviceType.SISYFOS:
 		case DeviceType.SOFIE_CHEF:
 		case DeviceType.TCPSEND:
 		case DeviceType.TRICASTER:
 		case DeviceType.VISCA_OVER_IP:
 		case DeviceType.WEBSOCKET_CLIENT:
 		case DeviceType.KAIROS:
-		case DeviceType.QUANTEL: {
+		case DeviceType.QUANTEL:
+		case DeviceType.UDP_SEND: {
 			ensureIsImplementedAsService(deviceOptions.type)
 
 			// presumably this device is implemented in the new service handler

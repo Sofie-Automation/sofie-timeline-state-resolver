@@ -1,4 +1,4 @@
-import { DeviceType } from '..'
+import { DeviceType } from '../generated/index.js'
 
 export enum VMixCommand {
 	PREVIEW_INPUT = 'PREVIEW_INPUT',
@@ -58,8 +58,14 @@ export enum VMixCommand {
 	RESTART_INPUT = 'RESTART_INPUT',
 	SET_TEXT = 'SET_TEXT',
 	BROWSER_NAVIGATE = 'BROWSER_NAVIGATE',
+	BROWSER_RELOAD = 'BROWSER_RELOAD',
 	SELECT_INDEX = 'SELECT_INDEX',
 	SET_IMAGE = 'SET_IMAGE',
+	REPLAY_MARK_IN_LIVE = 'REPLAY_MARK_IN_LIVE',
+	REPLAY_MARK_OUT = 'REPLAY_MARK_OUT',
+	REPLAY_SET_LAST_EVENT_TEXT = 'REPLAY_SET_LAST_EVENT_TEXT',
+	REPLAY_START_RECORDING = 'REPLAY_START_RECORDING',
+	REPLAY_STOP_RECORDING = 'REPLAY_STOP_RECORDING',
 }
 
 export type TimelineContentVMixAny =
@@ -76,6 +82,8 @@ export type TimelineContentVMixAny =
 	| TimelineContentVMixOverlay
 	| TimelineContentVMixInput
 	| TimelineContentVMixScript
+	| TimelineContentVMixReplay
+	| TimelineContentVMixReplayEvent
 
 export enum TimelineContentTypeVMix {
 	PROGRAM = 'PROGRAM',
@@ -91,6 +99,8 @@ export enum TimelineContentTypeVMix {
 	EXTERNAL = 'EXTERNAL',
 	OVERLAY = 'OVERLAY',
 	SCRIPT = 'SCRIPT',
+	REPLAY = 'REPLAY',
+	REPLAY_EVENT = 'REPLAY_EVENT',
 }
 export interface TimelineContentVMixBase {
 	deviceType: DeviceType.VMIX
@@ -213,8 +223,11 @@ export interface TimelineContentVMixInput extends TimelineContentVMixBase {
 	/** An array of file paths to load into a List input. Uses Windows-style path separators (\\). Only applies to List inputs. */
 	listFilePaths?: string[]
 
-	/** If media should start from the beginning or resume from where it left off */
-	restart?: boolean
+	/**
+	 * If media should start from the beginning or resume from where it left off
+	 * When given a truthy string, it will restart whenever the value changes
+	 */
+	restart?: boolean | string
 
 	/**
 	 * Titles (GT): Sets the values of text fields by name
@@ -265,6 +278,18 @@ export interface TimelineContentVMixScript extends TimelineContentVMixBase {
 	type: TimelineContentTypeVMix.SCRIPT
 
 	/** Script name */
+	name: string
+}
+
+export interface TimelineContentVMixReplay extends TimelineContentVMixBase {
+	type: TimelineContentTypeVMix.REPLAY
+
+	recording: boolean
+}
+
+export interface TimelineContentVMixReplayEvent extends TimelineContentVMixBase {
+	type: TimelineContentTypeVMix.REPLAY_EVENT
+
 	name: string
 }
 

@@ -1,5 +1,5 @@
-import type { DeviceType } from '.'
-import type { DeviceCommonOptions } from './generated/common-options'
+import type { DeviceType } from './index.js'
+import type { DeviceCommonOptions } from './generated/common-options.js'
 
 export enum StatusCode {
 	UNKNOWN = 0, // Status unknown
@@ -15,11 +15,11 @@ export interface DeviceStatus {
 	active: boolean
 }
 
-export interface DeviceOptionsBase<T> extends SlowReportOptions, DeviceCommonOptions {
-	type: DeviceType
+export interface DeviceOptionsBase<TType extends DeviceType, TOptions> extends SlowReportOptions, DeviceCommonOptions {
+	type: TType
 	isMultiThreaded?: boolean
 	reportAllCommands?: boolean
-	options?: T
+	options?: TOptions
 }
 
 export interface SlowReportOptions {

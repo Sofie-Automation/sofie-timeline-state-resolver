@@ -1,1 +1,1 @@
-export * from './resetSeqNumberCommand'
+export * from './resetSeqNumberCommand.js'

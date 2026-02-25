@@ -1,6 +1,6 @@
-import { NextEvent, ResolvedTimelineObjectInstance } from './resolvedTimeline'
-import { Content } from './timeline'
-import { Time } from './types'
+import { NextEvent, ResolvedTimelineObjectInstance } from './resolvedTimeline.js'
+import { Content } from './timeline.js'
+import { Time } from './types.js'
 
 /**
  * A TimelineState is a moment in time,

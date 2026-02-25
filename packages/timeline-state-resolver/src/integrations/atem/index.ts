@@ -26,8 +26,8 @@ import type {
 	DeviceContextAPI,
 	DeviceTimelineState,
 } from 'timeline-state-resolver-api'
-import { AtemStateBuilder } from './stateBuilder'
-import { createDiffOptions } from './diffState'
+import { AtemStateBuilder } from './stateBuilder.js'
+import { createDiffOptions } from './diffState.js'
 import {
 	AnyAddressState,
 	applyAddressStateToAtemState,
@@ -35,7 +35,7 @@ import {
 	atemStateToAddressStates,
 	diffAddressStates,
 	updateFromAtemState,
-} from './state'
+} from './state.js'
 
 export type AtemCommandWithContext = CommandWithContext<AtemCommands.ISerializableCommand[], string>
 

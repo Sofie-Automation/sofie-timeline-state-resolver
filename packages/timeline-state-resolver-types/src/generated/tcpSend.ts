@@ -4,7 +4,8 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
-import type { ActionExecutionResult } from "../actions"
+import type { ActionExecutionResult } from '../actions.js'
+import type { DeviceType } from './device-options.js'
 
 export interface TcpSendOptions {
 	host: string
@@ -43,6 +44,7 @@ export interface TcpSendActionMethods {
 }
 
 export interface TcpSendDeviceTypes {
+	Type: DeviceType.TCPSEND
 	Options: TcpSendOptions
 	Mappings: SomeMappingTcpSend
 	Actions: TcpSendActionMethods

@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events'
 import { Socket } from 'net'
 import { MappingVmixAudioBus, VMixCommand } from 'timeline-state-resolver-types'
-import { VMixStateCommand } from './vMixCommands'
-import { Response, VMixResponseStreamReader } from './vMixResponseStreamReader'
+import { VMixStateCommand } from './vMixCommands.js'
+import { Response, VMixResponseStreamReader } from './vMixResponseStreamReader.js'
 
 const VMIX_DEFAULT_TCP_PORT = 8099
 
@@ -36,7 +36,11 @@ export class VMixConnection extends EventEmitter<ConnectionEvents> {
 	private _connected = false
 	private _responseStreamReader = new VMixResponseStreamReader()
 
-	constructor(private host: string, private port = VMIX_DEFAULT_TCP_PORT, autoConnect = false) {
+	constructor(
+		private host: string,
+		private port = VMIX_DEFAULT_TCP_PORT,
+		autoConnect = false
+	) {
 		super()
 		if (autoConnect) this._setupSocket()
 		this._responseStreamReader.on('response', (response) => this.emit('data', response))
@@ -49,7 +53,7 @@ export class VMixConnection extends EventEmitter<ConnectionEvents> {
 
 	connect(host?: string, port?: number): void {
 		this.host = host ?? this.host
-		this.port = host ? port ?? VMIX_DEFAULT_TCP_PORT : this.port
+		this.port = host ? (port ?? VMIX_DEFAULT_TCP_PORT) : this.port
 
 		this._socket?.end()
 
@@ -270,10 +274,22 @@ export class VMixCommandSender {
 				return this.setText(command.input, command.value, command.fieldName)
 			case VMixCommand.BROWSER_NAVIGATE:
 				return this.browserNavigate(command.input, command.value)
+			case VMixCommand.BROWSER_RELOAD:
+				return this.browserReload(command.input)
 			case VMixCommand.SELECT_INDEX:
 				return this.selectIndex(command.input, command.value)
 			case VMixCommand.SET_IMAGE:
 				return this.setImage(command.input, command.value, command.fieldName)
+			case VMixCommand.REPLAY_MARK_IN_LIVE:
+				return this.replayMarkInLive()
+			case VMixCommand.REPLAY_MARK_OUT:
+				return this.replayMarkOut()
+			case VMixCommand.REPLAY_SET_LAST_EVENT_TEXT:
+				return this.replaySetLastEventText(command.value)
+			case VMixCommand.REPLAY_START_RECORDING:
+				return this.replayStartRecording()
+			case VMixCommand.REPLAY_STOP_RECORDING:
+				return this.replayStopRecording()
 			default:
 				throw new Error(`vmixAPI: Command ${((command || {}) as any).command} not implemented`)
 		}
@@ -512,6 +528,10 @@ export class VMixCommandSender {
 		return this.sendCommandFunction(`BrowserNavigate`, { input, value: encodeURIComponent(value) })
 	}
 
+	public async browserReload(input: string | number): Promise<any> {
+		return this.sendCommandFunction(`BrowserReload`, { input })
+	}
+
 	public async selectIndex(input: string | number, value: number): Promise<any> {
 		return this.sendCommandFunction(`SelectIndex`, { input, value })
 	}
@@ -522,5 +542,25 @@ export class VMixCommandSender {
 
 	private async sendCommandFunction(func: string, args: SentCommandArgs) {
 		return this.vMixConnection.sendCommandFunction(func, args)
+	}
+
+	public async replayStopRecording(): Promise<any> {
+		return this.sendCommandFunction(`ReplayStopRecording`, {})
+	}
+
+	public async replayStartRecording(): Promise<any> {
+		return this.sendCommandFunction(`ReplayStartRecording`, {})
+	}
+
+	public async replaySetLastEventText(value: string): Promise<any> {
+		return this.sendCommandFunction(`ReplaySetLastEventText`, { value })
+	}
+
+	public async replayMarkOut(): Promise<any> {
+		return this.sendCommandFunction(`ReplayMarkOut`, {})
+	}
+
+	public async replayMarkInLive(): Promise<any> {
+		return this.sendCommandFunction(`ReplayMarkInLive`, {})
 	}
 }

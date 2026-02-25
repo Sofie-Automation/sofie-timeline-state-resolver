@@ -1,7 +1,7 @@
 import type { DeviceEntry } from 'timeline-state-resolver-api'
-import { getDeviceContext } from '../../integrations/__tests__/testlib'
-import { builtinDeviceManifest } from '../../manifest'
-import { DevicesDict } from '../devices'
+import { getDeviceContext } from '../../integrations/__tests__/testlib.js'
+import { builtinDeviceManifest } from '../../manifest.js'
+import { DevicesDict } from '../devices.js'
 
 describe('Ensure that all integrations have defined their actions', () => {
 	for (const [key, device] of Object.entries<DeviceEntry>(DevicesDict)) {
@@ -18,9 +18,7 @@ describe('Ensure that all integrations have defined their actions', () => {
 				// check that the action is defined on the device:
 				const fcn = deviceInstance.actions[action.id]
 				try {
-					// eslint-disable-next-line jest/no-conditional-expect
 					expect(fcn).toBeTruthy()
-					// eslint-disable-next-line jest/no-conditional-expect
 					expect(typeof fcn).toBe('function')
 				} catch (e) {
 					if (e instanceof Error) {

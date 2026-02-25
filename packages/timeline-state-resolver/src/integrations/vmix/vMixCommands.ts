@@ -233,6 +233,10 @@ export interface VMixStateCommandBrowserNavigate extends VMixStateCommandBase {
 	input: string | number
 	value: string
 }
+export interface VMixStateCommandBrowserReload extends VMixStateCommandBase {
+	command: VMixCommand.BROWSER_RELOAD
+	input: string | number
+}
 export interface VMixStateCommanSelectIndex extends VMixStateCommandBase {
 	command: VMixCommand.SELECT_INDEX
 	input: string | number
@@ -243,6 +247,22 @@ export interface VMixStateCommandSetImage extends VMixStateCommandBase {
 	input: string | number
 	fieldName: string
 	value: string
+}
+export interface VMixStateCommandReplayMarkInLive extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_MARK_IN_LIVE
+}
+export interface VMixStateCommandReplayMarkOut extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_MARK_OUT
+}
+export interface VMixStateCommandReplaySetLastEventText extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_SET_LAST_EVENT_TEXT
+	value: string
+}
+export interface VMixStateCommandReplayStartRecording extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_START_RECORDING
+}
+export interface VMixStateCommandReplayStopRecording extends VMixStateCommandBase {
+	command: VMixCommand.REPLAY_STOP_RECORDING
 }
 export type VMixStateCommand =
 	| VMixStateCommandPreviewInput
@@ -295,8 +315,14 @@ export type VMixStateCommand =
 	| VMixStateCommandRestart
 	| VMixStateCommandSetText
 	| VMixStateCommandBrowserNavigate
+	| VMixStateCommandBrowserReload
 	| VMixStateCommanSelectIndex
 	| VMixStateCommandSetImage
+	| VMixStateCommandReplayMarkInLive
+	| VMixStateCommandReplayMarkOut
+	| VMixStateCommandReplaySetLastEventText
+	| VMixStateCommandReplayStartRecording
+	| VMixStateCommandReplayStopRecording
 
 export enum CommandContext {
 	None = 'none',
