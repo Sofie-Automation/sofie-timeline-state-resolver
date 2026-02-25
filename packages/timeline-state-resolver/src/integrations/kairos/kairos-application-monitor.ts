@@ -36,6 +36,7 @@ import {
 import * as _ from 'underscore'
 import { assertNever } from '../../lib'
 import { KairosDeviceState } from './stateBuilder'
+import { DeviceContextAPI } from 'timeline-state-resolver-api'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const clone = require('fast-clone')
 
@@ -77,7 +78,9 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 		active: false,
 	}
 
-	constructor(private _kairos: KairosConnection) {
+	constructor(
+		private context: DeviceContextAPI<KairosDeviceState>,
+		private kairos: KairosConnection) {
 		super()
 
 		this.triggerCheckApplicationStatus()
@@ -222,11 +225,11 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 				const value = await pExists
 
 				if (value === false) {
-					issues.push(`${description} not found on the Kairos`)
+					issues.push(`${description} not found on the Kairos.`)
 				}
 			} catch (e) {
 				if (e instanceof ResponseError) {
-					issues.push(`${description}) not found on the Kairos`)
+					issues.push(`${description}) not found on the Kairos.`)
 				} else {
 					this.emit('error', e instanceof Error ? e : new Error(e + ''))
 				}
@@ -242,58 +245,58 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 			}
 
 			if (sourceRef.realm === 'clipPlayer') {
-				await ensureExists(this._kairos.clipPlayerExists(sourceRef), `Clip Player ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.clipPlayerExists(sourceRef), `Clip Player "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'ramRecorder') {
-				await ensureExists(this._kairos.ramRecorderExists(sourceRef), `Ram Recorder ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.ramRecorderExists(sourceRef), `Ram Recorder "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'imageStore') {
-				await ensureExists(this._kairos.imageStoreExists(sourceRef), `Image Store ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.imageStoreExists(sourceRef), `Image Store "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'scene') {
-				await ensureExists(this._kairos.sceneExists(sourceRef), `Scene ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.sceneExists(sourceRef), `Scene "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'ip-input') {
-				await ensureExists(this._kairos.inputExists(sourceRef), `IP Input ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.inputExists(sourceRef), `IP Input "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'sdi-input') {
-				await ensureExists(this._kairos.inputExists(sourceRef), `SDI Input ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.inputExists(sourceRef), `SDI Input "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'ndi-input') {
-				await ensureExists(this._kairos.inputExists(sourceRef), `NDI Input ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.inputExists(sourceRef), `NDI Input "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'stream-input') {
-				await ensureExists(this._kairos.inputExists(sourceRef), `Stream Input ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.inputExists(sourceRef), `Stream Input "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'hdmi-input') {
-				await ensureExists(this._kairos.inputExists(sourceRef), `HDMI Input ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.inputExists(sourceRef), `HDMI Input "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'media-still') {
-				await ensureExists(this._kairos.mediaStillExists(sourceRef), `Media Still ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.mediaStillExists(sourceRef), `Media Still "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'media-ramrec') {
-				await ensureExists(this._kairos.mediaRamRecExists(sourceRef), `Media RamRec ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.mediaRamRecExists(sourceRef), `Media RamRec "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'matte') {
 				// There is no method to check a matte individually (yet)
 			} else if (sourceRef.realm === 'gfx-channel') {
-				await ensureExists(this._kairos.gfxChannelExists(sourceRef), `GFX Channel ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.gfxChannelExists(sourceRef), `GFX Channel "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'source-base') {
 				// Ignore, eg: BLACK / WHITE
 			} else if (sourceRef.realm === 'source-int') {
 				// Ignore, eg: ColorBar / ColorCircle
 			} else if (sourceRef.realm === 'mv-int') {
 				await ensureExists(
-					this._kairos.multiViewerSourceExists(sourceRef),
-					`MultiViewer Source ${refToPath(sourceRef)}`
+					this.kairos.multiViewerSourceExists(sourceRef),
+					`MultiViewer Source "${refToPath(sourceRef)}"`
 				)
 			} else if (sourceRef.realm === 'scene-snapshot') {
-				await ensureExists(this._kairos.sceneSnapshotExists(sourceRef), `Scene Snapshot ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.sceneSnapshotExists(sourceRef), `Scene Snapshot "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'scene-layer') {
-				await ensureExists(this._kairos.sceneLayerExists(sourceRef), `Scene Layer ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.sceneLayerExists(sourceRef), `Scene Layer "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'macro') {
-				await ensureExists(this._kairos.macroExists(sourceRef), `Macro ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.macroExists(sourceRef), `Macro "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'media-sound') {
-				await ensureExists(this._kairos.mediaSoundExists(sourceRef), `Media Sound ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.mediaSoundExists(sourceRef), `Media Sound "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'audio-player') {
-				await ensureExists(this._kairos.audioPlayerExists(sourceRef), `Audio Player ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.audioPlayerExists(sourceRef), `Audio Player "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'scene-layer-effect') {
 				// There is no method to check a sceneLayerEffect individually (yet)
 			} else if (sourceRef.realm === 'aux') {
-				await ensureExists(this._kairos.auxExists(sourceRef), `Aux ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.auxExists(sourceRef), `Aux "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'media-clip') {
-				await ensureExists(this._kairos.mediaClipExists(sourceRef), `Media Clip ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.mediaClipExists(sourceRef), `Media Clip "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'media-image') {
-				await ensureExists(this._kairos.mediaImageExists(sourceRef), `Media Image ${refToPath(sourceRef)}`)
+				await ensureExists(this.kairos.mediaImageExists(sourceRef), `Media Image "${refToPath(sourceRef)}"`)
 			} else {
 				assertNever(sourceRef)
 			}
@@ -305,13 +308,18 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 			active: true,
 		}
 		if (!_.isEqual(this.status, status)) {
+
+			if (status.statusCode !== StatusCode.GOOD) {
+				this.context.logger.warning(`Kairos Application Monitor status: ${JSON.stringify(status)}`)
+			}
+
 			this.status = status
-			this.emit('status', status)
+			this.emit('statusChanged', status)
 		}
 	}
 }
 export interface KairosApplicationMonitorEvents {
-	status: [status: DeviceStatus]
+	statusChanged: [status: DeviceStatus]
 	error: [error: Error]
 }
 

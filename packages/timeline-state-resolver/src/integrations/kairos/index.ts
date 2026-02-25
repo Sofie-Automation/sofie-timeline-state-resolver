@@ -54,18 +54,17 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 
 		this._kairos.on('connect', () => {
 			this._connectionChanged()
-
 			// Do a state diff to at least send all the commands we know about
 			this.context.resetState()
 		})
 
 		if (options.monitorState) {
-			this._kairosApplicationMonitor = new KairosApplicationMonitor(this._kairos)
+			this._kairosApplicationMonitor = new KairosApplicationMonitor(this.context, this._kairos)
 
 			this._kairosApplicationMonitor.on('error', (e: Error) =>
 				this.context.logger.error('Error from Kairos Application Checker', e)
 			)
-			this._kairosApplicationMonitor.on('status', () => this._connectionChanged())
+			this._kairosApplicationMonitor.on('statusChanged', () => this._connectionChanged())
 		}
 
 		// Start the connection, without waiting
@@ -98,8 +97,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 	): KairosDeviceState {
 		const deviceState = KairosStateBuilder.fromTimeline(timelineState, mappings)
 
-		// Note: Nut sure if this is the best way to handle this, perhaps we should
-		// have a way to store the mappings somewhere else?
+		// Also notify the KairosApplicationMonitor of the changes:
 		this._kairosApplicationMonitor?.updateMappings(mappings)
 		this._kairosApplicationMonitor?.updateDeviceState(deviceState)
 

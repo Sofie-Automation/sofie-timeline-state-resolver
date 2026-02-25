@@ -17,7 +17,7 @@
 		},
 		"monitorState": {
 			"type": "boolean",
-			"description": "Whether to monitor the Kairos application status (that all resources exist)",
+			"description": "Whether to monitor the Kairos application status (that all resources, layers etc exist). When this is set, the Kairos device status will go BAD if something is missing.",
 			"ui:title": "Monitor Kairos",
 			"default": false
 		}

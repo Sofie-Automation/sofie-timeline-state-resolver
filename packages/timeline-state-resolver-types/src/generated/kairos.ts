@@ -17,7 +17,7 @@ export interface KairosOptions {
 	 */
 	port?: number
 	/**
-	 * Whether to monitor the Kairos application status (that all resources exist)
+	 * Whether to monitor the Kairos application status (that all resources, layers etc exist). When this is set, the Kairos device status will go BAD if something is missing.
 	 */
 	monitorState?: boolean
 }
