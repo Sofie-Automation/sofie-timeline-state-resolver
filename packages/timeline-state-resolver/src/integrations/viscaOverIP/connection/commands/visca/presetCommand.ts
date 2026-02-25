@@ -3,8 +3,8 @@ import { PresetOperation } from '../../enums.js'
 
 export class PresetCommand extends ViscaCommand {
 	constructor(
-		private readonly operation: PresetOperation,
-		private readonly memoryNumber: number
+		readonly operation: PresetOperation,
+		readonly memoryNumber: number
 	) {
 		super()
 	}

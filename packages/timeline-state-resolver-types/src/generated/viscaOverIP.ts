@@ -14,7 +14,15 @@ export interface ViscaOverIPOptions {
 	port?: number
 }
 
-export type SomeMappingViscaOverIP = Record<string, never>
+export interface MappingViscaOverIPCamera {
+	mappingType: MappingViscaOverIPType.Camera
+}
+
+export enum MappingViscaOverIPType {
+	Camera = 'camera',
+}
+
+export type SomeMappingViscaOverIP = MappingViscaOverIPCamera
 
 export enum ViscaOverIPActions {
 	SetPanTiltSpeed = 'setPanTiltSpeed',
