@@ -126,7 +126,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 			statusCode = StatusCode.BAD
 			statusDetails.push(
 				createSisyfosStatusDetail(SisyfosStatusCode.NOT_CONNECTED, {
-					deviceName: this.deviceName,
+					deviceName: this.context.deviceName,
 					host: this._initOptions?.host ?? '',
 					port: this._initOptions?.port ?? 0,
 				})
@@ -137,7 +137,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 			statusCode = StatusCode.BAD
 			statusDetails.push(
 				createSisyfosStatusDetail(SisyfosStatusCode.NOT_INITIALIZED, {
-					deviceName: this.deviceName,
+					deviceName: this.context.deviceName,
 				})
 			)
 		}
@@ -146,7 +146,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 			statusCode = StatusCode.BAD
 			statusDetails.push(
 				createSisyfosStatusDetail(SisyfosStatusCode.NO_MIXER_CONNECTION, {
-					deviceName: this.deviceName,
+					deviceName: this.context.deviceName,
 				})
 			)
 		}
