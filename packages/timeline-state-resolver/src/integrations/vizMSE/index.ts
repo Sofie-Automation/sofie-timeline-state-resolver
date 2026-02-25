@@ -37,7 +37,7 @@ import { ExpectedPlayoutItem } from '../../expectedPlayoutItems.js'
 import { endTrace, startTrace, t, literal } from '../../lib.js'
 import { HTTPClientError, HTTPServerError } from '@tv2media/v-connection/dist/msehttp'
 import { VizMSEManager } from './vizMSEManager.js'
-import { createVizMSEStatusDetail } from './errors.js'
+import { createVizMSEStatusDetail } from './messages.js'
 import {
 	VizMSECommand,
 	VizMSEState,

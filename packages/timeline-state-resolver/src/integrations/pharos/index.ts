@@ -19,7 +19,7 @@ import type {
 	DeviceTimelineStateObject,
 } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates.js'
-import { createPharosStatusDetail } from './errors.js'
+import { createPharosStatusDetail } from './messages.js'
 
 export type PharosCommandWithContext = CommandWithContext<CommandContent, string>
 export type PharosState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>

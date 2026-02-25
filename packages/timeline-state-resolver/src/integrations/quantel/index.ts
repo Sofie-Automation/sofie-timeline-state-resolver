@@ -23,7 +23,7 @@ import { QuantelGateway } from 'tv-automation-quantel-gateway-client'
 import { QuantelManager } from './connection.js'
 import { convertTimelineStateToQuantelState, getMappedPorts } from './state.js'
 import { diffStates } from './diff.js'
-import { createQuantelStatusDetail } from './errors.js'
+import { createQuantelStatusDetail } from './messages.js'
 const debug = Debug('timeline-state-resolver:quantel')
 
 export interface OscDeviceState {

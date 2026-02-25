@@ -1,5 +1,5 @@
 import { interpolateTemplateString, interpolateTemplateStringIfNeeded, errorsToMessages } from '../templateString.js'
-import { DeviceStatusDetail } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceStatusDetail.js'
 
 describe('interpolateTemplateString', () => {
 	test('basic input', () => {

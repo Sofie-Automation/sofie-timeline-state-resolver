@@ -8,7 +8,7 @@ import {
 	WebSocketClientStatusCode,
 	WebSocketClientStatusMessages,
 } from 'timeline-state-resolver-types'
-import { createWebSocketClientStatusDetail } from './errors.js'
+import { createWebSocketClientStatusDetail } from './messages.js'
 
 export class WebSocketConnection {
 	private ws?: WebSocket

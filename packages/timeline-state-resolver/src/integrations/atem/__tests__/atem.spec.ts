@@ -20,7 +20,7 @@ import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 import { compareAtemCommands, createDevice, extractAllCommands, waitForConnection } from './util.js'
 import { getDeviceContext } from '../../__tests__/testlib.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
-import { createAtemStatusDetail } from '../errors.js'
+import { createAtemStatusDetail } from '../messages.js'
 
 describe('Atem', () => {
 	const mockTime = new MockTime()

@@ -1,5 +1,5 @@
 import { DeviceType, TemplateString } from '../index.js'
-import { DeviceStatusDetail } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceStatusDetail.js'
 
 /**
  * Status codes for SofieChef device issues.

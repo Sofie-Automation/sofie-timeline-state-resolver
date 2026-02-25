@@ -11,7 +11,7 @@ import {
 	VMixStatusCode,
 	VMixStatusMessages,
 } from 'timeline-state-resolver-types'
-import { createVMixStatusDetail } from './errors.js'
+import { createVMixStatusDetail } from './messages.js'
 import { VMixState, VMixStateDiffer, VMixStateExtended } from './vMixStateDiffer.js'
 import { VMixStateCommandWithContext } from './vMixCommands.js'
 import { MappingsVmix, VMixTimelineStateConverter } from './vMixTimelineStateConverter.js'

@@ -20,7 +20,7 @@ import Debug from 'debug'
 import _ from 'underscore'
 import { Easing } from '../../devices/transitions/easings.js'
 import { assertNever } from '../../lib.js'
-import { createOSCStatusDetail } from './errors.js'
+import { createOSCStatusDetail } from './messages.js'
 const debug = Debug('timeline-state-resolver:osc')
 
 export interface OscDeviceState {

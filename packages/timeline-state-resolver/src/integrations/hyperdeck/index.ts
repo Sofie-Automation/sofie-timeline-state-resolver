@@ -23,7 +23,7 @@ import {
 import { deferAsync } from '../../lib.js'
 import { HyperdeckCommandWithContext, diffHyperdeckStates } from './diffState.js'
 import { HyperdeckDeviceState, convertTimelineStateToHyperdeckState, getDefaultHyperdeckState } from './stateBuilder.js'
-import { createHyperdeckStatusDetail } from './errors.js'
+import { createHyperdeckStatusDetail } from './messages.js'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 
 /**

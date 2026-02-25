@@ -35,7 +35,7 @@ import {
 	CasparCGStatusMessages,
 	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
-import { createCasparCGStatusDetail } from './errors.js'
+import { createCasparCGStatusDetail } from './messages.js'
 
 import {
 	CasparCGState,

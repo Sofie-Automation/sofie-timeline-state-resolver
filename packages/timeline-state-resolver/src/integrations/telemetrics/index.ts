@@ -12,7 +12,7 @@ import {
 } from 'timeline-state-resolver-types'
 import { Socket } from 'net'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { createTelemetricsStatusDetail } from './errors.js'
+import { createTelemetricsStatusDetail } from './messages.js'
 
 const TELEMETRICS_COMMAND_PREFIX = 'P0C'
 const DEFAULT_SOCKET_PORT = 5000

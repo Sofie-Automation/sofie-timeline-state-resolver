@@ -14,7 +14,7 @@ import { OBSDeviceState, convertStateToOBS, getDefaultState } from './state.js'
 import { OBSRequestTypes } from 'obs-websocket-js'
 import { diffStates } from './diff.js'
 import { OBSConnection, OBSConnectionEvents } from './connection.js'
-import { createOBSStatusDetail } from './errors.js'
+import { createOBSStatusDetail } from './messages.js'
 
 export type OBSCommandWithContext = OBSCommandWithContextTyped<keyof OBSRequestTypes>
 export type OBSCommandWithContextTyped<Type extends keyof OBSRequestTypes> = CommandWithContext<
