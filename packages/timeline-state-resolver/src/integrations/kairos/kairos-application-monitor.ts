@@ -1,3 +1,4 @@
+import EventEmitter from 'node:events'
 import {
 	AnySourceRef,
 	AudioPlayerRef,
@@ -18,7 +19,6 @@ import {
 	refToPath,
 	ResponseError,
 } from 'kairos-connection'
-import EventEmitter from 'node:events'
 import {
 	AuxRef,
 	DeviceStatus,
@@ -34,11 +34,20 @@ import {
 	StatusCode,
 } from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
-import { assertNever } from '../../lib'
-import { KairosDeviceState } from './stateBuilder'
+import {
+	KairosDeviceState,
+	KairosDeviceStateAux,
+	KairosDeviceStateClipPlayers,
+	KairosDeviceStateImageStores,
+	KairosDeviceStateMacros,
+	KairosDeviceStateRamRecPlayers,
+	KairosDeviceStateSceneLayers,
+	KairosDeviceStateScenes,
+	KairosDeviceStateSceneSnapshots,
+	KairosDeviceStateSoundPlayers,
+} from './stateBuilder.js'
 import { DeviceContextAPI } from 'timeline-state-resolver-api'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const clone = require('fast-clone')
+import { assertNever, cloneDeep } from '../../lib.js'
 
 /**
  * This class is responsible for checking that the Kairos
@@ -80,7 +89,8 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 
 	constructor(
 		private context: DeviceContextAPI<KairosDeviceState>,
-		private kairos: KairosConnection) {
+		private kairos: KairosConnection
+	) {
 		super()
 
 		this.triggerCheckApplicationStatus()
@@ -98,7 +108,7 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 	 */
 	updateMappings(mappings: Mappings<SomeMappingKairos>): void {
 		if (!_.isEqual(mappings, this._mappings)) {
-			this._mappings = clone(mappings)
+			this._mappings = cloneDeep(mappings)
 			this.triggerCheckApplicationStatus(true)
 		}
 	}
@@ -126,7 +136,7 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 
 		this._checkTimeoutAsap = Boolean(asap)
 		this._checkTimeout = setTimeout(
-			async () => {
+			() => {
 				this._checkTimeout = null
 				if (this.terminated) return
 
@@ -171,46 +181,46 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 	private applyDeviceState(deviceState: KairosDeviceState) {
 		// Populate this.aware with references from deviceState:
 
-		for (const aux of Object.values(deviceState.aux)) {
+		for (const aux of Object.values<KairosDeviceStateAux>(deviceState.aux)) {
 			if (!aux) continue
 			this.aware.add(aux.ref)
 			if (aux.state.aux.source) this.aware.add(aux.state.aux.source)
 		}
-		for (const clipPlayer of Object.values(deviceState.clipPlayers)) {
+		for (const clipPlayer of Object.values<KairosDeviceStateClipPlayers>(deviceState.clipPlayers)) {
 			if (!clipPlayer) continue
 			this.aware.add(refClipPlayer(clipPlayer.ref))
 			if (clipPlayer.state.content.clip) this.aware.add(clipPlayer.state.content.clip)
 		}
-		for (const imageStore of Object.values(deviceState.imageStores)) {
+		for (const imageStore of Object.values<KairosDeviceStateImageStores>(deviceState.imageStores)) {
 			if (!imageStore) continue
 			this.aware.add(refImageStore(imageStore.ref))
 			if (imageStore.state.content.imageStore.clip) this.aware.add(imageStore.state.content.imageStore.clip)
 		}
-		for (const macro of Object.values(deviceState.macros)) {
+		for (const macro of Object.values<KairosDeviceStateMacros>(deviceState.macros)) {
 			if (!macro) continue
 			this.aware.add(macro.ref)
 		}
-		for (const ramrecPlayer of Object.values(deviceState.ramRecPlayers)) {
+		for (const ramrecPlayer of Object.values<KairosDeviceStateRamRecPlayers>(deviceState.ramRecPlayers)) {
 			if (!ramrecPlayer) continue
 			this.aware.add(refRamRecorder(ramrecPlayer.ref))
 			if (ramrecPlayer.state.content.clip) this.aware.add(ramrecPlayer.state.content.clip)
 		}
-		for (const sceneLayer of Object.values(deviceState.sceneLayers)) {
+		for (const sceneLayer of Object.values<KairosDeviceStateSceneLayers>(deviceState.sceneLayers)) {
 			if (!sceneLayer) continue
 			this.aware.add(sceneLayer.ref)
 			if (sceneLayer.state.sourceA) this.aware.add(makeAnySourceRef(sceneLayer.state.sourceA))
 			if (sceneLayer.state.sourcePgm) this.aware.add(makeAnySourceRef(sceneLayer.state.sourcePgm))
 			if (sceneLayer.state.sourcePst) this.aware.add(makeAnySourceRef(sceneLayer.state.sourcePst))
 		}
-		for (const sceneSnapshot of Object.values(deviceState.sceneSnapshots)) {
+		for (const sceneSnapshot of Object.values<KairosDeviceStateSceneSnapshots>(deviceState.sceneSnapshots)) {
 			if (!sceneSnapshot) continue
 			this.aware.add(sceneSnapshot.ref)
 		}
-		for (const scene of Object.values(deviceState.scenes)) {
+		for (const scene of Object.values<KairosDeviceStateScenes>(deviceState.scenes)) {
 			if (!scene) continue
 			this.aware.add(scene.ref)
 		}
-		for (const soundPlayer of Object.values(deviceState.soundPlayers)) {
+		for (const soundPlayer of Object.values<KairosDeviceStateSoundPlayers>(deviceState.soundPlayers)) {
 			if (!soundPlayer) continue
 			this.aware.add(refAudioPlayer(soundPlayer.ref))
 			if (soundPlayer.state.content.clip) this.aware.add(soundPlayer.state.content.clip)
@@ -308,7 +318,6 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 			active: true,
 		}
 		if (!_.isEqual(this.status, status)) {
-
 			if (status.statusCode !== StatusCode.GOOD) {
 				this.context.logger.warning(`Kairos Application Monitor status: ${JSON.stringify(status)}`)
 			}
