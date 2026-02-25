@@ -59,7 +59,7 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 	public QUICK_CHECK_INTERVAL = 3000 // 3 seconds
 
 	/** Set of things we're aware of, and should exist */
-	private aware: SetWithTimeout<
+	private readonly aware: SetWithTimeout<
 		| SceneLayerRef
 		| SceneSnapshotRef
 		| SceneLayerEffectRef
@@ -88,16 +88,15 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 	}
 
 	constructor(
-		private context: DeviceContextAPI<KairosDeviceState>,
-		private kairos: KairosConnection
+		private readonly context: DeviceContextAPI<KairosDeviceState>,
+		private readonly kairos: KairosConnection
 	) {
 		super()
-
-		this.triggerCheckApplicationStatus()
 
 		this.aware = new SetWithTimeout(
 			this.MONITOR_INTERVAL * 2 // Keep items for twice the monitor interval, to ensure we don't drop them too quickly
 		)
+		this.triggerCheckApplicationStatus()
 	}
 	terminate() {
 		this.terminated = true
@@ -249,7 +248,7 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 		for (const sourceRef of this.aware.values()) {
 			i++
 			// Don't send too many commands at once:
-			if (i > 10) {
+			if (i >= 10) {
 				i = 0
 				await sleep(500)
 			}
@@ -332,26 +331,6 @@ export interface KairosApplicationMonitorEvents {
 	error: [error: Error]
 }
 
-/**
- * Collections of things we're aware of, to monitor their existence on the Kairos.
- */
-// export interface Aware {
-// 	sceneLayers: Set<SceneLayerRef>
-// 	sceneSnapshot: Set<SceneSnapshotRef>
-// 	sceneLayerEffects: Set<SceneLayerEffectRef>
-
-// 	auxes: Set<AuxRef>
-// 	macros: Set<MacroRef>
-// 	anySources: Set<AnySourceRef>
-
-// 	soundPlayers: Set<AudioPlayerRef>
-
-// 	mediaClips: Set<MediaClipRef>
-// 	mediaStills: Set<MediaStillRef | MediaImageRef>
-// 	mediaRamRecs: Set<MediaRamRecRef>
-// 	mediaSounds: Set<MediaSoundRef>
-// }
-
 function makeAnySourceRef(value: string | AnySourceRef): AnySourceRef {
 	if (typeof value === 'string') {
 		return parseAnySourceRef(value)
@@ -368,15 +347,15 @@ async function sleep(ms: number): Promise<void> {
  * It's like Set(), but the values have a TTL
  */
 class SetWithTimeout<T> {
-	private store = new Map<
+	private readonly store = new Map<
 		string,
 		{
 			value: T
 			ttl: number
 		}
-	>() // value -> expiry timestamp
+	>()
 
-	constructor(private ttl: number) {}
+	constructor(private readonly ttl: number) {}
 	add(value: T): void {
 		const key = JSON.stringify(value)
 		this.store.set(key, {
