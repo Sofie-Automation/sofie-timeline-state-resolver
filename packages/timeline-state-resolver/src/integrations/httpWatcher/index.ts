@@ -12,7 +12,7 @@ import {
 } from 'timeline-state-resolver-types'
 import got, { Headers, Response } from 'got'
 import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
-import { createHTTPWatcherStatusDetail } from './errors.js'
+import { createHTTPWatcherStatusDetail } from './messages.js'
 
 type HTTPWatcherDeviceState = Record<string, never>
 

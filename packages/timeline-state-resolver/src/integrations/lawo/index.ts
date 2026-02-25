@@ -17,7 +17,7 @@ import Debug from 'debug'
 import { convertTimelineStateToLawoState, LawoState } from './state.js'
 import { LawoCommandWithContext, diffLawoStates, LawoCommandType } from './diff.js'
 import { LawoConnection } from './connection.js'
-import { createLawoStatusDetail } from './errors.js'
+import { createLawoStatusDetail } from './messages.js'
 const debug = Debug('timeline-state-resolver:lawo')
 
 export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoCommandWithContext> {

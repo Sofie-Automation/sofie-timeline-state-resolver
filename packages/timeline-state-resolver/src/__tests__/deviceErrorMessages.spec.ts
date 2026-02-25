@@ -1,5 +1,5 @@
 import { DeviceStatusError, errorsToMessages } from 'timeline-state-resolver-types'
-import { createAtemError } from '../integrations/atem/errors.js'
+import { createAtemError } from '../integrations/atem/messages.js'
 
 // Example device-local error definitions (mimicking what each device would export)
 const AtemErrorCode = {

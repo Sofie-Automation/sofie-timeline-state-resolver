@@ -1,5 +1,5 @@
 import { interpolateTemplateString, interpolateTemplateStringIfNeeded, errorsToMessages } from '../templateString.js'
-import { DeviceStatusError } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceStatusDetail.js'
 
 describe('interpolateTemplateString', () => {
 	test('basic input', () => {
@@ -50,13 +50,13 @@ describe('errorsToMessages', () => {
 	}
 
 	test('converts single error to message', () => {
-		const errors: DeviceStatusError[] = [{ code: mockErrorCode.DISCONNECTED, context: { deviceName: 'Test Device' } }]
+		const errors: DeviceStatusDetail[] = [{ code: mockErrorCode.DISCONNECTED, context: { deviceName: 'Test Device' } }]
 		const messages = errorsToMessages(errors, mockErrorMessages)
 		expect(messages).toEqual(['Test Device disconnected'])
 	})
 
 	test('converts multiple errors to messages', () => {
-		const errors: DeviceStatusError[] = [
+		const errors: DeviceStatusDetail[] = [
 			{ code: mockErrorCode.DISCONNECTED, context: { deviceName: 'Device A' } },
 			{ code: mockErrorCode.TIMEOUT, context: { deviceName: 'Device B', timeout: 5000 } },
 		]
@@ -65,13 +65,13 @@ describe('errorsToMessages', () => {
 	})
 
 	test('falls back to error code when template not found', () => {
-		const errors: DeviceStatusError[] = [{ code: 'DEVICE_UNKNOWN_ERROR', context: { deviceName: 'Test Device' } }]
+		const errors: DeviceStatusDetail[] = [{ code: 'DEVICE_UNKNOWN_ERROR', context: { deviceName: 'Test Device' } }]
 		const messages = errorsToMessages(errors, mockErrorMessages)
 		expect(messages).toEqual(['DEVICE_UNKNOWN_ERROR'])
 	})
 
 	test('preserves unknown placeholders in templates', () => {
-		const errors: DeviceStatusError[] = [{ code: mockErrorCode.DISCONNECTED, context: { deviceName: 'Test Device' } }]
+		const errors: DeviceStatusDetail[] = [{ code: mockErrorCode.DISCONNECTED, context: { deviceName: 'Test Device' } }]
 		const customTemplates = {
 			[mockErrorCode.DISCONNECTED]: '{{deviceName}} offline - {{missingVar}} - contact {{admin}}',
 		}
@@ -85,7 +85,7 @@ describe('errorsToMessages', () => {
 	})
 
 	test('handles empty templates object', () => {
-		const errors: DeviceStatusError[] = [{ code: mockErrorCode.DISCONNECTED, context: { deviceName: 'Test Device' } }]
+		const errors: DeviceStatusDetail[] = [{ code: mockErrorCode.DISCONNECTED, context: { deviceName: 'Test Device' } }]
 		const messages = errorsToMessages(errors, {})
 		expect(messages).toEqual(['DEVICE_MOCK_DISCONNECTED'])
 	})

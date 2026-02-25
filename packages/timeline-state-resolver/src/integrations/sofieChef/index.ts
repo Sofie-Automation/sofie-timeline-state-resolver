@@ -28,7 +28,7 @@ import { t } from '../../lib.js'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates.js'
 import { buildSofieChefState } from './stateBuilder.js'
-import { createSofieChefStatusDetail } from './errors.js'
+import { createSofieChefStatusDetail } from './messages.js'
 
 export type SofieChefCommandWithContext = CommandWithContext<ReceiveWSMessageAny, string>
 export interface SofieChefState {

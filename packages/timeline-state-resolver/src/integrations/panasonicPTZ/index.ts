@@ -39,7 +39,7 @@ import {
 	ZoomSpeedControl,
 } from './commands.js'
 import { t } from '../../lib.js'
-import { createPanasonicPTZStatusDetail } from './errors.js'
+import { createPanasonicPTZStatusDetail } from './messages.js'
 
 const FOCUS_MODE_MAP = {
 	[FocusMode.AUTO]: PanasonicFocusMode.AUTO,

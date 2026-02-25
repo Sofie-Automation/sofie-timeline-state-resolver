@@ -23,7 +23,7 @@ import {
 } from 'timeline-state-resolver-types'
 
 import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection.js'
-import { createSisyfosStatusDetail } from './errors.js'
+import { createSisyfosStatusDetail } from './messages.js'
 import Debug from 'debug'
 import { t } from '../../lib.js'
 import { CommandWithContext, Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'

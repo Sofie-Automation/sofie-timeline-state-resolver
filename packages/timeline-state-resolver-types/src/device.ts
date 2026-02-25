@@ -1,6 +1,6 @@
 import type { DeviceType } from './index.js'
 import type { DeviceCommonOptions } from './generated/common-options.js'
-import type { DeviceStatusDetail } from './deviceError.js'
+import type { DeviceStatusDetail } from './deviceStatusDetail.js'
 
 export enum StatusCode {
 	UNKNOWN = 0, // Status unknown

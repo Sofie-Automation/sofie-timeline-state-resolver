@@ -1,5 +1,5 @@
 import { DeviceType } from '../generated/index.js'
-import { DeviceStatusDetail } from '../deviceError.js'
+import { DeviceStatusDetail } from '../deviceStatusDetail.js'
 
 /**
  * Status codes for OBS device issues.

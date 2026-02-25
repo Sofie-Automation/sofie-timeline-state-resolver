@@ -1,4 +1,4 @@
-import { DeviceStatusDetail } from './deviceError.js'
+import { DeviceStatusDetail } from './deviceStatusDetail.js'
 
 /** This resolves to a string, where parts can be defined by the datastore */
 export interface TemplateString {

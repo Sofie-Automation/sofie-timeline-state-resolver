@@ -40,7 +40,7 @@ import {
 	diffAddressStates,
 	updateFromAtemState,
 } from './state.js'
-import { createAtemStatusDetail } from './errors.js'
+import { createAtemStatusDetail } from './messages.js'
 
 export type AtemCommandWithContext = CommandWithContext<AtemCommands.ISerializableCommand[], string>
 
