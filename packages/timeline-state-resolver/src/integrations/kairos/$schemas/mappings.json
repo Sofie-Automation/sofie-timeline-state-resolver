@@ -14,10 +14,21 @@
 					"ui:description": "The Scene to use",
 					"ui:summaryTitle": "Scene",
 					"ui:displayType": "breadcrumbs",
-					"default": ["Main"]
+					"default": [
+						"Main"
+					]
+				},
+				"temporalPriority": {
+					"type": "integer",
+					"ui:title": "Temporal Priority",
+					"ui:description": "Set this to a higher value to make commands that affects this Scene be sent first. Set this to a negative value to ensure that other untracked things are done first. Defaults to 0.",
+					"ui:summaryTitle": "Temporal Priority",
+					"default": 0
 				}
 			},
-			"required": ["sceneName"],
+			"required": [
+				"sceneName"
+			],
 			"additionalProperties": false
 		},
 		"scene-layer": {
@@ -32,7 +43,9 @@
 					"ui:description": "The Scene to use",
 					"ui:summaryTitle": "Scene",
 					"ui:displayType": "breadcrumbs",
-					"default": ["Main"]
+					"default": [
+						"Main"
+					]
 				},
 				"layerName": {
 					"type": "array",
@@ -43,10 +56,22 @@
 					"ui:description": "The layer in a scene to use",
 					"ui:summaryTitle": "Layer",
 					"ui:displayType": "breadcrumbs",
-					"default": ["Background"]
+					"default": [
+						"Background"
+					]
+				},
+				"temporalPriority": {
+					"type": "integer",
+					"ui:title": "Temporal Priority",
+					"ui:description": "Set this to a higher value to make commands that affects this Scene be sent first. Set this to a negative value to ensure that other untracked things are done first. Defaults to 0.",
+					"ui:summaryTitle": "Temporal Priority",
+					"default": 0
 				}
 			},
-			"required": ["sceneName", "layerName"],
+			"required": [
+				"sceneName",
+				"layerName"
+			],
 			"additionalProperties": false
 		},
 		"aux": {
@@ -59,9 +84,18 @@
 					"ui:summaryTitle": "AUX",
 					"ui:displayType": "breadcrumbs",
 					"default": "IP-AUX1"
+				},
+				"temporalPriority": {
+					"type": "integer",
+					"ui:title": "Temporal Priority",
+					"ui:description": "Set this to a higher value to make commands that affects this Scene be sent first. Set this to a negative value to ensure that other untracked things are done first. Defaults to 0.",
+					"ui:summaryTitle": "Temporal Priority",
+					"default": 0
 				}
 			},
-			"required": ["auxName"],
+			"required": [
+				"auxName"
+			],
 			"additionalProperties": false
 		},
 		"macro": {
@@ -100,7 +134,9 @@
 					"default": false
 				}
 			},
-			"required": ["playerId"],
+			"required": [
+				"playerId"
+			],
 			"additionalProperties": false
 		},
 		"ram-rec-player": {
@@ -133,7 +169,9 @@
 					"default": false
 				}
 			},
-			"required": ["playerId"],
+			"required": [
+				"playerId"
+			],
 			"additionalProperties": false
 		},
 		"image-store": {
@@ -157,7 +195,9 @@
 					"default": false
 				}
 			},
-			"required": ["playerId"],
+			"required": [
+				"playerId"
+			],
 			"additionalProperties": false
 		},
 		"sound-player": {
@@ -190,7 +230,9 @@
 					"default": false
 				}
 			},
-			"required": ["playerId"],
+			"required": [
+				"playerId"
+			],
 			"additionalProperties": false
 		}
 	}

@@ -14,9 +14,12 @@ import {
 	type UpdateImageStoreObject,
 	isRef,
 } from 'kairos-connection'
-import { assertNever } from '../../lib.js'
+import type { CommandWithContext } from 'timeline-state-resolver-api'
 import { isEqual } from 'underscore'
+import { assertNever } from '../../lib.js'
 import type { KairosRamLoader } from './lib/kairosRamLoader.js'
+
+export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, string>
 
 export type KairosCommandAny =
 	| KairosSceneCommand
@@ -27,7 +30,7 @@ export type KairosCommandAny =
 	| KairosClipPlayerCommand
 	| KairosRamRecPlayerCommand
 	| KairosImageStoreCommand
-	| KairosSoundPlayerCommand
+	| KairosAudioPlayerCommand
 	| KairosPlayerCommandMethod
 
 export interface KairosSceneCommand {
@@ -116,7 +119,7 @@ export interface KairosImageStoreCommand {
 	values: Partial<UpdateImageStoreObject>
 }
 
-export interface KairosSoundPlayerCommand {
+export interface KairosAudioPlayerCommand {
 	type: 'sound-player'
 
 	playerId: number
