@@ -9,6 +9,7 @@ import {
 	TSRTimelineContent,
 	TimelineContentTypeVMix,
 	VMixInputOverlays,
+	VMixLayer,
 	VMixLayers,
 	VMixTransition,
 	VMixTransitionType,
@@ -81,7 +82,7 @@ export class VMixTimelineStateConverter {
 					if (content.type === TimelineContentTypeVMix.PROGRAM) {
 						const mixProgram = (mapping.options.index || 1) - 1
 						if (content.input !== undefined) {
-							this._switchToInput(content.input, deviceState, mixProgram, content.transition)
+							this._switchToInput(String(content.input), deviceState, mixProgram, content.transition)
 						} else if (content.inputLayer) {
 							this._switchToInput(content.inputLayer, deviceState, mixProgram, content.transition, true)
 						} else if (content.transition) {
@@ -96,7 +97,7 @@ export class VMixTimelineStateConverter {
 					if (content.type === TimelineContentTypeVMix.PREVIEW) {
 						const mixPreview = (mapping.options.index || 1) - 1
 						const mixState = deviceState.reportedState.mixes[mixPreview]
-						if (mixState != null && content.input != null) mixState.preview = content.input
+						if (mixState != null && content.input != null) mixState.preview = String(content.input)
 					}
 					break
 				case MappingVmixType.AudioChannel:
@@ -148,9 +149,10 @@ export class VMixTimelineStateConverter {
 								loop: this._wrapInContext(content.loop, tlObject),
 								position: this._wrapInContext(content.seek, tlObject),
 								transform: this._wrapInContext(content.transform, tlObject),
-								layers:
+								layers: this._normalizeLayerInputs(
 									content.layers ??
-									(content.overlays ? this._convertDeprecatedInputOverlays(content.overlays) : undefined),
+										(content.overlays ? this._convertDeprecatedInputOverlays(content.overlays) : undefined)
+								),
 								listFilePaths: this._wrapInContext(content.listFilePaths, tlObject),
 								restart: this._wrapInContext(content.restart, tlObject),
 								text: content.text,
@@ -167,7 +169,7 @@ export class VMixTimelineStateConverter {
 					if (content.type === TimelineContentTypeVMix.OUTPUT) {
 						deviceState.outputs[mapping.options.index] = {
 							source: content.source,
-							input: content.input,
+							input: content.input != null ? String(content.input) : undefined,
 						}
 					}
 					break
@@ -176,7 +178,7 @@ export class VMixTimelineStateConverter {
 						const overlayIndex = mapping.options.index - 1
 						const overlayState = deviceState.reportedState.overlays[overlayIndex]
 						if (overlayState != null) {
-							overlayState.input = content.input
+							overlayState.input = content.input != null ? String(content.input) : undefined
 						}
 					}
 					break
@@ -226,12 +228,12 @@ export class VMixTimelineStateConverter {
 	private _modifyInput(
 		deviceState: VMixStateExtended,
 		newInput: VMixInput,
-		input: { key?: string | number; layer?: string; filePath?: string },
+		input: { key?: string; layer?: string; filePath?: string },
 		layerName: string
 	): VMixState {
 		let inputs = deviceState.reportedState.existingInputs
 		const filteredNewInput = _.pick(newInput, (x) => x !== undefined)
-		let inputKey: string | number | undefined
+		let inputKey: string | undefined
 		if (input.layer) {
 			inputKey = deviceState.inputLayers[input.layer]
 			inputs = deviceState.reportedState.inputsAddedByUs
@@ -241,12 +243,12 @@ export class VMixTimelineStateConverter {
 		} else {
 			inputKey = input.key
 		}
-		if (inputKey) {
+		if (inputKey !== undefined) {
 			inputs[inputKey] = deepMerge(
 				inputs[inputKey] ?? this.defaultStateFactory.getDefaultInputState(inputKey),
 				filteredNewInput
 			)
-			deviceState.inputLayers[layerName] = inputKey as string
+			deviceState.inputLayers[layerName] = inputKey
 		}
 		return deviceState.reportedState
 	}
@@ -254,18 +256,18 @@ export class VMixTimelineStateConverter {
 	private _modifyInputAudio(
 		deviceState: VMixStateExtended,
 		newInput: VMixInputAudio,
-		input: { key?: string | number; layer?: string }
+		input: { key?: string; layer?: string }
 	): VMixState {
 		let inputs = deviceState.reportedState.existingInputsAudio
 		const filteredNewInput = _.pick(newInput, (x) => x !== undefined)
-		let inputKey: string | number | undefined
+		let inputKey: string | undefined
 		if (input.layer) {
 			inputKey = deviceState.inputLayers[input.layer]
 			inputs = deviceState.reportedState.inputsAddedByUsAudio
 		} else {
 			inputKey = input.key
 		}
-		if (inputKey) {
+		if (inputKey !== undefined) {
 			inputs[inputKey] = deepMerge(
 				inputs[inputKey] ?? this.defaultStateFactory.getDefaultInputAudioState(inputKey),
 				filteredNewInput
@@ -275,7 +277,7 @@ export class VMixTimelineStateConverter {
 	}
 
 	private _switchToInput(
-		input: number | string,
+		input: string,
 		deviceState: VMixStateExtended,
 		mix: number,
 		transition?: VMixTransition,
@@ -357,7 +359,20 @@ export class VMixTimelineStateConverter {
 		return state
 	}
 
-	private _convertDeprecatedInputOverlays(overlays: VMixInputOverlays): VMixLayers {
-		return _.mapObject(overlays, (value: number | string) => ({ input: value }))
+	private _convertDeprecatedInputOverlays(overlays: VMixInputOverlays): VMixInput['layers'] {
+		const result: VMixInput['layers'] = {}
+		for (const [key, value] of Object.entries<string | number>(overlays as Record<string, string | number>)) {
+			result[Number(key)] = { input: String(value) }
+		}
+		return result
+	}
+
+	private _normalizeLayerInputs(layers: VMixLayers | undefined): VMixInput['layers'] | undefined {
+		if (layers == null) return undefined
+		const result: VMixInput['layers'] = {}
+		for (const [key, layer] of Object.entries<VMixLayer>(layers as Record<string, VMixLayer>)) {
+			result[Number(key)] = { ...layer, input: String(layer.input) }
+		}
+		return result
 	}
 }
