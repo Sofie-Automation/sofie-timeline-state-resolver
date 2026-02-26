@@ -9,14 +9,14 @@ import {
 	KairosActionMethods,
 } from 'timeline-state-resolver-types'
 import { KairosConnection } from 'kairos-connection'
-import type { Device, DeviceContextAPI, CommandWithContext, DeviceTimelineState } from 'timeline-state-resolver-api'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { KairosDeviceState, KairosStateBuilder } from './stateBuilder.js'
 import { diffKairosStates } from './diffState.js'
-import { sendCommand, type KairosCommandAny } from './commands.js'
+import { KairosCommandWithContext, sendCommand } from './commands.js'
 import { getActions } from './actions.js'
 import { KairosRamLoader } from './lib/kairosRamLoader.js'
-
-export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, string>
+import { KairosApplicationMonitor } from './kairos-application-monitor.js'
+import { temporalPriorityOrderCommands } from './temporal-priority.js'
 
 /**
  * This is a wrapper for the Kairos Device. Commands to any and all kairos devices will be sent through here.
@@ -24,12 +24,14 @@ export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, stri
 export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState, KairosCommandWithContext> {
 	private readonly _kairos: KairosConnection
 	private readonly _kairosRamLoader: KairosRamLoader
+	private _kairosApplicationMonitor: KairosApplicationMonitor | undefined
 
 	readonly actions: KairosActionMethods
 
 	constructor(public context: DeviceContextAPI<KairosDeviceState>) {
 		this._kairos = new KairosConnection()
 		this._kairosRamLoader = new KairosRamLoader(this._kairos, context)
+
 		this.actions = getActions(this._kairos)
 	}
 
@@ -51,10 +53,18 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 
 		this._kairos.on('connect', () => {
 			this._connectionChanged()
-
 			// Do a state diff to at least send all the commands we know about
 			this.context.resetState()
 		})
+
+		if (options.monitorState) {
+			this._kairosApplicationMonitor = new KairosApplicationMonitor(this.context, this._kairos)
+
+			this._kairosApplicationMonitor.on('error', (e: Error) =>
+				this.context.logger.error('Error from Kairos Application Checker', e)
+			)
+			this._kairosApplicationMonitor.on('statusChanged', () => this._connectionChanged())
+		}
 
 		// Start the connection, without waiting
 		this._kairos.connect(options.host, options.port)
@@ -66,6 +76,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 	 * garbage collected.
 	 */
 	async terminate(): Promise<void> {
+		this._kairosApplicationMonitor?.terminate()
 		this._kairos.disconnect()
 		this._kairos.discard()
 		this._kairos.removeAllListeners()
@@ -81,9 +92,13 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 	 */
 	convertTimelineStateToDeviceState(
 		timelineState: DeviceTimelineState<TSRTimelineContent>,
-		mappings: Mappings
+		mappings: Mappings<SomeMappingKairos>
 	): KairosDeviceState {
 		const deviceState = KairosStateBuilder.fromTimeline(timelineState, mappings)
+
+		// Also notify the KairosApplicationMonitor of the changes:
+		this._kairosApplicationMonitor?.updateMappings(mappings)
+		this._kairosApplicationMonitor?.updateDeviceState(deviceState)
 
 		return deviceState
 	}
@@ -97,11 +112,15 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 				statusCode: StatusCode.BAD,
 				messages: [`Kairos disconnected`],
 			}
-		} else {
-			return {
-				statusCode: StatusCode.GOOD,
-				messages: [],
-			}
+		}
+
+		if (this._kairosApplicationMonitor && this._kairosApplicationMonitor.status.statusCode !== StatusCode.GOOD) {
+			return this._kairosApplicationMonitor.status
+		}
+
+		return {
+			statusCode: StatusCode.GOOD,
+			messages: [],
 		}
 	}
 
@@ -118,7 +137,8 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		// Skip diffing if not connected, a resolverReset will be fired upon reconnection
 		if (!this.connected) return []
 
-		return diffKairosStates(oldKairosState, newKairosState, mappings)
+		const commands = diffKairosStates(oldKairosState, newKairosState, mappings)
+		return temporalPriorityOrderCommands(newKairosState, mappings, commands)
 	}
 
 	async sendCommand(command: KairosCommandWithContext): Promise<void> {
