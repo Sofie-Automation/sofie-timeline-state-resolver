@@ -784,7 +784,7 @@ describe('Temporal Priority', () => {
 					values: { sourceA: { realm: 'scene', scenePath: ['Split'] } },
 				},
 
-				// The the ones with no temporalPriority
+				// Then the ones with no temporalPriority
 				{
 					type: 'scene-layer',
 					ref: { realm: 'scene-layer', scenePath: ['Scene1'], layerPath: ['Content'] },

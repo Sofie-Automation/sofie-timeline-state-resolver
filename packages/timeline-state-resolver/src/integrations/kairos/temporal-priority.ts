@@ -241,8 +241,19 @@ export function orderCommandsByTemporalPriority(
 				ref = command.command.ref
 			} else if (command.command.type === 'macro') {
 				ref = command.command.macroRef
-			} else if (command.command.type === 'clip-player' || command.command.type === 'media-player:do') {
+			} else if (command.command.type === 'clip-player') {
 				ref = refClipPlayer(command.command.playerId)
+			} else if (command.command.type === 'media-player:do') {
+				if (command.command.playerType === 'clip-player') {
+					ref = refClipPlayer(command.command.playerId)
+				} else if (command.command.playerType === 'ram-rec-player') {
+					ref = refRamRecorder(command.command.playerId)
+				} else if (command.command.playerType === 'sound-player') {
+					ref = refAudioPlayer(command.command.playerId)
+				} else {
+					ref = undefined
+					assertNever(command.command.playerType)
+				}
 			} else if (command.command.type === 'ram-rec-player') {
 				ref = refRamRecorder(command.command.playerId)
 			} else if (command.command.type === 'sound-player') {
