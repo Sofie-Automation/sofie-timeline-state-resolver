@@ -38,15 +38,15 @@ const HttpStatusMessages: Record<HttpStatusCode, string> = {
 
 describe('statusDetailsToMessages', () => {
 	it('converts a single error to a message', () => {
-		const errors = [
+		const statusDetails = [
 			createAtemStatusDetail(AtemStatusCode.DISCONNECTED, { host: '192.168.1.10', deviceName: 'Main Switcher' }),
 		]
-		const messages = statusDetailsToMessages(errors, AtemStatusMessages)
+		const messages = statusDetailsToMessages(statusDetails, AtemStatusMessages)
 		expect(messages).toEqual(['ATEM disconnected'])
 	})
 
 	it('interpolates context variables', () => {
-		const errors = [
+		const statusDetails = [
 			createAtemStatusDetail(AtemStatusCode.PSU_FAULT, {
 				host: '192.168.1.10',
 				deviceName: 'Main Switcher',
@@ -54,12 +54,12 @@ describe('statusDetailsToMessages', () => {
 				totalPsus: 2,
 			}),
 		]
-		const messages = statusDetailsToMessages(errors, AtemStatusMessages)
+		const messages = statusDetailsToMessages(statusDetails, AtemStatusMessages)
 		expect(messages).toEqual(['ATEM PSU 2 is faulty (2 PSU(s))'])
 	})
 
 	it('handles multiple errors', () => {
-		const errors = [
+		const statusDetails = [
 			createAtemStatusDetail(AtemStatusCode.DISCONNECTED, { host: '192.168.1.10', deviceName: 'Main Switcher' }),
 			createAtemStatusDetail(AtemStatusCode.PSU_FAULT, {
 				host: '192.168.1.10',
@@ -68,32 +68,32 @@ describe('statusDetailsToMessages', () => {
 				totalPsus: 2,
 			}),
 		]
-		const messages = statusDetailsToMessages(errors, AtemStatusMessages)
+		const messages = statusDetailsToMessages(statusDetails, AtemStatusMessages)
 		expect(messages).toEqual(['ATEM disconnected', 'ATEM PSU 1 is faulty (2 PSU(s))'])
 	})
 
 	it('uses custom templates when provided', () => {
-		const errors = [
+		const statusDetails = [
 			createAtemStatusDetail(AtemStatusCode.DISCONNECTED, { host: '192.168.1.10', deviceName: 'Main Switcher' }),
 		]
 		const customTemplates = {
 			...AtemStatusMessages,
 			[AtemStatusCode.DISCONNECTED]: 'Vision mixer offline ({{host}})',
 		}
-		const messages = statusDetailsToMessages(errors, customTemplates)
+		const messages = statusDetailsToMessages(statusDetails, customTemplates)
 		expect(messages).toEqual(['Vision mixer offline (192.168.1.10)'])
 	})
 
 	it('falls back to error code if template not found', () => {
-		const errors = [
+		const statusDetails = [
 			createAtemStatusDetail(AtemStatusCode.DISCONNECTED, { host: '192.168.1.10', deviceName: 'Main Switcher' }),
 		]
-		const messages = statusDetailsToMessages(errors, {})
+		const messages = statusDetailsToMessages(statusDetails, {})
 		expect(messages).toEqual(['DEVICE_ATEM_DISCONNECTED'])
 	})
 
 	it('keeps placeholder if context value missing', () => {
-		const errors = [
+		const statusDetails = [
 			createHttpStatusDetail(HttpStatusCode.TIMEOUT, {
 				url: 'http://example.com',
 				timeout: 5000,
@@ -103,7 +103,7 @@ describe('statusDetailsToMessages', () => {
 		const customTemplates = {
 			[HttpStatusCode.TIMEOUT]: 'Timeout after {{timeout}}ms ({{missingVar}})',
 		}
-		const messages = statusDetailsToMessages(errors, customTemplates)
+		const messages = statusDetailsToMessages(statusDetails, customTemplates)
 		expect(messages).toEqual(['Timeout after 5000ms ({{missingVar}})'])
 	})
 
@@ -113,7 +113,7 @@ describe('statusDetailsToMessages', () => {
 	})
 
 	it('includes optional deviceName and deviceId in context', () => {
-		const errors = [
+		const statusDetails = [
 			createAtemStatusDetail(AtemStatusCode.DISCONNECTED, {
 				host: '192.168.1.10',
 				deviceName: 'Main Switcher',
@@ -122,17 +122,17 @@ describe('statusDetailsToMessages', () => {
 		const customTemplates = {
 			[AtemStatusCode.DISCONNECTED]: '{{deviceName}}: ATEM at {{host}} disconnected',
 		}
-		const messages = statusDetailsToMessages(errors, customTemplates)
+		const messages = statusDetailsToMessages(statusDetails, customTemplates)
 		expect(messages).toEqual(['Main Switcher: ATEM at 192.168.1.10 disconnected'])
 	})
 
 	it('combines templates from multiple devices', () => {
 		const allMessages = { ...AtemStatusMessages, ...HttpStatusMessages }
-		const errors: DeviceStatusDetail[] = [
+		const statusDetails: DeviceStatusDetail[] = [
 			createAtemStatusDetail(AtemStatusCode.DISCONNECTED, { host: '192.168.1.10', deviceName: 'Main Switcher' }),
 			createHttpStatusDetail(HttpStatusCode.TIMEOUT, { url: 'http://api.example.com', timeout: 5000 }),
 		]
-		const messages = statusDetailsToMessages(errors, allMessages)
+		const messages = statusDetailsToMessages(statusDetails, allMessages)
 		expect(messages).toEqual(['ATEM disconnected', 'HTTP request to http://api.example.com timed out after 5000ms'])
 	})
 })

@@ -105,7 +105,7 @@ describe('Atem', () => {
 			statusDetails: [],
 		})
 
-		// Report one psus as offline
+		// Report one failed psu
 		testState.info.power = [true, false]
 		atem.emit('stateChanged', testState, ['info.power'])
 		expect(device.getStatus()).toEqual({
