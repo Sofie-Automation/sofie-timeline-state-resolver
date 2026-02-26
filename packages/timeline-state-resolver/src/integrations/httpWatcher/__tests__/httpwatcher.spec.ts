@@ -61,11 +61,11 @@ describe('HTTP-Watcher', () => {
 
 		try {
 			expect(httpDevice).toBeTruthy()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(2)
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: 500, body: goodBody })
 			await mockTime.advanceTimeTicks(10100)
@@ -75,7 +75,7 @@ describe('HTTP-Watcher', () => {
 			})
 
 			await mockTime.advanceTimeTicks(10100)
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: goodStatusCode, body: 'sorry not sorry' })
 			await mockTime.advanceTimeTicks(10100)
@@ -86,7 +86,7 @@ describe('HTTP-Watcher', () => {
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: goodStatusCode, body: 'heres my keyword again' })
 			await mockTime.advanceTimeTicks(10100)
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 		} finally {
 			await httpDevice.terminate()
 			jest.clearAllTimers()
@@ -103,23 +103,23 @@ describe('HTTP-Watcher', () => {
 
 		try {
 			expect(httpDevice).toBeTruthy()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(2)
 			MOCKED_SOCKET_GET.mockClear()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: 500, body: goodBody })
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(1)
 			MOCKED_SOCKET_GET.mockClear()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(1)
 			MOCKED_SOCKET_GET.mockClear()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: goodStatusCode, body: 'sorry not sorry' })
 			await mockTime.advanceTimeTicks(10100)
@@ -133,7 +133,7 @@ describe('HTTP-Watcher', () => {
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: goodStatusCode, body: 'heres my keyword again' })
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(1)
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 		} finally {
 			await httpDevice.terminate()
 			jest.clearAllTimers()
@@ -150,12 +150,12 @@ describe('HTTP-Watcher', () => {
 
 		try {
 			expect(httpDevice).toBeTruthy()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(2)
 			MOCKED_SOCKET_GET.mockClear()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: 500, body: goodBody })
 			await mockTime.advanceTimeTicks(10100)
@@ -169,19 +169,19 @@ describe('HTTP-Watcher', () => {
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(1)
 			MOCKED_SOCKET_GET.mockClear()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: goodStatusCode, body: 'sorry not sorry' })
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(1)
 			MOCKED_SOCKET_GET.mockClear()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 
 			MOCKED_SOCKET_GET.mockResolvedValueOnce({ statusCode: goodStatusCode, body: 'heres my keyword again' })
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(1)
 			MOCKED_SOCKET_GET.mockClear()
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 		} finally {
 			await httpDevice.terminate()
 			jest.clearAllTimers()
@@ -198,11 +198,11 @@ describe('HTTP-Watcher', () => {
 		})
 
 		try {
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(2)
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 		} finally {
 			await httpDevice.terminate()
 			jest.clearAllTimers()
@@ -221,14 +221,14 @@ describe('HTTP-Watcher', () => {
 		})
 
 		try {
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(2)
 			expect(httpDevice.getStatus()).toEqual({
 				statusCode: StatusCode.BAD,
 				messages: ['Error: Bad Gateway'],
-				errors: [
+				statusDetails: [
 					{
 						code: 'DEVICE_HTTPWATCHER_REQUEST_ERROR',
 						context: {
@@ -254,14 +254,14 @@ describe('HTTP-Watcher', () => {
 		})
 
 		try {
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(2)
 			expect(httpDevice.getStatus()).toEqual({
 				statusCode: StatusCode.BAD,
 				messages: ['Expected keyword "bad keyword" not found'],
-				errors: [
+				statusDetails: [
 					{
 						code: 'DEVICE_HTTPWATCHER_KEYWORD_NOT_FOUND',
 						context: {
@@ -292,14 +292,14 @@ describe('HTTP-Watcher', () => {
 		})
 
 		try {
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(2)
 			expect(httpDevice.getStatus()).toEqual({
 				statusCode: StatusCode.BAD,
 				messages: ['Expected status code 200, got 201'],
-				errors: [
+				statusDetails: [
 					{
 						code: 'DEVICE_HTTPWATCHER_UNEXPECTED_STATUS_CODE',
 						context: {
@@ -329,12 +329,12 @@ describe('HTTP-Watcher', () => {
 		})
 
 		try {
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10000)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(0)
 			expect(MOCKED_SOCKET_POST).toHaveBeenCalledTimes(2)
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 		} finally {
 			await httpDevice.terminate()
 			jest.clearAllTimers()
@@ -350,11 +350,11 @@ describe('HTTP-Watcher', () => {
 		})
 
 		try {
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(2)
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 		} finally {
 			await httpDevice.terminate()
 			jest.clearAllTimers()
@@ -373,7 +373,7 @@ describe('HTTP-Watcher', () => {
 		})
 
 		try {
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.UNKNOWN, messages: [], statusDetails: [] })
 
 			await mockTime.advanceTimeTicks(10100)
 			expect(MOCKED_SOCKET_GET).toHaveBeenCalledTimes(2)
@@ -382,7 +382,7 @@ describe('HTTP-Watcher', () => {
 					myHeader: 'myValue',
 				},
 			})
-			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], errors: [] })
+			expect(httpDevice.getStatus()).toEqual({ statusCode: StatusCode.GOOD, messages: [], statusDetails: [] })
 		} finally {
 			await httpDevice.terminate()
 			jest.clearAllTimers()
