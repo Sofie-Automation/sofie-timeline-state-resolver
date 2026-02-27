@@ -1,4 +1,44 @@
 import { DeviceType } from '../generated/index.js'
+import { DeviceStatusDetail } from '../deviceStatusDetail.js'
+
+/**
+ * Status codes for ATEM device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
+ */
+export const AtemStatusCode = {
+	DISCONNECTED: 'DEVICE_ATEM_DISCONNECTED',
+	PSU_FAULT: 'DEVICE_ATEM_PSU_FAULT',
+} as const
+
+export type AtemStatusCode = (typeof AtemStatusCode)[keyof typeof AtemStatusCode]
+
+/**
+ * Context data for each ATEM status type.
+ * These fields are available for message template interpolation.
+ */
+export interface AtemStatusContextMap {
+	[AtemStatusCode.DISCONNECTED]: {
+		deviceName: string
+		host: string
+	}
+	[AtemStatusCode.PSU_FAULT]: {
+		deviceName: string
+		host: string
+		psuNumber: number
+		totalPsus: number
+	}
+}
+
+export type AtemStatusDetail<T extends AtemStatusCode = AtemStatusCode> = DeviceStatusDetail<T, AtemStatusContextMap[T]>
+
+/**
+ * Default status message templates for ATEM devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
+ */
+export const AtemStatusMessages: Record<AtemStatusCode, string> = {
+	[AtemStatusCode.DISCONNECTED]: 'ATEM disconnected',
+	[AtemStatusCode.PSU_FAULT]: 'ATEM PSU {{psuNumber}} is faulty. The device has {{totalPsus}} PSU(s) in total.',
+}
 
 export enum TimelineContentTypeAtem {
 	//  Atem-state

@@ -5,9 +5,14 @@ import {
 	DeviceStatus,
 	HttpWatcherDeviceTypes,
 	HttpMethod,
+	HTTPWatcherStatusDetail,
+	HTTPWatcherStatusCode,
+	HTTPWatcherStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 import got, { Headers, Response } from 'got'
 import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import { createHTTPWatcherStatusDetail } from './messages.js'
 
 type HTTPWatcherDeviceState = Record<string, never>
 
@@ -34,7 +39,7 @@ export class HTTPWatcherDevice implements Device<
 	private intervalTime!: number
 	private interval: NodeJS.Timeout | undefined
 	private status: StatusCode = StatusCode.UNKNOWN
-	private statusReason: string | undefined
+	private statusDetails: HTTPWatcherStatusDetail[] = []
 
 	constructor(protected context: DeviceContextAPI<HTTPWatcherDeviceState>) {
 		// Nothing
@@ -42,7 +47,7 @@ export class HTTPWatcherDevice implements Device<
 
 	private onInterval() {
 		if (!this.uri) {
-			this._setStatus(StatusCode.BAD, 'URI not set')
+			this._setStatus(StatusCode.BAD, [createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.URI_NOT_SET, {})])
 			return
 		}
 
@@ -53,10 +58,20 @@ export class HTTPWatcherDevice implements Device<
 			})
 				.then((response) => this.handleResponse(response))
 				.catch((error) => {
-					this._setStatus(StatusCode.BAD, error.toString() || 'Unknown')
+					const context: any = {
+						error: error.toString() || 'Unknown',
+						uri: this.uri,
+					}
+					if (error.response) {
+						context.statusCode = error.response.statusCode
+						context.body = error.response.body
+					}
+					this._setStatus(StatusCode.BAD, [createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.REQUEST_ERROR, context)])
 				})
 		} else {
-			this._setStatus(StatusCode.BAD, `Bad request method: "${this.httpMethod}"`)
+			this._setStatus(StatusCode.BAD, [
+				createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.BAD_METHOD, { method: this.httpMethod }),
+			])
 		}
 	}
 	private stopInterval() {
@@ -74,11 +89,26 @@ export class HTTPWatcherDevice implements Device<
 
 	private handleResponse(response: Response<string>) {
 		if (this.expectedHttpResponse && this.expectedHttpResponse !== response.statusCode) {
-			this._setStatus(StatusCode.BAD, `Expected status code ${this.expectedHttpResponse}, got ${response.statusCode}`)
+			this._setStatus(StatusCode.BAD, [
+				createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.UNEXPECTED_STATUS_CODE, {
+					expected: this.expectedHttpResponse,
+					actual: response.statusCode,
+					uri: this.uri!,
+					body: response.body,
+					headers: response.headers,
+				}),
+			])
 		} else if (this.keyword && response.body && response.body.indexOf(this.keyword) === -1) {
-			this._setStatus(StatusCode.BAD, `Expected keyword "${this.keyword}" not found`)
+			this._setStatus(StatusCode.BAD, [
+				createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.KEYWORD_NOT_FOUND, {
+					keyword: this.keyword,
+					uri: this.uri!,
+					body: response.body,
+					statusCode: response.statusCode,
+				}),
+			])
 		} else {
-			this._setStatus(StatusCode.GOOD)
+			this._setStatus(StatusCode.GOOD, [])
 		}
 	}
 
@@ -118,13 +148,15 @@ export class HTTPWatcherDevice implements Device<
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		return {
 			statusCode: this.status,
-			messages: this.statusReason ? [this.statusReason] : [],
+			messages: statusDetailsToMessages(this.statusDetails, HTTPWatcherStatusMessages),
+			statusDetails: this.statusDetails,
 		}
 	}
-	private _setStatus(status: StatusCode, reason?: string) {
-		if (this.status !== status || this.statusReason !== reason) {
+	private _setStatus(status: StatusCode, errors: HTTPWatcherStatusDetail[]) {
+		const errorsChanged = JSON.stringify(this.statusDetails) !== JSON.stringify(errors)
+		if (this.status !== status || errorsChanged) {
 			this.status = status
-			this.statusReason = reason
+			this.statusDetails = errors
 
 			this.context.connectionChanged(this.getStatus())
 		}

@@ -6,6 +6,10 @@ import {
 	QuantelActionMethods,
 	QuantelActions,
 	QuantelDeviceTypes,
+	QuantelStatusDetail,
+	QuantelStatusCode,
+	QuantelStatusMessages,
+	statusDetailsToMessages,
 	QuantelOptions,
 	SomeMappingQuantel,
 	StatusCode,
@@ -19,6 +23,7 @@ import { QuantelGateway } from 'tv-automation-quantel-gateway-client'
 import { QuantelManager } from './connection.js'
 import { convertTimelineStateToQuantelState, getMappedPorts } from './state.js'
 import { diffStates } from './diff.js'
+import { createQuantelStatusDetail } from './messages.js'
 const debug = Debug('timeline-state-resolver:quantel')
 
 export interface OscDeviceState {
@@ -159,27 +164,30 @@ export class QuantelDevice implements Device<QuantelDeviceTypes, QuantelState, Q
 	}
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const messages: Array<string> = []
+		const statusDetails: QuantelStatusDetail[] = []
 		const suppressServerDownWarning =
 			Date.now() < (this._disconnectedSince ?? 0) + (this.options?.suppressDisconnectTime ?? 0)
 
 		if (!this._quantel.connected && !suppressServerDownWarning) {
 			statusCode = StatusCode.BAD
-			messages.push('Not connected')
+			statusDetails.push(createQuantelStatusDetail(QuantelStatusCode.NOT_CONNECTED, {}))
 		}
 		if (this._quantel.statusMessage && !suppressServerDownWarning) {
 			statusCode = StatusCode.BAD
-			messages.push(this._quantel.statusMessage)
+			statusDetails.push(
+				createQuantelStatusDetail(QuantelStatusCode.STATUS_MESSAGE, { statusMessage: this._quantel.statusMessage })
+			)
 		}
 
 		if (!this._quantel.initialized) {
 			statusCode = StatusCode.BAD
-			messages.push(`Quantel device connection not initialized (restart required)`)
+			statusDetails.push(createQuantelStatusDetail(QuantelStatusCode.NOT_INITIALIZED, {}))
 		}
 
 		return {
 			statusCode: statusCode,
-			messages: messages,
+			messages: statusDetailsToMessages(statusDetails, QuantelStatusMessages),
+			statusDetails,
 		}
 	}
 

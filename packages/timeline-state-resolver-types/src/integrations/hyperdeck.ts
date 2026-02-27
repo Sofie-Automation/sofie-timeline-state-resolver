@@ -1,4 +1,64 @@
 import { DeviceType } from '../generated/index.js'
+import { DeviceStatusDetail } from '../deviceStatusDetail.js'
+
+/**
+ * Status codes for Hyperdeck device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
+ */
+export const HyperdeckStatusCode = {
+	NOT_CONNECTED: 'DEVICE_HYPERDECK_NOT_CONNECTED',
+	LOW_RECORDING_TIME: 'DEVICE_HYPERDECK_LOW_RECORDING_TIME',
+	SLOT_NOT_MOUNTED: 'DEVICE_HYPERDECK_SLOT_NOT_MOUNTED',
+	NOT_RECORDING: 'DEVICE_HYPERDECK_NOT_RECORDING',
+	NOT_PLAYING: 'DEVICE_HYPERDECK_NOT_PLAYING',
+} as const
+
+export type HyperdeckStatusCode = (typeof HyperdeckStatusCode)[keyof typeof HyperdeckStatusCode]
+
+/**
+ * Context data for each Hyperdeck status.
+ * These fields are available for message template interpolation.
+ */
+export interface HyperdeckStatusContextMap {
+	[HyperdeckStatusCode.NOT_CONNECTED]: {
+		deviceName: string
+		host: string
+		port: number
+	}
+	[HyperdeckStatusCode.LOW_RECORDING_TIME]: {
+		deviceName: string
+		minutes: number
+		seconds: number
+	}
+	[HyperdeckStatusCode.SLOT_NOT_MOUNTED]: {
+		deviceName: string
+		slot: number
+	}
+	[HyperdeckStatusCode.NOT_RECORDING]: {
+		deviceName: string
+	}
+	[HyperdeckStatusCode.NOT_PLAYING]: {
+		deviceName: string
+	}
+}
+
+export type HyperdeckStatusDetail<T extends HyperdeckStatusCode = HyperdeckStatusCode> = DeviceStatusDetail<
+	T,
+	HyperdeckStatusContextMap[T]
+>
+
+/**
+ * Default status message templates for Hyperdeck devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
+ */
+export const HyperdeckStatusMessages: Record<HyperdeckStatusCode, string> = {
+	[HyperdeckStatusCode.NOT_CONNECTED]: 'Not connected',
+	[HyperdeckStatusCode.LOW_RECORDING_TIME]:
+		'Recording time left is less than {{minutes}} minutes and {{seconds}} seconds',
+	[HyperdeckStatusCode.SLOT_NOT_MOUNTED]: 'Slot {{slot}} is not mounted',
+	[HyperdeckStatusCode.NOT_RECORDING]: 'Hyperdeck not recording',
+	[HyperdeckStatusCode.NOT_PLAYING]: 'Hyperdeck not playing',
+}
 
 export enum TimelineContentTypeHyperdeck {
 	TRANSPORT = 'transport',

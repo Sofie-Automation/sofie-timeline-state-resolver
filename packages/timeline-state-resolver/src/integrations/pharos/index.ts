@@ -5,6 +5,10 @@ import {
 	DeviceStatus,
 	StatusCode,
 	PharosDeviceTypes,
+	PharosStatusDetail,
+	PharosStatusCode,
+	PharosStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 import { Pharos } from './connection.js'
 import type {
@@ -15,6 +19,7 @@ import type {
 	DeviceTimelineStateObject,
 } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates.js'
+import { createPharosStatusDetail } from './messages.js'
 
 export type PharosCommandWithContext = CommandWithContext<CommandContent, string>
 export type PharosState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
@@ -84,16 +89,17 @@ export class PharosDevice implements Device<PharosDeviceTypes, PharosState, Phar
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const messages: Array<string> = []
+		const statusDetails: PharosStatusDetail[] = []
 
 		if (!this._pharos.connected) {
 			statusCode = StatusCode.BAD
-			messages.push('Not connected')
+			statusDetails.push(createPharosStatusDetail(PharosStatusCode.NOT_CONNECTED, {}))
 		}
 
 		return {
 			statusCode: statusCode,
-			messages: messages,
+			messages: statusDetailsToMessages(statusDetails, PharosStatusMessages),
+			statusDetails,
 		}
 	}
 

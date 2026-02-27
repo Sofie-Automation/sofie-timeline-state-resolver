@@ -1,4 +1,50 @@
 import { DeviceType } from '../generated/index.js'
+import { DeviceStatusDetail } from '../deviceStatusDetail.js'
+
+/**
+ * Status codes for Sisyfos device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
+ */
+export const SisyfosStatusCode = {
+	NOT_CONNECTED: 'DEVICE_SISYFOS_NOT_CONNECTED',
+	NOT_INITIALIZED: 'DEVICE_SISYFOS_NOT_INITIALIZED',
+	NO_MIXER_CONNECTION: 'DEVICE_SISYFOS_NO_MIXER_CONNECTION',
+} as const
+
+export type SisyfosStatusCode = (typeof SisyfosStatusCode)[keyof typeof SisyfosStatusCode]
+
+/**
+ * Context data for each Sisyfos status.
+ * These fields are available for message template interpolation.
+ */
+export interface SisyfosStatusContextMap {
+	[SisyfosStatusCode.NOT_CONNECTED]: {
+		deviceName: string
+		host: string
+		port: number
+	}
+	[SisyfosStatusCode.NOT_INITIALIZED]: {
+		deviceName: string
+	}
+	[SisyfosStatusCode.NO_MIXER_CONNECTION]: {
+		deviceName: string
+	}
+}
+
+export type SisyfosStatusDetail<T extends SisyfosStatusCode = SisyfosStatusCode> = DeviceStatusDetail<
+	T,
+	SisyfosStatusContextMap[T]
+>
+
+/**
+ * Default status message templates for Sisyfos devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
+ */
+export const SisyfosStatusMessages: Record<SisyfosStatusCode, string> = {
+	[SisyfosStatusCode.NOT_CONNECTED]: 'Not connected',
+	[SisyfosStatusCode.NOT_INITIALIZED]: 'Sisyfos device connection not initialized (restart required)',
+	[SisyfosStatusCode.NO_MIXER_CONNECTION]: 'Sisyfos has no connection to Audiomixer',
+}
 
 /*
  * TRIGGERVALUE is used to SET_CHANNEL in Sisyfos

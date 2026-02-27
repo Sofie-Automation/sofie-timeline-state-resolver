@@ -1,4 +1,47 @@
 import { DeviceType, TemplateString } from '../index.js'
+import { DeviceStatusDetail } from '../deviceStatusDetail.js'
+
+/**
+ * Status codes for CasparCG device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
+ */
+export const CasparCGStatusCode = {
+	DISCONNECTED: 'DEVICE_CASPARCG_DISCONNECTED',
+	QUEUE_OVERFLOW: 'DEVICE_CASPARCG_QUEUE_OVERFLOW',
+} as const
+
+export type CasparCGStatusCode = (typeof CasparCGStatusCode)[keyof typeof CasparCGStatusCode]
+
+/**
+ * Context data for each CasparCG status.
+ * These fields are available for message template interpolation.
+ */
+export interface CasparCGStatusContextMap {
+	[CasparCGStatusCode.DISCONNECTED]: {
+		deviceName: string
+		host: string
+		port: number
+	}
+	[CasparCGStatusCode.QUEUE_OVERFLOW]: {
+		deviceName: string
+		host: string
+		port: number
+	}
+}
+
+export type CasparCGStatusDetail<T extends CasparCGStatusCode = CasparCGStatusCode> = DeviceStatusDetail<
+	T,
+	CasparCGStatusContextMap[T]
+>
+
+/**
+ * Default status message templates for CasparCG devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
+ */
+export const CasparCGStatusMessages: Record<CasparCGStatusCode, string> = {
+	[CasparCGStatusCode.DISCONNECTED]: 'CasparCG disconnected',
+	[CasparCGStatusCode.QUEUE_OVERFLOW]: 'CasparCG command queue overflow',
+}
 
 export enum TimelineContentTypeCasparCg {
 	//  CasparCG-state
