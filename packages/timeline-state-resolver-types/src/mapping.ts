@@ -1,11 +1,11 @@
 import { Content, ResolvedTimelineObjectInstance } from './superfly-timeline'
-import { DeviceType, TSRTimelineContent } from '.'
+import { DeviceTypeExt, TSRTimelineContent } from '.'
 
 export interface Mappings<TOptions extends { mappingType: string } | unknown = unknown> {
 	[layerName: string]: Mapping<TOptions>
 }
 
-export interface Mapping<TOptions extends { mappingType: string } | unknown, TType = DeviceType> {
+export interface Mapping<TOptions extends { mappingType: string } | unknown, TType = DeviceTypeExt> {
 	device: TType // TODO - is this helpful being generic?
 	deviceId: string
 
