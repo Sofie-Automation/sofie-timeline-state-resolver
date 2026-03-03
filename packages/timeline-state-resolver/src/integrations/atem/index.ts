@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import {
 	AtemOptions,
+	statusDetailsToMessages,
 	Mappings,
 	ActionExecutionResult,
 	ActionExecutionResultCode,
@@ -10,6 +11,9 @@ import {
 	AtemActionMethods,
 	AtemActions,
 	StatusCode,
+	AtemStatusCode,
+	AtemStatusMessages,
+	AtemStatusDetail,
 } from 'timeline-state-resolver-types'
 import { AtemState, State as DeviceState } from 'atem-state'
 import {
@@ -36,6 +40,7 @@ import {
 	diffAddressStates,
 	updateFromAtemState,
 } from './state.js'
+import { createAtemStatusDetail } from './messages.js'
 
 export type AtemCommandWithContext = CommandWithContext<AtemCommands.ISerializableCommand[], string>
 
@@ -51,6 +56,7 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 	private readonly _atem = new BasicAtem()
 	private _protocolVersion = ConnectionEnums.ProtocolVersion.V8_1_1
 	private _connected = false // note: ideally this should be replaced by this._atem.connected
+	private _host = ''
 
 	private _atemStatus: {
 		psus: Array<boolean>
@@ -101,6 +107,7 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 		})
 
 		// This only waits for the child thread to start, it doesn't wait for connection
+		this._host = options.host
 		await this._atem.connect(options.host, options.port)
 
 		return true
@@ -151,30 +158,48 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 	}
 
 	/**
-	 * Check status and return it with useful messages appended.
+	 * Get device status with structured status details.
+	 * Returns both:
+	 * - statusDetails: Structured status objects for customization by consuming applications
+	 * - messages: Default human-readable strings (converted from statusDetails)
 	 */
 	public getStatus(): Omit<DeviceStatus, 'active'> {
+		const statusDetails: AtemStatusDetail[] = []
+
 		if (!this._connected) {
+			statusDetails.push(
+				createAtemStatusDetail(AtemStatusCode.DISCONNECTED, {
+					deviceName: this.context.deviceName,
+					host: this._host,
+				})
+			)
 			return {
 				statusCode: StatusCode.BAD,
-				messages: [`Atem disconnected`],
+				messages: statusDetailsToMessages(statusDetails, AtemStatusMessages),
+				statusDetails,
 			}
-		} else {
-			let statusCode = StatusCode.GOOD
-			const messages: Array<string> = []
+		}
 
-			const psus = this._atemStatus.psus
-			psus.forEach((psu: boolean, i: number) => {
-				if (!psu) {
-					statusCode = StatusCode.WARNING_MAJOR
-					messages.push(`Atem PSU ${i + 1} is faulty. The device has ${psus.length} PSU(s) in total.`)
-				}
-			})
-
-			return {
-				statusCode: statusCode,
-				messages: messages,
+		let statusCode = StatusCode.GOOD
+		const psus = this._atemStatus.psus
+		psus.forEach((psu: boolean, i: number) => {
+			if (!psu) {
+				statusCode = StatusCode.WARNING_MAJOR
+				statusDetails.push(
+					createAtemStatusDetail(AtemStatusCode.PSU_FAULT, {
+						deviceName: this.context.deviceName,
+						host: this._host,
+						psuNumber: i + 1,
+						totalPsus: psus.length,
+					})
+				)
 			}
+		})
+
+		return {
+			statusCode,
+			messages: statusDetailsToMessages(statusDetails, AtemStatusMessages),
+			statusDetails,
 		}
 	}
 
