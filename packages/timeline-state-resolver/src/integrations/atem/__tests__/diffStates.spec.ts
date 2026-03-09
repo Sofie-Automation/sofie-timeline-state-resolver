@@ -155,8 +155,8 @@ describe('Diff States', () => {
 			const commands = device.diffStates(undefined, deviceState1, mappings)
 
 			const allCommands = extractAllCommands(commands)
-			expect(allCommands).toHaveLength(2)
-			expectIncludesAtemCommandName(allCommands, AtemConnection.Commands.CutCommand.name)
+			expect(allCommands).toHaveLength(1)
+			expectIncludesAtemCommandName(allCommands, AtemConnection.Commands.ProgramInputCommand.name)
 		}
 
 		const deviceState2 = AtemConnection.AtemStateUtil.Create()

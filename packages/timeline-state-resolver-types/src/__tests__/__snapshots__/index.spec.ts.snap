@@ -6,6 +6,7 @@ exports[`index imports 1`] = `
   "ActionExecutionResultCode",
   "AtemActions",
   "AtemMediaPoolType",
+  "AtemTransitionSelection",
   "AtemTransitionStyle",
   "BlendMode",
   "BorderBevel",

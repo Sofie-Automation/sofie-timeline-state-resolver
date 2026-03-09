@@ -3861,16 +3861,16 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"atem-state@npm:1.2.1":
-  version: 1.2.1
-  resolution: "atem-state@npm:1.2.1"
+"atem-state@npm:1.3.0":
+  version: 1.3.0
+  resolution: "atem-state@npm:1.3.0"
   dependencies:
     deepmerge: "npm:^4.3.1"
     tslib: "npm:^2.6.2"
     type-fest: "npm:^3.13.1"
   peerDependencies:
     atem-connection: 3.7
-  checksum: 10c0/2d6ab09ebc8f390879d4f4f6551ddde312578fc4ec5bcbc8cf4aaa694abe2bb4fa7a792c4d6fc4c1a4074112a927f8965b148b9d1fb226c2bc61218820f2c2fb
+  checksum: 10c0/059441a2331103f466aa76a612d5d02d646bca4b209f67abd6f7148811d0f0a933c18ed649dea00bfbe783efbe23f2869662dc02c542f60b120730b5b47aae19
   languageName: node
   linkType: hard
 
@@ -11432,7 +11432,7 @@ asn1@evs-broadcast/node-asn1:
     "@tv2media/v-connection": "npm:^7.3.4"
     "@types/simple-oauth2": "npm:^5.0.8"
     atem-connection: "npm:3.7.0"
-    atem-state: "npm:1.2.1"
+    atem-state: "npm:1.3.0"
     cacheable-lookup: "npm:^5.0.4"
     casparcg-connection: "npm:6.3.3"
     casparcg-state: "npm:3.0.4"

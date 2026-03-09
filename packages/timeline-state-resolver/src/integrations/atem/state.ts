@@ -29,7 +29,7 @@ export function atemStateToAddressStates(state: AtemDeviceState): Record<string,
 			controlValue: state.controlValues?.['video.mixEffects.' + me.index + '.pgm'] ?? '',
 			index: [me.index],
 			state: {
-				programInput: 'input' in me ? me.input : me.programInput,
+				programInput: me.input ?? me.programInput,
 			},
 		}
 
@@ -254,9 +254,9 @@ export function diffAddressStates(state1: AnyAddressState, state2: AnyAddressSta
 		if (state1.state.wipe && state2.state.wipe && !_.isEqual(state1.state.wipe, state2.state.wipe)) return true
 		return false
 	} else if (state1.type === AddressType.UpStreamKey && state2.type === AddressType.UpStreamKey) {
-		const output = resolveUpstreamKeyerState(0, [state1.state], [state2.state], UpstreamKeyerDiffOptions)
+		const output = resolveUpstreamKeyerState(0, [state1.state], [state2.state], undefined, UpstreamKeyerDiffOptions)
 
-		return !!output.length
+		return !!output.commands.length
 	}
 
 	return !_.isEqual(state1.state, state2.state)

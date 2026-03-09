@@ -150,7 +150,7 @@ export class AtemStateBuilder {
 
 		const stateMixEffect = deepMerge(
 			AtemStateUtil.getMixEffect(this.#deviceState, mapping.index),
-			_.omit(content.me, 'upstreamKeyers', 'transitionPosition')
+			_.omit(content.me, 'upstreamKeyers', 'transitionPosition', 'transitionSelection')
 		)
 		this.#deviceState.video.mixEffects[mapping.index] = stateMixEffect
 		if (content.me.transitionPosition !== undefined) {
@@ -166,6 +166,10 @@ export class AtemStateBuilder {
 		const objectTransition = content.me.transition
 		if (this._isAssignableToNextStyle(objectTransition)) {
 			stateMixEffect.transitionProperties.nextStyle = objectTransition as number as Enums.TransitionStyle
+		}
+		if (content.me.transitionSelection && content.me.transitionSelection.length) {
+			stateMixEffect.transitionProperties.nextSelection = content.me
+				.transitionSelection as number[] as Enums.TransitionSelection[]
 		}
 
 		const objectKeyers = content.me.upstreamKeyers
