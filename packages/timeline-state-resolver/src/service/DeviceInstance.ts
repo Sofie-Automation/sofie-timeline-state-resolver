@@ -115,7 +115,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._startTime = time
 
 		try {
-			// eslint-disable-next-line `@typescript-eslint/no-require-imports`
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			this._version = pluginPath ? require(`${pluginPath}/package.json`)?.version : undefined
 		} catch {
 			this._version = undefined
