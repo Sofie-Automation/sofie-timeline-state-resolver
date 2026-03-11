@@ -114,9 +114,12 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._instanceId = Math.floor(Math.random() * 10000)
 		this._startTime = time
 
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		this._version = pluginPath ? require(`${pluginPath}/package.json`)?.version : undefined
-
+		try {
+			// eslint-disable-next-line `@typescript-eslint/no-require-imports`
+			this._version = pluginPath ? require(`${pluginPath}/package.json`)?.version : undefined
+		} catch {
+			this._version = undefined
+		}
 		this._logDebug = config.debug ?? this._logDebug
 
 		this._updateTimeSync()
