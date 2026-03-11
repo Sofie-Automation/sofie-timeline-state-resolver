@@ -51,78 +51,86 @@ import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-r
 
 export interface KairosDeviceState {
 	stateTime: number
-	scenes: Record<string, { ref: SceneRef; state: Partial<UpdateSceneObject>; timelineObjIds: string[] } | undefined>
-	sceneSnapshots: Record<
-		string,
-		| {
-				ref: SceneSnapshotRef
-				state: { active: boolean; properties: Partial<UpdateSceneSnapshotObject> }
-				timelineObjIds: string[]
-		  }
-		| undefined
-	>
-	sceneLayers: Record<
-		string,
-		{ ref: SceneLayerRef; state: Partial<UpdateSceneLayerObject>; timelineObjIds: string[] } | undefined
-	>
-	aux: Record<string, { ref: AuxRef; state: TimelineContentKairosAux; timelineObjIds: string[] } | undefined>
-	macros: Record<
-		string,
-		{ ref: MacroRef; state: { active: KairosMacroActiveState }; timelineObjIds: string[] } | undefined
-	>
-	clipPlayers: Record<
-		number,
-		| {
-				ref: number
-				state: {
-					content: TimelineContentKairosPlayerState<MediaClipRef>
-					instance: TimelineObjectInstance
-					mappingOptions: MappingOptions
-				}
-				timelineObjIds: string[]
-		  }
-		| undefined
-	>
-	ramRecPlayers: Record<
-		number,
-		| {
-				ref: number
-				state: {
-					content: TimelineContentKairosPlayerState<MediaRamRecRef>
-					instance: TimelineObjectInstance
-					mappingOptions: MappingOptions
-				}
-				timelineObjIds: string[]
-		  }
-		| undefined
-	>
-	imageStores: Record<
-		number,
-		| {
-				ref: number
-				state: {
-					content: TimelineContentKairosImageStore
-					mappingOptions: MappingKairosImageStore
-				}
-
-				timelineObjIds: string[]
-		  }
-		| undefined
-	>
-	soundPlayers: Record<
-		number,
-		| {
-				ref: number
-				state: {
-					content: TimelineContentKairosPlayerState<MediaSoundRef>
-					instance: TimelineObjectInstance
-					mappingOptions: MappingOptions
-				}
-				timelineObjIds: string[]
-		  }
-		| undefined
-	>
+	scenes: Record<string, KairosDeviceStateScenes>
+	sceneSnapshots: Record<string, KairosDeviceStateSceneSnapshots>
+	sceneLayers: Record<string, KairosDeviceStateSceneLayers>
+	aux: Record<string, KairosDeviceStateAux>
+	macros: Record<string, KairosDeviceStateMacros>
+	clipPlayers: Record<number, KairosDeviceStateClipPlayers>
+	ramRecPlayers: Record<number, KairosDeviceStateRamRecPlayers>
+	imageStores: Record<number, KairosDeviceStateImageStores>
+	soundPlayers: Record<number, KairosDeviceStateSoundPlayers>
 }
+
+export type KairosDeviceStateScenes =
+	| { ref: SceneRef; state: Partial<UpdateSceneObject>; timelineObjIds: string[] }
+	| undefined
+export type KairosDeviceStateSceneSnapshots =
+	| {
+			ref: SceneSnapshotRef
+			state: { active: boolean; properties: Partial<UpdateSceneSnapshotObject> }
+			timelineObjIds: string[]
+	  }
+	| undefined
+
+export type KairosDeviceStateSceneLayers =
+	| { ref: SceneLayerRef; state: Partial<UpdateSceneLayerObject>; timelineObjIds: string[] }
+	| undefined
+
+export type KairosDeviceStateAux =
+	| { ref: AuxRef; state: TimelineContentKairosAux; timelineObjIds: string[] }
+	| undefined
+export type KairosDeviceStateMacros =
+	| { ref: MacroRef; state: { active: KairosMacroActiveState }; timelineObjIds: string[] }
+	| undefined
+
+export type KairosDeviceStateClipPlayers =
+	| {
+			ref: number
+			state: {
+				content: TimelineContentKairosPlayerState<MediaClipRef>
+				instance: TimelineObjectInstance
+				mappingOptions: MappingOptions
+			}
+			timelineObjIds: string[]
+	  }
+	| undefined
+
+export type KairosDeviceStateRamRecPlayers =
+	| {
+			ref: number
+			state: {
+				content: TimelineContentKairosPlayerState<MediaRamRecRef>
+				instance: TimelineObjectInstance
+				mappingOptions: MappingOptions
+			}
+			timelineObjIds: string[]
+	  }
+	| undefined
+
+export type KairosDeviceStateImageStores =
+	| {
+			ref: number
+			state: {
+				content: TimelineContentKairosImageStore
+				mappingOptions: MappingKairosImageStore
+			}
+
+			timelineObjIds: string[]
+	  }
+	| undefined
+
+export type KairosDeviceStateSoundPlayers =
+	| {
+			ref: number
+			state: {
+				content: TimelineContentKairosPlayerState<MediaSoundRef>
+				instance: TimelineObjectInstance
+				mappingOptions: MappingOptions
+			}
+			timelineObjIds: string[]
+	  }
+	| undefined
 
 export class KairosStateBuilder {
 	// Start out with default state:
@@ -141,7 +149,7 @@ export class KairosStateBuilder {
 
 	public static fromTimeline(
 		timelineState: DeviceTimelineState<TSRTimelineContent>,
-		mappings: Mappings
+		mappings: Mappings<SomeMappingKairos>
 	): KairosDeviceState {
 		const builder = new KairosStateBuilder()
 

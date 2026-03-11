@@ -1,8 +1,8 @@
 import type { SomeMappingKairos, Mappings } from 'timeline-state-resolver-types'
 import { KairosMacroActiveState } from 'timeline-state-resolver-types'
+import { UpdateSceneLayerObject, UpdateSceneObject, UpdateAuxObject } from 'kairos-connection'
 import { KairosStateBuilder, type KairosDeviceState } from './stateBuilder.js'
 import type { KairosCommandWithContext } from './index.js'
-import { UpdateSceneLayerObject, UpdateSceneObject, UpdateAuxObject } from 'kairos-connection'
 import { diffMediaPlayers, diffMediaImageStore } from './diffState/media-players.js'
 import { diffObject, getAllKeysString } from './diffState/lib.js'
 
