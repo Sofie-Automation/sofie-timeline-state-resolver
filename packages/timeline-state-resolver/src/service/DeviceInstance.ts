@@ -32,6 +32,7 @@ export interface DeviceDetails {
 	deviceName: string
 	instanceId: number
 	startTime: number
+	version?: string
 
 	supportsExpectedPlayoutItems: boolean
 	canConnect: boolean
@@ -80,6 +81,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	private _deviceName: string
 	private _instanceId: number
 	private _startTime: number
+	private _version: string | undefined
 
 	private _isActive = false
 	private _logDebug = false
@@ -111,6 +113,9 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._deviceName = deviceSpecs.deviceName(id, config)
 		this._instanceId = Math.floor(Math.random() * 10000)
 		this._startTime = time
+
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
+		this._version = pluginPath ? require(`${pluginPath}/package.json`)?.version : undefined
 
 		this._logDebug = config.debug ?? this._logDebug
 
@@ -244,6 +249,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			deviceName: this._deviceName,
 			instanceId: this._instanceId,
 			startTime: this._startTime,
+			version: this._version,
 
 			supportsExpectedPlayoutItems: false,
 			canConnect: this._deviceSpecs.canConnect,
