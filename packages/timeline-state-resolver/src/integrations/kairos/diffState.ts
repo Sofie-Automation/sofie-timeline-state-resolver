@@ -1,10 +1,10 @@
 import type { SomeMappingKairos, Mappings } from 'timeline-state-resolver-types'
 import { KairosMacroActiveState } from 'timeline-state-resolver-types'
-import { KairosStateBuilder, type KairosDeviceState } from './stateBuilder.js'
-import type { KairosCommandWithContext } from './index.js'
 import { UpdateSceneLayerObject, UpdateSceneObject, UpdateAuxObject } from 'kairos-connection'
+import { KairosStateBuilder, type KairosDeviceState } from './stateBuilder.js'
 import { diffMediaPlayers, diffMediaImageStore } from './diffState/media-players.js'
 import { diffObject, getAllKeysString } from './diffState/lib.js'
+import type { KairosCommandWithContext } from './commands.js'
 
 export function diffKairosStates(
 	oldKairosState: KairosDeviceState | undefined,
@@ -23,8 +23,6 @@ export function diffKairosStates(
 		)
 
 	const commands: KairosCommandWithContext[] = []
-
-	// TODO - any concerns with temporal order (ie, cutting to/from a clip player before it has started/stopped playing?)
 
 	commands.push(...diffSceneSnapshots(oldKairosState.sceneSnapshots, newKairosState.sceneSnapshots))
 	commands.push(...diffScenes(oldKairosState.scenes, newKairosState.scenes))
