@@ -103,14 +103,13 @@ export class ViscaUdpSocket extends EventEmitter {
 	public async sendCommand<T extends AbstractCommand>(
 		command: AbstractCommand
 	): Promise<ReturnType<T['deserializeReply']>> {
-		const buffer = Buffer.alloc(8)
 		const payload = command.serialize()
 
-		buffer.writeUInt16BE(command.commandType, 0)
-		buffer.writeUInt16BE(payload.length, 2)
-		buffer.writeUInt32BE(this._localPacketId, 4)
-
-		const packet = Buffer.from([...buffer, ...payload])
+		const packet = Buffer.alloc(8 + payload.length)
+		packet.writeUInt16BE(command.commandType, 0)
+		packet.writeUInt16BE(payload.length, 2)
+		packet.writeUInt32BE(this._localPacketId, 4)
+		payload.copy(packet, 8)
 
 		const queueObject: QueuedCommand = {
 			command,

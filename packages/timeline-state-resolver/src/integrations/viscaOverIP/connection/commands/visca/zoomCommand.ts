@@ -3,8 +3,8 @@ import { ZoomDirection } from '../../enums.js'
 
 export class ZoomCommand extends ViscaCommand {
 	constructor(
-		private readonly direction: ZoomDirection,
-		private readonly speed: number = 0
+		readonly direction: ZoomDirection,
+		readonly speed: number = 0
 	) {
 		super()
 	}

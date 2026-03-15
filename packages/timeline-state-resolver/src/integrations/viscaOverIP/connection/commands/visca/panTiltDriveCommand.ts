@@ -3,9 +3,9 @@ import { PanTiltDirection } from '../../enums.js'
 
 export class PanTiltDriveCommand extends ViscaCommand {
 	constructor(
-		private readonly direction: PanTiltDirection,
-		private readonly panSpeed: number = 0,
-		private readonly tiltSpeed: number = 0
+		readonly direction: PanTiltDirection,
+		readonly panSpeed: number = 0,
+		readonly tiltSpeed: number = 0
 	) {
 		super()
 	}
