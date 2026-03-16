@@ -64,6 +64,7 @@ import type {
 	DeviceTimelineState,
 	DeviceTimelineStateObject,
 } from 'timeline-state-resolver-api'
+import { convertScaleModeToConnection } from './util.js'
 
 const debug = Debug('timeline-state-resolver:casparcg')
 
@@ -340,6 +341,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 				vfilter: content.videoFilter,
 				afilter: content.audioFilter,
+				scaleMode: convertScaleModeToConnection(content.scaleMode),
 			})
 			// this.emitDebug(stateLayer)
 		} else if (content.type === TimelineContentTypeCasparCg.IP) {
@@ -355,6 +357,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 				vfilter: content.videoFilter,
 				afilter: content.audioFilter,
+				scaleMode: convertScaleModeToConnection(content.scaleMode),
 			})
 		} else if (content.type === TimelineContentTypeCasparCg.INPUT) {
 			stateLayer = literal<InputLayer>({
