@@ -24,17 +24,20 @@ export interface KairosOptions {
 
 export interface MappingKairosScene {
 	sceneName: string[]
+	temporalPriority?: number
 	mappingType: MappingKairosType.Scene
 }
 
 export interface MappingKairosSceneLayer {
 	sceneName: string[]
 	layerName: string[]
+	temporalPriority?: number
 	mappingType: MappingKairosType.SceneLayer
 }
 
 export interface MappingKairosAux {
 	auxName: string
+	temporalPriority?: number
 	mappingType: MappingKairosType.Aux
 }
 

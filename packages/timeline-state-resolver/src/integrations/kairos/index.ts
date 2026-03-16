@@ -9,15 +9,14 @@ import {
 	KairosActionMethods,
 } from 'timeline-state-resolver-types'
 import { KairosConnection } from 'kairos-connection'
-import type { Device, DeviceContextAPI, CommandWithContext, DeviceTimelineState } from 'timeline-state-resolver-api'
+import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { KairosDeviceState, KairosStateBuilder } from './stateBuilder.js'
 import { diffKairosStates } from './diffState.js'
-import { sendCommand, type KairosCommandAny } from './commands.js'
+import { KairosCommandWithContext, sendCommand } from './commands.js'
 import { getActions } from './actions.js'
 import { KairosRamLoader } from './lib/kairosRamLoader.js'
 import { KairosApplicationMonitor } from './kairos-application-monitor.js'
-
-export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, string>
+import { temporalPriorityOrderCommands } from './temporal-priority.js'
 
 /**
  * This is a wrapper for the Kairos Device. Commands to any and all kairos devices will be sent through here.
@@ -138,7 +137,8 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 		// Skip diffing if not connected, a resolverReset will be fired upon reconnection
 		if (!this.connected) return []
 
-		return diffKairosStates(oldKairosState, newKairosState, mappings)
+		const commands = diffKairosStates(oldKairosState, newKairosState, mappings)
+		return temporalPriorityOrderCommands(newKairosState, mappings, commands)
 	}
 
 	async sendCommand(command: KairosCommandWithContext): Promise<void> {

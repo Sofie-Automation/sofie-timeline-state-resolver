@@ -5,11 +5,11 @@ import {
 	SomeMappingKairos,
 	TimelineContentTypeKairos,
 } from 'timeline-state-resolver-types'
-import { KairosCommandWithContext } from '../index.js'
 import { diffKairosStates } from '../diffState.js'
 import { KairosDeviceState, KairosStateBuilder } from '../stateBuilder.js'
 import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 import { refIpInput } from 'kairos-connection'
+import { KairosCommandWithContext } from '../commands.js'
 
 describe('diffState', () => {
 	const DEFAULT_MAPPINGS: Mappings<SomeMappingKairos> = {
