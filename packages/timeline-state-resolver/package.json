@@ -98,7 +98,7 @@
 		"got": "^11.8.6",
 		"hpagent": "^1.2.0",
 		"hyperdeck-connection": "2.0.1",
-		"kairos-connection": "0.2.3",
+		"kairos-connection": "^1.0.0",
 		"klona": "^2.0.6",
 		"obs-websocket-js": "^5.0.7",
 		"osc": "^2.4.5",
