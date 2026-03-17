@@ -421,6 +421,7 @@ function createContainer(
 		case DeviceType.HYPERDECK:
 		case DeviceType.LAWO:
 		case DeviceType.MULTI_OSC:
+		case DeviceType.OGRAF:
 		case DeviceType.OBS:
 		case DeviceType.OSC:
 		case DeviceType.PANASONIC_PTZ:

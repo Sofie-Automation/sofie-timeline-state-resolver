@@ -26,6 +26,7 @@ import { TimelineContentWebSocketClientAny } from './integrations/websocketClien
 import { TimelineContentKairosAny } from './integrations/kairos.js'
 import { DeviceType } from './generated/index.js'
 import { TimelineContentUDPSendAny } from './integrations/udpSend.js'
+import { TimelineContentOgrafAny } from './integrations/ograf.js'
 
 export * from './integrations/abstract.js'
 export * from './integrations/atem.js'
@@ -34,6 +35,7 @@ export * from './integrations/httpSend.js'
 export * from './integrations/hyperdeck.js'
 export * from './integrations/kairos.js'
 export * from './integrations/lawo.js'
+export * from './integrations/ograf.js'
 export * from './integrations/osc.js'
 export * from './integrations/pharos.js'
 export * from './integrations/panasonicPTZ.js'
@@ -117,6 +119,7 @@ export interface TimelineContentMap {
 	[DeviceType.KAIROS]: TimelineContentKairosAny
 	[DeviceType.LAWO]: TimelineContentLawoAny
 	[DeviceType.OBS]: TimelineContentOBSAny
+	[DeviceType.OGRAF]: TimelineContentOgrafAny
 	[DeviceType.OSC]: TimelineContentOSCAny
 	[DeviceType.PHAROS]: TimelineContentPharosAny
 	[DeviceType.PANASONIC_PTZ]: TimelineContentPanasonicPtzAny

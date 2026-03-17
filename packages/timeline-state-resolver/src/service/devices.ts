@@ -24,6 +24,7 @@ import { vMixDeviceEntry } from '../integrations/vmix/vMixDeviceEntry.js'
 import { KairosDevice } from '../integrations/kairos/index.js'
 import { SisyfosDeviceEntry } from '../integrations/sisyfos/entry.js'
 import { UdpSendDevice } from '../integrations/udpSend/index.js'
+import { OGrafDevice } from '../integrations/ograf/index.js'
 
 export type ImplementedServiceDeviceTypes =
 	| DeviceType.ABSTRACT
@@ -33,6 +34,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.HYPERDECK
 	| DeviceType.LAWO
 	| DeviceType.OBS
+	| DeviceType.OGRAF
 	| DeviceType.OSC
 	| DeviceType.MULTI_OSC
 	| DeviceType.PANASONIC_PTZ
@@ -100,6 +102,12 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		canConnect: true,
 		deviceName: (deviceId: string) => 'OBS ' + deviceId,
 		executionMode: () => 'salvo',
+	},
+	[DeviceType.OGRAF]: {
+		deviceClass: OGrafDevice,
+		canConnect: true,
+		deviceName: (deviceId: string) => 'OGraf ' + deviceId,
+		executionMode: () => 'sequential',
 	},
 	[DeviceType.OSC]: {
 		deviceClass: OscDevice,
