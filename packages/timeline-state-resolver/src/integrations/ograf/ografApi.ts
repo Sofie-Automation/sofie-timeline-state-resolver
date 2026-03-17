@@ -39,28 +39,22 @@ export class OgrafApi {
 		if (!baseUrl.endsWith('/')) baseUrl += '/'
 		const url0 = url.toString().replace(this.BASE_URL_TEMPLATE, '')
 		const fullUrl = baseUrl + url0
-		try {
-			options = options ?? {}
-			options.timeout = 3000
-			options.throwHttpErrors = false
 
-			const headers = options.headers ?? {}
-			headers['Content-Type'] = 'application/json'
-			options.headers = headers
+		options = options ?? {}
+		options.timeout = 3000
+		options.throwHttpErrors = false
 
-			const response = await got(fullUrl, options)
+		const headers = options.headers ?? {}
+		headers['Content-Type'] = 'application/json'
+		options.headers = headers
 
-			const json = await JSON.parse(response.body)
-			// cmd.updateResponse(response.status, JSON.stringify(json, null, 2))
+		const response = await got(fullUrl, options)
 
-			return {
-				status: response.statusCode as keyof Method['responses'],
-				content: json,
-			}
-		} catch (e) {
-			console.error('Error when fetching URL:', fullUrl.toString(), options)
-			console.error(e)
-			throw e
+		const json = await JSON.parse(response.body)
+
+		return {
+			status: response.statusCode as keyof Method['responses'],
+			content: json,
 		}
 	}
 

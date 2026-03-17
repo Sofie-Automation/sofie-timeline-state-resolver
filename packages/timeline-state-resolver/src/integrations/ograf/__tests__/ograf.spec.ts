@@ -12,13 +12,17 @@ const MOCKED_SOCKET_PUT = jest.fn()
 const MOCKED_SOCKET_DELETE = jest.fn()
 
 jest.mock('got', () => {
+	const gotMethod = (url: any, options: any) => {
+		let method = 'GET'
+		if (options?.method) method = options.method.toUpperCase()
+
+		if (method === 'GET') MOCKED_SOCKET_GET(url, options)
+		else if (method === 'POST') MOCKED_SOCKET_POST(url, options)
+		else if (method === 'PUT') MOCKED_SOCKET_PUT(url, options)
+		else if (method === 'DELETE') MOCKED_SOCKET_DELETE(url, options)
+	}
 	return {
-		default: {
-			get: MOCKED_SOCKET_GET,
-			post: MOCKED_SOCKET_POST,
-			put: MOCKED_SOCKET_PUT,
-			delete: MOCKED_SOCKET_DELETE,
-		},
+		default: gotMethod,
 	}
 })
 

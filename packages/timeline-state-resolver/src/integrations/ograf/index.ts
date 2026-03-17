@@ -22,6 +22,7 @@ import { assertNever, t } from '../../lib.js'
 import { convertTimelineStateToDeviceState, diffStates, OGrafDeviceState } from './ografState.js'
 import { OGrafDeviceCommand } from './types.js'
 import { OgrafApi } from './ografApi.js'
+import { OGrafConnectionStatus } from './ografConnectionStatus.js'
 
 interface TrackedLayer {
 	graphicInstanceId: string
@@ -35,11 +36,14 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 	} = {}
 
 	private ografApi: OgrafApi = OgrafApi.getSingleton()
+	private ografConnectionStatus = new OGrafConnectionStatus(this.ografApi)
 
 	protected _terminated = false
 
 	constructor(protected context: DeviceContextAPI<OGrafDeviceState>) {
-		// Nothing
+		this.ografConnectionStatus.on('connected', () => this._connectionChanged())
+		this.ografConnectionStatus.on('disconnected', () => this._connectionChanged())
+		this.ografConnectionStatus.on('error', (err) => this.context.logger.error('OGrafConnectionStatus', err))
 	}
 
 	async init(options: OgrafOptions): Promise<boolean> {
@@ -47,21 +51,33 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 
 		this.ografApi.baseURL = options.url
 
+		this.ografConnectionStatus.init()
+
 		return true
 	}
 	async terminate(): Promise<void> {
 		// this.trackedState.clear()
 		this._terminated = true
+		this.ografConnectionStatus.terminate()
 	}
 
 	get connected(): boolean {
-		return false
+		return this.ografConnectionStatus.connected
 	}
 	getStatus(): Omit<DeviceStatus, 'active'> {
+		if (!this.connected) {
+			return {
+				statusCode: StatusCode.BAD,
+				messages: ['Not connected to OGraf Server'],
+			}
+		}
 		return {
 			statusCode: StatusCode.GOOD,
 			messages: [],
 		}
+	}
+	private _connectionChanged(): void {
+		this.context.connectionChanged(this.getStatus())
 	}
 	readonly actions: OgrafActionMethods = {
 		[OgrafActions.Resync]: async () => this.executeResyncAction(),
@@ -120,7 +136,6 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 			)
 		)
 	}
-
 	private async executeGotoStepAction(params: GotoStepPayload): Promise<ActionExecutionResult<undefined>> {
 		const graphicInstanceId = await this.getGraphicsInstanceId(params)
 		if (!graphicInstanceId) return { result: ActionExecutionResultCode.Error, response: t('No Graphic found') }
