@@ -1,6 +1,7 @@
-import {
+import type {
 	Datastore,
-	Timeline,
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
 	TimelineDatastoreReferences,
 	TimelineDatastoreReferencesContent,
 	TSRTimelineContent,
@@ -16,23 +17,19 @@ const set = (obj: Record<string, any>, path: string, val: any) => {
 	const p = path.split('.')
 	p.slice(0, -1).reduce((a, b) => (a[b] ? a[b] : (a[b] = {})), obj)[p.slice(-1)[0]] = val
 }
-const updateRefs = (
-	layer: Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>,
-	path: string,
-	modified: number
-) => {
+const updateRefs = (layer: DeviceTimelineStateObject<TSRTimelineContent>, path: string, modified: number) => {
 	if (!layer.datastoreRefs) layer.datastoreRefs = {}
 	layer.datastoreRefs[path] = modified
 	layer.lastModified = Math.max(modified, layer.lastModified ?? 0)
 }
 export function fillStateFromDatastore(
-	state: Timeline.TimelineState<TSRTimelineContent>,
+	state: DeviceTimelineState<TSRTimelineContent>,
 	datastore: Datastore
-): Timeline.TimelineState<TSRTimelineContent> {
+): DeviceTimelineState<TSRTimelineContent> {
 	// clone the state so we can freely manipulate it
 	const filledState: typeof state = JSON.parse(JSON.stringify(state))
 
-	Object.values<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(filledState.layers).forEach((layer) => {
+	for (const layer of filledState.objects) {
 		const { content, instance } = layer
 		if ((content as TimelineDatastoreReferencesContent).$references) {
 			Object.entries<TimelineDatastoreReferences[0]>(
@@ -62,7 +59,7 @@ export function fillStateFromDatastore(
 				}
 			})
 		}
-	})
+	}
 
 	return filledState
 }

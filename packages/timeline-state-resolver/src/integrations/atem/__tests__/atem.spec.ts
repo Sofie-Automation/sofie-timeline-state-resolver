@@ -162,9 +162,8 @@ describe('Atem', () => {
 			const commands = device.diffStates(undefined, deviceState1, myLayerMapping)
 
 			const allCommands = extractAllCommands(commands)
-			expect(allCommands).toHaveLength(2)
-			compareAtemCommands(allCommands[0], new AtemConnection.Commands.PreviewInputCommand(0, 2))
-			compareAtemCommands(allCommands[1], new AtemConnection.Commands.CutCommand(0))
+			expect(allCommands).toHaveLength(1)
+			compareAtemCommands(allCommands[0], new AtemConnection.Commands.ProgramInputCommand(0, 2))
 		}
 
 		const mockState2: DeviceTimelineState<TSRTimelineContent> = {
@@ -198,9 +197,8 @@ describe('Atem', () => {
 			const commands = device.diffStates(deviceState1, deviceState2, myLayerMapping)
 
 			const allCommands = extractAllCommands(commands)
-			expect(allCommands).toHaveLength(2)
-			compareAtemCommands(allCommands[0], new AtemConnection.Commands.PreviewInputCommand(0, 3))
-			compareAtemCommands(allCommands[1], new AtemConnection.Commands.CutCommand(0))
+			expect(allCommands).toHaveLength(1)
+			compareAtemCommands(allCommands[0], new AtemConnection.Commands.ProgramInputCommand(0, 3))
 		}
 	})
 
@@ -238,7 +236,7 @@ describe('Atem', () => {
 		// Expect that a command has been scheduled
 		const commands = device.diffStates(undefined, deviceState, myLayerMapping)
 		const allCommands = extractAllCommands(commands)
-		expect(allCommands).toHaveLength(2)
+		expect(allCommands).toHaveLength(1)
 
 		// Diff the same state, after the commands have been sent
 		const commands2 = device.diffStates(deviceState, deviceState, myLayerMapping)
@@ -280,9 +278,8 @@ describe('Atem', () => {
 			const commands = device.diffStates(undefined, deviceState1, myLayerMapping)
 
 			const allCommands = extractAllCommands(commands)
-			expect(allCommands).toHaveLength(2)
-			compareAtemCommands(allCommands[0], new AtemConnection.Commands.PreviewInputCommand(0, 2))
-			compareAtemCommands(allCommands[1], new AtemConnection.Commands.CutCommand(0))
+			expect(allCommands).toHaveLength(1)
+			compareAtemCommands(allCommands[0], new AtemConnection.Commands.ProgramInputCommand(0, 2))
 		}
 
 		const mockState2: DeviceTimelineState<TSRTimelineContent> = {

@@ -1,21 +1,9 @@
 import { startTrace, endTrace, cloneDeep } from '../lib.js'
-import type {
-	FinishedTrace,
-	BaseDeviceAPI,
-	CommandWithContext,
-	DeviceTimelineState,
-	DeviceTimelineStateObject,
-} from 'timeline-state-resolver-api'
-import {
-	Mappings,
-	ResolvedTimelineObjectInstanceExtended,
-	Timeline,
-	TSRTimelineContent,
-} from 'timeline-state-resolver-types'
+import type { FinishedTrace, BaseDeviceAPI, CommandWithContext, DeviceTimelineState } from 'timeline-state-resolver-api'
+import { Mappings, TSRTimelineContent } from 'timeline-state-resolver-types'
 import { Measurement, StateChangeReport } from './measure.js'
 import { CommandExecutor } from './commandExecutor.js'
 import { StateTracker } from './stateTracker.js'
-import { Complete } from 'atem-state/dist/util'
 
 interface StateChange<DeviceState, Command extends CommandWithContext<any, any>, AddressState> {
 	commands?: Command[]
@@ -86,7 +74,7 @@ export class StateHandler<
 		}, CLOCK_INTERVAL)
 	}
 
-	async terminate() {
+	terminate() {
 		clearInterval(this.clock)
 		this.stateQueue = []
 	}
@@ -95,33 +83,12 @@ export class StateHandler<
 		this.stateQueue = []
 	}
 
-	handleState(state: Timeline.TimelineState<TSRTimelineContent>, mappings: Mappings) {
+	handleState(state: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings) {
 		if (this.currentState?.state && this.currentState.state.time > state.time) return // the incoming state is stale, we ignore it
 		const nextState = this.stateQueue[0]
 
-		const timelineState: DeviceTimelineState = {
-			time: state.time,
-			objects: Object.values<Timeline.ResolvedTimelineObjectInstance<TSRTimelineContent>>(state.layers).map((obj) => {
-				const objExt = obj as ResolvedTimelineObjectInstanceExtended<TSRTimelineContent>
-
-				return {
-					id: obj.id,
-					priority: obj.priority ?? 0,
-					layer: obj.layer,
-					content: obj.content,
-					instance: obj.instance,
-					datastoreRefs: obj.datastoreRefs,
-					lastModified: obj.lastModified,
-					isLookahead: objExt.isLookahead,
-					lookaheadForLayer: objExt.lookaheadForLayer,
-					lookaheadOffset: objExt.lookaheadOffset,
-				} satisfies Complete<DeviceTimelineStateObject>
-			}),
-		}
-		timelineState.objects.sort((a, b) => String(a.layer).localeCompare(String(b.layer))) // ensure the objects are sorted in layer order
-
 		const trace = startTrace('device:convertTimelineStateToDeviceState', { deviceId: this.context.deviceId })
-		const deviceState = this.device.convertTimelineStateToDeviceState(timelineState, mappings)
+		const deviceState = this.device.convertTimelineStateToDeviceState(state, mappings)
 		this.context.emitTimeTrace(endTrace(trace))
 
 		// Discard any states that comes after this one,
@@ -131,7 +98,7 @@ export class StateHandler<
 			{
 				deviceState: 'deviceState' in deviceState ? deviceState.deviceState : deviceState,
 				addressStates: 'addressStates' in deviceState ? deviceState.addressStates : undefined,
-				state: timelineState,
+				state,
 				mappings,
 
 				measurement: new Measurement(state.time),

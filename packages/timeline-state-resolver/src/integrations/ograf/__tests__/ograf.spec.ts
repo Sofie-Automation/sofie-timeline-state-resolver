@@ -32,7 +32,7 @@ import { DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 async function getInitialisedOGrafDevice() {
 	const dev = new OGrafDevice(getDeviceContext())
 	await dev.init({
-		url: 'http://localhost'
+		url: 'http://localhost',
 	})
 	return dev
 }

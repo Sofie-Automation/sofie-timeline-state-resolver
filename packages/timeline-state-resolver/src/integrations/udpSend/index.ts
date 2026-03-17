@@ -11,66 +11,61 @@ import {
 	DeviceStatus,
 	StatusCode,
 	TSRTimelineContent,
-	TcpSendCommandContent,
-	TcpSendOptions,
-	TcpSendActionMethods,
-	TcpSendDeviceTypes,
-	TcpSendActions,
+	UdpSendCommandContent,
+	UdpSendOptions,
+	UdpSendActionMethods,
+	UdpSendDeviceTypes,
+	UdpSendActions,
 } from 'timeline-state-resolver-types'
 import { t } from '../../lib.js'
 import _ from 'underscore'
-import { TcpConnection } from './tcpConnection.js'
+import { UdpConnection } from './udpConnection.js'
 
-export type TcpSendDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
+export type UdpSendDeviceState = Record<string, DeviceTimelineStateObject<TSRTimelineContent>>
 
-export type TcpSendDeviceCommand = CommandWithContext<
+export type UdpSendDeviceCommand = CommandWithContext<
 	{
 		commandName: 'added' | 'changed' | 'removed' | 'manual'
-		content: TcpSendCommandContent
+		content: UdpSendCommandContent
 		layer: string
 	},
 	string
 >
-export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceState, TcpSendDeviceCommand> {
+export class UdpSendDevice implements Device<UdpSendDeviceTypes, UdpSendDeviceState, UdpSendDeviceCommand> {
 	private activeLayers = new Map<string, string>()
 	private _terminated = false
 
-	private tcpConnection = new TcpConnection()
+	private udpConnection = new UdpConnection()
 
-	constructor(protected context: DeviceContextAPI<TcpSendDeviceState>) {
+	constructor(protected context: DeviceContextAPI<UdpSendDeviceState>) {
 		// Nothing
 
-		this.tcpConnection.on('error', (errContext, err) => {
+		this.udpConnection.on('error', (errContext, err) => {
 			this.context.logger.error(errContext, err)
-		})
-		this.tcpConnection.on('connectionChanged', () => {
-			this.context.connectionChanged(this.getStatus())
 		})
 	}
 
-	async init(options: TcpSendOptions): Promise<boolean> {
-		this.tcpConnection.once('connectionChanged', (connected) => {
-			if (connected) {
-				this.context.resetState()
-			}
-		})
-		this.tcpConnection.activate(options)
+	async init(options: UdpSendOptions): Promise<boolean> {
+		// It is safe to await this 'connect', as it is simply awaiting the syscall to setup the socket, not for an actual connection
+		await this.udpConnection.activate(options)
+
 		return true
 	}
 	async terminate(): Promise<void> {
 		this._terminated = true
 		this.activeLayers.clear()
-		await this.tcpConnection.deactivate()
+		await this.udpConnection.deactivate()
 	}
 
 	get connected(): boolean {
-		return this.tcpConnection.connected
+		// Note: UDP is connectionless, so we consider it always connected as long as it hasn't been terminated
+		return !this._terminated
 	}
 	getStatus(): Omit<DeviceStatus, 'active'> {
-		if (!this.connected) {
+		if (this._terminated) {
 			return {
 				statusCode: StatusCode.BAD,
-				messages: [`Disconnected`],
+				messages: [`Terminated`],
 			}
 		} else {
 			return {
@@ -80,28 +75,24 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 		}
 	}
 
-	readonly actions: TcpSendActionMethods = {
-		[TcpSendActions.Reconnect]: async () => {
-			await this.tcpConnection.reconnect()
-			return { result: ActionExecutionResultCode.Ok }
-		},
-		[TcpSendActions.ResetState]: async () => {
+	readonly actions: UdpSendActionMethods = {
+		[UdpSendActions.ResetState]: async () => {
 			this.actionResetState()
 			return { result: ActionExecutionResultCode.Ok }
 		},
-		[TcpSendActions.SendTcpCommand]: async (payload) => {
-			return this.actionSendTcpCommand(payload)
+		[UdpSendActions.SendUdpCommand]: async (payload) => {
+			return this.actionSendUdpCommand(payload)
 		},
 	}
 
-	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): TcpSendDeviceState {
+	convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): UdpSendDeviceState {
 		return state.objects.reduce((acc, obj) => {
 			if (obj.layer) acc[obj.layer] = obj
 			return acc
-		}, {} as TcpSendDeviceState)
+		}, {} as UdpSendDeviceState)
 	}
-	diffStates(oldState: TcpSendDeviceState | undefined, newState: TcpSendDeviceState): Array<TcpSendDeviceCommand> {
-		const commands: Array<TcpSendDeviceCommand> = []
+	diffStates(oldState: UdpSendDeviceState | undefined, newState: UdpSendDeviceState): Array<UdpSendDeviceCommand> {
+		const commands: Array<UdpSendDeviceCommand> = []
 
 		for (const [layerKey, newLayer] of Object.entries<DeviceTimelineStateObject<TSRTimelineContent>>(newState)) {
 			const oldLayer = oldState?.[layerKey]
@@ -112,7 +103,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 					commands.push({
 						command: {
 							commandName: 'added',
-							content: newLayer.content as TcpSendCommandContent,
+							content: newLayer.content as UdpSendCommandContent,
 							layer: layerKey,
 						},
 						context: `added: ${newLayer.id}`,
@@ -125,7 +116,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 						commands.push({
 							command: {
 								commandName: 'changed',
-								content: newLayer.content as TcpSendCommandContent,
+								content: newLayer.content as UdpSendCommandContent,
 								layer: layerKey,
 							},
 							context: `changed: ${newLayer.id}`,
@@ -143,7 +134,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 				commands.push({
 					command: {
 						commandName: 'removed',
-						content: oldLayer.content as TcpSendCommandContent,
+						content: oldLayer.content as UdpSendCommandContent,
 						layer: layerKey,
 					},
 					context: `removed: ${oldLayer.id}`,
@@ -158,7 +149,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 		})
 		return commands
 	}
-	async sendCommand({ timelineObjId, context, command }: TcpSendDeviceCommand): Promise<void> {
+	async sendCommand({ timelineObjId, context, command }: UdpSendDeviceCommand): Promise<void> {
 		if (command.commandName === 'added' || command.commandName === 'changed') {
 			this.activeLayers.set(command.layer, this.getActiveLayersHash(command))
 		} else if (command.commandName === 'removed') {
@@ -167,17 +158,17 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 
 		if (command.layer && command.commandName !== 'manual') {
 			const hash = this.activeLayers.get(command.layer)
-			if (this.getActiveLayersHash(command) !== hash) return Promise.resolve() // command is no longer relevant to state
+			if (this.getActiveLayersHash(command) !== hash) return // command is no longer relevant to state
 		}
 		if (this._terminated) {
-			return Promise.resolve()
+			return
 		}
 
 		this.context.logger.debug({ context, timelineObjId, command })
 
-		await this.tcpConnection.sendTCPMessage(command.content.message)
+		await this.udpConnection.sendUDPMessage(command.content.message)
 	}
-	private async actionSendTcpCommand(cmd?: TcpSendCommandContent): Promise<ActionExecutionResult> {
+	private async actionSendUdpCommand(cmd?: UdpSendCommandContent): Promise<ActionExecutionResult> {
 		if (!cmd)
 			return {
 				result: ActionExecutionResultCode.Error,
@@ -200,10 +191,10 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 				},
 			})
 		} catch (error) {
-			this.context.logger.warning('Manual TCP command failed: ' + JSON.stringify(cmd))
+			this.context.logger.warning('Manual UDP command failed: ' + JSON.stringify(cmd))
 			return {
 				result: ActionExecutionResultCode.Error,
-				response: t('Error when sending TCP command: {{errorMessage}}', { errorMessage: `${error}` }),
+				response: t('Error when sending UDP command: {{errorMessage}}', { errorMessage: `${error}` }),
 			}
 		}
 
@@ -213,7 +204,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 		this.activeLayers.clear()
 		this.context.resetState()
 	}
-	private getActiveLayersHash(command: TcpSendDeviceCommand['command']): string {
+	private getActiveLayersHash(command: UdpSendDeviceCommand['command']): string {
 		return JSON.stringify(command.content)
 	}
 }

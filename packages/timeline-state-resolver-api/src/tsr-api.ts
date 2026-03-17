@@ -5,7 +5,7 @@ export * from './device.js'
 export * from './manifest.js'
 export * from './trace.js'
 
-export { DeviceStatus, StatusCode } from 'timeline-state-resolver-types'
+export { DeviceStatus, StatusCode, DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-types'
 
 export interface DeviceEntry {
 	deviceClass: new (context: DeviceContextAPI<any, any>) => Device<any, any, any, any>

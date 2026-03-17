@@ -46,6 +46,9 @@ export class TcpConnection extends EventEmitter<TcpConnectionEvents> {
 			this._tcpClient.on('end', () => {
 				this._setConnected(false)
 			})
+			this._tcpClient.on('error', (err) => {
+				this.emit('error', 'TCP socket error', err)
+			})
 		}
 		const tcpClient: Socket = this._tcpClient
 

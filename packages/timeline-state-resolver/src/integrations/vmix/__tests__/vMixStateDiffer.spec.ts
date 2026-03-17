@@ -44,7 +44,7 @@ describe('VMixStateDiffer', () => {
 			},
 			layers: {
 				1: { input: 'G:/videos/My Other Clip.mp4' },
-				3: { input: 5 },
+				3: { input: '5' },
 			},
 		}
 
@@ -109,7 +109,7 @@ describe('VMixStateDiffer', () => {
 			command: VMixCommand.SET_LAYER_INPUT,
 			input: prefixAddedInput('C:/videos/My Clip.mp4'),
 			index: 3,
-			value: 5,
+			value: '5',
 		})
 		expect(commands[8].command).toMatchObject<VMixStateCommand>({
 			command: VMixCommand.PLAY_INPUT,
@@ -120,15 +120,15 @@ describe('VMixStateDiffer', () => {
 	it('generates commands for input properties (#2)', async () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['2'] = differ.getDefaultInputState(2)
+		oldState.reportedState.existingInputs['2'] = differ.getDefaultInputState('2')
 		newState.reportedState.existingInputs['2'] = {
-			...differ.getDefaultInputState(2),
+			...differ.getDefaultInputState('2'),
 			restart: { value: true },
 			loop: { value: true },
 			playing: { value: true },
 			layers: {
 				1: { input: 'G:/videos/My Other Clip.mp4' },
-				3: { input: 5 },
+				3: { input: '5' },
 			},
 		}
 
@@ -153,7 +153,7 @@ describe('VMixStateDiffer', () => {
 			command: VMixCommand.SET_LAYER_INPUT,
 			input: '2',
 			index: 3,
-			value: 5,
+			value: '5',
 		})
 		expect(commands[4].command).toMatchObject<VMixStateCommand>({
 			command: VMixCommand.PLAY_INPUT,
@@ -165,16 +165,16 @@ describe('VMixStateDiffer', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
 		oldState.reportedState.existingInputs['2'] = {
-			...differ.getDefaultInputState(2),
+			...differ.getDefaultInputState('2'),
 			restart: { value: true },
 			loop: { value: true },
 			playing: { value: true },
 			layers: {
 				1: { input: 'G:/videos/My Other Clip.mp4' },
-				3: { input: 5 },
+				3: { input: '5' },
 			},
 		}
-		newState.reportedState.existingInputs['2'] = differ.getDefaultInputState(2)
+		newState.reportedState.existingInputs['2'] = differ.getDefaultInputState('2')
 
 		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 
@@ -313,9 +313,9 @@ describe('VMixStateDiffer', () => {
 	test('Audio channel', async () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputsAudio['2'] = differ.getDefaultInputAudioState(2)
+		oldState.reportedState.existingInputsAudio['2'] = differ.getDefaultInputAudioState('2')
 		newState.reportedState.existingInputsAudio['2'] = {
-			...differ.getDefaultInputAudioState(2),
+			...differ.getDefaultInputAudioState('2'),
 			volume: 46,
 			fade: 1337,
 			balance: 0.12,
@@ -372,7 +372,7 @@ describe('VMixStateDiffer', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
 		oldState.reportedState.existingInputsAudio['2'] = {
-			...differ.getDefaultInputAudioState(2),
+			...differ.getDefaultInputAudioState('2'),
 			volume: 46,
 			fade: 1337,
 			balance: 0.12,
@@ -380,7 +380,7 @@ describe('VMixStateDiffer', () => {
 			muted: false,
 			audioBuses: 'A,C,F',
 		}
-		newState.reportedState.existingInputsAudio['2'] = differ.getDefaultInputAudioState(2)
+		newState.reportedState.existingInputsAudio['2'] = differ.getDefaultInputAudioState('2')
 
 		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 
@@ -432,7 +432,7 @@ describe('VMixStateDiffer', () => {
 		newState.reportedState.mixes[0] = {
 			number: 0,
 			program: 'Cam 1',
-			preview: 3,
+			preview: '3',
 			transition: {
 				effect: VMixTransitionType.VerticalSlideReverse,
 				duration: 1337,
@@ -440,7 +440,7 @@ describe('VMixStateDiffer', () => {
 		}
 		newState.reportedState.mixes[1] = {
 			number: 1,
-			program: 5,
+			program: '5',
 			preview: undefined,
 			transition: {
 				effect: VMixTransitionType.Cut,
@@ -460,7 +460,7 @@ describe('VMixStateDiffer', () => {
 		})
 		expect(commands[1].command).toMatchObject<VMixStateCommand>({
 			command: VMixCommand.ACTIVE_INPUT,
-			input: 5,
+			input: '5',
 			mix: 1,
 		})
 	})
@@ -471,7 +471,7 @@ describe('VMixStateDiffer', () => {
 		oldState.reportedState.mixes[0] = {
 			number: 0,
 			program: 'Cam 1',
-			preview: 3,
+			preview: '3',
 			transition: {
 				effect: VMixTransitionType.VerticalSlideReverse,
 				duration: 1337,
@@ -480,7 +480,7 @@ describe('VMixStateDiffer', () => {
 		newState.reportedState.mixes[0] = {
 			number: 1,
 			program: 'Cam 1',
-			preview: 6,
+			preview: '6',
 			transition: {
 				effect: VMixTransitionType.VerticalSlideReverse,
 				duration: 1337,
@@ -492,7 +492,7 @@ describe('VMixStateDiffer', () => {
 		expect(commands.length).toBe(1)
 		expect(commands[0].command).toMatchObject<VMixStateCommand>({
 			command: VMixCommand.PREVIEW_INPUT,
-			input: 6,
+			input: '6',
 			mix: 0,
 		})
 	})
@@ -500,14 +500,14 @@ describe('VMixStateDiffer', () => {
 	test('Overlay in', async () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		newState.reportedState.overlays[2] = { number: 2, input: 1 }
+		newState.reportedState.overlays[2] = { number: 2, input: '1' }
 
 		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 
 		expect(commands.length).toBe(1)
 		expect(commands[0].command).toMatchObject<VMixStateCommand>({
 			command: VMixCommand.OVERLAY_INPUT_IN,
-			input: 1,
+			input: '1',
 			value: 2,
 		})
 	})
@@ -515,7 +515,7 @@ describe('VMixStateDiffer', () => {
 	test('Overlay out', async () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.overlays[2] = { number: 2, input: 1 }
+		oldState.reportedState.overlays[2] = { number: 2, input: '1' }
 		newState.reportedState.overlays[2] = { number: 2, input: undefined }
 
 		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
@@ -556,7 +556,7 @@ describe('VMixStateDiffer', () => {
 		test('Output an Input', async () => {
 			const { differ, oldState, newState } = createTestEnvironment()
 
-			newState.outputs.Fullscreen = { source: 'Input', input: 2 }
+			newState.outputs.Fullscreen = { source: 'Input', input: '2' }
 
 			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 
@@ -565,7 +565,7 @@ describe('VMixStateDiffer', () => {
 				command: VMixCommand.SET_OUPUT,
 				name: 'Fullscreen',
 				value: 'Input',
-				input: 2,
+				input: '2',
 			})
 		})
 	})
@@ -867,7 +867,7 @@ describe('VMixStateDiffer', () => {
 	it('resets input audio bus assignment when input audio starts to be controlled', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		newState.reportedState.existingInputsAudio['99'] = differ.getDefaultInputAudioState(99)
+		newState.reportedState.existingInputsAudio['99'] = differ.getDefaultInputAudioState('99')
 
 		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 		const busCommands = commands.filter((command) => command.command.command === VMixCommand.AUDIO_BUS_OFF)
@@ -878,12 +878,12 @@ describe('VMixStateDiffer', () => {
 	it('sets layer input when it starts to be controlled', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].layers = {
 			2: {
-				input: 5,
+				input: '5',
 			},
 		}
 
@@ -892,7 +892,7 @@ describe('VMixStateDiffer', () => {
 		expect(commands.length).toBe(1)
 		expect(commands[0].command).toMatchObject<VMixStateCommand>({
 			command: VMixCommand.SET_LAYER_INPUT,
-			value: 5,
+			value: '5',
 			index: 2,
 			input: '99',
 		})
@@ -901,17 +901,17 @@ describe('VMixStateDiffer', () => {
 	it('sets layer zoom', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		oldState.reportedState.existingInputs['99'].layers = {
 			2: {
-				input: 5,
+				input: '5',
 			},
 		}
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].layers = {
 			2: {
-				input: 5,
+				input: '5',
 				zoom: 1.5,
 			},
 		}
@@ -930,17 +930,17 @@ describe('VMixStateDiffer', () => {
 	it('sets layer pan', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		oldState.reportedState.existingInputs['99'].layers = {
 			2: {
-				input: 5,
+				input: '5',
 			},
 		}
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].layers = {
 			2: {
-				input: 5,
+				input: '5',
 				panX: -1,
 				panY: 2,
 			},
@@ -966,17 +966,17 @@ describe('VMixStateDiffer', () => {
 	it('sets layer crop', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		oldState.reportedState.existingInputs['99'].layers = {
 			2: {
-				input: 5,
+				input: '5',
 			},
 		}
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].layers = {
 			2: {
-				input: 5,
+				input: '5',
 				cropLeft: 0.2,
 				cropRight: 0.7,
 				cropTop: 0.1,
@@ -1001,9 +1001,9 @@ describe('VMixStateDiffer', () => {
 	it('sets text', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
 		newState.reportedState.existingInputs['99'].text = {
 			'myTitle.Text': 'SomeValue',
@@ -1023,9 +1023,9 @@ describe('VMixStateDiffer', () => {
 	it('sets multiple texts', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
 		newState.reportedState.existingInputs['99'].text = {
 			'myTitle.Text': 'SomeValue',
@@ -1053,13 +1053,13 @@ describe('VMixStateDiffer', () => {
 		// it would have to be explicitly set to an empty string on the timeline
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		oldState.reportedState.existingInputs['99'].text = {
 			'myTitle.Text': 'SomeValue',
 			'myTitle.Foo': 'Bar',
 		}
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].text = {
 			'myTitle.Foo': 'Bar',
 		}
@@ -1072,12 +1072,12 @@ describe('VMixStateDiffer', () => {
 	it('updates text', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		oldState.reportedState.existingInputs['99'].text = {
 			'myTitle.Text': 'SomeValue',
 		}
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].text = {
 			'myTitle.Text': 'Bar',
 		}
@@ -1096,12 +1096,12 @@ describe('VMixStateDiffer', () => {
 	it('updates text to an empty string', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		oldState.reportedState.existingInputs['99'].text = {
 			'myTitle.Text': 'SomeValue',
 		}
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].text = {
 			'myTitle.Text': '',
 		}
@@ -1120,9 +1120,9 @@ describe('VMixStateDiffer', () => {
 	it('sets browser url', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		const url = 'https://example.com'
 		newState.reportedState.existingInputs['99'].url = { value: url }
 
@@ -1138,9 +1138,9 @@ describe('VMixStateDiffer', () => {
 	it('sets index', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		const index = 3
 		newState.reportedState.existingInputs['99'].index = { value: index }
 
@@ -1157,9 +1157,9 @@ describe('VMixStateDiffer', () => {
 	it('sets images', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
 		newState.reportedState.existingInputs['99'].images = {
 			'myImage.Source': 'image.png',
@@ -1179,9 +1179,9 @@ describe('VMixStateDiffer', () => {
 	it('sets multiple images', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 
 		newState.reportedState.existingInputs['99'].images = {
 			'myImage1.Source': 'foo.png',
@@ -1209,13 +1209,13 @@ describe('VMixStateDiffer', () => {
 		// it would have to be explicitly set to an empty string on the timeline
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		oldState.reportedState.existingInputs['99'].images = {
 			'myImage1.Source': 'foo.png',
 			'myImage2.Source': 'bar.jpg',
 		}
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].images = {
 			'myImage2.Source': 'bar.jpg',
 		}
@@ -1228,12 +1228,12 @@ describe('VMixStateDiffer', () => {
 	it('updates image', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		oldState.reportedState.existingInputs['99'].images = {
 			'myImage1.Source': 'foo.png',
 		}
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].images = {
 			'myImage1.Source': 'bar.jpg',
 		}
@@ -1252,12 +1252,12 @@ describe('VMixStateDiffer', () => {
 	it('updates image to an empty one', () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		oldState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		oldState.reportedState.existingInputs['99'].images = {
 			'myImage1.Source': 'foo.png',
 		}
 
-		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState(99)
+		newState.reportedState.existingInputs['99'] = differ.getDefaultInputState('99')
 		newState.reportedState.existingInputs['99'].images = {
 			'myImage1.Source': '',
 		}
@@ -1329,11 +1329,11 @@ describe('VMixStateDiffer', () => {
 	test('Input command ordering using _isInUse', async () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 
-		oldState.reportedState.existingInputs['11'] = differ.getDefaultInputState(11)
-		oldState.reportedState.existingInputs['12'] = differ.getDefaultInputState(12)
+		oldState.reportedState.existingInputs['11'] = differ.getDefaultInputState('11')
+		oldState.reportedState.existingInputs['12'] = differ.getDefaultInputState('12')
 		oldState.reportedState.mixes[0] = {
 			number: 0,
-			program: 11,
+			program: '11',
 			preview: undefined,
 			transition: {
 				effect: VMixTransitionType.Cut,
@@ -1342,7 +1342,7 @@ describe('VMixStateDiffer', () => {
 		}
 		newState.reportedState.mixes[0] = {
 			number: 0,
-			program: 12,
+			program: '12',
 			preview: undefined,
 			transition: {
 				effect: VMixTransitionType.Cut,
@@ -1350,13 +1350,13 @@ describe('VMixStateDiffer', () => {
 			},
 		}
 		newState.reportedState.existingInputs['11'] = {
-			...differ.getDefaultInputState(11),
+			...differ.getDefaultInputState('11'),
 			listFilePaths: { value: [] }, // we want the list to be cleared after input 1 goes off PGM
 		}
 		newState.reportedState.existingInputs['12'] = {
-			...differ.getDefaultInputState(12),
+			...differ.getDefaultInputState('12'),
 			layers: {
-				1: { input: 3 }, // we want this to be shown before input 2 goes to PGM
+				1: { input: '3' }, // we want this to be shown before input 2 goes to PGM
 			},
 		}
 
@@ -1367,12 +1367,12 @@ describe('VMixStateDiffer', () => {
 		expect(commands[0].command).toMatchObject<VMixStateCommand>({
 			command: VMixCommand.SET_LAYER_INPUT,
 			input: '12',
-			value: 3,
+			value: '3',
 			index: 1,
 		})
 		expect(commands[1].command).toMatchObject<VMixStateCommand>({
 			command: VMixCommand.ACTIVE_INPUT,
-			input: 12,
+			input: '12',
 			mix: 0,
 		})
 		expect(commands[2].command).toMatchObject<VMixStateCommand>({
@@ -1500,6 +1500,48 @@ describe('VMixStateDiffer', () => {
 			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
 
 			expect(commands.length).toBe(0)
+		})
+	})
+
+	describe('No repeated commands when string input refs match', () => {
+		it('generates zero commands when states are identical with string input refs', () => {
+			const { differ, oldState, newState } = createTestEnvironment()
+
+			// Simulate a state where XML parser returned strings and timeline converter also uses strings
+			oldState.reportedState.existingInputs['27'] = {
+				...differ.getDefaultInputState('27'),
+				layers: {
+					1: { input: '31' },
+					2: { input: '45', panX: -0.5, panY: 0.2, zoom: 0.6 },
+				},
+			}
+			oldState.reportedState.mixes[0] = {
+				number: 0,
+				program: '6',
+				preview: '1',
+				transition: { effect: VMixTransitionType.Cut, duration: 0 },
+			}
+			oldState.reportedState.overlays[2] = { number: 2, input: '18' }
+
+			// New state is identical — simulates poll returning same state
+			newState.reportedState.existingInputs['27'] = {
+				...differ.getDefaultInputState('27'),
+				layers: {
+					1: { input: '31' },
+					2: { input: '45', panX: -0.5, panY: 0.2, zoom: 0.6 },
+				},
+			}
+			newState.reportedState.mixes[0] = {
+				number: 0,
+				program: '6',
+				preview: '1',
+				transition: { effect: VMixTransitionType.Cut, duration: 0 },
+			}
+			newState.reportedState.overlays[2] = { number: 2, input: '18' }
+
+			const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+			expect(commands).toHaveLength(0)
 		})
 	})
 })

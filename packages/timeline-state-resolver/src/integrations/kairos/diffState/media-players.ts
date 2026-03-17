@@ -1,20 +1,20 @@
 import { MediaClipRef, MediaRamRecRef, MediaSoundRef } from 'kairos-connection'
 import { TimelineObjectInstance } from 'superfly-timeline'
 import { TimelineContentKairosPlayerState } from 'timeline-state-resolver-types'
-import { KairosCommandWithContext } from '../index.js'
 import {
 	KairosClipPlayerCommand,
 	KairosRamRecPlayerCommand,
-	KairosSoundPlayerCommand,
+	KairosAudioPlayerCommand,
 	KairosPlayerCommandMethod,
 	KairosImageStoreCommand,
+	KairosCommandWithContext,
 } from '../commands.js'
 import { KairosDeviceState, MappingOptions } from '../stateBuilder.js'
 import { diffObjectBoolean, getAllKeysString } from './lib.js'
 
 export function diffMediaPlayers(
 	stateTime: number,
-	playerType: KairosClipPlayerCommand['type'] | KairosRamRecPlayerCommand['type'] | KairosSoundPlayerCommand['type'],
+	playerType: KairosClipPlayerCommand['type'] | KairosRamRecPlayerCommand['type'] | KairosAudioPlayerCommand['type'],
 	oldClipPlayers: Record<number, MediaPlayerOuterState | undefined>,
 	newClipPlayers: Record<number, MediaPlayerOuterState | undefined>
 ): KairosCommandWithContext[] {
@@ -33,7 +33,7 @@ export function diffMediaPlayers(
 		if (!cpRef) continue // No ClipPlayer to diff
 
 		/** The properties to update on the ClipPlayer */
-		const updateCmd: KairosClipPlayerCommand | KairosRamRecPlayerCommand | KairosSoundPlayerCommand = {
+		const updateCmd: KairosClipPlayerCommand | KairosRamRecPlayerCommand | KairosAudioPlayerCommand = {
 			type: playerType,
 			playerId: playerId,
 			values: {},

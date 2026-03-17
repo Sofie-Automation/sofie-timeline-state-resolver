@@ -1,4 +1,6 @@
 import {
+	DeviceTimelineState,
+	DeviceTimelineStateObject,
 	DeviceType,
 	Mapping,
 	MappingVmixType,
@@ -10,7 +12,6 @@ import {
 	VMixInputType,
 	VMixTransitionType,
 } from 'timeline-state-resolver-types'
-import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
 import { VMixTimelineStateConverter } from '../vMixTimelineStateConverter.js'
 import { VMixOutput, VMixStateDiffer } from '../vMixStateDiffer.js'
 import { prefixAddedInput } from './mockState.js'
@@ -196,7 +197,7 @@ describe('VMixTimelineStateConverter', () => {
 				duration: 500,
 				effect: VMixTransitionType.Fade,
 			})
-			expect(result.reportedState.mixes[0]?.program).toEqual(2)
+			expect(result.reportedState.mixes[0]?.program).toEqual('2')
 		})
 
 		it('does not allow overriding transitions in reverse layer order', () => {
@@ -230,7 +231,7 @@ describe('VMixTimelineStateConverter', () => {
 				duration: 0,
 				effect: VMixTransitionType.Cut,
 			})
-			expect(result.reportedState.mixes[0]?.program).toEqual(2)
+			expect(result.reportedState.mixes[0]?.program).toEqual('2')
 		})
 		it('supports url', () => {
 			const converter = createTestee()

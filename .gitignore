@@ -16,6 +16,7 @@ packages/timeline-state-resolver/src/translations.json
 .npmrc
 *.tsbuildinfo
 packages/*/tsconfig.build.tsbuildinfo
+packages/*/locales/*/*.json
 
 # Ignore JetBrains IDE specific files
 .idea

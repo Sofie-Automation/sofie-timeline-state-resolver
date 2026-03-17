@@ -75,6 +75,9 @@ import type { SomeMappingTelemetrics } from './telemetrics.js'
 export * from './tricaster'
 import type { SomeMappingTricaster } from './tricaster.js'
 
+export * from './udpSend'
+import type { SomeMappingUdpSend } from './udpSend.js'
+
 export * from './viscaOverIP'
 import type { SomeMappingViscaOverIP } from './viscaOverIP.js'
 
@@ -110,6 +113,7 @@ export type TSRMappingOptions =
 	| SomeMappingTcpSend
 	| SomeMappingTelemetrics
 	| SomeMappingTricaster
+	| SomeMappingUdpSend
 	| SomeMappingViscaOverIP
 	| SomeMappingVizMSE
 	| SomeMappingVmix

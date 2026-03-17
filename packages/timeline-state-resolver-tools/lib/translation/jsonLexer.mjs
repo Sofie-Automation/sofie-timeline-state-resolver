@@ -1,44 +1,37 @@
 /* eslint-disable */
-import { BaseLexer } from 'i18next-parser'
 
-export class JsonLexer extends BaseLexer {
-	constructor(options = {}) {
-		super(options)
+/**
+ * Extract translation keys from a JSON schema file.
+ * Returns an array of key strings.
+ */
+export function extractKeysFromJson(content, filename) {
+	const keys = []
 
-		this.functions = options.functions || ['$t']
-	}
+	try {
+		const obj = JSON.parse(content)
 
-	extract(content, filename) {
-		let keys = []
+		// The root could be an object in places without a meta-schema (eg options)
+		processObject(keys, obj)
 
-		try {
-			const obj = JSON.parse(content)
-
-			// The root could be an object in places without a meta-schema (eg options)
-			processObject(keys, obj)
-
-			// actions are nested
-			if ('actions' in obj) {
-				obj.actions.forEach((action) => {
-					action.name && keys.push(action.name)
-					processObject(keys, action.payload)
-				})
-			}
-
-			// mappings are nested
-			if ('mappings' in obj) {
-				Object.values(obj.mappings).forEach((mapping) => {
-					processObject(keys, mapping)
-				})
-			}
-		} catch (e) {
-			console.error(`File "${filename}" contains invalid json`)
+		// actions are nested
+		if ('actions' in obj) {
+			obj.actions.forEach((action) => {
+				action.name && keys.push(action.name)
+				processObject(keys, action.payload)
+			})
 		}
 
-		// console.log(filename, keys) // haha just figuring wtf is going on
-
-		return keys.map((k) => ({ key: k }))
+		// mappings are nested
+		if ('mappings' in obj) {
+			Object.values(obj.mappings).forEach((mapping) => {
+				processObject(keys, mapping)
+			})
+		}
+	} catch (e) {
+		console.error(`File "${filename}" contains invalid json`)
 	}
+
+	return keys
 }
 
 function processObject(keys, obj) {

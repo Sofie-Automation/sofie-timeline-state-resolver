@@ -1,4 +1,4 @@
-import { Timeline, TSRTimelineContent } from 'timeline-state-resolver-types'
+import { TSRTimelineContent, DeviceTimelineState } from 'timeline-state-resolver-types'
 import { StateHandler } from '../stateHandler.js'
 import { MockTime } from '../../__tests__/mockTime.js'
 
@@ -160,7 +160,7 @@ describe('stateHandler', () => {
 		)
 	}
 
-	async function getNewStateHandlerWithStates(stateToHandle: Timeline.TimelineState<TSRTimelineContent>) {
+	async function getNewStateHandlerWithStates(stateToHandle: DeviceTimelineState<TSRTimelineContent>) {
 		const stateHandler = getNewStateHandler(true)
 		stateHandler.setCurrentState({
 			entry1: { value: true },
@@ -439,18 +439,12 @@ describe('stateHandler', () => {
 function createTimelineState(
 	time: number,
 	objs: Record<string, { value: boolean; preliminary?: number }>
-): Timeline.TimelineState<TSRTimelineContent> {
+): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time,
-		layers: Object.fromEntries(
-			Object.entries<any>(objs).map(([id, obj]) => [
-				id,
-				{
-					layer: id,
-					content: obj,
-				},
-			])
-		) as any,
-		nextEvents: [],
+		objects: Object.entries<any>(objs).map(([id, obj]) => ({
+			layer: id,
+			content: obj,
+		})) as any,
 	}
 }

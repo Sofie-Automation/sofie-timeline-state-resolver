@@ -49,14 +49,20 @@ Check the main [timeline-state-resolver](/packages/timeline-state-resolver) pack
 If you are using a TSR plugin in your own project, you can easily extend the TSR types to include your own device by adding a file into your project like `tsr-extend.d.ts`:
 
 ```ts
-import type { FakeDeviceType, TimelineContentFakeAny } from './test-types.js'
+import type { FakeDeviceType, TimelineContentFakeAny, DeviceOptionsFake } from './test-types.js'
 
 declare module 'timeline-state-resolver-types' {
 	interface TimelineContentMap {
 		[FakeDeviceType]: TimelineContentFakeAny
 	}
+
+	interface DeviceOptionsMap {
+		[FakeDeviceType]: DeviceOptionsFake
+	}
 }
 ```
+
+Augmenting `DeviceOptionsMap` ensures that `DeviceOptionsAny` (the union of all device options) automatically includes your plugin's options type, enabling proper type-checking within your code wherever device options are handled.
 
 ## Development
 

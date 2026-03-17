@@ -1,12 +1,11 @@
-import { Content, ResolvedTimelineObjectInstance } from './superfly-timeline/index.js'
-import { DeviceType, TSRTimelineContent } from './index.js'
+import type { DeviceTypeExt } from './index.js'
 
 export interface Mappings<TOptions extends { mappingType: string } | unknown = unknown> {
 	[layerName: string]: Mapping<TOptions>
 }
 
-export interface Mapping<TOptions extends { mappingType: string } | unknown, TType = DeviceType> {
-	device: TType // TODO - is this helpful being generic?
+export interface Mapping<TOptions extends { mappingType: string } | unknown, TType = DeviceTypeExt> {
+	device: TType
 	deviceId: string
 
 	/** Human-readable name given to the layer. Can be used by devices to set the label of e.g. a fader a mapping points to. */
@@ -15,10 +14,6 @@ export interface Mapping<TOptions extends { mappingType: string } | unknown, TTy
 	/** Mapping specific options */
 	options: TOptions
 }
-
-/** @deprecated */
-export interface ResolvedTimelineObjectInstanceExtended<TContent extends Content = TSRTimelineContent>
-	extends ResolvedTimelineObjectInstance<TContent>, TSRTimelineObjProps {}
 
 export interface TSRTimelineObjProps {
 	/** Only set to true when an object is inserted by lookahead */

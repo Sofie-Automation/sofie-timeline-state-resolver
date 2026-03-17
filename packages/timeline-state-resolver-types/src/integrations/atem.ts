@@ -57,6 +57,13 @@ export enum FlyKeyDirection {
 	BottomCentre = 8,
 	BottomRight = 9,
 }
+export enum AtemTransitionSelection {
+	Background = 1,
+	Key1 = 2,
+	Key2 = 4,
+	Key3 = 8,
+	Key4 = 16,
+}
 
 export type SuperSourceBox = {
 	enabled?: boolean
@@ -149,28 +156,22 @@ export interface TimelineContentAtemControlValue extends TimelineContentAtemBase
 	controlValue: string
 }
 
-// as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
-type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
-type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
-
 export interface TimelineContentAtemME extends TimelineContentAtemBase {
 	type: TimelineContentTypeAtem.ME
-	me: XOR<
-		{
-			input: number
-			transition: AtemTransitionStyle
-		},
-		{
-			/** Cut directly to program */
-			programInput?: number
-			/**
-			 * Set preview input.
-			 * Cannot be used in conjunction with `input`;
-			 * `programInput` must be used instead if control of program and preview are both needed.
-			 */
-			previewInput?: number
-		}
-	> & {
+	me: {
+		/** Set the transition style, defaults to cutting */
+		transition?: AtemTransitionStyle
+
+		// @deprecated - use programInput instead
+		input?: number
+		/** Set program input */
+		programInput?: number
+		/**
+		 * Set preview input.
+		 * Cannot be used in conjunction with any transition other than cuts
+		 */
+		previewInput?: number
+
 		/** Is ME in transition state */
 		inTransition?: boolean
 		/** Should preview transition */
@@ -184,6 +185,9 @@ export interface TimelineContentAtemME extends TimelineContentAtemBase {
 
 		/** Settings for mix rate, wipe style */
 		transitionSettings?: AtemTransitionSettings
+
+		/** Select the layers to include in transition */
+		transitionSelection?: AtemTransitionSelection[]
 
 		/**
 		 * @deprecated Upstream Keyers should now be controlled using separate timeline objects
@@ -287,7 +291,7 @@ export interface TimelineContentAtemDSK extends TimelineContentAtemBase {
 			cutSource: number
 		}
 		properties?: {
-			/** On at next transition */
+			/** On at next transition (Will follow M/E 1, may toggle inadvertently with other M/E transitions) */
 			tie?: boolean
 			/** 1 - 250 frames */
 			rate?: number

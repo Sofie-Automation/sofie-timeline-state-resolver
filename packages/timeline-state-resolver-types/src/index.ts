@@ -25,6 +25,7 @@ import { TimelineContentTriCasterAny } from './integrations/tricaster.js'
 import { TimelineContentWebSocketClientAny } from './integrations/websocketClient.js'
 import { TimelineContentKairosAny } from './integrations/kairos.js'
 import { DeviceType } from './generated/index.js'
+import { TimelineContentUDPSendAny } from './integrations/udpSend.js'
 import { TimelineContentOgrafAny } from './integrations/ograf.js'
 
 export * from './integrations/abstract.js'
@@ -50,6 +51,7 @@ export * from './integrations/obs.js'
 export * from './integrations/tricaster.js'
 export * from './integrations/telemetrics.js'
 export * from './integrations/multiOsc.js'
+export * from './integrations/udpSend.js'
 export * from './integrations/viscaOverIP.js'
 export * from './integrations/websocketClient.js'
 
@@ -131,6 +133,7 @@ export interface TimelineContentMap {
 	[DeviceType.TELEMETRICS]: TimelineContentTelemetricsAny
 	[DeviceType.TRICASTER]: TimelineContentTriCasterAny
 	[DeviceType.WEBSOCKET_CLIENT]: TimelineContentWebSocketClientAny
+	[DeviceType.UDP_SEND]: TimelineContentUDPSendAny
 }
 
 export type TSRTimelineContent = TimelineContentMap[keyof TimelineContentMap]
@@ -145,4 +148,38 @@ export interface Datastore {
 		/** A unix-Timestamp of when the value was set. (Note that this must not be set a value in the future.) */
 		modified: number
 	}
+}
+
+export interface DeviceTimelineState<TContent extends TSRTimelineContent = TSRTimelineContent> {
+	/** The timestamp for this state */
+	time: Timeline.Time
+	/** All objects that are active on each respective layer */
+	objects: DeviceTimelineStateObject<TContent>[]
+}
+
+/**
+ * A simplified representation of the TimelineObjet that was matched for this device
+ */
+export interface DeviceTimelineStateObject<
+	TContent extends TSRTimelineContent = TSRTimelineContent,
+> extends TSRTimelineObjProps {
+	/** ID of the object. Must be unique! */
+	id: string
+	/**
+	 * Priority. Affects which object "wins" when there are two colliding objects on the same layer.
+	 */
+	priority: number
+	/**
+	 * The layer where the object is played.
+	 * */
+	layer: string | number
+	/** The payload of the timeline-object. Can be anything you want. */
+	content: TContent
+
+	instance: Timeline.TimelineObjectInstance
+
+	/** All datastore values applied and the timestamp of when they were applied */
+	datastoreRefs?: Record<string, number>
+	/** Timestamp of the last datastore value applied to this object */
+	lastModified?: number
 }

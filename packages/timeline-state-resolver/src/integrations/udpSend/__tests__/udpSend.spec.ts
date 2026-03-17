@@ -1,26 +1,21 @@
-import { DeviceType, TimelineContentTCPSendAny } from 'timeline-state-resolver-types'
-import { Socket as OrgSocket } from 'net'
-import { Socket as MockSocket } from '../../../__mocks__/net.js'
-import { TcpSendDevice, TcpSendDeviceState } from '../index.js'
+import { DeviceType, TimelineContentUDPSendAny } from 'timeline-state-resolver-types'
+import { Socket as SocketMock } from '../../../__mocks__/node_dgram.js'
+import { UdpSendDevice, UdpSendDeviceState } from '../index.js'
 import { getDeviceContext } from '../../__tests__/testlib.js'
 import { literal } from '../../../lib.js'
 
-jest.mock('net')
-
-const SocketMock = OrgSocket as any as typeof MockSocket
-
-// SocketMock.mockClose
-
-const setTimeoutOrg = setTimeout
+jest.mock('node:dgram', () => {
+	return jest.requireActual('../../../__mocks__/node_dgram.js')
+})
 
 async function sleep(duration: number) {
 	return new Promise((resolve) => {
-		setTimeoutOrg(resolve, duration)
+		setTimeout(resolve, duration)
 	})
 }
 
-async function getInitializedTcpDevice() {
-	const dev = new TcpSendDevice(getDeviceContext())
+async function getInitializedUdpDevice() {
+	const dev = new UdpSendDevice(getDeviceContext())
 	await dev.init({
 		host: '192.168.0.254',
 		port: 1234,
@@ -29,11 +24,11 @@ async function getInitializedTcpDevice() {
 	return dev
 }
 
-describe('TCP-Send', () => {
+describe('UDP-Send', () => {
 	const onSocketCreate = jest.fn()
 	const onConnection = jest.fn()
 	const onSocketClose = jest.fn()
-	const onSocketWrite = jest.fn()
+	const onSocketSend = jest.fn()
 	const onConnectionChanged = jest.fn()
 
 	function setupSocketMock() {
@@ -41,7 +36,7 @@ describe('TCP-Send', () => {
 			onSocketCreate()
 
 			socket.onConnect = onConnection
-			socket.onWrite = onSocketWrite
+			socket.onSend = onSocketSend
 			socket.onClose = onSocketClose
 		})
 	}
@@ -57,7 +52,7 @@ describe('TCP-Send', () => {
 		onSocketCreate.mockClear()
 		onConnection.mockClear()
 		onSocketClose.mockClear()
-		onSocketWrite.mockClear()
+		onSocketSend.mockClear()
 		onConnectionChanged.mockClear()
 
 		// Just a check to ensure that the unit tests cleaned up the socket after themselves:
@@ -67,21 +62,21 @@ describe('TCP-Send', () => {
 
 	describe('diffState', () => {
 		test('From undefined', async () => {
-			const device = await getInitializedTcpDevice()
+			const device = await getInitializedUdpDevice()
 			const commands = device.diffStates(undefined, createTimelineState({}))
 			expect(commands).toEqual([])
 			await device.terminate()
 		})
 		test('Empty states', async () => {
-			const device = await getInitializedTcpDevice()
+			const device = await getInitializedUdpDevice()
 			const commands = device.diffStates(createTimelineState({}), createTimelineState({}))
 			expect(commands).toEqual([])
 			await device.terminate()
 		})
 		test('New command', async () => {
-			const device = await getInitializedTcpDevice()
+			const device = await getInitializedUdpDevice()
 
-			const content = literal<TimelineContentTCPSendAny>({
+			const content = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'hello world',
 			})
@@ -110,13 +105,13 @@ describe('TCP-Send', () => {
 		})
 
 		test('Changed command', async () => {
-			const device = await getInitializedTcpDevice()
+			const device = await getInitializedUdpDevice()
 
-			const content0 = literal<TimelineContentTCPSendAny>({
+			const content0 = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'hello world',
 			})
-			const content1 = literal<TimelineContentTCPSendAny>({
+			const content1 = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'goodbye world',
 			})
@@ -153,9 +148,9 @@ describe('TCP-Send', () => {
 		})
 
 		test('Removed command', async () => {
-			const device = await getInitializedTcpDevice()
+			const device = await getInitializedUdpDevice()
 
-			const content = literal<TimelineContentTCPSendAny>({
+			const content = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'hello world',
 			})
@@ -183,54 +178,36 @@ describe('TCP-Send', () => {
 			await device.terminate()
 		})
 	})
-	describe('Socket connection', () => {
-		test('Connect', async () => {
-			const device = await getInitializedTcpDevice()
+	describe('Socket setup', () => {
+		test('Initialize', async () => {
+			const device = await getInitializedUdpDevice()
 
+			// UDP is connectionless, so connected is always true when initialized
 			expect(device.connected).toBe(true)
 			expect(onSocketCreate).toHaveBeenCalledTimes(1)
 			expect(onConnection).toHaveBeenCalledTimes(1)
 			expect(SocketMock.openSockets()).toHaveLength(1)
 			expect(onSocketClose).toHaveBeenCalledTimes(0)
-			expect(onSocketWrite).toHaveBeenCalledTimes(0)
+			expect(onSocketSend).toHaveBeenCalledTimes(0)
 
 			await device.terminate()
 		})
-		test('Disconnect', async () => {
-			const device = await getInitializedTcpDevice()
+		test('Terminate', async () => {
+			const device = await getInitializedUdpDevice()
 			await device.terminate()
 
 			expect(device.connected).toBe(false)
+
+			// After termination, socket should be closed
 			expect(SocketMock.openSockets()).toHaveLength(0)
 			expect(onSocketClose).toHaveBeenCalledTimes(1)
-		})
-		test('Lose connection and reconnect', async () => {
-			const device = await getInitializedTcpDevice()
-
-			expect(device.connected).toBe(true)
-
-			const sockets = SocketMock.openSockets()
-			expect(sockets).toHaveLength(1)
-
-			// Simulate that the socket is closed:
-			sockets[0].mockClose()
-			await sleep(10)
-			// The device should have disconnected:
-			expect(device.connected).toBe(false)
-
-			await sleep(600)
-
-			// The device should have reconnected:
-			expect(device.connected).toBe(true)
-
-			await device.terminate()
 		})
 	})
 	describe('sendCommand', () => {
 		test('Send message', async () => {
-			const device = await getInitializedTcpDevice()
+			const device = await getInitializedUdpDevice()
 
-			const content = literal<TimelineContentTCPSendAny>({
+			const content = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'hello world',
 			})
@@ -252,60 +229,20 @@ describe('TCP-Send', () => {
 			expect(SocketMock.openSockets()).toHaveLength(1)
 			expect(onConnection).toHaveBeenCalledTimes(1)
 
-			expect(onSocketWrite).toHaveBeenCalledTimes(1)
-			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('hello world'))
-
-			await device.terminate()
-		})
-		test('Send message when disconnected', async () => {
-			setupSocketMock() // Add one more socket mock
-			const device = await getInitializedTcpDevice()
-
-			const content = literal<TimelineContentTCPSendAny>({
-				...DEFAULT_TL_CONTENT,
-				message: 'hello world',
-			})
-			const commands = device.diffStates(
-				createTimelineState({}),
-				createTimelineState({
-					layer0: {
-						id: 'obj0',
-						layer: 'layer0',
-						content,
-					},
-				})
-			)
-			expect(commands).toHaveLength(1)
-
-			// Simulate that the socket is closed:
-			const sockets = SocketMock.openSockets()
-			expect(sockets).toHaveLength(1)
-			sockets[0].mockClose()
-			await sleep(10)
-			// The device should have disconnected:
-			expect(device.connected).toBe(false)
-			expect(SocketMock.openSockets()).toHaveLength(0)
-
-			// Now, send a command. This should trigger an immediate reconnect:
-			await device.sendCommand(commands[0])
-			expect(device.connected).toBe(true)
-
-			expect(SocketMock.openSockets()).toHaveLength(1)
-
-			expect(onSocketWrite).toHaveBeenCalledTimes(1)
-			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('hello world'))
+			expect(onSocketSend).toHaveBeenCalledTimes(1)
+			expect(onSocketSend.mock.calls[0][0]).toEqual(Buffer.from('hello world'))
 
 			await device.terminate()
 		})
 
 		test('Send multiple messages', async () => {
-			const device = await getInitializedTcpDevice()
+			const device = await getInitializedUdpDevice()
 
-			const content1 = literal<TimelineContentTCPSendAny>({
+			const content1 = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'message 1',
 			})
-			const content2 = literal<TimelineContentTCPSendAny>({
+			const content2 = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'message 2',
 			})
@@ -330,22 +267,22 @@ describe('TCP-Send', () => {
 			await device.sendCommand(commands[0])
 			await device.sendCommand(commands[1])
 
-			expect(onSocketWrite).toHaveBeenCalledTimes(2)
-			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('message 1'))
-			expect(onSocketWrite.mock.calls[1][0]).toEqual(Buffer.from('message 2'))
+			expect(onSocketSend).toHaveBeenCalledTimes(2)
+			expect(onSocketSend.mock.calls[0][0]).toEqual(Buffer.from('message 1'))
+			expect(onSocketSend.mock.calls[1][0]).toEqual(Buffer.from('message 2'))
 
 			await device.terminate()
 		})
 
 		test('Temporal priority sorting', async () => {
-			const device = await getInitializedTcpDevice()
+			const device = await getInitializedUdpDevice()
 
-			const content1 = literal<TimelineContentTCPSendAny>({
+			const content1 = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'low priority',
 				temporalPriority: 10,
 			})
-			const content2 = literal<TimelineContentTCPSendAny>({
+			const content2 = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'high priority',
 				temporalPriority: 1,
@@ -378,9 +315,9 @@ describe('TCP-Send', () => {
 
 	describe('Buffer encoding', () => {
 		test('Default encoding (utf8)', async () => {
-			const device = await getInitializedTcpDevice()
+			const device = await getInitializedUdpDevice()
 
-			const content = literal<TimelineContentTCPSendAny>({
+			const content = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'test message',
 			})
@@ -393,14 +330,14 @@ describe('TCP-Send', () => {
 
 			await device.sendCommand(commands[0])
 
-			expect(onSocketWrite).toHaveBeenCalledTimes(1)
-			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('test message', 'utf8'))
+			expect(onSocketSend).toHaveBeenCalledTimes(1)
+			expect(onSocketSend.mock.calls[0][0]).toEqual(Buffer.from('test message', 'utf8'))
 
 			await device.terminate()
 		})
 
 		test('ASCII encoding', async () => {
-			const dev = new TcpSendDevice(getDeviceContext())
+			const dev = new UdpSendDevice(getDeviceContext())
 			await dev.init({
 				host: '192.168.0.254',
 				port: 1234,
@@ -408,7 +345,7 @@ describe('TCP-Send', () => {
 			})
 			await sleep(10)
 
-			const content = literal<TimelineContentTCPSendAny>({
+			const content = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: 'test',
 			})
@@ -421,13 +358,13 @@ describe('TCP-Send', () => {
 
 			await dev.sendCommand(commands[0])
 
-			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('test', 'ascii'))
+			expect(onSocketSend.mock.calls[0][0]).toEqual(Buffer.from('test', 'ascii'))
 
 			await dev.terminate()
 		})
 
 		test('Hex encoding', async () => {
-			const dev = new TcpSendDevice(getDeviceContext())
+			const dev = new UdpSendDevice(getDeviceContext())
 			await dev.init({
 				host: '192.168.0.254',
 				port: 1234,
@@ -435,7 +372,7 @@ describe('TCP-Send', () => {
 			})
 			await sleep(10)
 
-			const content = literal<TimelineContentTCPSendAny>({
+			const content = literal<TimelineContentUDPSendAny>({
 				...DEFAULT_TL_CONTENT,
 				message: '48656c6c6f', // "Hello" in hex
 			})
@@ -448,64 +385,59 @@ describe('TCP-Send', () => {
 
 			await dev.sendCommand(commands[0])
 
-			expect(onSocketWrite.mock.calls[0][0]).toEqual(Buffer.from('48656c6c6f', 'hex'))
+			expect(onSocketSend.mock.calls[0][0]).toEqual(Buffer.from('48656c6c6f', 'hex'))
 
 			await dev.terminate()
 		})
 	})
 
 	describe('Error handling', () => {
-		test('Connection errors are reported', async () => {
-			const device = await getInitializedTcpDevice()
+		test('ECONNREFUSED is ignored', async () => {
+			const device = await getInitializedUdpDevice()
+
+			// Simulate ECONNREFUSED error from the socket
+			const sockets = SocketMock.openSockets()
+			expect(sockets).toHaveLength(1)
+
+			const error = new Error('recvmsg ECONNREFUSED') as NodeJS.ErrnoException
+			error.code = 'ECONNREFUSED'
+
+			// Should not throw or cause any issues
+			sockets[0].emit('error', error)
+
+			// Device should still be usable
+			expect(device.connected).toBe(true)
+
+			await device.terminate()
+		})
+
+		test('Other errors are reported', async () => {
+			const device = await getInitializedUdpDevice()
 			const errorHandler = jest.fn()
 			device['context'].logger.error = errorHandler
 
 			const sockets = SocketMock.openSockets()
 			expect(sockets).toHaveLength(1)
 
-			const error = new Error('Connection error') as NodeJS.ErrnoException
-			error.code = 'ECONNRESET'
+			const error = new Error('Some other error') as NodeJS.ErrnoException
+			error.code = 'EOTHER'
 
 			sockets[0].emit('error', error)
 
 			// Error should be logged
-			expect(errorHandler).toHaveBeenCalledWith('TCP socket error', error)
-
-			await device.terminate()
-		})
-
-		test('Socket close triggers reconnection', async () => {
-			const device = await getInitializedTcpDevice()
-
-			expect(device.connected).toBe(true)
-
-			const sockets = SocketMock.openSockets()
-			expect(sockets).toHaveLength(1)
-
-			// Simulate that the socket is closed:
-			sockets[0].mockClose()
-			await sleep(10)
-
-			// The device should have disconnected:
-			expect(device.connected).toBe(false)
-
-			// Wait for reconnect
-			await sleep(600)
-
-			// The device should have reconnected:
-			expect(device.connected).toBe(true)
+			expect(errorHandler).toHaveBeenCalledWith('UDP socket error', error)
 
 			await device.terminate()
 		})
 	})
 })
 function createTimelineState(
-	objs: Record<string, { id: string; layer: string; content: TimelineContentTCPSendAny }>
-): TcpSendDeviceState {
+	objs: Record<string, { id: string; layer: string; content: TimelineContentUDPSendAny }>
+): UdpSendDeviceState {
 	return objs as any
 }
 const DEFAULT_TL_CONTENT: {
-	deviceType: DeviceType.TCPSEND
+	deviceType: DeviceType.UDP_SEND
 } = {
-	deviceType: DeviceType.TCPSEND,
+	deviceType: DeviceType.UDP_SEND,
 }

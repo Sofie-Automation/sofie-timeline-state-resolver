@@ -10,7 +10,7 @@ export function makeMockReportedState(): VMixState {
 		edition: 'HD',
 		existingInputs: {
 			'1': {
-				number: 1,
+				number: '1',
 				type: 'Capture',
 				state: 'Running',
 				position: { value: 0 },
@@ -29,7 +29,7 @@ export function makeMockReportedState(): VMixState {
 				playing: { value: true },
 			},
 			'2': {
-				number: 2,
+				number: '2',
 				type: 'Capture',
 				state: 'Running',
 				position: { value: 0 },
@@ -66,7 +66,7 @@ export function makeMockReportedState(): VMixState {
 		},
 		inputsAddedByUs: {
 			[ADDED_INPUT_NAME_1]: {
-				number: 1,
+				number: '1',
 				type: 'Video',
 				state: 'Running',
 				position: { value: 0 },
@@ -86,7 +86,7 @@ export function makeMockReportedState(): VMixState {
 				name: ADDED_INPUT_NAME_1,
 			},
 			[ADDED_INPUT_NAME_2]: {
-				number: 1,
+				number: '1',
 				type: 'Video',
 				state: 'Running',
 				position: { value: 0 },
@@ -133,8 +133,8 @@ export function makeMockReportedState(): VMixState {
 		mixes: [
 			{
 				number: 1,
-				program: 1,
-				preview: 2,
+				program: '1',
+				preview: '2',
 				transition: {
 					duration: 0,
 					effect: VMixTransitionType.Cut,
