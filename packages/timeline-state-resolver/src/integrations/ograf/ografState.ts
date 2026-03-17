@@ -350,8 +350,8 @@ export function diffStates(oldState: OGrafDeviceState | undefined, newState: OGr
 
 		if (
 			!oldGraphicsStepDelta ||
-			oldGraphicsStepDelta.content.delta !== oldGraphicsStepDelta.content.delta ||
-			oldGraphicsStepDelta.content.triggerValue !== oldGraphicsStepDelta.content.triggerValue
+			oldGraphicsStepDelta.content.delta !== newGraphicsStepDelta.content.delta ||
+			oldGraphicsStepDelta.content.triggerValue !== newGraphicsStepDelta.content.triggerValue
 		) {
 			let reason = 'N/A'
 			if (!oldGraphicsStepDelta) reason = 'New action'

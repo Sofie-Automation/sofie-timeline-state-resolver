@@ -9,7 +9,7 @@ export class OGrafConnectionStatus extends EventEmitter<OGrafConnectionStatusEve
 	private active = false
 	private _connected = false
 
-	constructor(private ografApi: OgrafApi) {
+	constructor(private readonly ografApi: OgrafApi) {
 		super()
 	}
 
@@ -64,17 +64,17 @@ export class OGrafConnectionStatus extends EventEmitter<OGrafConnectionStatusEve
 	}
 
 	private isExpectedConnectionIssue(err: unknown): boolean {
-		const errStr = `${err}`
+		const errStr = `${err instanceof Error ? err.message : String(err)}`.toLowerCase()
 
 		for (const expectedCode of [
-			'ETIMEDOUT',
-			'ESOCKETTIMEDOUT',
-			'ECONNREFUSED',
-			'ECONNRESET',
-			'EHOSTUNREACH',
-			'ENETUNREACH',
-			'ENOTFOUND',
-			'EAI_AGAIN',
+			'etimedout',
+			'esockettimedout',
+			'econnrefused',
+			'econnreset',
+			'ehostunreach',
+			'enetunreach',
+			'enotfound',
+			'eai_again',
 		]) {
 			if (errStr.includes(expectedCode)) {
 				return true

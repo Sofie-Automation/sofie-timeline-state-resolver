@@ -35,8 +35,8 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 		[layerId: string]: TrackedLayer | undefined
 	} = {}
 
-	private ografApi: OgrafApi = OgrafApi.getSingleton()
-	private ografConnectionStatus = new OGrafConnectionStatus(this.ografApi)
+	private readonly ografApi: OgrafApi = OgrafApi.getSingleton()
+	private readonly ografConnectionStatus = new OGrafConnectionStatus(this.ografApi)
 
 	protected _terminated = false
 
@@ -56,7 +56,6 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 		return true
 	}
 	async terminate(): Promise<void> {
-		// this.trackedState.clear()
 		this._terminated = true
 		this.ografConnectionStatus.terminate()
 	}

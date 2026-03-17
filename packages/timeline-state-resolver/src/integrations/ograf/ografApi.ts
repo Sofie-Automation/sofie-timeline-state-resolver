@@ -539,11 +539,3 @@ export class OgrafApi {
 		}
 	}
 }
-
-// function fetch(fullUrl: string, options: RequestInit) {
-// 	// options.body
-// 	return got(fullUrl, {
-// 		body: options.body,
-// 		headers: options.headers
-// 	})
-// }

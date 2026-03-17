@@ -256,17 +256,6 @@ describe('OGraf', () => {
 		})
 	})
 	describe('diffState', () => {
-		async function compareStates(
-			oldDevState: OGrafDeviceState | undefined,
-			newDevState: OGrafDeviceState,
-			expCommands: OGrafDeviceCommand[]
-		) {
-			const device = await getInitialisedOGrafDevice()
-
-			const commands = device.diffStates(oldDevState, newDevState)
-
-			expect(commands).toEqual(expCommands)
-		}
 		describe('Graphic', () => {
 			test('From undefined', async () => {
 				await compareStates(
@@ -809,4 +798,15 @@ const DEFAULT_RESOLVED_OBJECT_INSTANCE: Pick<DeviceTimelineStateObject<any>, 'pr
 		end: null,
 		references: [],
 	},
+}
+async function compareStates(
+	oldDevState: OGrafDeviceState | undefined,
+	newDevState: OGrafDeviceState,
+	expCommands: OGrafDeviceCommand[]
+) {
+	const device = await getInitialisedOGrafDevice()
+
+	const commands = device.diffStates(oldDevState, newDevState)
+
+	expect(commands).toEqual(expCommands)
 }

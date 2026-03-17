@@ -14,9 +14,6 @@ export enum TimelineContentTypeOgraf {
 	GRAPHIC_STEP = 'graphic_step',
 	RENDERER_CUSTOM_ACTION = 'renderer_custom_action',
 }
-// export interface HTTPSendCommandContentExt extends Omit<HTTPSendCommandContent, 'url'> {
-// 	url: string | TemplateString
-// }
 
 export type TimelineContentOGrafGraphic = TimelineContentOGrafBase & {
 	type: TimelineContentTypeOgraf.GRAPHIC
