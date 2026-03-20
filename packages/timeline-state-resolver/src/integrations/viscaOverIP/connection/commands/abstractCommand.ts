@@ -77,6 +77,15 @@ export abstract class ViscaInquiryCommand extends AbstractCommand {
 	}
 }
 
+export abstract class ViscaDeviceSettingCommand extends AbstractCommand {
+	readonly commandType = CommandType.ViscaDeviceSetting
+
+	deserializeReply(_payload: Buffer): unknown {
+		// No reply expected
+		return undefined
+	}
+}
+
 export abstract class ControlCommand extends AbstractCommand {
 	readonly commandType = CommandType.ControlCommand
 
