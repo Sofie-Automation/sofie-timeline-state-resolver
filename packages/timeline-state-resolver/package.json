@@ -6,6 +6,7 @@
 	"typings": "dist/index.d.ts",
 	"module": "dist/module/index.js",
 	"browser": "dist/browser/index.js",
+	"type": "commonjs",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -90,8 +91,8 @@
 		"atem-connection": "3.7.0",
 		"atem-state": "1.3.0",
 		"cacheable-lookup": "^5.0.4",
-		"casparcg-connection": "6.3.3",
-		"casparcg-state": "3.0.4",
+		"casparcg-connection": "7.0.0-0-nightly-main-20260323-110534-d8f740e6",
+		"casparcg-state": "4.0.0-0-nightly-main-20260325-112946-587df8a",
 		"debug": "^4.4.3",
 		"deepmerge": "^4.3.1",
 		"emberplus-connection": "^0.3.1",
