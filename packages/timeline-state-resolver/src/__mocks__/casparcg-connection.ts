@@ -1,6 +1,11 @@
 // mock CasparCG
-import { Commands as orgCommands, AMCPCommand as orgAMCPCommand, SendResult } from 'casparcg-connection'
-import { ResponseTypes } from 'casparcg-connection/dist/connection'
+import {
+	Commands as orgCommands,
+	AMCPCommand as orgAMCPCommand,
+	SendResult,
+	Enum as orgEnum,
+} from 'casparcg-connection'
+import { ResponseTypes } from 'casparcg-connection'
 import { EventEmitter } from 'events'
 
 const mockDo = jest.fn()
@@ -8,6 +13,7 @@ const mockDo = jest.fn()
 const instances: Array<BasicCasparCGAPI> = []
 
 export const Commands = orgCommands
+export const Enum = orgEnum
 export type AMCPCommand = orgAMCPCommand
 
 export class BasicCasparCGAPI extends EventEmitter {

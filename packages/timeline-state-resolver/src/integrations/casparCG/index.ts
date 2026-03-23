@@ -50,20 +50,21 @@ import {
 	NextUp,
 	Transition as StateTransition,
 	Mixer,
+	InternalState,
 } from 'casparcg-state'
-import { InternalState } from 'casparcg-state/dist/lib/stateObjectStorage'
 import { DoOnTime, SendMode } from '../../devices/doOnTime.js'
 import got from 'got'
 import { InternalTransitionHandler } from '../../devices/transitions/transitionHandler.js'
 import Debug from 'debug'
 import { deepMerge, endTrace, literal, startTrace, t } from '../../lib.js'
-import { ClsParameters } from 'casparcg-connection/dist/parameters'
+import { ClsParameters } from 'casparcg-connection'
 import type {
 	DeviceStatus,
 	CommandWithContext,
 	DeviceTimelineState,
 	DeviceTimelineStateObject,
 } from 'timeline-state-resolver-api'
+import { convertScaleModeToConnection } from './util.js'
 
 const debug = Debug('timeline-state-resolver:casparcg')
 
@@ -340,6 +341,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 				vfilter: content.videoFilter,
 				afilter: content.audioFilter,
+				scaleMode: convertScaleModeToConnection(content.scaleMode),
 			})
 			// this.emitDebug(stateLayer)
 		} else if (content.type === TimelineContentTypeCasparCg.IP) {
@@ -355,6 +357,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 				vfilter: content.videoFilter,
 				afilter: content.audioFilter,
+				scaleMode: convertScaleModeToConnection(content.scaleMode),
 			})
 		} else if (content.type === TimelineContentTypeCasparCg.INPUT) {
 			stateLayer = literal<InputLayer>({

@@ -1,6 +1,7 @@
 import { Conductor } from '../../../conductor.js'
 import {
 	TimelineContentTypeCasparCg,
+	CasparCGScaleMode,
 	SomeMappingCasparCG,
 	Mappings,
 	DeviceType,
@@ -2196,6 +2197,71 @@ describe('CasparCG', () => {
 			channel: 2,
 			layer: 42,
 			seek: 0,
+		})
+	})
+	test('CasparCG: Play with scaleMode', async () => {
+		const commandReceiver0: any = jest.fn(async () => {
+			return Promise.resolve()
+		})
+		const myLayerMapping0: Mapping<SomeMappingCasparCG> = {
+			device: DeviceType.CASPARCG,
+			deviceId: 'myCCG',
+			options: {
+				mappingType: MappingCasparCGType.Layer,
+				channel: 2,
+				layer: 42,
+			},
+		}
+		const myLayerMapping: Mappings = {
+			myLayer0: myLayerMapping0,
+		}
+
+		const myConductor = new Conductor({
+			multiThreadedResolver: false,
+			getCurrentTime: mockTime.getCurrentTime,
+		})
+		await myConductor.init()
+		await addConnections(myConductor.connectionManager, {
+			myCCG: {
+				type: DeviceType.CASPARCG,
+				options: {
+					host: '127.0.0.1',
+				},
+				commandReceiver: commandReceiver0,
+				skipVirginCheck: true,
+			},
+		})
+		await mockTime.advanceTimeToTicks(10100)
+		commandReceiver0.mockClear()
+
+		myConductor.setTimelineAndMappings(
+			[
+				{
+					id: 'obj0',
+					enable: {
+						start: mockTime.getCurrentTime() - 1000, // 1 second ago
+						duration: 2000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.MEDIA,
+						file: 'AMB',
+						scaleMode: CasparCGScaleMode.FIT,
+					},
+				},
+			],
+			myLayerMapping
+		)
+
+		await mockTime.advanceTimeToTicks(10200)
+
+		expect(commandReceiver0).toHaveBeenCalledTimes(1)
+		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
+			channel: 2,
+			layer: 42,
+			clip: 'AMB',
+			scaleMode: 'FIT',
 		})
 	})
 })

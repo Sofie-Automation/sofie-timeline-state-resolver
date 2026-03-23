@@ -6,10 +6,6 @@
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"baseUrl": "./",
-		"paths": {
-			"*": ["./node_modules/*"],
-			"{{PACKAGE-NAME}}": ["./src/index.ts"]
-		},
 		"types": ["node"],
 		"composite": true,
 		"skipLibCheck": true,

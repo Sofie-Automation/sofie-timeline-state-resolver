@@ -6,16 +6,12 @@
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"baseUrl": "./",
-		"paths": {
-			"*": ["./node_modules/*"],
-			"{{PACKAGE-NAME}}": ["./src/index.ts"]
-		},
 		"types": ["node"],
 		"composite": true,
 		"skipLibCheck": true,
 		"target": "es2022",
 
-		"moduleResolution": "node16",
+		"module": "node20",
 		"esModuleInterop": true,
 
 		// Temporary overrides, to allow for gradual migration project
