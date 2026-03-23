@@ -13,6 +13,7 @@ exports[`index imports 1`] = `
   "BorderBevel",
   "CasparCGActions",
   "CasparCGDevice",
+  "CasparCGScaleMode",
   "ChannelFormat",
   "Chroma",
   "Conductor",

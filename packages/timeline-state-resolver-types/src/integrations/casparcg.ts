@@ -86,6 +86,8 @@ export interface TimelineContentCCGMedia extends TimelineContentCasparCGBase, Ti
 	/* ffmpeg filter strings for 2.3+ */
 	videoFilter?: string
 	audioFilter?: string
+	/** Scale mode for the producer. Since CasparCG 2.5.0 */
+	scaleMode?: CasparCGScaleMode
 }
 export interface TimelineContentCCGIP extends TimelineContentCasparCGBase, TimelineContentCCGProducerBase {
 	type: TimelineContentTypeCasparCg.IP
@@ -98,6 +100,8 @@ export interface TimelineContentCCGIP extends TimelineContentCasparCGBase, Timel
 	/* ffmpeg filter strings for 2.3+ */
 	videoFilter?: string
 	audioFilter?: string
+	/** Scale mode for the producer. Since CasparCG 2.5.0 */
+	scaleMode?: CasparCGScaleMode
 }
 export interface TimelineContentCCGInput extends TimelineContentCasparCGBase, TimelineContentCCGProducerBase {
 	type: TimelineContentTypeCasparCg.INPUT
@@ -163,6 +167,16 @@ export interface TimelineContentCCGRecord extends TimelineContentCasparCGBase {
 	file: string
 	/** ffmpeg encoder options (example '-vcodec libx264 -preset ultrafast') */
 	encoderOptions: string
+}
+
+/** Scale mode for the ffmpeg/image producer. Since CasparCG 2.5.0. */
+export enum CasparCGScaleMode {
+	STRETCH = 'STRETCH',
+	FIT = 'FIT',
+	FILL = 'FILL',
+	ORIGINAL = 'ORIGINAL',
+	HFILL = 'HFILL',
+	VFILL = 'VFILL',
 }
 
 // Note: enums copied from casparcg-connection
