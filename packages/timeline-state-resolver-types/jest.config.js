@@ -8,7 +8,19 @@ module.exports = {
 				diagnostics: { ignoreCodes: [151002] },
 			},
 		],
+		'^.+\\.(js)$': [
+			'ts-jest',
+			{
+				tsconfig: { allowJs: true },
+			},
+		],
 	},
+	transformIgnorePatterns: [
+		// Jest can't handle esm libraries directly
+		'/node_modules/(?!(casparcg-connection|casparcg-state)/)',
+		// Don't transform our other packages
+		'/packages/[^/]+/dist/',
+	],
 	moduleNameMapper: {
 		'(.+)\\.js$': '$1',
 	},

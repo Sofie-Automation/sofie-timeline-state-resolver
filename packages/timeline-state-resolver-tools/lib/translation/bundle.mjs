@@ -2,7 +2,7 @@
  * This script will read and bundle the translations in the project's .po files.
  * It is intended to be used by the Webpack config script.
  */
-/* eslint-disable */
+
 import { readdir, readFile } from 'node:fs/promises'
 import { join, basename, dirname } from 'node:path'
 import { gettextToI18next } from 'i18next-conv'
