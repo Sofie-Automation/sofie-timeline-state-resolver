@@ -292,12 +292,12 @@ export class KairosStateBuilder {
 		const sceneLayerRef = refSceneLayer(refScene(mapping.sceneName), mapping.layerName)
 		const sceneLayerId = refToPath(sceneLayerRef)
 
-		const sceneLayerObj: Partial<UpdateSceneLayerObject> = {
+		const sceneLayerObj: Partial<UpdateSceneLayerObject> = omitUndefinedValues({
 			...content.sceneLayer,
 			sourceA: lookupMappingRef(mappings, content.sceneLayer.sourceA),
 			sourcePgm: lookupMappingRef(mappings, content.sceneLayer.sourcePgm),
 			sourcePst: lookupMappingRef(mappings, content.sceneLayer.sourcePst),
-		}
+		})
 
 		// Perform a simple merge of the content into the state
 		this.#deviceState.sceneLayers[sceneLayerId] = this._mergeState(
@@ -319,10 +319,10 @@ export class KairosStateBuilder {
 		const auxRef = refAuxName(mapping.auxName)
 		const auxId = refToPath(auxRef)
 
-		const aux: Partial<UpdateAuxObject> = {
+		const aux: Partial<UpdateAuxObject> = omitUndefinedValues({
 			...content.aux,
 			source: lookupMappingRef(mappings, content.aux.source),
-		}
+		})
 
 		// Perform a simple merge of the content into the state
 		this.#deviceState.aux[auxId] = this._mergeState(this.#deviceState.aux[auxId], auxRef, aux, timelineObjId)
@@ -502,4 +502,10 @@ function lookupMappingRef(
 }
 function isKairosTSRMappingRef(ref: any): ref is KairosTSRMappingRef {
 	return typeof ref === 'object' && ref !== null && 'realm' in ref && ref.realm === 'tsr-mapping'
+}
+function omitUndefinedValues<T extends object>(obj: T): T {
+	for (const key of Object.keys(obj) as (keyof T)[]) {
+		if (obj[key] === undefined) delete obj[key]
+	}
+	return obj
 }
