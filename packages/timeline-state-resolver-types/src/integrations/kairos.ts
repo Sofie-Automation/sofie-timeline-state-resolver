@@ -73,14 +73,24 @@ export interface TimelineContentKairosSceneLayer {
 	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.SCENE_LAYER
 
-	sceneLayer: Partial<UpdateSceneLayerObject>
+	sceneLayer: Partial<
+		Omit<UpdateSceneLayerObject, 'sourceA' | 'sourcePgm' | 'sourcePst'> & {
+			sourceA: UpdateSceneLayerObject['sourceA'] | KairosTSRMappingRef
+			sourcePgm: UpdateSceneLayerObject['sourcePgm'] | KairosTSRMappingRef
+			sourcePst: UpdateSceneLayerObject['sourcePst'] | KairosTSRMappingRef
+		}
+	>
 }
 
 export interface TimelineContentKairosAux {
 	deviceType: DeviceType.KAIROS
 	type: TimelineContentTypeKairos.AUX
 
-	aux: Partial<UpdateAuxObject>
+	aux: Partial<
+		Omit<UpdateAuxObject, 'source'> & {
+			source: UpdateAuxObject['source'] | KairosTSRMappingRef
+		}
+	>
 }
 
 export interface TimelineContentKairosMacros {
@@ -204,4 +214,10 @@ export interface TimelineContentKairosPlayerState<TClip> extends Partial<
 
 	/** If true, the startTime won't be used to SEEK to the correct place in the media */
 	// noStarttime?: boolean
+}
+
+/** A reference to a Layer Mapping. This will be resolved by TSR to a Kairos Ref upon playout. */
+export interface KairosTSRMappingRef {
+	realm: 'tsr-mapping'
+	layer: string
 }

@@ -120,7 +120,7 @@ export function buildDependencyGraph(
 		}
 		for (const obj of Object.values<KairosDeviceStateAux>(newKairosState.aux)) {
 			if (!obj) continue
-			addNodeToDependencyGraph(obj.ref, [obj.state.aux.source])
+			addNodeToDependencyGraph(obj.ref, [obj.state.source])
 			// Add the AUX as base for temporal priority,
 			// as AUXes are our "outputs".
 			baseNodeRefs.add(refToPath(obj.ref))
