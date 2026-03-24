@@ -183,7 +183,7 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 		for (const aux of Object.values<KairosDeviceStateAux>(deviceState.aux)) {
 			if (!aux) continue
 			this.aware.add(aux.ref)
-			if (aux.state.aux.source) this.aware.add(aux.state.aux.source)
+			if (aux.state.source) this.aware.add(aux.state.source)
 		}
 		for (const clipPlayer of Object.values<KairosDeviceStateClipPlayers>(deviceState.clipPlayers)) {
 			if (!clipPlayer) continue

@@ -174,7 +174,7 @@ function diffAuxes(oldAuxes: KairosDeviceState['aux'], newAuxes: KairosDeviceSta
 		const auxRef = newAux?.ref || oldAux?.ref
 		if (!auxRef) continue // No aux to diff
 
-		const diff = diffObject<UpdateAuxObject>(oldAux?.state.aux, newAux?.state.aux)
+		const diff = diffObject<UpdateAuxObject>(oldAux?.state, newAux?.state)
 		if (diff) {
 			commands.push({
 				timelineObjId: newAux?.timelineObjIds.join(' & ') ?? '',

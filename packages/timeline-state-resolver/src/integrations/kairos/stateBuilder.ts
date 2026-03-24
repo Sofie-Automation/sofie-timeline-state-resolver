@@ -25,6 +25,7 @@ import {
 	TimelineContentKairosSceneSnapshotInfo,
 	KairosMacroActiveState,
 	TimelineContentKairosMacroInfo,
+	KairosTSRMappingRef,
 } from 'timeline-state-resolver-types'
 import { assertNever } from '../../lib.js'
 import {
@@ -45,6 +46,11 @@ import {
 	UpdateSceneSnapshotObject,
 	MacroRef,
 	refMacro,
+	AnySourceRef,
+	refClipPlayer,
+	refRamRecorder,
+	refImageStore,
+	UpdateAuxObject,
 } from 'kairos-connection'
 import { TimelineObjectInstance } from 'superfly-timeline'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
@@ -78,7 +84,7 @@ export type KairosDeviceStateSceneLayers =
 	| undefined
 
 export type KairosDeviceStateAux =
-	| { ref: AuxRef; state: TimelineContentKairosAux; timelineObjIds: string[] }
+	| { ref: AuxRef; state: Partial<UpdateAuxObject>; timelineObjIds: string[] }
 	| undefined
 export type KairosDeviceStateMacros =
 	| { ref: MacroRef; state: { active: KairosMacroActiveState }; timelineObjIds: string[] }
@@ -168,12 +174,12 @@ export class KairosStateBuilder {
 						break
 					case MappingKairosType.SceneLayer:
 						if (content.type === TimelineContentTypeKairos.SCENE_LAYER) {
-							builder._applySceneLayer(mapping.options, content, tlObject.id)
+							builder._applySceneLayer(mappings, mapping.options, content, tlObject.id)
 						}
 						break
 					case MappingKairosType.Aux:
 						if (content.type === TimelineContentTypeKairos.AUX) {
-							builder._applyAux(mapping.options, content, tlObject.id)
+							builder._applyAux(mappings, mapping.options, content, tlObject.id)
 						}
 						break
 					case MappingKairosType.Macro:
@@ -275,6 +281,7 @@ export class KairosStateBuilder {
 	}
 
 	private _applySceneLayer(
+		mappings: Mappings<SomeMappingKairos>,
 		mapping: MappingKairosSceneLayer,
 		content: TimelineContentKairosSceneLayer,
 		timelineObjId: string
@@ -285,23 +292,40 @@ export class KairosStateBuilder {
 		const sceneLayerRef = refSceneLayer(refScene(mapping.sceneName), mapping.layerName)
 		const sceneLayerId = refToPath(sceneLayerRef)
 
+		const sceneLayerObj: Partial<UpdateSceneLayerObject> = {
+			...content.sceneLayer,
+			sourceA: lookupMappingRef(mappings, content.sceneLayer.sourceA),
+			sourcePgm: lookupMappingRef(mappings, content.sceneLayer.sourcePgm),
+			sourcePst: lookupMappingRef(mappings, content.sceneLayer.sourcePst),
+		}
+
 		// Perform a simple merge of the content into the state
 		this.#deviceState.sceneLayers[sceneLayerId] = this._mergeState(
 			this.#deviceState.sceneLayers[sceneLayerId],
 			sceneLayerRef,
-			content.sceneLayer,
+			sceneLayerObj,
 			timelineObjId
 		)
 	}
 
-	private _applyAux(mapping: MappingKairosAux, content: TimelineContentKairosAux, timelineObjId: string): void {
+	private _applyAux(
+		mappings: Mappings<SomeMappingKairos>,
+		mapping: MappingKairosAux,
+		content: TimelineContentKairosAux,
+		timelineObjId: string
+	): void {
 		if (!mapping.auxName || mapping.auxName.length === 0) return
 
 		const auxRef = refAuxName(mapping.auxName)
 		const auxId = refToPath(auxRef)
 
+		const aux: Partial<UpdateAuxObject> = {
+			...content.aux,
+			source: lookupMappingRef(mappings, content.aux.source),
+		}
+
 		// Perform a simple merge of the content into the state
-		this.#deviceState.aux[auxId] = this._mergeState(this.#deviceState.aux[auxId], auxRef, content, timelineObjId)
+		this.#deviceState.aux[auxId] = this._mergeState(this.#deviceState.aux[auxId], auxRef, aux, timelineObjId)
 	}
 
 	private _applyMacro(content: TimelineContentKairosMacros, timelineObjId: string): void {
@@ -432,4 +456,50 @@ function patchPlayerStateForLookahead<TClip>(
 		// If no seek, enforce it to the start to allow back to back objects with the same media
 		seek: playerState.seek ?? 0,
 	}
+}
+function lookupMappingRef(
+	mappings: Mappings<SomeMappingKairos>,
+	ref: AnySourceRef | undefined | KairosTSRMappingRef
+): AnySourceRef | undefined
+function lookupMappingRef(
+	mappings: Mappings<SomeMappingKairos>,
+	ref: AnySourceRef | string | undefined | KairosTSRMappingRef
+): AnySourceRef | string | undefined
+function lookupMappingRef(
+	mappings: Mappings<SomeMappingKairos>,
+	ref: AnySourceRef | string | undefined | KairosTSRMappingRef
+): AnySourceRef | string | undefined {
+	if (ref === undefined) return undefined
+	if (typeof ref === 'string') return ref
+
+	if (isKairosTSRMappingRef(ref)) {
+		const mapping = mappings[ref.layer] as Mapping<SomeMappingKairos> | undefined
+		if (mapping?.device === DeviceType.KAIROS) {
+			switch (mapping.options.mappingType) {
+				case MappingKairosType.Scene:
+					return refScene(mapping.options.sceneName)
+				case MappingKairosType.ClipPlayer:
+					return refClipPlayer(mapping.options.playerId)
+				case MappingKairosType.RamRecPlayer:
+					return refRamRecorder(mapping.options.playerId)
+				case MappingKairosType.ImageStore:
+					return refImageStore(mapping.options.playerId)
+				case MappingKairosType.SoundPlayer:
+				case MappingKairosType.SceneLayer:
+				case MappingKairosType.Aux:
+				case MappingKairosType.Macro:
+					return undefined // Not supported as SourceRef
+				default: {
+					assertNever(mapping.options)
+					return undefined
+				}
+			}
+		}
+		return undefined
+	}
+
+	return ref
+}
+function isKairosTSRMappingRef(ref: any): ref is KairosTSRMappingRef {
+	return typeof ref === 'object' && ref !== null && 'realm' in ref && ref.realm === 'tsr-mapping'
 }
