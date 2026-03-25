@@ -2,6 +2,10 @@
 	"extends": "./tsconfig.build.json",
 	"exclude": ["node_modules/**"],
 	"compilerOptions": {
-		"types": ["jest", "node"]
+		"types": ["jest", "node"],
+		"paths": {
+			// ts-jest has issues resolving types for some reason
+			"casparcg-connection": ["../../node_modules/casparcg-connection/dist/index"]
+		}
 	}
 }
