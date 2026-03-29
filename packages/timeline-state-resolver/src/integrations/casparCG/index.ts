@@ -130,25 +130,14 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 					// Otherwise it was probably just a loss of connection
 
 					const { error, request } = await this._ccg.executeCommand({ command: Commands.Info, params: {} })
-					if (error) return true
+					if (error) return { doResync: true, channelInfo: [] as InfoEntry[] }
 
 					const response = await request
 
 					const channelPromises: Promise<Response<InfoChannelEntry | undefined>>[] = []
-					const channelLength: number = response?.data?.['length'] ?? 0
+					const channelInfo: InfoEntry[] = response?.data ?? []
 
-					for (let i = 0; i < channelLength; i++) {
-						const obj = response.data[i]
-
-						if (!this._currentState.channels[i]) {
-							this._currentState.channels[obj.channel] = {
-								channelNo: obj.channel,
-								videoMode: this.getVideMode(obj),
-								fps: obj.frameRate,
-								layers: {},
-							}
-						}
-
+					for (const obj of channelInfo) {
 						if (this.deviceOptions.skipVirginCheck) continue
 
 						// Issue command
@@ -169,25 +158,37 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 					// Resync if all channels are empty
 					for (const ch of channelResults) {
-						if (ch.data && ch.data.channel.layers.length > 0) return false
+						if (ch.data && ch.data.channel.layers.length > 0) return { doResync: false, channelInfo }
 					}
-					return true
+					return { doResync: true, channelInfo }
 				})
 				.catch((e) => {
 					this.emit('error', 'connect virgin check failed', e)
 					// Something failed, force the resync as glitching playback is better than black output
-					return true
+					return { doResync: true, channelInfo: [] as InfoEntry[] }
 				})
-				.then((doResync) => {
+				.then(({ doResync, channelInfo }) => {
 					// Finally we can report it as connected
 					this._connected = true
 					this._connectionChanged()
 
 					if (firstConnect || doResync) {
 						firstConnect = false
-						this._currentState = { channels: {} }
 						this.clearStates()
 						this.emit('resyncStates')
+						// Clear all state on resync
+						this._currentState = { channels: {} }
+					}
+
+					// Populate/update channel info (including fps), preserving existing layers
+					for (const obj of channelInfo) {
+						const existingChannel = this._currentState.channels[obj.channel]
+						this._currentState.channels[obj.channel] = {
+							channelNo: obj.channel,
+							videoMode: this.getVideMode(obj),
+							fps: obj.frameRate,
+							layers: existingChannel?.layers || {},
+						}
 					}
 				})
 				.catch((e) => {
@@ -517,7 +518,8 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				// create a channel in state if necessary, or reuse existing channel
 				const channel = caspar.channels[mapping.options.channel] || { channelNo: mapping.options.channel, layers: {} }
 				channel.channelNo = mapping.options.channel
-				channel.fps = this.initOptions ? this.initOptions.fps || 25 : 25
+				// Use configured fps if set (for override), otherwise auto-detect from CasparCG INFO, then default
+				channel.fps = this.initOptions?.fps || this._currentState.channels[mapping.options.channel]?.fps || 25
 				caspar.channels[channel.channelNo] = channel
 
 				let foregroundObj = timelineState.objects.find((obj) => obj.layer === layerName)
