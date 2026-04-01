@@ -11,6 +11,7 @@ exports[`index imports 1`] = `
   "BlendMode",
   "BorderBevel",
   "CasparCGActions",
+  "CasparCGScaleMode",
   "ChannelFormat",
   "Chroma",
   "DeviceType",
