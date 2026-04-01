@@ -164,6 +164,7 @@ export class RemoteDeviceInstance<
 		this._details.deviceName = props.deviceName
 		this._details.instanceId = props.instanceId
 		this._details.startTime = props.startTime
+		this._details.version = props.version
 	}
 
 	public async init(_initOptions: TOptions['options'], activeRundownPlaylistId: string | undefined): Promise<boolean> {
