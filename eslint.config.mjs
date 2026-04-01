@@ -18,6 +18,15 @@ extendedRules.push({
 	},
 })
 
+// Test files in timeline-state-resolver-types import packages from the monorepo
+// that are not listed as explicit devDependencies (they're available via hoisting)
+extendedRules.push({
+	files: ['./packages/timeline-state-resolver-types/src/__tests__/**'],
+	rules: {
+		'n/no-extraneous-import': 0,
+	},
+})
+
 // Some specific rules for the tools, which are less strict
 extendedRules.push({
 	files: ['./packages/timeline-state-resolver-tools/bin/*.mjs'],
