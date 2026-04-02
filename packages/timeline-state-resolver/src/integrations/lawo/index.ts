@@ -1,6 +1,10 @@
 import {
 	DeviceStatus,
 	LawoDeviceTypes,
+	LawoStatusDetail,
+	LawoStatusCode,
+	LawoStatusMessages,
+	statusDetailsToMessages,
 	LawoOptions,
 	Mappings,
 	SomeMappingLawo,
@@ -13,6 +17,7 @@ import Debug from 'debug'
 import { convertTimelineStateToLawoState, LawoState } from './state.js'
 import { LawoCommandWithContext, diffLawoStates, LawoCommandType } from './diff.js'
 import { LawoConnection } from './connection.js'
+import { createLawoStatusDetail } from './messages.js'
 const debug = Debug('timeline-state-resolver:lawo')
 
 export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoCommandWithContext> {
@@ -81,16 +86,17 @@ export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoComman
 	}
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const messages: Array<string> = []
+		const statusDetails: LawoStatusDetail[] = []
 
 		if (!this._lawo?.connected) {
 			statusCode = StatusCode.BAD
-			messages.push('Not connected')
+			statusDetails.push(createLawoStatusDetail(LawoStatusCode.NOT_CONNECTED, {}))
 		}
 
 		return {
 			statusCode: statusCode,
-			messages: messages,
+			messages: statusDetailsToMessages(statusDetails, LawoStatusMessages),
+			statusDetails,
 		}
 	}
 

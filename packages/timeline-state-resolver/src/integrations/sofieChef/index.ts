@@ -9,6 +9,9 @@ import {
 	DeviceStatus,
 	SofieChefDeviceTypes,
 	SofieChefActions,
+	SofieChefStatusCode,
+	SofieChefStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
 import WebSocket from 'ws'
 import {
@@ -25,6 +28,7 @@ import { t } from '../../lib.js'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { diffStates } from './diffStates.js'
 import { buildSofieChefState } from './stateBuilder.js'
+import { createSofieChefStatusDetail } from './messages.js'
 
 export type SofieChefCommandWithContext = CommandWithContext<ReceiveWSMessageAny, string>
 export interface SofieChefState {
@@ -201,25 +205,44 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
 		let statusCode = StatusCode.GOOD
-		const messages: string[] = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
+		const deviceName = 'SofieChef'
+
 		if (!this.connected) {
 			statusCode = StatusCode.BAD
-			messages.push('Not connected')
+			statusDetails.push(
+				createSofieChefStatusDetail(SofieChefStatusCode.NOT_CONNECTED, {
+					deviceName,
+				})
+			)
 		} else if (this._status.app.statusCode !== ChefStatusCode.GOOD) {
 			statusCode = this.convertStatusCode(this._status.app.statusCode)
-			messages.push(this._status.app.message)
+			statusDetails.push(
+				createSofieChefStatusDetail(SofieChefStatusCode.APP_STATUS, {
+					deviceName,
+					message: this._status.app.message,
+				})
+			)
 		} else {
 			for (const [index, window] of Object.entries<StatusObject>(this._status.windows)) {
 				const windowStatusCode = this.convertStatusCode(window.statusCode)
 				if (windowStatusCode > statusCode) {
 					statusCode = windowStatusCode
-					messages.push(`Window ${index}: ${window.message}`)
+					statusDetails.push(
+						createSofieChefStatusDetail(SofieChefStatusCode.WINDOW_STATUS, {
+							deviceName,
+							windowIndex: parseInt(index, 10),
+							message: window.message,
+						})
+					)
 				}
 			}
 		}
+
 		return {
-			statusCode: statusCode,
-			messages: messages,
+			statusCode,
+			messages: statusDetailsToMessages(statusDetails, SofieChefStatusMessages),
+			statusDetails,
 		}
 	}
 	private convertStatusCode(s: ChefStatusCode): StatusCode {

@@ -71,3 +71,21 @@ export interface TimelineContentLawoEmberRetrigger extends TimelineContentLawoBa
 	type: TimelineContentTypeLawo.TRIGGER_VALUE
 	triggerValue: string
 }
+
+export const LawoStatusCode = {
+	NOT_CONNECTED: 'DEVICE_LAWO_NOT_CONNECTED',
+} as const
+export type LawoStatusCode = (typeof LawoStatusCode)[keyof typeof LawoStatusCode]
+
+export interface LawoStatusContextMap {
+	[LawoStatusCode.NOT_CONNECTED]: Record<string, never>
+}
+
+export type LawoStatusDetail<T extends LawoStatusCode = LawoStatusCode> = {
+	code: T
+	context: LawoStatusContextMap[T]
+}
+
+export const LawoStatusMessages: Record<LawoStatusCode, string> = {
+	[LawoStatusCode.NOT_CONNECTED]: 'Not connected',
+}

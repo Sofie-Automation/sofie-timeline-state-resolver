@@ -1,4 +1,42 @@
 import { DeviceType } from '../generated/index.js'
+import { DeviceStatusDetail } from '../deviceStatusDetail.js'
+
+/**
+ * Status codes for VMix device issues.
+ * These codes can be customized in blueprints via deviceStatusMessages.
+ */
+export const VMixStatusCode = {
+	NOT_CONNECTED: 'DEVICE_VMIX_NOT_CONNECTED',
+	NOT_INITIALIZED: 'DEVICE_VMIX_NOT_INITIALIZED',
+} as const
+
+export type VMixStatusCode = (typeof VMixStatusCode)[keyof typeof VMixStatusCode]
+
+/**
+ * Context data for each VMix status.
+ * These fields are available for message template interpolation.
+ */
+export interface VMixStatusContextMap {
+	[VMixStatusCode.NOT_CONNECTED]: {
+		deviceName: string
+		host: string
+	}
+	[VMixStatusCode.NOT_INITIALIZED]: {
+		deviceName: string
+		host: string
+	}
+}
+
+export type VMixStatusDetail<T extends VMixStatusCode = VMixStatusCode> = DeviceStatusDetail<T, VMixStatusContextMap[T]>
+
+/**
+ * Default status message templates for VMix devices.
+ * Can be overridden in blueprints via deviceStatusMessages.
+ */
+export const VMixStatusMessages: Record<VMixStatusCode, string> = {
+	[VMixStatusCode.NOT_CONNECTED]: 'Not connected',
+	[VMixStatusCode.NOT_INITIALIZED]: 'Not initialized',
+}
 
 export enum VMixCommand {
 	PREVIEW_INPUT = 'PREVIEW_INPUT',

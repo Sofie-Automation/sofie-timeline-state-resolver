@@ -31,7 +31,11 @@ import {
 	CasparCGDeviceTypes,
 	CasparCGActions,
 	StatusCode,
+	CasparCGStatusCode,
+	CasparCGStatusMessages,
+	statusDetailsToMessages,
 } from 'timeline-state-resolver-types'
+import { createCasparCGStatusDetail } from './messages.js'
 
 import {
 	CasparCGState,
@@ -83,7 +87,7 @@ export type CommandReceiver = (time: number, cmd: AMCPCommand, context: string, 
  */
 export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, DeviceOptionsCasparCGInternal> {
 	/** Setup in init */
-	private _ccg!: BasicCasparCGAPI
+	private _ccg: BasicCasparCGAPI | undefined
 	private _commandReceiver: CommandReceiver = this._defaultCommandReceiver.bind(this)
 	private _doOnTime: DoOnTime
 	private initOptions?: CasparCGOptions
@@ -126,6 +130,9 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		this._ccg.on('connect', () => {
 			Promise.resolve()
 				.then(async () => {
+					// Should not happen: this callback is registered on _ccg, so it must exist
+					if (!this._ccg) throw new Error('CasparCG connection lost during connect handler')
+
 					// a "virgin server" was just restarted (so it is cleared & black).
 					// Otherwise it was probably just a loss of connection
 
@@ -225,6 +232,9 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			} else if (this._ccg.connected) {
 				this._ccg.once('disconnect', () => {
 					resolve()
+					// Should not happen: this callback is registered on _ccg, so it must exist
+					if (!this._ccg) throw new Error('CasparCG connection lost during connect handler')
+
 					this._ccg.removeAllListeners()
 				})
 				this._ccg.disconnect()
@@ -618,7 +628,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 	}
 
 	private async clearAllChannels(): Promise<ActionExecutionResult> {
-		if (!this._ccg.connected) {
+		if (!this._ccg?.connected) {
 			return {
 				result: ActionExecutionResultCode.Error,
 				response: t('Cannot restart CasparCG without a connection'),
@@ -730,6 +740,12 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			})
 	}
 	private async listMedia(query: ClsParameters = {}): Promise<ActionExecutionResult<ListMediaResult>> {
+		if (!this._ccg) {
+			return {
+				result: ActionExecutionResultCode.Error,
+				response: t('CasparCG device not initialized'),
+			}
+		}
 		const result = await this._ccg.executeCommand(
 			literal<ClsCommand>({
 				command: Commands.Cls,
@@ -756,25 +772,45 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			}
 		}
 	}
+	/**
+	 * Returns the current device status, including structured status details for blueprint customization.
+	 */
 	getStatus(): DeviceStatus {
 		let statusCode = StatusCode.GOOD
-		const messages: Array<string> = []
+		const statusDetails: DeviceStatus['statusDetails'] = []
+
+		// Safely read host/port with fallbacks for when _ccg is uninitialized
+		const host = this._ccg?.host ?? this.initOptions?.host ?? ''
+		const port = this._ccg?.port ?? this.initOptions?.port ?? 0
 
 		if (statusCode === StatusCode.GOOD) {
 			if (!this._connected) {
 				statusCode = StatusCode.BAD
-				messages.push(`CasparCG disconnected`)
+				statusDetails.push(
+					createCasparCGStatusDetail(CasparCGStatusCode.DISCONNECTED, {
+						deviceName: this.deviceName,
+						host,
+						port,
+					})
+				)
 			}
 		}
 
 		if (this._queueOverflow) {
 			statusCode = StatusCode.BAD
-			messages.push('Command queue overflow: CasparCG server has to be restarted')
+			statusDetails.push(
+				createCasparCGStatusDetail(CasparCGStatusCode.QUEUE_OVERFLOW, {
+					deviceName: this.deviceName,
+					host,
+					port,
+				})
+			)
 		}
 
 		return {
-			statusCode: statusCode,
-			messages: messages,
+			statusCode,
+			messages: statusDetailsToMessages(statusDetails, CasparCGStatusMessages),
+			statusDetails,
 			active: this.isActive,
 		}
 	}
@@ -807,6 +843,15 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		context: string,
 		timelineObjId: string
 	): Promise<any> {
+		if (!this._ccg) {
+			this.emit('commandError', new Error('CasparCG device not initialized'), {
+				context,
+				timelineObjId,
+				command: JSON.stringify(cmd),
+			})
+			return
+		}
+
 		// do no retry while we are sending commands, instead always retry closely after:
 		if (!context.match(/\[RETRY\]/i)) {
 			clearTimeout(this._retryTimeout)

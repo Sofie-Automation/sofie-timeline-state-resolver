@@ -105,7 +105,6 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		}
 
 		this._deviceSpecs = deviceSpecs
-		this._device = new deviceSpecs.deviceClass(this._getDeviceContextAPI())
 		this._deviceId = id
 		this._deviceType = config.type
 		this._logDebug = config.debug || false
@@ -113,6 +112,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._deviceName = deviceSpecs.deviceName(id, config)
 		this._instanceId = Math.floor(Math.random() * 10000)
 		this._startTime = time
+		this._device = new deviceSpecs.deviceClass(this._getDeviceContextAPI())
 
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -288,6 +288,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 
 	private _getDeviceContextAPI(): DeviceContextAPI<DeviceState, AddressState> {
 		return {
+			deviceName: this._deviceName,
+
 			logger: {
 				error: (context: string, err: Error) => {
 					this.emit('error', context, err)
