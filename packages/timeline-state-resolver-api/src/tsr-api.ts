@@ -11,5 +11,5 @@ export interface DeviceEntry {
 	deviceClass: new (context: DeviceContextAPI<any, any>) => Device<any, any, any, any>
 	canConnect: boolean
 	deviceName: (deviceId: string, options: any) => string
-	executionMode: (options: any) => 'salvo' | 'sequential'
+	executionMode: (options: any) => 'salvo' | 'sequential' | 'sequential-persistent'
 }
