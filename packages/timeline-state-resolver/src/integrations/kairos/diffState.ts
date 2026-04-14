@@ -1,4 +1,8 @@
-import type { SomeMappingKairos, Mappings } from 'timeline-state-resolver-types'
+import type {
+	SomeMappingKairos,
+	Mappings,
+	TimelineContentKairosSceneAnySceneLayerEffect,
+} from 'timeline-state-resolver-types'
 import { KairosMacroActiveState } from 'timeline-state-resolver-types'
 import { UpdateSceneLayerObject, UpdateSceneObject, UpdateAuxObject } from 'kairos-connection'
 import { KairosStateBuilder, type KairosDeviceState } from './stateBuilder.js'
@@ -27,6 +31,7 @@ export function diffKairosStates(
 	commands.push(...diffSceneSnapshots(oldKairosState.sceneSnapshots, newKairosState.sceneSnapshots))
 	commands.push(...diffScenes(oldKairosState.scenes, newKairosState.scenes))
 	commands.push(...diffSceneLayers(oldKairosState.sceneLayers, newKairosState.sceneLayers))
+	commands.push(...diffSceneLayerEffects(oldKairosState.sceneLayerEffects, newKairosState.sceneLayerEffects))
 
 	commands.push(...diffAuxes(oldKairosState.aux, newKairosState.aux))
 
@@ -120,6 +125,45 @@ function diffSceneLayers(
 					ref: sceneLayerRef,
 					sceneLayerId: sceneLayerKey,
 					values: diff,
+				},
+			})
+		}
+	}
+
+	return commands
+}
+function diffSceneLayerEffects(
+	oldSceneLayers: KairosDeviceState['sceneLayerEffects'],
+	newSceneLayers: KairosDeviceState['sceneLayerEffects']
+): KairosCommandWithContext[] {
+	const commands: KairosCommandWithContext[] = []
+
+	const sceneLayerEffectKeys = getAllKeysString(oldSceneLayers, newSceneLayers)
+	for (const sceneLayerEffectKey of sceneLayerEffectKeys) {
+		const newSceneLayerEffect = newSceneLayers[sceneLayerEffectKey]
+		const oldSceneLayerEffect = oldSceneLayers[sceneLayerEffectKey]
+
+		const sceneLayerEffectRef = newSceneLayerEffect?.ref || oldSceneLayerEffect?.ref
+		if (!sceneLayerEffectRef) continue // No scene to diff
+
+		const effectType = newSceneLayerEffect?.state.type || oldSceneLayerEffect?.state.type
+		if (!effectType) continue
+
+		const diff = diffObject<TimelineContentKairosSceneAnySceneLayerEffect['values']>(
+			oldSceneLayerEffect?.state?.values,
+			newSceneLayerEffect?.state.values
+		)
+		if (diff) {
+			commands.push({
+				timelineObjId: newSceneLayerEffect?.timelineObjIds.join(' & ') ?? '',
+				context: `sceneLayerKey=${sceneLayerEffectKey} newSceneLayer=${!!newSceneLayerEffect} oldSceneLayer=${!!oldSceneLayerEffect}`,
+				command: {
+					type: 'scene-layer-effect',
+					ref: sceneLayerEffectRef,
+					effect: {
+						type: effectType,
+						values: diff,
+					} as TimelineContentKairosSceneAnySceneLayerEffect,
 				},
 			})
 		}
