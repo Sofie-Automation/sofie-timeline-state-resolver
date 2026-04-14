@@ -74,6 +74,87 @@
 			],
 			"additionalProperties": false
 		},
+		"scene-layer-effect": {
+			"type": "object",
+			"properties": {
+				"effectType": {
+					"type": "string",
+					"enum": [
+						"crop",
+						"transform2D",
+						"luminanceKey",
+						"chromaKey",
+						"yUVCorrection",
+						"rGBCorrection",
+						"lUTCorrection",
+						"virtualPTZ",
+						"toneCurveCorrection",
+						"matrixCorrection",
+						"temperatureCorrection",
+						"linearKey",
+						"position",
+						"pCrop",
+						"filmLook",
+						"glowEffect"
+					],
+					"ui:title": "Effect Type",
+					"ui:description": "Type of Layer Effect",
+					"ui:summaryTitle": "Effect Type",
+					"ui:displayType": "breadcrumbs",
+					"default": []
+				},
+				"sceneName": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"ui:title": "Scene",
+					"ui:description": "The Scene to use",
+					"ui:summaryTitle": "Scene",
+					"ui:displayType": "breadcrumbs",
+					"default": [
+						"Main"
+					]
+				},
+				"layerName": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"ui:title": "Layer",
+					"ui:description": "The layer in a scene to use",
+					"ui:summaryTitle": "Layer",
+					"ui:displayType": "breadcrumbs",
+					"default": [
+						"Background"
+					]
+				},
+				"effectName": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"ui:title": "Effect",
+					"ui:description": "Name of the effect (optional)",
+					"ui:summaryTitle": "Effect Name",
+					"ui:displayType": "breadcrumbs",
+					"default": []
+				},
+				"temporalPriority": {
+					"type": "integer",
+					"ui:title": "Temporal Priority",
+					"ui:description": "Set this to a higher value to make commands that affects this Scene be sent first. Set this to a negative value to ensure that other untracked things are done first. Defaults to 0.",
+					"ui:summaryTitle": "Temporal Priority",
+					"default": 0
+				}
+			},
+			"required": [
+				"effectType",
+				"sceneName",
+				"layerName"
+			],
+			"additionalProperties": false
+		},
 		"aux": {
 			"type": "object",
 			"properties": {

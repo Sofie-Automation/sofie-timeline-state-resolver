@@ -6,6 +6,7 @@ export const EMPTY_STATE: Omit<KairosDeviceState, 'stateTime'> = {
 	macros: {},
 	ramRecPlayers: {},
 	sceneLayers: {},
+	sceneLayerEffects: {},
 	sceneSnapshots: {},
 	scenes: {},
 	soundPlayers: {},

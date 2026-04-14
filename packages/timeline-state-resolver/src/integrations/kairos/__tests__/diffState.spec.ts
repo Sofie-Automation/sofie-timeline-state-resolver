@@ -30,6 +30,16 @@ describe('diffState', () => {
 				layerName: ['Background'],
 			},
 		},
+		mainSceneBackgroundLayerLuminance: {
+			device: DeviceType.KAIROS,
+			deviceId: 'kairos0',
+			options: {
+				mappingType: MappingKairosType.SceneLayerEffect,
+				effectType: 'luminanceKey',
+				sceneName: ['Main'],
+				layerName: ['Background'],
+			},
+		},
 		clipPlayer1: {
 			device: DeviceType.KAIROS,
 			deviceId: 'kairos0',
@@ -491,6 +501,63 @@ describe('diffState', () => {
 			compareStates(DEFAULT_MAPPINGS, oldState, newState, [])
 		})
 	})
+	test('Set LuminanceKey of SceneLayer', () => {
+		compareStates(
+			DEFAULT_MAPPINGS,
+			{ ...EMPTY_STATE, stateTime: now },
+			KairosStateBuilder.fromTimeline(
+				{
+					objects: [
+						makeDeviceTimelineStateObject({
+							enable: { start: now },
+							id: 'obj0',
+							layer: 'mainSceneBackgroundLayerLuminance',
+							content: {
+								deviceType: DeviceType.KAIROS,
+								type: TimelineContentTypeKairos.SCENE_LAYER_EFFECT,
+								effect: {
+									type: 'luminanceKey',
+									values: {
+										sourceKey: {
+											realm: 'ip-input',
+											ipInput: 23,
+										},
+									},
+								},
+							},
+						}),
+					],
+					time: now,
+				},
+				DEFAULT_MAPPINGS
+			),
+			[
+				{
+					context: expect.any(String),
+					timelineObjId: expect.any(String),
+					command: {
+						type: 'scene-layer-effect',
+						// sceneLayerId: 'SCENES.Main.Layers.Background',
+						ref: {
+							realm: 'scene-layer-effect',
+							scenePath: ['Main'],
+							layerPath: ['Background'],
+							effectPath: ['LuminanceKey'],
+						},
+						effect: {
+							type: 'luminanceKey',
+							values: {
+								sourceKey: {
+									realm: 'ip-input',
+									ipInput: 23,
+								},
+							},
+						},
+					},
+				},
+			]
+		)
+	})
 	// test('temporal order when cutting to/from a clip player before it has started/stopped playing', () => {
 
 	// })
@@ -513,6 +580,7 @@ const EMPTY_STATE: Omit<KairosDeviceState, 'stateTime'> = {
 	macros: {},
 	ramRecPlayers: {},
 	sceneLayers: {},
+	sceneLayerEffects: {},
 	sceneSnapshots: {},
 	scenes: {},
 	soundPlayers: {},
