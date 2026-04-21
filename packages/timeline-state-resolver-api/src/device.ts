@@ -1,13 +1,6 @@
 import type { SlowSentCommandInfo, SlowFulfilledCommandInfo, CommandReport } from './commandReport.js'
 import type { FinishedTrace } from './trace.js'
-import type {
-	Mappings,
-	DeviceStatus,
-	MediaObject,
-	Mapping,
-	DeviceTimelineState,
-	TSRStateSource,
-} from 'timeline-state-resolver-types'
+import type { Mappings, DeviceStatus, MediaObject, Mapping, DeviceTimelineState } from 'timeline-state-resolver-types'
 
 /**
  * The intended usage of this is for each device to define an alias with the generic types provided.
@@ -242,7 +235,6 @@ export interface DeviceContextAPI<
 
 	reportStateEvent: <K extends string & keyof DeviceTypes['Events']>(
 		eventName: K,
-		payload: DeviceTypes['Events'] extends Record<string, unknown> ? DeviceTypes['Events'][K] : never,
-		source: TSRStateSource
+		payload: DeviceTypes['Events'] extends Record<string, unknown> ? DeviceTypes['Events'][K] | null : never
 	) => void
 }

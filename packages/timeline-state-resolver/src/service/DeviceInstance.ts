@@ -372,14 +372,13 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 				this._stateTracker?.updateState(address, state)
 			},
 
-			reportStateEvent: (eventName, payload, source) => {
+			reportStateEvent: (eventName, payload) => {
 				const events: TSRStateEvent<any, any>[] = [
 					{
 						deviceId: this._deviceId,
 						deviceType: this._deviceType,
 						event: eventName,
 						payload,
-						source,
 					},
 				]
 
