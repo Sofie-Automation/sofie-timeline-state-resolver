@@ -1,25 +1,8 @@
-import type { DeviceTypeExt } from './index.js'
-import { DeviceType } from './index.js'
+import type { DeviceTypeExt, TSRDeviceTypesMap } from './index.js'
 
-export type AtemEvents = {
-	[key: `me.${number}.test`]: {
-		abc: string
-	}
-	[key: `me.${number}.another`]: {
-		def: string
-	}
-}
-
-export type AbstractEvents = {
-	something: {
-		abc: string
-	}
-}
-
-// A map of the known Event types. TSR plugins can be injected here when needed
-export interface TSREventTypesMap {
-	[DeviceType.ABSTRACT]: AbstractEvents
-	[DeviceType.ATEM]: AtemEvents
+// Derived from TSRDeviceTypesMap - automatically includes any device that has an Events property
+export type TSREventTypesMap = {
+	[K in keyof TSRDeviceTypesMap]: 'Events' extends keyof TSRDeviceTypesMap[K] ? TSRDeviceTypesMap[K]['Events'] : never
 }
 
 export type TSREventTypes = TSREventTypesMap[keyof TSREventTypesMap]
@@ -28,42 +11,13 @@ export type TSRStateEvent<TDeviceType extends DeviceTypeExt, TEventTypes extends
 	[K in keyof TEventTypes]: {
 		deviceId: string // eg atem0
 		deviceType: TDeviceType
-		eventAddress: K // the 'shared control address', or somethins like `me-program.1`  ?
-		eventPayload: TEventTypes[K]
+		event: K // the 'shared control address', or somethins like `me-program.1`
+		payload: TEventTypes[K]
 	}
 }[keyof TEventTypes]
 
-export type SomeTSRStateEvent<TDevice extends DeviceTypeExt> = TDevice extends keyof TSREventTypesMap
-	? TSRStateEvent<TDevice, TSREventTypesMap[TDevice]>
+export type SomeTSRStateEvent<TDevice extends DeviceTypeExt = DeviceTypeExt> = TDevice extends keyof TSREventTypesMap
+	? TSREventTypesMap[TDevice] extends Record<string, unknown>
+		? TSRStateEvent<TDevice, TSREventTypesMap[TDevice]>
+		: never
 	: never
-
-export const aa: SomeTSRStateEvent<DeviceType.ATEM> = {
-	deviceId: 'atem0',
-	deviceType: DeviceType.ATEM,
-	eventAddress: 'me.1.another',
-	eventPayload: {
-		abc: 'def',
-	},
-}
-
-export const aab: SomeTSRStateEvent<DeviceType.ATEM> = {
-	deviceId: 'atem0',
-	deviceType: DeviceType.ATEM,
-	eventAddress: 'me.1.test',
-	eventPayload: {
-		abc: 'def',
-	},
-}
-
-export const evts: SomeTSRStateEvent<DeviceTypeExt>[] = [aa, aab]
-
-for (const ev of evts) {
-	if (ev.deviceType === DeviceType.ATEM) {
-		if (ev.eventAddress === 'me.1.another') {
-			ev.eventPayload.abc = '1' // should be string
-		}
-		if (ev.eventAddress === 'me.1.test') {
-			ev.eventPayload.abc = '1' // should be string
-		}
-	}
-}

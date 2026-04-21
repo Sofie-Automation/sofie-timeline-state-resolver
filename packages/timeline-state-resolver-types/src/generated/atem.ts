@@ -113,9 +113,12 @@ export interface AtemActionMethods {
 	[AtemActions.RunMacro]: (payload: RunMacroPayload) => Promise<ActionExecutionResult<void>>
 }
 
+import type { AtemEvents } from '../integrations/atem/events.js'
+
 export interface AtemDeviceTypes {
 	Type: DeviceType.ATEM
 	Options: AtemOptions
 	Mappings: SomeMappingAtem
 	Actions: AtemActionMethods
+	Events: AtemEvents
 }
