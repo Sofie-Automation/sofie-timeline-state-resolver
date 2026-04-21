@@ -48,9 +48,9 @@ export class VMixDevice implements Device<VmixDeviceTypes, VMixStateExtended, VM
 	private _expectingPolledState = false
 	private _pollingTimer: VMixPollingTimer | null = null
 	private _debugXml = false
-	private logger: DeviceContextAPI<VMixStateExtended>['logger']
+	private logger: DeviceContextAPI<VmixDeviceTypes, VMixStateExtended>['logger']
 
-	constructor(protected context: DeviceContextAPI<VMixStateExtended>) {
+	constructor(protected context: DeviceContextAPI<VmixDeviceTypes, VMixStateExtended>) {
 		this.logger = this.context.logger // just for convenience
 
 		this._stateDiffer = new VMixStateDiffer(() => this.context.getCurrentTime(), this._sendCommands)

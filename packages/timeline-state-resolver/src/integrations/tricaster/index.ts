@@ -28,7 +28,7 @@ export class TriCasterDevice implements Device<
 	private _connection?: TriCasterConnection
 	private _stateDiffer?: TriCasterStateDiffer
 
-	constructor(protected context: DeviceContextAPI<WithContext<TriCasterState>>) {
+	constructor(protected context: DeviceContextAPI<TricasterDeviceTypes, WithContext<TriCasterState>>) {
 		// Nothing
 	}
 

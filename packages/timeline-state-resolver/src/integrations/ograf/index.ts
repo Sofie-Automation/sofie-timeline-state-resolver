@@ -40,7 +40,7 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 
 	protected _terminated = false
 
-	constructor(protected context: DeviceContextAPI<OGrafDeviceState>) {
+	constructor(protected context: DeviceContextAPI<OgrafDeviceTypes, OGrafDeviceState>) {
 		this.ografConnectionStatus.on('connected', () => this._connectionChanged())
 		this.ografConnectionStatus.on('disconnected', () => this._connectionChanged())
 		this.ografConnectionStatus.on('error', (err) => this.context.logger.error('OGrafConnectionStatus', err))

@@ -36,7 +36,7 @@ export class ViscaOverIpDevice implements Device<ViscaOverIPDeviceTypes, ViscaDe
 
 	protected converter = new ViscaValueConverter()
 
-	constructor(protected context: DeviceContextAPI<ViscaDeviceState>) {
+	constructor(protected context: DeviceContextAPI<ViscaOverIPDeviceTypes, ViscaDeviceState>) {
 		// Nothing
 	}
 

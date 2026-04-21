@@ -49,7 +49,7 @@ export class PanasonicPtzDevice implements Device<
 > {
 	_device: PanasonicPtzHttpInterface | undefined = undefined
 
-	constructor(protected context: DeviceContextAPI<PanasonicPtzState>) {
+	constructor(protected context: DeviceContextAPI<PanasonicPTZDeviceTypes, PanasonicPtzState>) {
 		// Nothing
 	}
 

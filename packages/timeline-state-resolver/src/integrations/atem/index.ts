@@ -58,7 +58,7 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 		psus: [],
 	}
 
-	constructor(protected context: DeviceContextAPI<AtemDeviceState, AnyAddressState>) {
+	constructor(protected context: DeviceContextAPI<AtemDeviceTypes, AtemDeviceState, AnyAddressState>) {
 		// Nothing
 	}
 

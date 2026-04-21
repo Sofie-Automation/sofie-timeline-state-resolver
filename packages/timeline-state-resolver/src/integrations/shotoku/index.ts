@@ -27,7 +27,7 @@ export type ShotokuCommandWithContext = CommandWithContext<ShotokuCommand, strin
 export class ShotokuDevice implements Device<ShotokuDeviceTypes, ShotokuDeviceState, ShotokuCommandWithContext> {
 	private readonly _shotoku = new ShotokuAPI()
 
-	constructor(protected context: DeviceContextAPI<ShotokuDeviceState>) {
+	constructor(protected context: DeviceContextAPI<ShotokuDeviceTypes, ShotokuDeviceState>) {
 		// Nothing
 	}
 

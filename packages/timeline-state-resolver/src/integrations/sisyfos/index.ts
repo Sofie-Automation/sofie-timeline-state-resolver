@@ -31,9 +31,9 @@ type Command = CommandWithContext<SisyfosCommand, string>
 export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosState, Command> {
 	private _sisyfos: SisyfosApi
 	private _isResyncPending = false
-	private logger: DeviceContextAPI<SisyfosState>['logger']
+	private logger: DeviceContextAPI<SisyfosDeviceTypes, SisyfosState>['logger']
 
-	constructor(protected context: DeviceContextAPI<SisyfosState>) {
+	constructor(protected context: DeviceContextAPI<SisyfosDeviceTypes, SisyfosState>) {
 		this.logger = this.context.logger // just for convenience
 
 		this._sisyfos = new SisyfosApi()

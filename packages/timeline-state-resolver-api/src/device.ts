@@ -30,7 +30,12 @@ export type CommandWithContext<TCommand, TContext> = {
  * API for use by the DeviceInstance to be able to use a device
  */
 export interface Device<
-	DeviceTypes extends { Options: any; Mappings: any; Actions: Record<string, any> | null },
+	DeviceTypes extends {
+		Options: any
+		Mappings: any
+		Actions: Record<string, any> | null
+		Events?: Record<string, any>
+	},
 	DeviceState,
 	Command extends CommandWithContext<any, any>,
 	AddressState = void,
@@ -165,7 +170,16 @@ export interface DeviceEvents {
 }
 
 /** Various methods that the Devices can call */
-export interface DeviceContextAPI<DeviceState, AddressState = void> {
+export interface DeviceContextAPI<
+	DeviceTypes extends {
+		Options: any
+		Mappings: any
+		Actions: Record<string, any> | null
+		Events?: Record<string, any>
+	},
+	DeviceState,
+	AddressState = void,
+> {
 	logger: {
 		/** Emit a "error" message */
 		error: (context: string, err: Error) => void
@@ -218,4 +232,9 @@ export interface DeviceContextAPI<DeviceState, AddressState = void> {
 	recalcDiff: () => void
 
 	setAddressState: (address: string, state: AddressState) => void
+
+	reportStateEvent: <K extends string & keyof DeviceTypes['Events']>(
+		eventName: K,
+		payload: DeviceTypes['Events'] extends Record<string, unknown> ? DeviceTypes['Events'][K] : never
+	) => void
 }

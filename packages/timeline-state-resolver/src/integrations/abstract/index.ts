@@ -36,7 +36,7 @@ export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDevic
 
 	public readonly connected = false
 
-	constructor(protected context: DeviceContextAPI<AbstractDeviceState>) {
+	constructor(protected context: DeviceContextAPI<AbstractDeviceTypes, AbstractDeviceState>) {
 		// Nothing
 	}
 

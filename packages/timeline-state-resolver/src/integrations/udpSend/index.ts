@@ -37,7 +37,7 @@ export class UdpSendDevice implements Device<UdpSendDeviceTypes, UdpSendDeviceSt
 
 	private udpConnection = new UdpConnection()
 
-	constructor(protected context: DeviceContextAPI<UdpSendDeviceState>) {
+	constructor(protected context: DeviceContextAPI<UdpSendDeviceTypes, UdpSendDeviceState>) {
 		// Nothing
 
 		this.udpConnection.on('error', (errContext, err) => {

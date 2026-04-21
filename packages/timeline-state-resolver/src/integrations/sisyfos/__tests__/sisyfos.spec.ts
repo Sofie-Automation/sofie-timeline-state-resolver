@@ -1487,7 +1487,7 @@ describe('Sisyfos', () => {
 	})
 })
 
-function getSisyfosDevice(mockContext?: DeviceContextAPI<any>) {
+function getSisyfosDevice(mockContext?: DeviceContextAPI<any, any>) {
 	const dev = new SisyfosMessageDevice(mockContext ?? getDeviceContext())
 	return dev
 }

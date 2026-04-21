@@ -3,9 +3,9 @@ import { DeviceContextAPI } from 'timeline-state-resolver-api'
 
 /** A default context for devices used in unit tests */
 
-export function getDeviceContext(): MockProxy<DeviceContextAPI<any, any>> {
+export function getDeviceContext(): MockProxy<DeviceContextAPI<any, any, any>> {
 	// only properties (functions) needing a specific default (return) value, incl. async ones need to be explicitly set in the first arg
-	return mockDeep<DeviceContextAPI<any, any>>({
+	return mockDeep<DeviceContextAPI<any, any, any>>({
 		getCurrentTime: () => Date.now(),
 	})
 }

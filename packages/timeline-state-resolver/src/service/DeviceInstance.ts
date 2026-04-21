@@ -41,6 +41,8 @@ export interface DeviceDetails {
 export interface DeviceInstanceEvents extends Omit<DeviceEvents, 'connectionChanged'> {
 	/** The connection status has changed */
 	connectionChanged: [status: DeviceStatus]
+
+	stateEvent: [eventName: string, payload: any]
 }
 
 // Future: it would be nice for this to be async, so that we can support proper ESM, but that isnt compatible with calling this in the constructor.
@@ -286,7 +288,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		return Date.now() + (this._tDiff ?? 0)
 	}
 
-	private _getDeviceContextAPI(): DeviceContextAPI<DeviceState, AddressState> {
+	private _getDeviceContextAPI(): DeviceContextAPI<any, DeviceState, AddressState> {
 		return {
 			logger: {
 				error: (context: string, err: Error) => {
@@ -362,6 +364,10 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 
 			setAddressState: (address, state) => {
 				this._stateTracker?.updateState(address, state)
+			},
+
+			reportStateEvent: (eventName, payload) => {
+				this.emit('stateEvent', eventName, payload)
 			},
 		}
 	}

@@ -36,7 +36,7 @@ export class HTTPWatcherDevice implements Device<
 	private status: StatusCode = StatusCode.UNKNOWN
 	private statusReason: string | undefined
 
-	constructor(protected context: DeviceContextAPI<HTTPWatcherDeviceState>) {
+	constructor(protected context: DeviceContextAPI<HttpWatcherDeviceTypes, HTTPWatcherDeviceState>) {
 		// Nothing
 	}
 

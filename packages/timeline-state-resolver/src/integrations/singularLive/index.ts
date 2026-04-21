@@ -58,7 +58,7 @@ export class SingularLiveDevice implements Device<
 
 	private _accessToken: string | undefined
 
-	constructor(protected context: DeviceContextAPI<SingularLiveState>) {
+	constructor(protected context: DeviceContextAPI<SingularLiveDeviceTypes, SingularLiveState>) {
 		// Nothing
 	}
 
