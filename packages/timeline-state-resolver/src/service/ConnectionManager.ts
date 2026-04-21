@@ -363,6 +363,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 		passEvent('updateMediaObject')
 		passEvent('clearMediaObjects')
 		passEvent('timeTrace')
+		passEvent('stateEvent')
 	}
 }
 
