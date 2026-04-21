@@ -7,12 +7,21 @@ export type TSREventTypesMap = {
 
 export type TSREventTypes = TSREventTypesMap[keyof TSREventTypesMap]
 
+export enum TSRStateSource {
+	UNKNOWN = 'unknown',
+	EXTERNAL = 'external',
+	TIMELINE = 'timeline',
+}
+
 export type TSRStateEvent<TDeviceType extends DeviceTypeExt, TEventTypes extends Record<string, unknown>> = {
 	[K in keyof TEventTypes]: {
 		deviceId: string // eg atem0
 		deviceType: TDeviceType
 		event: K // the 'shared control address', or somethins like `me-program.1`
 		payload: TEventTypes[K]
+
+		/** Where this state originates from, if known */
+		source: TSRStateSource
 	}
 }[keyof TEventTypes]
 

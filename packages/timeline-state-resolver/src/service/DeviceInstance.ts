@@ -18,7 +18,13 @@ import {
 } from 'timeline-state-resolver-types'
 import { StateHandler } from './stateHandler.js'
 import { DevicesDict } from './devices.js'
-import type { DeviceOptionsAny, ExpectedPlayoutItem } from '../index.js'
+import type {
+	DeviceOptionsAny,
+	DeviceTypeExt,
+	ExpectedPlayoutItem,
+	SomeTSRStateEvent,
+	TSRStateEvent,
+} from '../index.js'
 import type { StateChangeReport } from './measure.js'
 import { StateTracker } from './stateTracker.js'
 
@@ -42,7 +48,7 @@ export interface DeviceInstanceEvents extends Omit<DeviceEvents, 'connectionChan
 	/** The connection status has changed */
 	connectionChanged: [status: DeviceStatus]
 
-	stateEvent: [eventName: string, payload: any]
+	stateEvent: [events: SomeTSRStateEvent[]]
 }
 
 // Future: it would be nice for this to be async, so that we can support proper ESM, but that isnt compatible with calling this in the constructor.
@@ -79,7 +85,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	private _stateTracker?: StateTracker<AddressState>
 
 	private _deviceId: string
-	private _deviceType: DeviceType
+	private _deviceType: DeviceTypeExt
 	private _deviceName: string
 	private _instanceId: number
 	private _startTime: number
@@ -366,8 +372,18 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 				this._stateTracker?.updateState(address, state)
 			},
 
-			reportStateEvent: (eventName, payload) => {
-				this.emit('stateEvent', eventName, payload)
+			reportStateEvent: (eventName, payload, source) => {
+				const events: TSRStateEvent<any, any>[] = [
+					{
+						deviceId: this._deviceId,
+						deviceType: this._deviceType,
+						event: eventName,
+						payload,
+						source,
+					},
+				]
+
+				this.emit('stateEvent', events as SomeTSRStateEvent[])
 			},
 		}
 	}
