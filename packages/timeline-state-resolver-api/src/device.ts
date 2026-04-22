@@ -57,25 +57,11 @@ export interface Device<
 
 	// todo - add media objects
 
-	// From BaseDeviceAPI: -----------------------------------------------
+	// Override types from BaseDeviceAPI: -----------------------------------------------
 	convertTimelineStateToDeviceState(
 		state: DeviceTimelineState,
 		newMappings: Record<string, Mapping<DeviceTypes['Mappings']>>
 	): DeviceState | { deviceState: DeviceState; addressStates: Record<string, AddressState> }
-	diffStates(
-		oldState: DeviceState | undefined,
-		newState: DeviceState,
-		mappings: Record<string, Mapping<DeviceTypes['Mappings']>>,
-		time: number
-	): Array<Command>
-	sendCommand(command: Command): Promise<void>
-
-	applyAddressState?(state: DeviceState, address: string, addressState: AddressState): void
-	diffAddressStates?(state1: AddressState, state2: AddressState | undefined): boolean
-	diffAddressStates?(state1: AddressState | undefined, state2: AddressState): boolean
-	addressStateReassertsControl?(oldState: AddressState, newState: AddressState | undefined): boolean
-	addressStateReassertsControl?(oldState: AddressState | undefined, newState: AddressState): boolean
-	// -------------------------------------------------------------------
 }
 
 /**
@@ -120,6 +106,15 @@ export interface BaseDeviceAPI<DeviceState, AddressState, Command extends Comman
 	 */
 	addressStateReassertsControl?(oldState: AddressState, newState: AddressState | undefined): boolean
 	addressStateReassertsControl?(oldState: AddressState | undefined, newState: AddressState): boolean
+	/**
+	 * Called when an address has been changed externally (i.e. the device is ahead of TSR).
+	 * This is called after the settle time has elapsed.
+	 */
+	onAddressExternallyChanged?(address: string): void
+	/**
+	 * Called when TSR has reasserted control over an address that was previously changed externally.
+	 */
+	onAddressControlRestored?(address: string): void
 	/**
 	 * This method takes 2 states and returns a set of device-commands that will
 	 * transition the device from oldState to newState.

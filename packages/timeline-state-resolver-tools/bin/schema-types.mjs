@@ -419,7 +419,7 @@ ${actionDefinitions
 	const eventsFilePath = path.join(resolvedOutputPath, '..', 'integrations', dir, 'events.ts')
 	const hasEventsFile = isMainRepository && (await fsExists(eventsFilePath))
 	if (hasEventsFile) {
-		output += `\nimport type { ${dirId}Events } from '../integrations/${dir}/events.js'\n`
+		output = `import type ${dirId}Events from '../integrations/${dir}/events.js'\n` + output
 	}
 
 	output += `

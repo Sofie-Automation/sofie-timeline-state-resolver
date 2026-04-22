@@ -18,12 +18,9 @@ export interface AbstractActionMethods {
 	[AbstractActions.TestAction]: (payload: Record<string, never>) => Promise<ActionExecutionResult<void>>
 }
 
-import type { AbstractEvents } from '../integrations/abstract/events.js'
-
 export interface AbstractDeviceTypes {
 	Type: DeviceType.ABSTRACT
 	Options: AbstractOptions
 	Mappings: SomeMappingAbstract
 	Actions: AbstractActionMethods
-	Events: AbstractEvents
 }

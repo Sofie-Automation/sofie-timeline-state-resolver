@@ -141,9 +141,11 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			// for now we just do some logging but in the future we could inform library users so they can react to a device changing
 			this._stateTracker.on('deviceAhead', (a) => {
 				this.emit('debug', 'Device ahead for: ' + a)
+				this._device.onAddressExternallyChanged?.(a)
 			})
 			this._stateTracker.on('deviceUnderControl', (a) => {
 				this.emit('debug', 'Reasserted control over device for: ' + a)
+				this._device.onAddressControlRestored?.(a)
 			})
 
 			// make sure the commands for the next state change are correct:

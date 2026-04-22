@@ -240,6 +240,34 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 		return oldState?.controlValue !== newState.controlValue
 	}
 
+	onAddressExternallyChanged(address: string): void {
+		const meIndex = this._getMeIndexFromAddress(address)
+		if (meIndex === undefined) return
+
+		const atemState = this._atem.state
+		if (!atemState) return
+		const me = AtemStateUtil.getMixEffect(atemState, meIndex)
+		if (!me) return
+
+		const programInput: number = ('input' in me ? (me as any).input : me.programInput) ?? 0
+		const previewInput: number = ('input' in me ? undefined : me.previewInput) ?? 0
+
+		this.context.reportStateEvent(`me.${meIndex}.inputs`, { programInput, previewInput })
+	}
+
+	onAddressControlRestored(address: string): void {
+		const meIndex = this._getMeIndexFromAddress(address)
+		if (meIndex === undefined) return
+
+		this.context.reportStateEvent(`me.${meIndex}.inputs`, null)
+	}
+
+	private _getMeIndexFromAddress(address: string): number | undefined {
+		const match = address.match(/^video\.mixEffects\.(\d+)\.(pgm|base)$/)
+		if (!match) return undefined
+		return parseInt(match[1], 10)
+	}
+
 	private _onAtemStateChanged(newState: Readonly<NativeAtemState>) {
 		const psus = newState.info.power || []
 

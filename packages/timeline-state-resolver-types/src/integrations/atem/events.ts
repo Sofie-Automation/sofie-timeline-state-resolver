@@ -1,8 +1,11 @@
-export type AtemEvents = {
-	[key: `me.${number}.test`]: {
-		abc: string
+type AtemEvents = {
+	[key: `me.${number}.inputs`]: {
+		programInput: number
+		previewInput: number
 	}
 	[key: `me.${number}.another`]: {
-		def: string
+		test: false
 	}
 }
+
+export default AtemEvents
