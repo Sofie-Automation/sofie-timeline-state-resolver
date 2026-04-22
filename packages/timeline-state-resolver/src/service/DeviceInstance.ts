@@ -17,14 +17,9 @@ import {
 	type TSRTimelineContent,
 } from 'timeline-state-resolver-types'
 import { StateHandler } from './stateHandler.js'
+import { StateEventHandler } from './stateEventHandler.js'
 import { DevicesDict } from './devices.js'
-import type {
-	DeviceOptionsAny,
-	DeviceTypeExt,
-	ExpectedPlayoutItem,
-	SomeTSRStateEvent,
-	TSRStateEvent,
-} from '../index.js'
+import type { DeviceOptionsAny, DeviceTypeExt, ExpectedPlayoutItem, SomeTSRStateEvent } from '../index.js'
 import type { StateChangeReport } from './measure.js'
 import { StateTracker } from './stateTracker.js'
 
@@ -95,6 +90,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	private _logDebug = false
 	private _logDebugStates = false
 
+	private _stateEventHandler: StateEventHandler
+
 	private _lastUpdateCurrentTime: number | undefined
 	private _tDiff: number | undefined
 
@@ -129,6 +126,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			this._version = undefined
 		}
 		this._logDebug = config.debug ?? this._logDebug
+
+		this._stateEventHandler = new StateEventHandler(id, config.type, (events) => this.emit('stateEvent', events))
 
 		this._updateTimeSync()
 
@@ -283,6 +282,9 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	setDebugState(value: boolean) {
 		this._logDebugStates = value
 	}
+	setEventSubscriptions(events: string[]): void {
+		this._stateEventHandler.setEventSubscriptions(events)
+	}
 
 	getCurrentTime(): number {
 		if (
@@ -375,16 +377,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			},
 
 			reportStateEvent: (eventName, payload) => {
-				const events: TSRStateEvent<any, any>[] = [
-					{
-						deviceId: this._deviceId,
-						deviceType: this._deviceType,
-						event: eventName,
-						payload,
-					},
-				]
-
-				this.emit('stateEvent', events as SomeTSRStateEvent[])
+				this._stateEventHandler.report(eventName, payload)
 			},
 		}
 	}

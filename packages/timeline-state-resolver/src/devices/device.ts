@@ -202,6 +202,10 @@ export abstract class Device<
 		this.debugState = debug
 	}
 
+	setEventSubscriptions(_events: string[]): void {
+		// no-op: legacy Device subclasses do not emit state events
+	}
+
 	protected emitDebugState(state: object) {
 		if (this.debugState) {
 			this.emit('debugState', state)
