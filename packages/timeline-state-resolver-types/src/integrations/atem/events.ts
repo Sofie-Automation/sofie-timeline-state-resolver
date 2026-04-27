@@ -3,9 +3,6 @@ type AtemEvents = {
 		programInput: number
 		previewInput: number
 	}
-	[key: `me.${number}.another`]: {
-		test: false
-	}
 }
 
 export default AtemEvents
