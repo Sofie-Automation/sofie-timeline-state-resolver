@@ -45,7 +45,7 @@ exports[`Diff States Simple diff against empty state 1`] = `
       "transitionProperties": true,
       "transitionSettings": {
         "DVE": false,
-        "dip": false,
+        "dip": true,
         "mix": true,
         "stinger": true,
         "wipe": true,

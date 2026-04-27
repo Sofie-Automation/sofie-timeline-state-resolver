@@ -60,7 +60,7 @@ export function createDiffOptions(mappings: Mappings<SomeMappingAtem>): DeepComp
 				transitionStatus: true,
 				transitionProperties: true,
 				transitionSettings: {
-					dip: false,
+					dip: true,
 					DVE: false,
 					mix: true,
 					stinger: true,
