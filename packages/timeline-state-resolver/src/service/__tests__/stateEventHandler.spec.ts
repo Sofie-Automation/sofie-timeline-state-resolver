@@ -23,7 +23,7 @@ describe('StateEventHandler', () => {
 			const { handler, onFlush } = makeHandler()
 
 			handler.report('some.event', { value: 1 })
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			expect(onFlush).not.toHaveBeenCalled()
 		})
@@ -34,7 +34,7 @@ describe('StateEventHandler', () => {
 
 			handler.report('a.event', { x: 1 })
 			handler.report('b.event', { x: 2 })
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			expect(onFlush).toHaveBeenCalledTimes(1)
 			const [events] = onFlush.mock.calls[0] as [SomeTSRStateEvent[]]
@@ -48,7 +48,7 @@ describe('StateEventHandler', () => {
 			handler.setEventSubscriptions([])
 
 			handler.report('a.event', { x: 1 })
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			expect(onFlush).not.toHaveBeenCalled()
 		})
@@ -58,13 +58,13 @@ describe('StateEventHandler', () => {
 			handler.setEventSubscriptions(['a.event'])
 
 			handler.report('a.event', { x: 1 })
-			jest.runAllImmediates()
+			jest.runAllTimers()
 			onFlush.mockClear()
 
 			handler.setEventSubscriptions(['b.event'])
 			handler.report('a.event', { x: 2 }) // no longer subscribed
 			handler.report('b.event', { x: 3 }) // now subscribed
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			expect(onFlush).toHaveBeenCalledTimes(1)
 			const [events] = onFlush.mock.calls[0] as [SomeTSRStateEvent[]]
@@ -84,7 +84,7 @@ describe('StateEventHandler', () => {
 
 			expect(onFlush).not.toHaveBeenCalled() // not yet
 
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			expect(onFlush).toHaveBeenCalledTimes(1)
 			const [events] = onFlush.mock.calls[0] as [SomeTSRStateEvent[]]
@@ -96,10 +96,10 @@ describe('StateEventHandler', () => {
 			handler.setEventSubscriptions(['a.event'])
 
 			handler.report('a.event', { tick: 1 })
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			handler.report('a.event', { tick: 2 })
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			expect(onFlush).toHaveBeenCalledTimes(2)
 		})
@@ -117,7 +117,7 @@ describe('StateEventHandler', () => {
 			// This test verifies the flush guard: no flush call when pending is empty
 			handler.setEventSubscriptions([]) // won't affect already-queued events
 
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			// The event was already pushed before setEventSubscriptions was called,
 			// so it IS flushed — this confirms pending snapshot is taken at flush time
@@ -132,7 +132,7 @@ describe('StateEventHandler', () => {
 
 			const payload = { programInput: 5, previewInput: 2 }
 			handler.report('me.1.inputs', payload)
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			const [events] = onFlush.mock.calls[0] as [SomeTSRStateEvent[]]
 			expect(events[0]).toMatchObject({
@@ -149,7 +149,7 @@ describe('StateEventHandler', () => {
 
 			handler.report('a', 1)
 			handler.report('b', 2)
-			jest.runAllImmediates()
+			jest.runAllTimers()
 
 			const [events] = onFlush.mock.calls[0] as [SomeTSRStateEvent[]]
 			for (const ev of events) {
