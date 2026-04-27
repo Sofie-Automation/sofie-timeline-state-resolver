@@ -42,7 +42,7 @@ export interface DeviceDetails {
 export interface DeviceInstanceEvents extends Omit<DeviceEvents, 'connectionChanged'> {
 	/** The connection status has changed */
 	connectionChanged: [status: DeviceStatus]
-
+	/** A state event has occurred */
 	stateEvent: [events: SomeTSRStateEvent[]]
 }
 

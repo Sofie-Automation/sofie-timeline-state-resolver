@@ -35,6 +35,7 @@ export class StateEventHandler {
 			payload,
 		} as SomeTSRStateEvent)
 
+		// Defer flushing to the next tick, to batch multiple events from the same handler call together
 		if (!this.#flushScheduled) {
 			this.#flushScheduled = true
 			setImmediate(() => {
