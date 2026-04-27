@@ -143,14 +143,22 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			})
 			this._stateTracker.on('deviceUnderControl', (a) => {
 				this.emit('debug', 'Reasserted control over device for: ' + a)
-				this._device.onAddressControlRestored?.(a)
+				try {
+					this._device.onAddressControlRestored?.(a)
+				} catch (e) {
+					this.emit('error', 'onAddressControlRestored hook threw', e as Error)
+				}
 			})
 
 			// make sure the commands for the next state change are correct:
 			let doRecalc = false
 			this._stateTracker.on('deviceUpdated', (addr, ahead) => {
 				if (ahead) {
-					this._device.onAddressExternallyChanged?.(addr)
+					try {
+						this._device.onAddressExternallyChanged?.(addr)
+					} catch (e) {
+						this.emit('error', 'onAddressExternallyChanged hook threw', e as Error)
+					}
 				}
 				if (doRecalc) return
 				doRecalc = true

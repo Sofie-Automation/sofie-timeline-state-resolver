@@ -104,23 +104,22 @@ describe('StateEventHandler', () => {
 			expect(onFlush).toHaveBeenCalledTimes(2)
 		})
 
-		test('does not call onFlush if all pending events were filtered', () => {
-			// Edge case: setImmediate fires but nothing passed the filter
+		test('calls onFlush for events queued before subscriptions cleared', () => {
+			// The pending snapshot is taken at flush time, not at report time.
+			// An event queued while 'a.event' was subscribed must still be flushed
+			// even if subscriptions are cleared before the flush fires.
 			const { handler, onFlush } = makeHandler()
 			handler.setEventSubscriptions(['a.event'])
 
-			// report something that passes, schedule flush, then update subscriptions
-			// before the flush fires so that the pending list drains but is empty
+			// Queue an event that passes the current subscription filter
 			handler.report('a.event', { x: 1 })
-			// clear pending manually is not possible — instead unsubscribe then drain
-			// Better: never add to pending in the first place (filter is checked in report)
-			// This test verifies the flush guard: no flush call when pending is empty
+			// Clearing subscriptions after report does not remove already-queued events
 			handler.setEventSubscriptions([]) // won't affect already-queued events
 
 			jest.runAllTimers()
 
-			// The event was already pushed before setEventSubscriptions was called,
-			// so it IS flushed — this confirms pending snapshot is taken at flush time
+			// The event was queued before subscriptions were cleared,
+			// so it IS flushed — the pending snapshot is taken at flush time
 			expect(onFlush).toHaveBeenCalledTimes(1)
 		})
 	})
