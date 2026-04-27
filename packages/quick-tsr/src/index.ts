@@ -3,7 +3,7 @@ import * as chokidar from 'chokidar'
 import * as fs from 'fs'
 import * as _ from 'underscore'
 import * as path from 'path'
-import { Mappings, TSRTimeline, DeviceOptionsAny, Datastore } from 'timeline-state-resolver-types'
+import { Mappings, TSRTimeline, DeviceOptionsAny, Datastore, TSREventTypesMap } from 'timeline-state-resolver-types'
 import { TSRHandler } from './tsrHandler.js'
 
 // import { TSRHandler } from './tsrHandler'
@@ -207,6 +207,13 @@ export interface TSRSettings {
 	multiThreading?: boolean
 	multiThreadedResolver?: boolean
 	logCommandReports?: boolean
+	stateEvents?: {
+		[deviceId: string]: {
+			[K in keyof TSREventTypesMap]: TSREventTypesMap[K] extends Record<string, unknown>
+				? { type: K; events: (string & keyof TSREventTypesMap[K])[] }
+				: never
+		}[keyof TSREventTypesMap]
+	}
 }
 
 // ------------

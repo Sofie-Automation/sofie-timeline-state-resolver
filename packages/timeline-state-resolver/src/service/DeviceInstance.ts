@@ -140,7 +140,6 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 			// for now we just do some logging but in the future we could inform library users so they can react to a device changing
 			this._stateTracker.on('deviceAhead', (a) => {
 				this.emit('debug', 'Device ahead for: ' + a)
-				this._device.onAddressExternallyChanged?.(a)
 			})
 			this._stateTracker.on('deviceUnderControl', (a) => {
 				this.emit('debug', 'Reasserted control over device for: ' + a)
@@ -149,7 +148,10 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 
 			// make sure the commands for the next state change are correct:
 			let doRecalc = false
-			this._stateTracker.on('deviceUpdated', (_addr, ahead) => {
+			this._stateTracker.on('deviceUpdated', (addr, ahead) => {
+				if (ahead) {
+					this._device.onAddressExternallyChanged?.(addr)
+				}
 				if (doRecalc) return
 				doRecalc = true
 
@@ -283,6 +285,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._logDebugStates = value
 	}
 	setEventSubscriptions(events: string[]): void {
+		this.emit('debug', `Setting event subscriptions: [${events.join(', ')}]`)
 		this._stateEventHandler.setEventSubscriptions(events)
 	}
 
