@@ -22,7 +22,7 @@ describe('StateEventHandler', () => {
 		test('does not emit when allowlist is empty (default)', () => {
 			const { handler, onFlush } = makeHandler()
 
-			handler.report('some.event', { value: 1 })
+			handler.report('some.event', { value: 1 }, false)
 			jest.runAllTimers()
 
 			expect(onFlush).not.toHaveBeenCalled()
@@ -32,8 +32,8 @@ describe('StateEventHandler', () => {
 			const { handler, onFlush } = makeHandler()
 			handler.setEventSubscriptions(['a.event'])
 
-			handler.report('a.event', { x: 1 })
-			handler.report('b.event', { x: 2 })
+			handler.report('a.event', { x: 1 }, false)
+			handler.report('b.event', { x: 2 }, false)
 			jest.runAllTimers()
 
 			expect(onFlush).toHaveBeenCalledTimes(1)
@@ -47,7 +47,7 @@ describe('StateEventHandler', () => {
 			handler.setEventSubscriptions(['a.event'])
 			handler.setEventSubscriptions([])
 
-			handler.report('a.event', { x: 1 })
+			handler.report('a.event', { x: 1 }, false)
 			jest.runAllTimers()
 
 			expect(onFlush).not.toHaveBeenCalled()
@@ -57,13 +57,13 @@ describe('StateEventHandler', () => {
 			const { handler, onFlush } = makeHandler()
 			handler.setEventSubscriptions(['a.event'])
 
-			handler.report('a.event', { x: 1 })
+			handler.report('a.event', { x: 1 }, false)
 			jest.runAllTimers()
 			onFlush.mockClear()
 
 			handler.setEventSubscriptions(['b.event'])
-			handler.report('a.event', { x: 2 }) // no longer subscribed
-			handler.report('b.event', { x: 3 }) // now subscribed
+			handler.report('a.event', { x: 2 }, false) // no longer subscribed
+			handler.report('b.event', { x: 3 }, false) // now subscribed
 			jest.runAllTimers()
 
 			expect(onFlush).toHaveBeenCalledTimes(1)
@@ -78,9 +78,9 @@ describe('StateEventHandler', () => {
 			const { handler, onFlush } = makeHandler()
 			handler.setEventSubscriptions(['a.event', 'b.event'])
 
-			handler.report('a.event', { x: 1 })
-			handler.report('b.event', { x: 2 })
-			handler.report('a.event', { x: 3 })
+			handler.report('a.event', { x: 1 }, false)
+			handler.report('b.event', { x: 2 }, false)
+			handler.report('a.event', { x: 3 }, false)
 
 			expect(onFlush).not.toHaveBeenCalled() // not yet
 
@@ -95,10 +95,10 @@ describe('StateEventHandler', () => {
 			const { handler, onFlush } = makeHandler()
 			handler.setEventSubscriptions(['a.event'])
 
-			handler.report('a.event', { tick: 1 })
+			handler.report('a.event', { tick: 1 }, false)
 			jest.runAllTimers()
 
-			handler.report('a.event', { tick: 2 })
+			handler.report('a.event', { tick: 2 }, false)
 			jest.runAllTimers()
 
 			expect(onFlush).toHaveBeenCalledTimes(2)
@@ -112,7 +112,7 @@ describe('StateEventHandler', () => {
 			handler.setEventSubscriptions(['a.event'])
 
 			// Queue an event that passes the current subscription filter
-			handler.report('a.event', { x: 1 })
+			handler.report('a.event', { x: 1 }, false)
 			// Clearing subscriptions after report does not remove already-queued events
 			handler.setEventSubscriptions([]) // won't affect already-queued events
 
@@ -130,7 +130,7 @@ describe('StateEventHandler', () => {
 			handler.setEventSubscriptions(['me.1.inputs'])
 
 			const payload = { programInput: 5, previewInput: 2 }
-			handler.report('me.1.inputs', payload)
+			handler.report('me.1.inputs', payload, true)
 			jest.runAllTimers()
 
 			const [events] = onFlush.mock.calls[0] as [SomeTSRStateEvent[]]
@@ -139,6 +139,7 @@ describe('StateEventHandler', () => {
 				deviceType: DEVICE_TYPE,
 				event: 'me.1.inputs',
 				payload,
+				isFromTimeline: true,
 			})
 		})
 
@@ -146,8 +147,8 @@ describe('StateEventHandler', () => {
 			const { handler, onFlush } = makeHandler()
 			handler.setEventSubscriptions(['a', 'b'])
 
-			handler.report('a', 1)
-			handler.report('b', 2)
+			handler.report('a', 1, false)
+			handler.report('b', 2, false)
 			jest.runAllTimers()
 
 			const [events] = onFlush.mock.calls[0] as [SomeTSRStateEvent[]]

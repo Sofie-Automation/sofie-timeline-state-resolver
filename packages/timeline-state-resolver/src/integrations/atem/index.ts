@@ -240,7 +240,7 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 		return oldState?.controlValue !== newState.controlValue
 	}
 
-	onAddressExternallyChanged(address: string): void {
+	onAddressChanged(address: string, isAhead: boolean): void {
 		const meIndex = this._getMeIndexFromAddress(address)
 		if (meIndex === undefined) return
 
@@ -252,14 +252,7 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 		const programInput: number = ('input' in me ? (me as any).input : me.programInput) ?? 0
 		const previewInput: number = ('input' in me ? undefined : me.previewInput) ?? 0
 
-		this.context.reportStateEvent(`me.${meIndex}.inputs`, { programInput, previewInput })
-	}
-
-	onAddressControlRestored(address: string): void {
-		const meIndex = this._getMeIndexFromAddress(address)
-		if (meIndex === undefined) return
-
-		this.context.reportStateEvent(`me.${meIndex}.inputs`, null)
+		this.context.reportStateEvent(`me.${meIndex}.inputs`, { programInput, previewInput }, isAhead)
 	}
 
 	private _getMeIndexFromAddress(address: string): number | undefined {

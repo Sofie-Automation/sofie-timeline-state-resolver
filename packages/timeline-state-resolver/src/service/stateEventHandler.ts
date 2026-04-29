@@ -25,7 +25,7 @@ export class StateEventHandler {
 		this.#allowedEvents = new Set(events)
 	}
 
-	report(eventName: string, payload: unknown): void {
+	report(eventName: string, payload: unknown, isFromTimeline: boolean): void {
 		if (!this.#allowedEvents.has(eventName)) return
 
 		this.#pendingEvents.push({
@@ -33,6 +33,7 @@ export class StateEventHandler {
 			deviceType: this.#deviceType,
 			event: eventName,
 			payload,
+			isFromTimeline,
 		} as SomeTSRStateEvent)
 
 		// Defer flushing to the next tick, to batch multiple events from the same handler call together

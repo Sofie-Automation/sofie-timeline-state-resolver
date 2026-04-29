@@ -21,7 +21,11 @@ export type TSRStateEvent<TDeviceType extends DeviceTypeExt, TEventTypes extends
 		deviceId: string // eg atem0
 		deviceType: TDeviceType
 		event: K // the 'shared control address', or somethins like `me-program.1`
-		payload: TEventTypes[K] | null
+		payload: TEventTypes[K]
+		/**
+		 * Indicate whether this event is for a state from the timeline
+		 */
+		isFromTimeline: boolean
 	}
 }[keyof TEventTypes]
 

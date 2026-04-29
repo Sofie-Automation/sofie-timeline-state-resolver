@@ -108,16 +108,11 @@ export interface BaseDeviceAPI<DeviceState, AddressState, Command extends Comman
 	addressStateReassertsControl?(oldState: AddressState | undefined, newState: AddressState): boolean
 
 	/**
-	 * Called when an address has been changed externally (i.e. the device is ahead of TSR).
+	 * Called when an address has been changed (i.e. the device is ahead of TSR).
 	 * This is called after the settle time has elapsed.
 	 * This is intended to be used to call `context.reportStateEvent()` to notify about the change.
 	 */
-	onAddressExternallyChanged?(address: string): void
-	/**
-	 * Called when TSR has reasserted control over an address that was previously changed externally.
-	 * This is intended to be used to call `context.reportStateEvent()` to notify about the change.
-	 */
-	onAddressControlRestored?(address: string): void
+	onAddressChanged?(address: string, isAhead: boolean): void
 
 	/**
 	 * This method takes 2 states and returns a set of device-commands that will
@@ -236,9 +231,11 @@ export interface DeviceContextAPI<
 	 * Report a state event to the consumer of TSR, to be listened on by `connectionEvent:stateEvent`
 	 * @param eventName The name of the event
 	 * @param payload The payload of the event. Note: this should be null to indicate a return to TSR controlled state.
+	 * @param isFromTimeline Indicate whether this event is for a state from the timeline
 	 */
 	reportStateEvent: <K extends string & keyof DeviceTypes['Events']>(
 		eventName: K,
-		payload: DeviceTypes['Events'] extends Record<string, unknown> ? DeviceTypes['Events'][K] | null : never
+		payload: DeviceTypes['Events'] extends Record<string, unknown> ? DeviceTypes['Events'][K] : never,
+		isFromTimeline: boolean
 	) => void
 }
