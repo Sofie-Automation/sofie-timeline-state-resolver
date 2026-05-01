@@ -28,6 +28,8 @@ exports[`index imports 1`] = `
   "HTTPWatcherStatusCode",
   "HTTPWatcherStatusMessages",
   "HttpMethod",
+  "HttpSendActionErrorCode",
+  "HttpSendActionErrorMessages",
   "HttpSendActions",
   "HyperdeckActions",
   "HyperdeckStatusCode",

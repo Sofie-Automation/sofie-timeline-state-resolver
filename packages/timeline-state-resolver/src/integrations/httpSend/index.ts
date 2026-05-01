@@ -4,6 +4,7 @@ import {
 	HTTPSendCommandContent,
 	HTTPSendCommandContentExt,
 	HttpSendOptions,
+	HttpSendActionErrorCode,
 	SendCommandResult,
 	StatusCode,
 	TSRTimelineContent,
@@ -85,30 +86,40 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 		if (!cmd)
 			return {
 				result: ActionExecutionResultCode.Error,
-				response: t('Failed to send command: Missing payloadurl'),
+				response: t('Failed to send command: Missing payload'),
+				code: HttpSendActionErrorCode.MISSING_PAYLOAD,
+				context: {},
 			}
 		if (!cmd.url) {
 			return {
 				result: ActionExecutionResultCode.Error,
 				response: t('Failed to send command: Missing url'),
+				code: HttpSendActionErrorCode.MISSING_URL,
+				context: {},
 			}
 		}
 		if (!Object.values<TimelineContentTypeHTTP>(TimelineContentTypeHTTP).includes(cmd.type)) {
 			return {
 				result: ActionExecutionResultCode.Error,
 				response: t('Failed to send command: type is invalid'),
+				code: HttpSendActionErrorCode.INVALID_TYPE,
+				context: { type: cmd.type },
 			}
 		}
 		if (!cmd.params) {
 			return {
 				result: ActionExecutionResultCode.Error,
 				response: t('Failed to send command: Missing params'),
+				code: HttpSendActionErrorCode.MISSING_PARAMS,
+				context: { url: interpolateTemplateStringIfNeeded(cmd.url) },
 			}
 		}
 		if (cmd.paramsType && !(cmd.type in TimelineContentTypeHTTPParamType)) {
 			return {
 				result: ActionExecutionResultCode.Error,
 				response: t('Failed to send command: params type is invalid'),
+				code: HttpSendActionErrorCode.INVALID_PARAMS_TYPE,
+				context: { paramsType: cmd.paramsType },
 			}
 		}
 
@@ -220,9 +231,7 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 			}
 		}
 
-		this.context.logger.debug({ context, timelineObjId, command })
-
-		const t = Date.now()
+		const startTime = Date.now()
 
 		const httpReq = got[command.content.type]
 		try {
@@ -313,7 +322,7 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 				]
 
 				if (retryCodes.includes(err.code) && this.options?.resendTime && command.commandName !== 'manual') {
-					const timeLeft = Math.max(this.options.resendTime - (Date.now() - t), 0)
+					const timeLeft = Math.max(this.options.resendTime - (Date.now() - startTime), 0)
 					setTimeout(() => {
 						this.sendCommand({
 							timelineObjId,
@@ -329,6 +338,16 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 
 			return {
 				result: ActionExecutionResultCode.Error,
+				code: HttpSendActionErrorCode.REQUEST_FAILED,
+				context: {
+					url: interpolateTemplateStringIfNeeded(command.content.url),
+					errorMessage: err.message,
+					errorCode: 'code' in err ? String(err.code) : undefined,
+				},
+				response: t('HTTP request to {{url}} failed: {{errorMessage}}', {
+					url: interpolateTemplateStringIfNeeded(command.content.url),
+					errorMessage: err.message,
+				}),
 			}
 		}
 	}
