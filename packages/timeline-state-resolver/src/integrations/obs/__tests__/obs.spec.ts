@@ -369,6 +369,44 @@ describe('OBS Device', () => {
 				]
 			)
 		})
+
+		test('Downstream Keyer select scene', async () => {
+			await compareStates(
+				getDefaultState(10),
+				{
+					...getDefaultState(20),
+					dsk: {
+						selectedScene: 'gfx_lowerthird',
+					},
+				},
+				[
+					{
+						command: {
+							requestName: 'CallVendorRequest',
+							args: {
+								vendorName: 'downstream-keyer',
+								requestType: 'dsk_add_scene',
+								requestData: { scene: 'gfx_lowerthird' },
+							},
+						},
+						timelineObjId: '',
+						context: 'dsk add scene "gfx_lowerthird"',
+					},
+					{
+						command: {
+							requestName: 'CallVendorRequest',
+							args: {
+								vendorName: 'downstream-keyer',
+								requestType: 'dsk_select_scene',
+								requestData: { scene: 'gfx_lowerthird' },
+							},
+						},
+						timelineObjId: '',
+						context: 'dsk select scene changed from "undefined" to "gfx_lowerthird"',
+					},
+				]
+			)
+		})
 	})
 })
 

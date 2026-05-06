@@ -78,6 +78,12 @@
 			},
 			"required": ["input"],
 			"additionalProperties": false
+		},
+		"downstreamKeyer": {
+			"type": "object",
+			"properties": {},
+			"required": [],
+			"additionalProperties": false
 		}
 	}
 }
