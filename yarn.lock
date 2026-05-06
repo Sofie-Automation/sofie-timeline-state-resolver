@@ -10012,9 +10012,9 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"obs-websocket-js@npm:^5.0.7":
-  version: 5.0.7
-  resolution: "obs-websocket-js@npm:5.0.7"
+"obs-websocket-js@npm:^5.0.8":
+  version: 5.0.8
+  resolution: "obs-websocket-js@npm:5.0.8"
   dependencies:
     "@msgpack/msgpack": "npm:^2.7.1"
     crypto-js: "npm:^4.1.1"
@@ -10023,7 +10023,7 @@ asn1@evs-broadcast/node-asn1:
     isomorphic-ws: "npm:^5.0.0"
     type-fest: "npm:^3.11.0"
     ws: "npm:^8.13.0"
-  checksum: 10c0/9b815986d51ac5341d24df283f6f1dbb5a19a3583e37f6761674faa24a513b5a4285ffe07b57313f3bb669d1f001f1794bbd21db8fd5e79413d1a0b290b55136
+  checksum: 10c0/1f01dc575f5b1d07ff618fefe07812895712c57026b48d7ccd266192459f681e43605a15c0ab2afb19d2ba83647f4b91a8d67fc7b7fdb298171fb6270f0b11e6
   languageName: node
   linkType: hard
 
@@ -12317,7 +12317,7 @@ asn1@evs-broadcast/node-asn1:
     json-schema-to-typescript: "npm:^15.0.4"
     kairos-connection: "npm:0.2.3"
     klona: "npm:^2.0.6"
-    obs-websocket-js: "npm:^5.0.7"
+    obs-websocket-js: "npm:^5.0.8"
     osc: "npm:^2.4.5"
     p-all: "npm:^3.0.0"
     p-queue: "npm:^6.6.2"

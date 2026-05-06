@@ -102,7 +102,7 @@
 		"hyperdeck-connection": "2.0.1",
 		"kairos-connection": "0.2.3",
 		"klona": "^2.0.6",
-		"obs-websocket-js": "^5.0.7",
+		"obs-websocket-js": "^5.0.8",
 		"osc": "^2.4.5",
 		"p-all": "^3.0.0",
 		"p-queue": "^6.6.2",
