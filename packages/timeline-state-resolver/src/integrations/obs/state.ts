@@ -11,6 +11,8 @@ import {
 } from 'timeline-state-resolver-types'
 import { JsonObject } from 'type-fest'
 import _ from 'underscore'
+import type { OBSDownstreamKeyerState } from './downstreamKeyer/types.js'
+import { applyDownstreamKeyerTimelineObject } from './downstreamKeyer/timeline.js'
 
 export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>, mappings: Mappings): OBSDeviceState {
 	const deviceState = getDefaultState(state.time)
@@ -142,6 +144,11 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 						}
 					}
 					break
+				// Note: keep as string literal to avoid tight coupling to generated MappingObsType members
+				case 'downstreamKeyer' as MappingObsType:
+					if (tlObject.isLookahead) break
+					applyDownstreamKeyerTimelineObject(deviceState, mapping.options as any, tlObject.content as any)
+					break
 			}
 		}
 	})
@@ -155,6 +162,7 @@ export function getDefaultState(t: number): OBSDeviceState {
 		currentTransition: undefined,
 		recording: undefined,
 		streaming: undefined,
+		dsk: undefined,
 		scenes: {},
 		inputs: {},
 	}
@@ -167,6 +175,7 @@ export interface OBSDeviceState {
 	currentTransition: string | undefined
 	recording: boolean | undefined
 	streaming: boolean | undefined
+	dsk?: OBSDownstreamKeyerState
 	scenes: {
 		[key: string]: OBSScene
 	}

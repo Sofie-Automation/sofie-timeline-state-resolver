@@ -80,8 +80,11 @@ export class OBSDevice implements Device<ObsDeviceTypes, OBSDeviceState, OBSComm
 	}
 
 	diffStates(oldState: OBSDeviceState | undefined, newState: OBSDeviceState): Array<OBSCommandWithContext> {
-		return diffStates(oldState ?? getDefaultState(newState.time), newState, (scene, source) =>
-			this._obs?.getSceneItemId(scene, source)
+		return diffStates(
+			oldState ?? getDefaultState(newState.time),
+			newState,
+			(scene, source) => this._obs?.getSceneItemId(scene, source),
+			() => this._obs?.getDownstreamKeyerCache()
 		)
 	}
 

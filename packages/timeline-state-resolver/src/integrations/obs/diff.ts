@@ -2,16 +2,19 @@ import _ from 'underscore'
 import { OBSCommandWithContext, OBSCommandWithContextTyped } from './index.js'
 import { OBSDeviceState, OBSScene, OBSSceneItem, OBSInputState } from './state.js'
 import { literal } from '../../lib.js'
+import { diffDownstreamKeyer } from './downstreamKeyer/diff.js'
 
 export function diffStates(
 	oldState: OBSDeviceState,
 	newState: OBSDeviceState,
-	getSceneItemId: (scene: string, source: string) => number | undefined
+	getSceneItemId: (scene: string, source: string) => number | undefined,
+	getDownstreamKeyerCache?: () => import('./downstreamKeyer/types').OBSDownstreamKeyerCache | undefined
 ): Array<OBSCommandWithContext> {
 	const commands: Array<OBSCommandWithContext> = [
 		...resolveCurrentSceneState(oldState, newState),
 		...resolveCurrentTransitionState(oldState, newState),
 		...resolveRecordingStreaming(oldState, newState),
+		...diffDownstreamKeyer(oldState, newState, getDownstreamKeyerCache?.()),
 		...resolveScenes(oldState, newState, getSceneItemId),
 		...resolveInputSettings(oldState, newState),
 	]
@@ -368,6 +371,7 @@ export enum OBSRequestName {
 	STOP_RECORDING = 'StopRecord',
 	START_STREAMING = 'StartStream',
 	STOP_STREAMING = 'StopStream',
+	CALL_VENDOR_REQUEST = 'CallVendorRequest',
 	SET_SCENE_ITEM_ENABLED = 'SetSceneItemEnabled',
 	SET_SCENE_ITEM_TRANSFORM = 'SetSceneItemTransform',
 	SET_MUTE = 'SetInputMute',

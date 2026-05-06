@@ -64,6 +64,10 @@ export interface MappingObsInputMedia {
 	mappingType: MappingObsType.InputMedia
 }
 
+export interface MappingObsDownstreamKeyer {
+	mappingType: MappingObsType.DownstreamKeyer
+}
+
 export enum MappingObsType {
 	CurrentScene = 'currentScene',
 	CurrentTransition = 'currentTransition',
@@ -73,9 +77,10 @@ export enum MappingObsType {
 	InputAudio = 'inputAudio',
 	InputSettings = 'inputSettings',
 	InputMedia = 'inputMedia',
+	DownstreamKeyer = 'downstreamKeyer',
 }
 
-export type SomeMappingObs = MappingObsCurrentScene | MappingObsCurrentTransition | MappingObsRecording | MappingObsStreaming | MappingObsSceneItem | MappingObsInputAudio | MappingObsInputSettings | MappingObsInputMedia
+export type SomeMappingObs = MappingObsCurrentScene | MappingObsCurrentTransition | MappingObsRecording | MappingObsStreaming | MappingObsSceneItem | MappingObsInputAudio | MappingObsInputSettings | MappingObsInputMedia | MappingObsDownstreamKeyer
 
 export interface ObsDeviceTypes {
 	Type: DeviceType.OBS

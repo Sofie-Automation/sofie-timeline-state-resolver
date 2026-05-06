@@ -5,6 +5,7 @@ export type TimelineContentOBSAny =
 	| TimelineContentOBSCurrentTransition
 	| TimelineContentOBSRecording
 	| TimelineContentOBSStreaming
+	| TimelineContentOBSDownstreamKeyer
 	| TimelineContentOBSSceneItem
 	| TimelineContentOBSInputAudio
 	| TimelineContentOBSInputSettings
@@ -15,6 +16,8 @@ export enum TimelineContentTypeOBS {
 	CURRENT_TRANSITION = 'CURRENT_TRANSITION',
 	RECORDING = 'RECORDING',
 	STREAMING = 'STREAMING',
+
+	DOWNSTREAM_KEYER = 'DOWNSTREAM_KEYER',
 
 	SCENE_ITEM = 'SCENE_ITEM',
 
@@ -53,6 +56,19 @@ export interface TimelineContentOBSStreaming extends TimelineContentOBSBase {
 
 	/** Should streaming be turned on */
 	on: boolean
+}
+
+export interface TimelineContentOBSDownstreamKeyer extends TimelineContentOBSBase {
+	type: TimelineContentTypeOBS.DOWNSTREAM_KEYER
+
+	/** Name of the DSK scene that should be selected */
+	sceneName: string
+
+	/**
+	 * Ensure `sceneName` exists in the DSK list before selecting it.
+	 * Defaults to `true`.
+	 */
+	ensureInDskList?: boolean
 }
 
 export interface TimelineContentOBSSceneItem extends TimelineContentOBSBase {

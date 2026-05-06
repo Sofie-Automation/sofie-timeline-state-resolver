@@ -1,5 +1,7 @@
 import { EventEmitter } from 'node:events'
 import OBSWebSocket, { OBSRequestTypes, OBSResponseTypes } from 'obs-websocket-js'
+import type { OBSDownstreamKeyerCache } from './downstreamKeyer/types'
+import { refreshDownstreamKeyerCache } from './downstreamKeyer/discovery'
 
 const RECONNECT_TIME = 5000
 
@@ -22,6 +24,7 @@ export class OBSConnection extends EventEmitter<OBSConnectionEventsTypes> {
 	private _reconnect_wait = 0
 	private _reconnect_timeout: NodeJS.Timeout | undefined
 	private _sceneItemMap = new Map<string, number>()
+	private _dskCache: OBSDownstreamKeyerCache | undefined
 
 	connected = false
 	error: string | undefined = undefined
@@ -58,13 +61,21 @@ export class OBSConnection extends EventEmitter<OBSConnectionEventsTypes> {
 				this._reconnect_wait = 0
 				if (this._reconnect_timeout) clearTimeout(this._reconnect_timeout)
 
-				this._buildAndTrackSceneItemIDs()
-					.catch((e) => {
-						this.emit(OBSConnectionEvents.Error, 'Error trying to rebuild SceneItemID map', e)
+				Promise.allSettled([this._buildAndTrackSceneItemIDs(), this._refreshDownstreamKeyerCache()])
+					.then((results) => {
+						const [sceneItemRes, dskRes] = results
+						if (sceneItemRes.status === 'rejected') {
+							this.emit(OBSConnectionEvents.Error, 'Error trying to rebuild SceneItemID map', sceneItemRes.reason)
+						}
+						if (dskRes.status === 'rejected') {
+							this.emit(
+								OBSConnectionEvents.Error,
+								'Error trying to refresh Downstream Keyer cache',
+								dskRes.reason
+							)
+						}
 					})
-					.finally(() => {
-						this.emit(OBSConnectionEvents.Connected)
-					})
+					.finally(() => this.emit(OBSConnectionEvents.Connected))
 			})
 			.catch((e) => {
 				this.connected = false
@@ -119,6 +130,10 @@ export class OBSConnection extends EventEmitter<OBSConnectionEventsTypes> {
 		return this._sceneItemMap.get(scene + '_' + input)
 	}
 
+	getDownstreamKeyerCache(): OBSDownstreamKeyerCache | undefined {
+		return this._dskCache
+	}
+
 	private async _buildAndTrackSceneItemIDs() {
 		const sceneItemMap = new Map<string, number>()
 		const scenes = await this._obs.call('GetSceneList')
@@ -133,5 +148,12 @@ export class OBSConnection extends EventEmitter<OBSConnectionEventsTypes> {
 		}
 
 		this._sceneItemMap = sceneItemMap
+	}
+
+	private async _refreshDownstreamKeyerCache() {
+		// Not a hard requirement for connecting; we can still operate by "add before select".
+		this._dskCache = await refreshDownstreamKeyerCache((requestType, requestData) =>
+			this._obs.call(requestType, requestData as any)
+		)
 	}
 }
