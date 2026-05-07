@@ -26,8 +26,7 @@ export interface ConnectionManagerIntEvents {
 	error: [context: string, err?: Error]
 	debug: [...debug: any[]]
 
-	connectionAdded: [id: string, container: BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>]
-	connectionInitialised: [id: string]
+	connectionAdded: [id: string, container: BaseRemoteDeviceIntegration<DeviceOptionsAny>]	connectionInitialised: [id: string]
 	connectionRemoved: [id: string]
 }
 export type MappedDeviceEvents = {
@@ -67,8 +66,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 		this._updateConnections()
 	}
 
-	public getConnections(includeUninitialized = false): Array<BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>> {
-		if (includeUninitialized) {
+	public getConnections(includeUninitialized = false): Array<BaseRemoteDeviceIntegration<DeviceOptionsAny>> {		if (includeUninitialized) {
 			return Array.from(this._connections.values())
 		} else {
 			return Array.from(this._connections.values()).filter((conn) => conn.initialized === true)
@@ -78,8 +76,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 	public getConnection(
 		connectionId: string,
 		includeUninitialized = false
-	): BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>> | undefined {
-		if (includeUninitialized) {
+	): BaseRemoteDeviceIntegration<DeviceOptionsAny> | undefined {		if (includeUninitialized) {
 			return this._connections.get(connectionId)
 		} else {
 			const connection = this._connections.get(connectionId)
@@ -390,8 +387,7 @@ function createContainer(
 	deviceId: string,
 	getCurrentTime: () => number,
 	threadedClassOptions: ThreadedClassConfig
-): Promise<BaseRemoteDeviceIntegration<DeviceOptionsBase<any, any>>> | null {
-	switch (deviceOptions.type) {
+): Promise<BaseRemoteDeviceIntegration<DeviceOptionsAny>> | null {	switch (deviceOptions.type) {
 		case DeviceType.CASPARCG:
 			return DeviceContainer.create<DeviceOptionsCasparCGInternal, typeof CasparCGDevice>(
 				'../../dist/integrations/casparCG/index.js',

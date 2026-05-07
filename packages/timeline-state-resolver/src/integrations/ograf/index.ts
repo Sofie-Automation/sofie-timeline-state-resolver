@@ -216,10 +216,6 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 		// console.log('sendCommand', c)
 		if (c.commandName === 'clear') {
 			const trackedLayer = await this.getTrackedLayer(c)
-			if (!trackedLayer) {
-				this.context.commandError(new Error(`No tracked layer found`), cmd)
-				return
-			}
 
 			if (trackedLayer) {
 				// Clear that specific graphicsInstance:
@@ -251,6 +247,7 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 					rendererId: c.rendererId,
 				},
 				{
+					renderTarget: this.formatRenderTarget(c.renderTarget),
 					graphicId: c.graphicId,
 					renderTarget: this.formatRenderTarget(c.renderTarget),
 					params: {
@@ -258,6 +255,21 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 					},
 				}
 			)
+			if (this.shouldFallbackToLegacyEndpoint(response.statusCode)) {
+				response = await this.sendHTTP(
+					'put',
+					`/renderers/${c.rendererId}/target/graphic/load`,
+					{
+						renderTarget: c.renderTarget,
+					},
+					{
+						graphicId: c.graphicId,
+						params: {
+							data: c.data,
+						},
+					}
+				)
+			}
 
 			if (response.status === 200) {
 				// Track the returned GraphicInstanceId for later:
@@ -397,6 +409,17 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 				e instanceof Error ? e : new Error(`${e}`)
 			)
 			return `${renderTarget}`
+		}
+	}
+	private shouldFallbackToLegacyEndpoint(statusCode: number): boolean {
+		return statusCode === 404 || statusCode === 405
+	}
+	private parseJSON(body: string): any {
+		if (!body) return undefined
+		try {
+			return JSON.parse(body)
+		} catch {
+			return undefined
 		}
 	}
 	private async getTrackedLayer(o: {

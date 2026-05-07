@@ -41,6 +41,18 @@ async function getInitialisedOGrafDevice() {
 	return dev
 }
 
+function makeDeviceTimelineState(objects: Array<{ id: string; layer: string; content: any }>) {
+	return {
+		time: 0,
+		objects: objects.map((obj) => ({
+			...obj,
+			priority: 0,
+			enable: { start: 0 },
+			instance: DEFAULT_INSTANCE,
+		})),
+	} as any
+}
+
 describe('OGraf', () => {
 	beforeEach(() => {
 		MOCKED_SOCKET_GET.mockReset()
@@ -52,6 +64,73 @@ describe('OGraf', () => {
 		MOCKED_SOCKET_POST.mockResolvedValue(Promise.resolve({ statusCode: 200 }))
 		MOCKED_SOCKET_PUT.mockResolvedValue(Promise.resolve({ statusCode: 200 }))
 		MOCKED_SOCKET_DELETE.mockResolvedValue(Promise.resolve({ statusCode: 200 }))
+	})
+
+	describe('sendCommand', () => {
+		test('clears graphic instances using array filters', async () => {
+			const device = await getInitialisedOGrafDevice()
+			;(device as any).trackedLayers.layer0 = { graphicInstanceId: 'instance0' }
+
+			await device.sendCommand({
+				timelineObjId: 'obj0',
+				queueId: 'layer0',
+				context: 'clear graphic',
+				command: {
+					commandName: 'clear',
+					rendererId: 'renderer0',
+					renderTarget: '{"layerId": "layer0"}',
+					layerId: 'layer0',
+					graphicId: 'testGraphic',
+				},
+			})
+
+			expect(MOCKED_SOCKET_PUT).toHaveBeenCalledWith(
+				'http://localhost:8080/ograf/v1/renderers/renderer0/target/graphicInstance/clear',
+				{
+					json: {
+						filters: [
+							{
+								renderTarget: { layerId: 'layer0' },
+								graphicInstanceId: 'instance0',
+							},
+						],
+					},
+					throwHttpErrors: false,
+				}
+			)
+		})
+
+		test('clears the render target even when no graphic instance is tracked', async () => {
+			const device = await getInitialisedOGrafDevice()
+			MOCKED_SOCKET_GET.mockResolvedValueOnce(Promise.resolve({ statusCode: 200, body: '{"graphicInstances":[]}' }))
+
+			await device.sendCommand({
+				timelineObjId: 'obj0',
+				queueId: 'layer0',
+				context: 'clear graphic',
+				command: {
+					commandName: 'clear',
+					rendererId: 'renderer0',
+					renderTarget: '{"layerId": "layer0"}',
+					layerId: 'layer0',
+					graphicId: 'testGraphic',
+				},
+			})
+
+			expect(MOCKED_SOCKET_PUT).toHaveBeenCalledWith(
+				'http://localhost:8080/ograf/v1/renderers/renderer0/target/graphic/clear',
+				{
+					json: {
+						filters: [
+							{
+								renderTarget: { layerId: 'layer0' },
+							},
+						],
+					},
+					throwHttpErrors: false,
+				}
+			)
+		})
 	})
 
 	describe('convertState', () => {
@@ -724,6 +803,60 @@ describe('OGraf', () => {
 								actionId: 'action0',
 								payload: { b: 1 },
 								skipAnimation: undefined,
+							},
+						},
+					]
+				)
+			})
+			test('clear graphic when playing turns false and useStopCommand is false', async () => {
+				await compareStates(
+					{
+						graphics: {
+							layer0: {
+								timelineObjId: 'obj0',
+								rendererId: 'renderer0',
+								renderTarget: '{"layerId": "layer0"}',
+								content: {
+									deviceType: DeviceType.OGRAF,
+									type: TimelineContentTypeOgraf.GRAPHIC,
+									graphicId: 'testGraphic',
+									playing: true,
+									useStopCommand: false,
+								},
+							},
+						},
+						graphicsStepDelta: {},
+						rendererCustomActions: {},
+					},
+					{
+						graphics: {
+							layer0: {
+								timelineObjId: 'obj0',
+								rendererId: 'renderer0',
+								renderTarget: '{"layerId": "layer0"}',
+								content: {
+									deviceType: DeviceType.OGRAF,
+									type: TimelineContentTypeOgraf.GRAPHIC,
+									graphicId: 'testGraphic',
+									playing: false,
+									useStopCommand: false,
+								},
+							},
+						},
+						graphicsStepDelta: {},
+						rendererCustomActions: {},
+					},
+					[
+						{
+							timelineObjId: 'obj0',
+							queueId: 'layer0',
+							context: `Clear: playing changed from true to false`,
+							command: {
+								commandName: 'clear',
+								rendererId: 'renderer0',
+								renderTarget: '{"layerId": "layer0"}',
+								layerId: 'layer0',
+								graphicId: 'testGraphic',
 							},
 						},
 					]

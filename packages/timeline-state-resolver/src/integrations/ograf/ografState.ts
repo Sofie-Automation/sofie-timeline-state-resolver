@@ -65,40 +65,42 @@ export function convertTimelineStateToDeviceState(
 		rendererCustomActions: {},
 	}
 
-	for (const tlObject of state.objects) {
-		const layerId = tlObject.layer
+	for (const timelineObject of state.objects) {
+		const layerId = timelineObject.isLookahead && timelineObject.lookaheadForLayer
+			? timelineObject.lookaheadForLayer
+			: `${timelineObject.layer}`
 		const mapping = mappings[layerId] as Mapping<SomeMappingOgraf> | undefined
 		if (!mapping) continue
 
-		if (tlObject.content.deviceType !== DeviceType.OGRAF) continue
-		if (tlObject.content.type === TimelineContentTypeOgraf.GRAPHIC) {
+		if (timelineObject.content.deviceType !== DeviceType.OGRAF) continue
+		if (timelineObject.content.type === TimelineContentTypeOgraf.GRAPHIC) {
 			if (mapping.options.mappingType !== MappingOgrafType.RenderTarget) continue
 
 			deviceState.graphics[layerId] = {
-				timelineObjId: tlObject.id,
+				timelineObjId: timelineObject.id,
 				rendererId: mapping.options.rendererId,
 				renderTarget: mapping.options.renderTarget,
-				content: tlObject.content,
+				content: timelineObject.content,
 			}
-		} else if (tlObject.content.type === TimelineContentTypeOgraf.GRAPHIC_STEP) {
+		} else if (timelineObject.content.type === TimelineContentTypeOgraf.GRAPHIC_STEP) {
 			if (mapping.options.mappingType !== MappingOgrafType.RenderTarget) continue
 
 			deviceState.graphicsStepDelta[layerId] = {
-				timelineObjId: tlObject.id,
+				timelineObjId: timelineObject.id,
 				rendererId: mapping.options.rendererId,
 				renderTarget: mapping.options.renderTarget,
-				content: tlObject.content,
+				content: timelineObject.content,
 			}
-		} else if (tlObject.content.type === TimelineContentTypeOgraf.RENDERER_CUSTOM_ACTION) {
+		} else if (timelineObject.content.type === TimelineContentTypeOgraf.RENDERER_CUSTOM_ACTION) {
 			if (mapping.options.mappingType !== MappingOgrafType.Renderer) continue
 
 			deviceState.rendererCustomActions[layerId] = {
-				timelineObjId: tlObject.id,
+				timelineObjId: timelineObject.id,
 				rendererId: mapping.options.rendererId,
-				action: tlObject.content,
+				action: timelineObject.content,
 			}
 		} else {
-			assertNever(tlObject.content)
+			assertNever(timelineObject.content)
 		}
 	}
 
@@ -250,21 +252,37 @@ export function diffStates(oldState: OGrafDeviceState | undefined, newState: OGr
 				})
 			} else if (!newGraphic.content.playing && oldGraphic.content.playing) {
 				const reason = `playing changed from ${oldGraphic.content.playing} to ${newGraphic.content.playing}`
-				// Stop
-				commands.push({
-					context: `Stop: ${reason}`,
-					queueId: layerId,
-					timelineObjId: newGraphic.timelineObjId,
-					command: {
-						layerId,
-						commandName: 'stop',
-						rendererId: newGraphic.rendererId,
-						renderTarget: newGraphic.renderTarget,
-						graphicId: newGraphic.content.graphicId,
+				if (newGraphic.content.useStopCommand) {
+					// Stop
+					commands.push({
+						context: `Stop: ${reason}`,
+						queueId: layerId,
+						timelineObjId: newGraphic.timelineObjId,
+						command: {
+							layerId,
+							commandName: 'stop',
+							rendererId: newGraphic.rendererId,
+							renderTarget: newGraphic.renderTarget,
+							graphicId: newGraphic.content.graphicId,
 
-						skipAnimation: newGraphic.content.skipAnimation,
-					},
-				})
+							skipAnimation: newGraphic.content.skipAnimation,
+						},
+					})
+				} else {
+					// Clear
+					commands.push({
+						context: `Clear: ${reason}`,
+						queueId: layerId,
+						timelineObjId: newGraphic.timelineObjId,
+						command: {
+							layerId,
+							commandName: 'clear',
+							rendererId: newGraphic.rendererId,
+							renderTarget: newGraphic.renderTarget,
+							graphicId: newGraphic.content.graphicId,
+						},
+					})
+				}
 			}
 		}
 
