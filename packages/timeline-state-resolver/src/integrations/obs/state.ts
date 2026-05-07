@@ -94,11 +94,6 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 					break
 				case MappingObsType.InputSettings:
 					if (tlObject.content.type === TimelineContentTypeOBS.INPUT_SETTINGS) {
-						if (tlObject.isLookahead) {
-							// InputSettings can't be looked ahead, same below
-							break
-						}
-
 						const input = mapping.options.input
 						if (!deviceState.inputs[input]) {
 							deviceState.inputs[input] = {}
@@ -112,16 +107,14 @@ export function convertStateToOBS(state: DeviceTimelineState<TSRTimelineContent>
 					break
 				case MappingObsType.InputMedia:
 					if (tlObject.content.type === TimelineContentTypeOBS.INPUT_MEDIA) {
-						if (tlObject.isLookahead) {
-							// InputMedia can't be looked ahead, same below
-							break
-						}
-
 						const input = mapping.options.input
+						const playTime = tlObject.isLookahead
+							? undefined
+							: tlObject.instance.originalStart ?? tlObject.instance.start // todo - ignore when looping?
 
 						if (!deviceState.inputs[input]) deviceState.inputs[input] = {}
 						deviceState.inputs[input].mediaSettings = {
-							playTime: tlObject.instance.originalStart ?? tlObject.instance.start, // todo - ignore when looping?
+							playTime,
 							seek: tlObject.content.seek,
 							state: tlObject.content.state,
 						}

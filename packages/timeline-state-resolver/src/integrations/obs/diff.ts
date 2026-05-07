@@ -316,7 +316,7 @@ function resolveInputSettings(oldState: OBSDeviceState, newState: OBSDeviceState
 			if (source.mediaSettings?.playTime !== oldMedia?.playTime || source.mediaSettings?.seek !== oldMedia?.seek) {
 				if (
 					!source.mediaSettings?.playTime &&
-					source.mediaSettings?.seek &&
+					source.mediaSettings?.seek !== undefined &&
 					source.mediaSettings?.seek !== oldMedia?.seek
 				) {
 					// we don't know when we started so just use the seek

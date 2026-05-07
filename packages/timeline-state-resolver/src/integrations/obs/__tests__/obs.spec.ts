@@ -165,6 +165,121 @@ describe('OBS Device', () => {
 				}
 			)
 		})
+
+		test('convert lookahead current scene to preview scene', async () => {
+			await convertState(
+				createTimelineState({
+					currentSceneLookahead: {
+						id: 'currentSceneLookahead0',
+						layer: 'currentSceneLookahead',
+						isLookahead: true,
+						lookaheadForLayer: 'currentScene',
+						content: {
+							deviceType: DeviceType.OBS,
+							type: TimelineContentTypeOBS.CURRENT_SCENE,
+
+							sceneName: 'scenePreview',
+						},
+					},
+				}),
+				{
+					...getDefaultState(10),
+					previewScene: 'scenePreview',
+				}
+			)
+		})
+
+		test('convert lookahead input settings', async () => {
+			await convertState(
+				createTimelineState({
+					inputSettingsLookahead: {
+						id: 'inputSettingsLookahead0',
+						layer: 'inputSettingsLookahead',
+						isLookahead: true,
+						lookaheadForLayer: 'inputSettings',
+						content: {
+							deviceType: DeviceType.OBS,
+							type: TimelineContentTypeOBS.INPUT_SETTINGS,
+
+							sourceType: 'ffmpeg_source',
+							sourceSettings: {
+								is_local_file: true,
+								local_file: '/clips/future.mov',
+							},
+						},
+					},
+				}),
+				{
+					...getDefaultState(10),
+					inputs: {
+						source0: {
+							inputSettings: {
+								sourceType: 'ffmpeg_source',
+								settings: {
+									is_local_file: true,
+									local_file: '/clips/future.mov',
+								},
+							},
+						},
+					},
+				}
+			)
+		})
+
+		test('convert lookahead input media', async () => {
+			await convertState(
+				createTimelineState({
+					inputMediaLookahead: {
+						id: 'inputMediaLookahead0',
+						layer: 'inputMediaLookahead',
+						isLookahead: true,
+						lookaheadForLayer: 'inputMedia',
+						content: {
+							deviceType: DeviceType.OBS,
+							type: TimelineContentTypeOBS.INPUT_MEDIA,
+
+							seek: 0,
+							state: 'paused',
+						},
+						instance: {
+							originalStart: 1000,
+						},
+					},
+				}),
+				{
+					...getDefaultState(10),
+					inputs: {
+						source0: {
+							mediaSettings: {
+								playTime: undefined,
+								seek: 0,
+								state: 'paused',
+							},
+						},
+					},
+				}
+			)
+		})
+
+		test('convert lookahead scene item remains ignored', async () => {
+			await convertState(
+				createTimelineState({
+					sceneItemLookahead: {
+						id: 'sceneItemLookahead0',
+						layer: 'sceneItemLookahead',
+						isLookahead: true,
+						lookaheadForLayer: 'sceneItem',
+						content: {
+							deviceType: DeviceType.OBS,
+							type: TimelineContentTypeOBS.SCENE_ITEM,
+
+							on: true,
+						},
+					},
+				}),
+				getDefaultState(10)
+			)
+		})
 	})
 
 	describe('diffState', () => {
@@ -370,6 +485,47 @@ describe('OBS Device', () => {
 			)
 		})
 
+		test('Input Media paused at start', async () => {
+			await compareStates(
+				getDefaultState(10),
+				{
+					...getDefaultState(20),
+					inputs: {
+						input1: {
+							mediaSettings: {
+								seek: 0,
+								state: 'paused',
+							},
+						},
+					},
+				},
+				[
+					{
+						command: {
+							requestName: OBSRequestName.TRIGGER_MEDIA_INPUT_ACTION,
+							args: {
+								inputName: 'input1',
+								mediaAction: 'OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE',
+							},
+						},
+						timelineObjId: '',
+						context: 'source input1 started playback',
+					},
+					{
+						command: {
+							requestName: OBSRequestName.SET_MEDIA_INPUT_CURSOR,
+							args: {
+								inputName: 'input1',
+								mediaCursor: 0,
+							},
+						},
+						timelineObjId: '',
+						context: 'source input1 changed seek position',
+					},
+				]
+			)
+		})
+
 		test('Downstream Keyer select scene', async () => {
 			await compareStates(
 				getDefaultState(10),
@@ -411,7 +567,17 @@ describe('OBS Device', () => {
 })
 
 function createTimelineState(
-	objs: Record<string, { id: string; layer: string; content: TimelineContentOBSAny }>
+	objs: Record<
+		string,
+		{
+			id: string
+			layer: string
+			content: TimelineContentOBSAny
+			instance?: { originalStart?: number; start?: number }
+			isLookahead?: boolean
+			lookaheadForLayer?: string
+		}
+	>
 ): DeviceTimelineState<TSRTimelineContent> {
 	return {
 		time: 10,
