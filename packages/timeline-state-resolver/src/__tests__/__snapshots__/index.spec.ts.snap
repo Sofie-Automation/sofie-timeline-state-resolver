@@ -13,6 +13,8 @@ exports[`index imports 1`] = `
   "AtemTransitionStyle",
   "BlendMode",
   "BorderBevel",
+  "CasparCGActionErrorCode",
+  "CasparCGActionErrorMessages",
   "CasparCGActions",
   "CasparCGDevice",
   "CasparCGScaleMode",
