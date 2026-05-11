@@ -43,6 +43,89 @@ export const CasparCGStatusMessages: Record<CasparCGStatusCode, string> = {
 	[CasparCGStatusCode.QUEUE_OVERFLOW]: 'CasparCG command queue overflow',
 }
 
+/**
+ * Action error codes for CasparCG device actions.
+ * These codes can be customized in blueprints via deviceActionMessages.
+ *
+ * Error codes follow the pattern: ACTION_CASPARCG_{ACTION}_{REASON}
+ */
+export const CasparCGActionErrorCode = {
+	// ClearAllChannels errors
+	/** ClearAllChannels: no connection to CasparCG */
+	CLEAR_NO_CONNECTION: 'ACTION_CASPARCG_CLEAR_NO_CONNECTION',
+	/** ClearAllChannels: failed to execute INFO command */
+	CLEAR_INFO_FAILED: 'ACTION_CASPARCG_CLEAR_INFO_FAILED',
+	/** ClearAllChannels: no channel data returned from INFO command */
+	CLEAR_NO_CHANNELS: 'ACTION_CASPARCG_CLEAR_NO_CHANNELS',
+
+	// RestartServer errors
+	/** RestartServer: device not initialized (no connection options) */
+	RESTART_NOT_INITIALIZED: 'ACTION_CASPARCG_RESTART_NOT_INITIALIZED',
+	/** RestartServer: launcher host not configured */
+	RESTART_LAUNCHER_HOST_NOT_SET: 'ACTION_CASPARCG_RESTART_LAUNCHER_HOST_NOT_SET',
+	/** RestartServer: launcher port not configured */
+	RESTART_LAUNCHER_PORT_NOT_SET: 'ACTION_CASPARCG_RESTART_LAUNCHER_PORT_NOT_SET',
+	/** RestartServer: launcher process not configured */
+	RESTART_LAUNCHER_PROCESS_NOT_SET: 'ACTION_CASPARCG_RESTART_LAUNCHER_PROCESS_NOT_SET',
+	/** RestartServer: launcher returned a non-200 HTTP status */
+	RESTART_BAD_REPLY: 'ACTION_CASPARCG_RESTART_BAD_REPLY',
+	/** RestartServer: network request to launcher failed */
+	RESTART_REQUEST_FAILED: 'ACTION_CASPARCG_RESTART_REQUEST_FAILED',
+
+	// ListMedia errors
+	/** ListMedia: device not initialized */
+	LIST_NOT_INITIALIZED: 'ACTION_CASPARCG_LIST_NOT_INITIALIZED',
+	/** ListMedia: CLS command returned an error */
+	LIST_CLS_ERROR: 'ACTION_CASPARCG_LIST_CLS_ERROR',
+	/** ListMedia: CLS command returned a non-200 response code */
+	LIST_BAD_RESPONSE: 'ACTION_CASPARCG_LIST_BAD_RESPONSE',
+} as const
+
+export type CasparCGActionErrorCode = (typeof CasparCGActionErrorCode)[keyof typeof CasparCGActionErrorCode]
+
+/**
+ * Default human-readable messages for each CasparCG action error code.
+ * Used as fallback when no blueprint customization is present.
+ */
+export const CasparCGActionErrorMessages: Record<CasparCGActionErrorCode, string> = {
+	[CasparCGActionErrorCode.CLEAR_NO_CONNECTION]: 'Cannot clear CasparCG channels: no connection',
+	[CasparCGActionErrorCode.CLEAR_INFO_FAILED]: 'Cannot clear CasparCG channels: failed to retrieve channel info',
+	[CasparCGActionErrorCode.CLEAR_NO_CHANNELS]: 'Cannot clear CasparCG channels: no channels found',
+
+	[CasparCGActionErrorCode.RESTART_NOT_INITIALIZED]: 'Cannot restart CasparCG: device not initialized',
+	[CasparCGActionErrorCode.RESTART_LAUNCHER_HOST_NOT_SET]: 'Cannot restart CasparCG: launcher host not configured',
+	[CasparCGActionErrorCode.RESTART_LAUNCHER_PORT_NOT_SET]: 'Cannot restart CasparCG: launcher port not configured',
+	[CasparCGActionErrorCode.RESTART_LAUNCHER_PROCESS_NOT_SET]:
+		'Cannot restart CasparCG: launcher process not configured',
+	[CasparCGActionErrorCode.RESTART_BAD_REPLY]: 'CasparCG restart failed: launcher returned {{statusCode}} {{body}}',
+	[CasparCGActionErrorCode.RESTART_REQUEST_FAILED]: 'CasparCG restart failed: {{errorMessage}}',
+
+	[CasparCGActionErrorCode.LIST_NOT_INITIALIZED]: 'Cannot list CasparCG media: device not initialized',
+	[CasparCGActionErrorCode.LIST_CLS_ERROR]: 'CasparCG media list failed: {{errorMessage}}',
+	[CasparCGActionErrorCode.LIST_BAD_RESPONSE]: 'CasparCG media list failed: server returned error {{responseCode}}',
+}
+
+/**
+ * Context data for each CasparCG action error code.
+ * These fields are available for message template interpolation.
+ */
+export interface CasparCGActionErrorContextMap {
+	[CasparCGActionErrorCode.CLEAR_NO_CONNECTION]: Record<string, never>
+	[CasparCGActionErrorCode.CLEAR_INFO_FAILED]: Record<string, never>
+	[CasparCGActionErrorCode.CLEAR_NO_CHANNELS]: Record<string, never>
+
+	[CasparCGActionErrorCode.RESTART_NOT_INITIALIZED]: Record<string, never>
+	[CasparCGActionErrorCode.RESTART_LAUNCHER_HOST_NOT_SET]: Record<string, never>
+	[CasparCGActionErrorCode.RESTART_LAUNCHER_PORT_NOT_SET]: Record<string, never>
+	[CasparCGActionErrorCode.RESTART_LAUNCHER_PROCESS_NOT_SET]: Record<string, never>
+	[CasparCGActionErrorCode.RESTART_BAD_REPLY]: { statusCode: number; body: string }
+	[CasparCGActionErrorCode.RESTART_REQUEST_FAILED]: { errorMessage: string }
+
+	[CasparCGActionErrorCode.LIST_NOT_INITIALIZED]: Record<string, never>
+	[CasparCGActionErrorCode.LIST_CLS_ERROR]: { errorMessage: string }
+	[CasparCGActionErrorCode.LIST_BAD_RESPONSE]: { responseCode: number }
+}
+
 export enum TimelineContentTypeCasparCg {
 	//  CasparCG-state
 	MEDIA = 'media',

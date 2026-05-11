@@ -34,6 +34,7 @@ import {
 	CasparCGStatusCode,
 	DeviceStatusDetail,
 	DeviceStatusInput,
+	CasparCGActionErrorCode,
 } from 'timeline-state-resolver-types'
 import { createCasparCGStatusDetail } from './messages.js'
 
@@ -633,17 +634,27 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		if (!this._ccg?.connected) {
 			return {
 				result: ActionExecutionResultCode.Error,
-				response: t('Cannot restart CasparCG without a connection'),
+				code: CasparCGActionErrorCode.CLEAR_NO_CONNECTION,
+				context: {},
+				response: t('Cannot clear CasparCG channels: no connection'),
 			}
 		}
 
 		const { error, request } = await this._ccg.executeCommand({ command: Commands.Info, params: {} })
 		if (error) {
-			return { result: ActionExecutionResultCode.Error }
+			return {
+				result: ActionExecutionResultCode.Error,
+				code: CasparCGActionErrorCode.CLEAR_INFO_FAILED,
+				context: {},
+			}
 		}
 		const response = await request
 		if (!response?.data[0]) {
-			return { result: ActionExecutionResultCode.Error }
+			return {
+				result: ActionExecutionResultCode.Error,
+				code: CasparCGActionErrorCode.CLEAR_NO_CHANNELS,
+				context: {},
+			}
 		}
 
 		await Promise.all(
@@ -697,18 +708,35 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 	 */
 	private async restartCasparCG(): Promise<ActionExecutionResult> {
 		if (!this.initOptions) {
-			return { result: ActionExecutionResultCode.Error, response: t('CasparCGDevice._connectionOptions is not set!') }
+			return {
+				result: ActionExecutionResultCode.Error,
+				code: CasparCGActionErrorCode.RESTART_NOT_INITIALIZED,
+				context: {},
+				response: t('Cannot restart CasparCG: device not initialized'),
+			}
 		}
 		if (!this.initOptions.launcherHost) {
-			return { result: ActionExecutionResultCode.Error, response: t('CasparCGDevice: config.launcherHost is not set!') }
+			return {
+				result: ActionExecutionResultCode.Error,
+				code: CasparCGActionErrorCode.RESTART_LAUNCHER_HOST_NOT_SET,
+				context: {},
+				response: t('Cannot restart CasparCG: launcher host not configured'),
+			}
 		}
 		if (!this.initOptions.launcherPort) {
-			return { result: ActionExecutionResultCode.Error, response: t('CasparCGDevice: config.launcherPort is not set!') }
+			return {
+				result: ActionExecutionResultCode.Error,
+				code: CasparCGActionErrorCode.RESTART_LAUNCHER_PORT_NOT_SET,
+				context: {},
+				response: t('Cannot restart CasparCG: launcher port not configured'),
+			}
 		}
 		if (!this.initOptions.launcherProcess) {
 			return {
 				result: ActionExecutionResultCode.Error,
-				response: t('CasparCGDevice: config.launcherProcess is not set!'),
+				code: CasparCGActionErrorCode.RESTART_LAUNCHER_PROCESS_NOT_SET,
+				context: {},
+				response: t('Cannot restart CasparCG: launcher process not configured'),
 			}
 		}
 
@@ -725,7 +753,9 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				} else {
 					return {
 						result: ActionExecutionResultCode.Error,
-						response: t('Bad reply: [{{statusCode}}] {{body}}', {
+						code: CasparCGActionErrorCode.RESTART_BAD_REPLY,
+						context: { statusCode: response.statusCode, body: response.body },
+						response: t('CasparCG restart failed: launcher returned {{statusCode}} {{body}}', {
 							statusCode: response.statusCode,
 							body: response.body,
 						}),
@@ -735,8 +765,10 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			.catch((error) => {
 				return {
 					result: ActionExecutionResultCode.Error,
-					response: t('{{message}}', {
-						message: error.toString(),
+					code: CasparCGActionErrorCode.RESTART_REQUEST_FAILED,
+					context: { errorMessage: error.toString() },
+					response: t('CasparCG restart failed: {{errorMessage}}', {
+						errorMessage: error.toString(),
 					}),
 				}
 			})
@@ -745,7 +777,9 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		if (!this._ccg) {
 			return {
 				result: ActionExecutionResultCode.Error,
-				response: t('CasparCG device not initialized'),
+				code: CasparCGActionErrorCode.LIST_NOT_INITIALIZED,
+				context: {},
+				response: t('Cannot list CasparCG media: device not initialized'),
 			}
 		}
 		const result = await this._ccg.executeCommand(
@@ -757,7 +791,9 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		if (result.error)
 			return {
 				result: ActionExecutionResultCode.Error,
-				response: t(`Error message from CasparCG: {{message}}`, { message: `${result.error}` }),
+				code: CasparCGActionErrorCode.LIST_CLS_ERROR,
+				context: { errorMessage: `${result.error}` },
+				response: t(`CasparCG media list failed: {{errorMessage}}`, { errorMessage: `${result.error}` }),
 			}
 
 		const request = await result.request
@@ -770,7 +806,11 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		} else {
 			return {
 				result: ActionExecutionResultCode.Error,
-				response: t(`Error code {{code}} from CasparCG`, { code: request.responseCode }),
+				code: CasparCGActionErrorCode.LIST_BAD_RESPONSE,
+				context: { responseCode: request.responseCode },
+				response: t(`CasparCG media list failed: server returned error {{responseCode}}`, {
+					responseCode: request.responseCode,
+				}),
 			}
 		}
 	}
