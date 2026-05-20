@@ -13,11 +13,28 @@ import type {
 	MediaImageRef,
 	DissolveMode,
 	UpdateImageStoreObject,
+	UpdateEffectChromaKeyObject,
+	UpdateEffectCropObject,
+	UpdateEffectFilmLookObject,
+	UpdateEffectGlowEffectObject,
+	UpdateEffectLinearKeyObject,
+	UpdateEffectLuminanceKeyObject,
+	UpdateEffectLUTCorrectionObject,
+	UpdateEffectMatrixCorrectionObject,
+	UpdateEffectPCropObject,
+	UpdateEffectPositionObject,
+	UpdateEffectRGBCorrectionObject,
+	UpdateEffectTemperatureCorrectionObject,
+	UpdateEffectToneCurveCorrectionObject,
+	UpdateEffectTransform2DObject,
+	UpdateEffectVirtualPTZObject,
+	UpdateEffectYUVCorrectionObject,
 } from 'kairos-lib'
 
 export enum TimelineContentTypeKairos {
 	SCENE = 'scene',
 	SCENE_LAYER = 'scene-layer',
+	SCENE_LAYER_EFFECT = 'scene-layer-effect',
 
 	// MVs? - no
 	// gfx / painter - yes, to be implemented
@@ -41,6 +58,7 @@ type PartialOrNull<T> = {
 export type TimelineContentKairosAny =
 	| TimelineContentKairosScene
 	| TimelineContentKairosSceneLayer
+	| TimelineContentKairosSceneLayerEffect
 	| TimelineContentKairosAux
 	| TimelineContentKairosMacros
 	| TimelineContentKairosClipPlayer
@@ -81,6 +99,30 @@ export interface TimelineContentKairosSceneLayer {
 		}
 	>
 }
+export interface TimelineContentKairosSceneLayerEffect {
+	deviceType: DeviceType.KAIROS
+	type: TimelineContentTypeKairos.SCENE_LAYER_EFFECT
+
+	effect: TimelineContentKairosSceneAnySceneLayerEffect
+}
+
+export type TimelineContentKairosSceneAnySceneLayerEffect =
+	| { type: 'crop'; values: Partial<UpdateEffectCropObject> }
+	| { type: 'transform2D'; values: Partial<UpdateEffectTransform2DObject> }
+	| { type: 'luminanceKey'; values: Partial<UpdateEffectLuminanceKeyObject> }
+	| { type: 'chromaKey'; values: Partial<UpdateEffectChromaKeyObject> }
+	| { type: 'yUVCorrection'; values: Partial<UpdateEffectYUVCorrectionObject> }
+	| { type: 'rGBCorrection'; values: Partial<UpdateEffectRGBCorrectionObject> }
+	| { type: 'lUTCorrection'; values: Partial<UpdateEffectLUTCorrectionObject> }
+	| { type: 'virtualPTZ'; values: Partial<UpdateEffectVirtualPTZObject> }
+	| { type: 'toneCurveCorrection'; values: Partial<UpdateEffectToneCurveCorrectionObject> }
+	| { type: 'matrixCorrection'; values: Partial<UpdateEffectMatrixCorrectionObject> }
+	| { type: 'temperatureCorrection'; values: Partial<UpdateEffectTemperatureCorrectionObject> }
+	| { type: 'linearKey'; values: Partial<UpdateEffectLinearKeyObject> }
+	| { type: 'position'; values: Partial<UpdateEffectPositionObject> }
+	| { type: 'pCrop'; values: Partial<UpdateEffectPCropObject> }
+	| { type: 'filmLook'; values: Partial<UpdateEffectFilmLookObject> }
+	| { type: 'glowEffect'; values: Partial<UpdateEffectGlowEffectObject> }
 
 export interface TimelineContentKairosAux {
 	deviceType: DeviceType.KAIROS
