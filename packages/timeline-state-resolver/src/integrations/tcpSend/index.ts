@@ -37,7 +37,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 
 	private tcpConnection = new TcpConnection()
 
-	constructor(protected context: DeviceContextAPI<TcpSendDeviceState>) {
+	constructor(protected context: DeviceContextAPI<TcpSendDeviceTypes, TcpSendDeviceState>) {
 		// Nothing
 
 		this.tcpConnection.on('error', (errContext, err) => {

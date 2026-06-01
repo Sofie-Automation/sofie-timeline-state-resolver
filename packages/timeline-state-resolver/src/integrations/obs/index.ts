@@ -28,7 +28,7 @@ export class OBSDevice implements Device<ObsDeviceTypes, OBSDeviceState, OBSComm
 	private _options: ObsOptions | undefined = undefined
 	private _obs: OBSConnection | undefined = undefined
 
-	constructor(protected context: DeviceContextAPI<OBSDeviceState>) {
+	constructor(protected context: DeviceContextAPI<ObsDeviceTypes, OBSDeviceState>) {
 		// Nothing
 	}
 

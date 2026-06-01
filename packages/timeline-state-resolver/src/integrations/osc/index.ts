@@ -43,7 +43,7 @@ export class OscDevice implements Device<OscDeviceTypes, OscDeviceState, OscComm
 	private transitionInterval: NodeJS.Timeout | undefined
 	private options: OscOptions | undefined
 
-	constructor(protected context: DeviceContextAPI<OscDeviceState>) {
+	constructor(protected context: DeviceContextAPI<OscDeviceTypes, OscDeviceState>) {
 		// Nothing
 	}
 

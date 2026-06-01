@@ -21,7 +21,7 @@ const debug = Debug('timeline-state-resolver:lawo')
 export class LawoDevice implements Device<LawoDeviceTypes, LawoState, LawoCommandWithContext> {
 	private _lawo: LawoConnection | undefined
 
-	constructor(protected context: DeviceContextAPI<LawoState>) {
+	constructor(protected context: DeviceContextAPI<LawoDeviceTypes, LawoState>) {
 		// Nothing
 	}
 

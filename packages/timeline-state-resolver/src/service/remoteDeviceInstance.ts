@@ -61,6 +61,10 @@ export abstract class BaseRemoteDeviceIntegration<
 		await this._device.setDebugState(debug)
 	}
 
+	public async setEventSubscriptions(events: string[]): Promise<void> {
+		await this._device.setEventSubscriptions(events)
+	}
+
 	public get device(): ThreadedClass<DeviceInstanceWrapper> | ThreadedClass<Device<any, TOptions>> {
 		return this._device
 	}

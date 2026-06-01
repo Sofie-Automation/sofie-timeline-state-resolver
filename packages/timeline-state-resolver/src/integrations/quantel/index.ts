@@ -43,7 +43,7 @@ export class QuantelDevice implements Device<QuantelDeviceTypes, QuantelState, Q
 
 	private _disconnectedSince: number | undefined = undefined
 
-	constructor(protected context: DeviceContextAPI<QuantelState>) {
+	constructor(protected context: DeviceContextAPI<QuantelDeviceTypes, QuantelState>) {
 		// Nothing
 	}
 

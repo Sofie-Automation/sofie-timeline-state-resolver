@@ -47,7 +47,7 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 	protected readonly cacheable = new CacheableLookup()
 	protected _terminated = false
 
-	constructor(protected context: DeviceContextAPI<HttpSendDeviceState>) {
+	constructor(protected context: DeviceContextAPI<HttpSendDeviceTypes, HttpSendDeviceState>) {
 		// Nothing
 	}
 

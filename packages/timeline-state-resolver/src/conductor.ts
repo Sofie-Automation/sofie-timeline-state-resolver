@@ -340,6 +340,14 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	}
 
 	/**
+	 * Subscribe to state events for a specific device. Only events with names in the
+	 * provided list will be emitted via the `stateEvent` event.
+	 */
+	public async setDeviceEventSubscriptions(deviceId: string, events: string[]): Promise<void> {
+		return this.connectionManager.setDeviceEventSubscriptions(deviceId, events)
+	}
+
+	/**
 	 * Resets the resolve-time, so that the resolving will happen for the point-in time NOW
 	 * next time
 	 */

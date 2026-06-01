@@ -54,7 +54,7 @@ export class PanasonicPtzDevice implements Device<
 	private _host: string | undefined
 	private _port: number | undefined
 
-	constructor(protected context: DeviceContextAPI<PanasonicPtzState>) {
+	constructor(protected context: DeviceContextAPI<PanasonicPTZDeviceTypes, PanasonicPtzState>) {
 		// Nothing
 	}
 

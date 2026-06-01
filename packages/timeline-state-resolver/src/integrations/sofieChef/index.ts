@@ -80,7 +80,7 @@ export class SofieChefDevice implements Device<SofieChefDeviceTypes, SofieChefSt
 	private initOptions?: SofieChefOptions
 	private msgId = 0
 
-	constructor(protected context: DeviceContextAPI<SofieChefState>) {
+	constructor(protected context: DeviceContextAPI<SofieChefDeviceTypes, SofieChefState>) {
 		// Nothing
 	}
 

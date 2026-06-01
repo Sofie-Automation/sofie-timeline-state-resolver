@@ -49,7 +49,7 @@ export class MultiOSCMessageDevice implements Device<
 
 	private _timeBetweenCommands: number | undefined
 
-	constructor(protected context: DeviceContextAPI<MultiOSCDeviceState>) {
+	constructor(protected context: DeviceContextAPI<MultiOscDeviceTypes, MultiOSCDeviceState>) {
 		// Nothing
 	}
 

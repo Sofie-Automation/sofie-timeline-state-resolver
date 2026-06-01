@@ -18,8 +18,9 @@ import {
 	type TSRTimelineContent,
 } from 'timeline-state-resolver-types'
 import { StateHandler } from './stateHandler.js'
+import { StateEventHandler } from './stateEventHandler.js'
 import { DevicesDict } from './devices.js'
-import type { DeviceOptionsAny, ExpectedPlayoutItem } from '../index.js'
+import type { DeviceOptionsAny, DeviceTypeExt, ExpectedPlayoutItem, SomeTSRStateEvent } from '../index.js'
 import type { StateChangeReport } from './measure.js'
 import { StateTracker } from './stateTracker.js'
 
@@ -66,6 +67,8 @@ export interface DeviceDetails {
 export interface DeviceInstanceEvents extends Omit<DeviceEvents, 'connectionChanged'> {
 	/** The connection status has changed */
 	connectionChanged: [status: DeviceStatus]
+	/** A state event has occurred */
+	stateEvent: [events: SomeTSRStateEvent[]]
 }
 
 // Future: it would be nice for this to be async, so that we can support proper ESM, but that isnt compatible with calling this in the constructor.
@@ -102,7 +105,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	private _stateTracker?: StateTracker<AddressState>
 
 	private _deviceId: string
-	private _deviceType: DeviceType
+	private _deviceType: DeviceTypeExt
 	private _deviceName: string
 	private _instanceId: number
 	private _startTime: number
@@ -111,6 +114,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	private _isActive = false
 	private _logDebug = false
 	private _logDebugStates = false
+
+	private _stateEventHandler: StateEventHandler
 
 	private _lastUpdateCurrentTime: number | undefined
 	private _tDiff: number | undefined
@@ -147,6 +152,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		}
 		this._logDebug = config.debug ?? this._logDebug
 
+		this._stateEventHandler = new StateEventHandler(id, config.type, (events) => this.emit('stateEvent', events))
+
 		this._updateTimeSync()
 
 		if (!config.disableSharedHardwareControl && this._device.diffAddressStates && this._device.applyAddressState) {
@@ -165,7 +172,13 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 
 			// make sure the commands for the next state change are correct:
 			let doRecalc = false
-			this._stateTracker.on('deviceUpdated', (_addr, ahead) => {
+			this._stateTracker.on('deviceUpdated', (addr, ahead) => {
+				try {
+					this._device.onAddressChanged?.(addr, ahead)
+				} catch (e) {
+					this.emit('error', 'onAddressChanged hook threw', e as Error)
+				}
+
 				if (doRecalc) return
 				doRecalc = true
 
@@ -298,6 +311,10 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	setDebugState(value: boolean) {
 		this._logDebugStates = value
 	}
+	setEventSubscriptions(events: string[]): void {
+		this.emit('debug', `Setting event subscriptions: [${events.join(', ')}]`)
+		this._stateEventHandler.setEventSubscriptions(events)
+	}
 
 	getCurrentTime(): number {
 		if (
@@ -311,7 +328,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		return Date.now() + (this._tDiff ?? 0)
 	}
 
-	private _getDeviceContextAPI(): DeviceContextAPI<DeviceState, AddressState> {
+	private _getDeviceContextAPI(): DeviceContextAPI<any, DeviceState, AddressState> {
 		return {
 			deviceName: this._deviceName,
 
@@ -386,6 +403,10 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 
 			setAddressState: (address, state) => {
 				this._stateTracker?.updateState(address, state)
+			},
+
+			reportStateEvent: (eventName, payload, isFromTimeline) => {
+				this._stateEventHandler.report(eventName, payload, isFromTimeline)
 			},
 		}
 	}

@@ -91,6 +91,12 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 		}
 	}
 
+	public async setDeviceEventSubscriptions(deviceId: string, events: string[]): Promise<void> {
+		const connection = this.getConnection(deviceId)
+		if (!connection) throw new Error(`No initialized connection found for device "${deviceId}"`)
+		await connection.setEventSubscriptions(events)
+	}
+
 	/**
 	 * Iterate over config and check that the existing connection has the right config, if
 	 * not... recreate it
@@ -363,6 +369,7 @@ export class ConnectionManager extends EventEmitter<ConnectionManagerEvents> {
 		passEvent('updateMediaObject')
 		passEvent('clearMediaObjects')
 		passEvent('timeTrace')
+		passEvent('stateEvent')
 	}
 }
 

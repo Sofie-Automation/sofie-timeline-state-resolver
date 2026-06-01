@@ -23,6 +23,7 @@ import {
 	AuxRef,
 	DeviceStatus,
 	DeviceType,
+	KairosDeviceTypes,
 	Mapping,
 	MappingKairosType,
 	Mappings,
@@ -88,7 +89,7 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 	}
 
 	constructor(
-		private readonly context: DeviceContextAPI<KairosDeviceState>,
+		private readonly context: DeviceContextAPI<KairosDeviceTypes, KairosDeviceState>,
 		private readonly kairos: KairosConnection
 	) {
 		super()

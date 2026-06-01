@@ -214,6 +214,7 @@ if (isMainRepository) {
 	indexFile += `export * from './action-schema.js'
 export * from './generic-ptz-actions.js'
 export * from './device-options.js'
+import type { DeviceType } from './device-options.js'
 `
 }
 
@@ -413,12 +414,25 @@ ${actionDefinitions
 	}
 	deviceTypeEnum.push(deviceTypeId)
 
+	// Check for an optional events side-car file in integrations/{dir}/events.ts
+	// Future: This needs some implementation thought for plugins
+	const eventsFilePath = path.join(resolvedOutputPath, '..', 'integrations', dir, 'events.ts')
+	const hasEventsFile = isMainRepository && (await fsExists(eventsFilePath))
+	if (hasEventsFile) {
+		output = `import type ${dirId}Events from '../integrations/${dir}/events.js'\n` + output
+	}
+
 	output += `
 export interface ${dirId}DeviceTypes {
 	Type: DeviceType.${deviceTypeId}
 	Options: ${dirId}Options
 	Mappings: SomeMapping${dirId}
-	Actions: ${actionDefinitions.length > 0 ? `${dirId}ActionMethods` : 'null'}
+	Actions: ${actionDefinitions.length > 0 ? `${dirId}ActionMethods` : 'null'}${
+		hasEventsFile
+			? `
+	Events: ${dirId}Events`
+			: ''
+	}
 }
 `
 
@@ -453,14 +467,29 @@ export type DeviceOptions${dirId} = DeviceOptionsBase<DeviceType.${deviceTypeId}
 		await fs.writeFile(outputFilePath, output)
 
 		indexFile += `\nexport * from './${dir}'`
-		indexFile += `\nimport type { ${someMappingName} } from './${dir}.js'`
+		if (isMainRepository) {
+			indexFile += `\nimport type { ${dirId}DeviceTypes } from './${dir}.js'`
+		} else {
+			indexFile += `\nimport type { ${someMappingName} } from './${dir}.js'`
+		}
 		indexFile += '\n'
 	} else {
 		if (await fsUnlink(outputFilePath)) console.log('Removed ' + outputFilePath)
 	}
 }
 
-if (baseMappingsTypes.length) {
+if (isMainRepository && deviceTypeEnum.length) {
+	// Build TSRDeviceTypesMap as an augmentable interface (like DeviceOptionsMap)
+	const deviceTypesMapEntries = deviceTypeEnum.map(
+		(typeId, i) => `\t[DeviceType.${typeId}]: ${dirs[i] ? capitalise(dirs[i]) : typeId}DeviceTypes`
+	)
+	indexFile += `
+/**
+ * A map of all built-in DeviceTypes.
+ * TSR plugins can augment this interface to add their own device types:
+ */
+export interface TSRDeviceTypesMap {\n${deviceTypesMapEntries.join('\n')}\n}\n`
+} else if (baseMappingsTypes.length) {
 	indexFile += `\nexport type TSRMappingOptions =\n\t| ${baseMappingsTypes.join('\n\t| ')}`
 }
 

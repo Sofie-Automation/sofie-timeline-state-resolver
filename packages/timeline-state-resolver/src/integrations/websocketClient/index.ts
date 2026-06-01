@@ -37,7 +37,7 @@ export class WebSocketClientDevice implements Device<
 	// Use ! as the connection will be initialized in init:
 	private connection: WebSocketConnection | undefined
 
-	constructor(protected context: DeviceContextAPI<WebSocketClientDeviceState>) {
+	constructor(protected context: DeviceContextAPI<WebsocketClientDeviceTypes, WebSocketClientDeviceState>) {
 		// Nothing
 	}
 

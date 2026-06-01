@@ -14,7 +14,7 @@ export {
 } from 'timeline-state-resolver-types'
 
 export interface DeviceEntry {
-	deviceClass: new (context: DeviceContextAPI<any, any>) => Device<any, any, any, any>
+	deviceClass: new (context: DeviceContextAPI<any, any, any>) => Device<any, any, any, any>
 	canConnect: boolean
 	deviceName: (deviceId: string, options: any) => string
 	executionMode: (options: any) => 'salvo' | 'sequential'

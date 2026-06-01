@@ -35,9 +35,9 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 	private _sisyfos: SisyfosApi
 	private _isResyncPending = false
 	private _initOptions?: SisyfosOptions
-	private logger: DeviceContextAPI<SisyfosState>['logger']
+	private logger: DeviceContextAPI<SisyfosDeviceTypes, SisyfosState>['logger']
 
-	constructor(protected context: DeviceContextAPI<SisyfosState>) {
+	constructor(protected context: DeviceContextAPI<SisyfosDeviceTypes, SisyfosState>) {
 		this.logger = this.context.logger // just for convenience
 
 		this._sisyfos = new SisyfosApi()

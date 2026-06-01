@@ -35,7 +35,7 @@ export class PharosDevice implements Device<PharosDeviceTypes, PharosState, Phar
 
 	private _pharos: Pharos
 
-	constructor(protected context: DeviceContextAPI<PharosState>) {
+	constructor(protected context: DeviceContextAPI<PharosDeviceTypes, PharosState>) {
 		this._pharos = new Pharos()
 		this._pharos.on('error', (e) => this.context.logger.error('Pharos', e))
 		this._pharos.on('connected', () => {

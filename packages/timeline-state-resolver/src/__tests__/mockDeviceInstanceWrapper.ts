@@ -108,6 +108,10 @@ export class MockDeviceInstanceWrapper
 	setDebugState = jest.fn((_value: boolean): void => {
 		throw new Error('Method not implemented.')
 	})
+
+	setEventSubscriptions = jest.fn((_events: string[]): void => {
+		throw new Error('Method not implemented.')
+	})
 }
 
 export function DiscardAllMockDevices(): void {

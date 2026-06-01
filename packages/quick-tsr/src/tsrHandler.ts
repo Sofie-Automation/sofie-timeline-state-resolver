@@ -6,6 +6,7 @@ import {
 	SlowFulfilledCommandInfo,
 	CasparCGDevice,
 	DevicesRegistry,
+	type SomeTSRStateEvent,
 } from 'timeline-state-resolver'
 import {
 	DeviceOptionsAny,
@@ -133,6 +134,26 @@ export class TSRHandler {
 			)
 			this.tsr.connectionManager.on('connectionEvent:commandReport', (deviceId: string, command: any) => {
 				console.log(`Device ${deviceId} command: ${JSON.stringify(command)}`)
+			})
+		}
+
+		if (tsrSettings.stateEvents && Object.keys(tsrSettings.stateEvents).length > 0) {
+			const stateEvents = tsrSettings.stateEvents
+
+			this.tsr.connectionManager.on('connectionInitialised', (deviceId: string) => {
+				const sub = stateEvents[deviceId]
+				if (sub) {
+					this.tsr.setDeviceEventSubscriptions(deviceId, sub.events).catch((e) => {
+						console.error(`Failed to set event subscriptions for ${deviceId}:`, e)
+					})
+				}
+			})
+
+			this.tsr.connectionManager.on('connectionEvent:stateEvent', (deviceId: string, events: SomeTSRStateEvent[]) => {
+				for (const e of events) {
+					const payloadStr = e.payload === null ? 'null' : JSON.stringify(e.payload)
+					console.log(`State event [${deviceId}] ${e.event}: ${payloadStr}`)
+				}
 			})
 		}
 

@@ -8,113 +8,120 @@
 export * from './action-schema.js'
 export * from './generic-ptz-actions.js'
 export * from './device-options.js'
+import type { DeviceType } from './device-options.js'
 
 export * from './abstract'
-import type { SomeMappingAbstract } from './abstract.js'
+import type { AbstractDeviceTypes } from './abstract.js'
 
 export * from './atem'
-import type { SomeMappingAtem } from './atem.js'
+import type { AtemDeviceTypes } from './atem.js'
 
 export * from './casparCG'
-import type { SomeMappingCasparCG } from './casparCG.js'
+import type { CasparCGDeviceTypes } from './casparCG.js'
 
 export * from './httpSend'
-import type { SomeMappingHttpSend } from './httpSend.js'
+import type { HttpSendDeviceTypes } from './httpSend.js'
 
 export * from './httpWatcher'
-import type { SomeMappingHttpWatcher } from './httpWatcher.js'
+import type { HttpWatcherDeviceTypes } from './httpWatcher.js'
 
 export * from './hyperdeck'
-import type { SomeMappingHyperdeck } from './hyperdeck.js'
+import type { HyperdeckDeviceTypes } from './hyperdeck.js'
 
 export * from './kairos'
-import type { SomeMappingKairos } from './kairos.js'
+import type { KairosDeviceTypes } from './kairos.js'
 
 export * from './lawo'
-import type { SomeMappingLawo } from './lawo.js'
+import type { LawoDeviceTypes } from './lawo.js'
 
 export * from './multiOsc'
-import type { SomeMappingMultiOsc } from './multiOsc.js'
+import type { MultiOscDeviceTypes } from './multiOsc.js'
 
 export * from './obs'
-import type { SomeMappingObs } from './obs.js'
+import type { ObsDeviceTypes } from './obs.js'
 
 export * from './ograf'
-import type { SomeMappingOgraf } from './ograf.js'
+import type { OgrafDeviceTypes } from './ograf.js'
 
 export * from './osc'
-import type { SomeMappingOsc } from './osc.js'
+import type { OscDeviceTypes } from './osc.js'
 
 export * from './panasonicPTZ'
-import type { SomeMappingPanasonicPTZ } from './panasonicPTZ.js'
+import type { PanasonicPTZDeviceTypes } from './panasonicPTZ.js'
 
 export * from './pharos'
-import type { SomeMappingPharos } from './pharos.js'
+import type { PharosDeviceTypes } from './pharos.js'
 
 export * from './quantel'
-import type { SomeMappingQuantel } from './quantel.js'
+import type { QuantelDeviceTypes } from './quantel.js'
 
 export * from './shotoku'
-import type { SomeMappingShotoku } from './shotoku.js'
+import type { ShotokuDeviceTypes } from './shotoku.js'
 
 export * from './singularLive'
-import type { SomeMappingSingularLive } from './singularLive.js'
+import type { SingularLiveDeviceTypes } from './singularLive.js'
 
 export * from './sisyfos'
-import type { SomeMappingSisyfos } from './sisyfos.js'
+import type { SisyfosDeviceTypes } from './sisyfos.js'
 
 export * from './sofieChef'
-import type { SomeMappingSofieChef } from './sofieChef.js'
+import type { SofieChefDeviceTypes } from './sofieChef.js'
 
 export * from './tcpSend'
-import type { SomeMappingTcpSend } from './tcpSend.js'
+import type { TcpSendDeviceTypes } from './tcpSend.js'
 
 export * from './telemetrics'
-import type { SomeMappingTelemetrics } from './telemetrics.js'
+import type { TelemetricsDeviceTypes } from './telemetrics.js'
 
 export * from './tricaster'
-import type { SomeMappingTricaster } from './tricaster.js'
+import type { TricasterDeviceTypes } from './tricaster.js'
 
 export * from './udpSend'
-import type { SomeMappingUdpSend } from './udpSend.js'
+import type { UdpSendDeviceTypes } from './udpSend.js'
 
 export * from './viscaOverIP'
-import type { SomeMappingViscaOverIP } from './viscaOverIP.js'
+import type { ViscaOverIPDeviceTypes } from './viscaOverIP.js'
 
 export * from './vizMSE'
-import type { SomeMappingVizMSE } from './vizMSE.js'
+import type { VizMSEDeviceTypes } from './vizMSE.js'
 
 export * from './vmix'
-import type { SomeMappingVmix } from './vmix.js'
+import type { VmixDeviceTypes } from './vmix.js'
 
 export * from './websocketClient'
-import type { SomeMappingWebsocketClient } from './websocketClient.js'
+import type { WebsocketClientDeviceTypes } from './websocketClient.js'
 
-export type TSRMappingOptions =
-	| SomeMappingAbstract
-	| SomeMappingAtem
-	| SomeMappingCasparCG
-	| SomeMappingHttpSend
-	| SomeMappingHttpWatcher
-	| SomeMappingHyperdeck
-	| SomeMappingKairos
-	| SomeMappingLawo
-	| SomeMappingMultiOsc
-	| SomeMappingObs
-	| SomeMappingOgraf
-	| SomeMappingOsc
-	| SomeMappingPanasonicPTZ
-	| SomeMappingPharos
-	| SomeMappingQuantel
-	| SomeMappingShotoku
-	| SomeMappingSingularLive
-	| SomeMappingSisyfos
-	| SomeMappingSofieChef
-	| SomeMappingTcpSend
-	| SomeMappingTelemetrics
-	| SomeMappingTricaster
-	| SomeMappingUdpSend
-	| SomeMappingViscaOverIP
-	| SomeMappingVizMSE
-	| SomeMappingVmix
-	| SomeMappingWebsocketClient
+/**
+ * A map of all built-in DeviceTypes.
+ * TSR plugins can augment this interface to add their own device types:
+ */
+export interface TSRDeviceTypesMap {
+	[DeviceType.ABSTRACT]: AbstractDeviceTypes
+	[DeviceType.ATEM]: AtemDeviceTypes
+	[DeviceType.CASPARCG]: CasparCGDeviceTypes
+	[DeviceType.HTTPSEND]: HttpSendDeviceTypes
+	[DeviceType.HTTPWATCHER]: HttpWatcherDeviceTypes
+	[DeviceType.HYPERDECK]: HyperdeckDeviceTypes
+	[DeviceType.KAIROS]: KairosDeviceTypes
+	[DeviceType.LAWO]: LawoDeviceTypes
+	[DeviceType.MULTI_OSC]: MultiOscDeviceTypes
+	[DeviceType.OBS]: ObsDeviceTypes
+	[DeviceType.OGRAF]: OgrafDeviceTypes
+	[DeviceType.OSC]: OscDeviceTypes
+	[DeviceType.PANASONIC_PTZ]: PanasonicPTZDeviceTypes
+	[DeviceType.PHAROS]: PharosDeviceTypes
+	[DeviceType.QUANTEL]: QuantelDeviceTypes
+	[DeviceType.SHOTOKU]: ShotokuDeviceTypes
+	[DeviceType.SINGULAR_LIVE]: SingularLiveDeviceTypes
+	[DeviceType.SISYFOS]: SisyfosDeviceTypes
+	[DeviceType.SOFIE_CHEF]: SofieChefDeviceTypes
+	[DeviceType.TCPSEND]: TcpSendDeviceTypes
+	[DeviceType.TELEMETRICS]: TelemetricsDeviceTypes
+	[DeviceType.TRICASTER]: TricasterDeviceTypes
+	[DeviceType.UDP_SEND]: UdpSendDeviceTypes
+	[DeviceType.VISCA_OVER_IP]: ViscaOverIPDeviceTypes
+	[DeviceType.VIZMSE]: VizMSEDeviceTypes
+	[DeviceType.VMIX]: VmixDeviceTypes
+	[DeviceType.WEBSOCKET_CLIENT]: WebsocketClientDeviceTypes
+}
+

@@ -4,6 +4,7 @@
  * DO NOT MODIFY IT BY HAND. Instead, modify the source JSONSchema file,
  * and re-run the "tsr-schema-types" tool to regenerate this file.
  */
+import type AtemEvents from '../integrations/atem/events.js'
 import type { ActionExecutionResult } from '../actions.js'
 import type { DeviceType } from './device-options.js'
 
@@ -118,4 +119,5 @@ export interface AtemDeviceTypes {
 	Options: AtemOptions
 	Mappings: SomeMappingAtem
 	Actions: AtemActionMethods
+	Events: AtemEvents
 }

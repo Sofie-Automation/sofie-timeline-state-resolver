@@ -62,7 +62,7 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 		psus: [],
 	}
 
-	constructor(protected context: DeviceContextAPI<AtemDeviceState, AnyAddressState>) {
+	constructor(protected context: DeviceContextAPI<AtemDeviceTypes, AtemDeviceState, AnyAddressState>) {
 		// Nothing
 	}
 
@@ -256,6 +256,27 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 		if (!newState) return false // undefined incoming state should never reassert
 
 		return oldState?.controlValue !== newState.controlValue
+	}
+
+	onAddressChanged(address: string, isAhead: boolean): void {
+		const meIndex = this._getMeIndexFromAddress(address)
+		if (meIndex === undefined) return
+
+		const atemState = this._atem.state
+		if (!atemState) return
+		const me = AtemStateUtil.getMixEffect(atemState, meIndex)
+		if (!me) return
+
+		const programInput: number = ('input' in me ? (me as any).input : me.programInput) ?? 0
+		const previewInput: number = ('input' in me ? undefined : me.previewInput) ?? 0
+
+		this.context.reportStateEvent(`me.${meIndex}.inputs`, { programInput, previewInput }, isAhead)
+	}
+
+	private _getMeIndexFromAddress(address: string): number | undefined {
+		const match = address.match(/^video\.mixEffects\.(\d+)\.(pgm|base)$/)
+		if (!match) return undefined
+		return parseInt(match[1], 10)
 	}
 
 	private _onAtemStateChanged(newState: Readonly<NativeAtemState>) {

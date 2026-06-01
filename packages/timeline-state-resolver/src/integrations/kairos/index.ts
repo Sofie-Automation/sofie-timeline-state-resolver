@@ -28,7 +28,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 
 	readonly actions: KairosActionMethods
 
-	constructor(public context: DeviceContextAPI<KairosDeviceState>) {
+	constructor(public context: DeviceContextAPI<KairosDeviceTypes, KairosDeviceState>) {
 		this._kairos = new KairosConnection()
 		this._kairosRamLoader = new KairosRamLoader(this._kairos, context)
 

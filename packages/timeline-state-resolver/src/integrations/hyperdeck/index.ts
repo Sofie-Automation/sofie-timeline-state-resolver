@@ -51,7 +51,7 @@ export class HyperdeckDevice implements Device<
 	private _expectedTransportStatus: TransportStatus | undefined
 	private _suppressEmptySlotWarnings = false
 
-	constructor(protected context: DeviceContextAPI<HyperdeckDeviceState>) {
+	constructor(protected context: DeviceContextAPI<HyperdeckDeviceTypes, HyperdeckDeviceState>) {
 		// Nothing
 	}
 

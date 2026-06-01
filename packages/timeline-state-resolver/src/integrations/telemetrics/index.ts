@@ -40,7 +40,7 @@ export class TelemetricsDevice implements Device<
 
 	private retryConnectionTimer: NodeJS.Timeout | undefined
 
-	constructor(protected context: DeviceContextAPI<TelemetricsState>) {
+	constructor(protected context: DeviceContextAPI<TelemetricsDeviceTypes, TelemetricsState>) {
 		// Nothing
 	}
 
