@@ -13,7 +13,7 @@ import {
 	HttpSendDeviceTypes,
 	HttpSendActionMethods,
 	HttpSendActions,
-	DeviceStatus,
+	DeviceStatusInput,
 } from 'timeline-state-resolver-types'
 import type {
 	Device,
@@ -63,7 +63,7 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 	get connected(): boolean {
 		return false
 	}
-	getStatus(): Omit<DeviceStatus, 'active'> {
+	getStatus(): DeviceStatusInput {
 		return {
 			statusCode: StatusCode.GOOD,
 			messages: [],

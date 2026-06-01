@@ -11,6 +11,7 @@ import type {
 } from 'timeline-state-resolver-api'
 import {
 	type DeviceStatus,
+	type DeviceStatusInput,
 	type DeviceType,
 	type Mappings,
 	type MediaObject,
@@ -26,6 +27,30 @@ import { StateTracker } from './stateTracker.js'
 type Config = DeviceOptionsAny
 type DeviceState = object
 type AddressState = any
+
+/** Normalise a DeviceStatusInput (from device.getStatus()) to a full DeviceStatus.
+ *
+ *  This is done for backwards compatibility, so that devices inplemented in plugins that haven't
+ *  been updated to the new DeviceStatus format will still work.
+ */
+function normaliseDeviceStatus(input: DeviceStatusInput, active: boolean): DeviceStatus {
+	if ('statusDetails' in input) {
+		// New device, with statusDetails
+		return {
+			statusCode: input.statusCode,
+			messages: input.statusDetails.map((d) => d.message),
+			statusDetails: input.statusDetails,
+			active,
+		}
+	}
+	// Old style device, with only messages
+	return {
+		statusCode: input.statusCode,
+		messages: input.messages,
+		statusDetails: input.messages.map((message) => ({ message })),
+		active,
+	}
+}
 
 export interface DeviceDetails {
 	deviceId: string
@@ -110,7 +135,6 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		}
 
 		this._deviceSpecs = deviceSpecs
-		this._device = new deviceSpecs.deviceClass(this._getDeviceContextAPI())
 		this._deviceId = id
 		this._deviceType = config.type
 		this._logDebug = config.debug || false
@@ -118,6 +142,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 		this._deviceName = deviceSpecs.deviceName(id, config)
 		this._instanceId = Math.floor(Math.random() * 10000)
 		this._startTime = time
+		this._device = new deviceSpecs.deviceClass(this._getDeviceContextAPI())
 
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -277,7 +302,7 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 	}
 
 	getStatus(): DeviceStatus {
-		return { ...this._device.getStatus(), active: this._isActive }
+		return normaliseDeviceStatus(this._device.getStatus(), this._isActive)
 	}
 
 	setDebugLogging(value: boolean) {
@@ -305,6 +330,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 
 	private _getDeviceContextAPI(): DeviceContextAPI<any, DeviceState, AddressState> {
 		return {
+			deviceName: this._deviceName,
+
 			logger: {
 				error: (context: string, err: Error) => {
 					this.emit('error', context, err)
@@ -328,11 +355,8 @@ export class DeviceInstanceWrapper extends EventEmitter<DeviceInstanceEvents> {
 				}
 			},
 
-			connectionChanged: (status: Omit<DeviceStatus, 'active'>) => {
-				this.emit('connectionChanged', {
-					...status,
-					active: this._isActive,
-				})
+			connectionChanged: (status: DeviceStatusInput) => {
+				this.emit('connectionChanged', normaliseDeviceStatus(status, this._isActive))
 			},
 			resetResolver: () => {
 				this.emit('resetResolver')

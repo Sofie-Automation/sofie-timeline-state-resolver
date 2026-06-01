@@ -15,11 +15,14 @@ import {
 	LoadMixerPresetPayload,
 	ActionExecutionResult,
 	SisyfosDeviceTypes,
-	DeviceStatus,
+	DeviceStatusInput,
+	DeviceStatusDetail,
 	StatusCode,
+	SisyfosStatusCode,
 } from 'timeline-state-resolver-types'
 
 import { SisyfosApi, SisyfosCommand, SisyfosState, SisyfosChannel, SisyfosCommandType } from './connection.js'
+import { createSisyfosStatusDetail } from './messages.js'
 import Debug from 'debug'
 import { t } from '../../lib.js'
 import { CommandWithContext, Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
@@ -31,6 +34,7 @@ type Command = CommandWithContext<SisyfosCommand, string>
 export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosState, Command> {
 	private _sisyfos: SisyfosApi
 	private _isResyncPending = false
+	private _initOptions?: SisyfosOptions
 	private logger: DeviceContextAPI<SisyfosDeviceTypes, SisyfosState>['logger']
 
 	constructor(protected context: DeviceContextAPI<SisyfosDeviceTypes, SisyfosState>) {
@@ -96,6 +100,7 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 	public readonly actions = this
 
 	public async init(initOptions: SisyfosOptions): Promise<boolean> {
+		this._initOptions = initOptions
 		this._sisyfos.once('initialized', () => {
 			this.context.resetToState(this._getDeviceState(false))
 		})
@@ -112,27 +117,42 @@ export class SisyfosMessageDevice implements Device<SisyfosDeviceTypes, SisyfosS
 		this._sisyfos.removeAllListeners()
 	}
 
-	public getStatus(): Omit<DeviceStatus, 'active'> {
+	public getStatus(): DeviceStatusInput {
 		let statusCode = StatusCode.GOOD
-		const messages: Array<string> = []
+		const statusDetails: DeviceStatusDetail[] = []
 
 		if (!this._sisyfos.connected) {
 			statusCode = StatusCode.BAD
-			messages.push('Not connected')
+			statusDetails.push(
+				createSisyfosStatusDetail(SisyfosStatusCode.NOT_CONNECTED, {
+					deviceName: this.context.deviceName,
+					host: this._initOptions?.host ?? '',
+					port: this._initOptions?.port ?? 0,
+				})
+			)
 		}
 
 		if (!this._sisyfos.state && !this._isResyncPending) {
 			statusCode = StatusCode.BAD
-			messages.push(`Sisyfos device connection not initialized (restart required)`)
+			statusDetails.push(
+				createSisyfosStatusDetail(SisyfosStatusCode.NOT_INITIALIZED, {
+					deviceName: this.context.deviceName,
+				})
+			)
 		}
 
 		if (!this._sisyfos.mixerOnline) {
 			statusCode = StatusCode.BAD
-			messages.push(`Sisyfos has no connection to Audiomixer`)
+			statusDetails.push(
+				createSisyfosStatusDetail(SisyfosStatusCode.NO_MIXER_CONNECTION, {
+					deviceName: this.context.deviceName,
+				})
+			)
 		}
+
 		return {
-			statusCode: statusCode,
-			messages: messages,
+			statusCode,
+			statusDetails,
 		}
 	}
 

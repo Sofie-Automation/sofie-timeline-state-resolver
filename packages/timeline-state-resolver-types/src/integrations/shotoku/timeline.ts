@@ -1,4 +1,5 @@
 import { DeviceType } from '../../generated/index.js'
+import type { DeviceStatusDetail } from '../../deviceStatusDetail.js'
 
 export enum TimelineContentTypeShotoku {
 	SHOT = 'shot',
@@ -33,3 +34,21 @@ export interface TimelineContentShotokuSequence {
 }
 
 export type TimelineContentShotoku = TimelineContentShotokuShot | TimelineContentShotokuSequence
+
+export const ShotokuStatusCode = {
+	NOT_CONNECTED: 'DEVICE_SHOTOKU_NOT_CONNECTED',
+} as const
+export type ShotokuStatusCode = (typeof ShotokuStatusCode)[keyof typeof ShotokuStatusCode]
+
+export interface ShotokuStatusContextMap {
+	[ShotokuStatusCode.NOT_CONNECTED]: Record<string, never>
+}
+
+export type ShotokuStatusDetail<T extends ShotokuStatusCode = ShotokuStatusCode> = DeviceStatusDetail<
+	T,
+	ShotokuStatusContextMap[T]
+>
+
+export const ShotokuStatusMessages: Record<ShotokuStatusCode, string> = {
+	[ShotokuStatusCode.NOT_CONNECTED]: 'Not connected',
+}

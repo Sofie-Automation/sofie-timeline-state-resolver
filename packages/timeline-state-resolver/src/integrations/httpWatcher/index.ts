@@ -2,12 +2,15 @@ import {
 	TimelineContentTypeHTTP,
 	HttpWatcherOptions,
 	StatusCode,
-	DeviceStatus,
+	DeviceStatusInput,
 	HttpWatcherDeviceTypes,
 	HttpMethod,
+	HTTPWatcherStatusDetail,
+	HTTPWatcherStatusCode,
 } from 'timeline-state-resolver-types'
 import got, { Headers, Response } from 'got'
 import type { Device, CommandWithContext, DeviceContextAPI } from 'timeline-state-resolver-api'
+import { createHTTPWatcherStatusDetail } from './messages.js'
 
 type HTTPWatcherDeviceState = Record<string, never>
 
@@ -34,7 +37,7 @@ export class HTTPWatcherDevice implements Device<
 	private intervalTime!: number
 	private interval: NodeJS.Timeout | undefined
 	private status: StatusCode = StatusCode.UNKNOWN
-	private statusReason: string | undefined
+	private statusDetails: HTTPWatcherStatusDetail[] = []
 
 	constructor(protected context: DeviceContextAPI<HttpWatcherDeviceTypes, HTTPWatcherDeviceState>) {
 		// Nothing
@@ -42,21 +45,32 @@ export class HTTPWatcherDevice implements Device<
 
 	private onInterval() {
 		if (!this.uri) {
-			this._setStatus(StatusCode.BAD, 'URI not set')
+			this._setStatus(StatusCode.BAD, [createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.URI_NOT_SET, {})])
 			return
 		}
 
+		const uri = this.uri
 		const reqMethod = got[this.httpMethod]
 		if (reqMethod) {
-			reqMethod(this.uri, {
+			reqMethod(uri, {
 				headers: this.headers,
 			})
-				.then((response) => this.handleResponse(response))
+				.then((response) => this.handleResponse(response, uri))
 				.catch((error) => {
-					this._setStatus(StatusCode.BAD, error.toString() || 'Unknown')
+					const context: any = {
+						error: error.toString() || 'Unknown',
+						uri: uri,
+					}
+					if (error.response) {
+						context.statusCode = error.response.statusCode
+						context.body = error.response.body
+					}
+					this._setStatus(StatusCode.BAD, [createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.REQUEST_ERROR, context)])
 				})
 		} else {
-			this._setStatus(StatusCode.BAD, `Bad request method: "${this.httpMethod}"`)
+			this._setStatus(StatusCode.BAD, [
+				createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.BAD_METHOD, { method: this.httpMethod }),
+			])
 		}
 	}
 	private stopInterval() {
@@ -72,13 +86,28 @@ export class HTTPWatcherDevice implements Device<
 		setTimeout(() => this.onInterval(), 300)
 	}
 
-	private handleResponse(response: Response<string>) {
+	private handleResponse(response: Response<string>, uri: string) {
 		if (this.expectedHttpResponse && this.expectedHttpResponse !== response.statusCode) {
-			this._setStatus(StatusCode.BAD, `Expected status code ${this.expectedHttpResponse}, got ${response.statusCode}`)
+			this._setStatus(StatusCode.BAD, [
+				createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.UNEXPECTED_STATUS_CODE, {
+					expected: this.expectedHttpResponse,
+					actual: response.statusCode,
+					uri: uri,
+					body: response.body,
+					headers: response.headers,
+				}),
+			])
 		} else if (this.keyword && response.body && response.body.indexOf(this.keyword) === -1) {
-			this._setStatus(StatusCode.BAD, `Expected keyword "${this.keyword}" not found`)
+			this._setStatus(StatusCode.BAD, [
+				createHTTPWatcherStatusDetail(HTTPWatcherStatusCode.KEYWORD_NOT_FOUND, {
+					keyword: this.keyword,
+					uri: uri,
+					body: response.body,
+					statusCode: response.statusCode,
+				}),
+			])
 		} else {
-			this._setStatus(StatusCode.GOOD)
+			this._setStatus(StatusCode.GOOD, [])
 		}
 	}
 
@@ -115,16 +144,17 @@ export class HTTPWatcherDevice implements Device<
 		this.stopInterval()
 	}
 
-	getStatus(): Omit<DeviceStatus, 'active'> {
+	getStatus(): DeviceStatusInput {
 		return {
 			statusCode: this.status,
-			messages: this.statusReason ? [this.statusReason] : [],
+			statusDetails: this.statusDetails,
 		}
 	}
-	private _setStatus(status: StatusCode, reason?: string) {
-		if (this.status !== status || this.statusReason !== reason) {
+	private _setStatus(status: StatusCode, errors: HTTPWatcherStatusDetail[]) {
+		const errorsChanged = JSON.stringify(this.statusDetails) !== JSON.stringify(errors)
+		if (this.status !== status || errorsChanged) {
 			this.status = status
-			this.statusReason = reason
+			this.statusDetails = errors
 
 			this.context.connectionChanged(this.getStatus())
 		}

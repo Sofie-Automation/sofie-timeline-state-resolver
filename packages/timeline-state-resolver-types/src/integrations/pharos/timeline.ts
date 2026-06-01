@@ -1,4 +1,5 @@
 import { DeviceType } from '../../generated/index.js'
+import type { DeviceStatusDetail } from '../../deviceStatusDetail.js'
 
 export enum TimelineContentTypePharos {
 	SCENE = 'scene',
@@ -32,4 +33,22 @@ export interface TimelineContentPharosTimeline extends TimelineContentPharos {
 	pause?: boolean
 	rate?: number
 	fade?: number
+}
+
+export const PharosStatusCode = {
+	NOT_CONNECTED: 'DEVICE_PHAROS_NOT_CONNECTED',
+} as const
+export type PharosStatusCode = (typeof PharosStatusCode)[keyof typeof PharosStatusCode]
+
+export interface PharosStatusContextMap {
+	[PharosStatusCode.NOT_CONNECTED]: Record<string, never>
+}
+
+export type PharosStatusDetail<T extends PharosStatusCode = PharosStatusCode> = DeviceStatusDetail<
+	T,
+	PharosStatusContextMap[T]
+>
+
+export const PharosStatusMessages: Record<PharosStatusCode, string> = {
+	[PharosStatusCode.NOT_CONNECTED]: 'Not connected',
 }

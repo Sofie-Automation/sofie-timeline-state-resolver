@@ -5,14 +5,18 @@ describe('interpolateTemplateString', () => {
 		expect(interpolateTemplateString('Hello there {{name}}', { name: 'Bob' })).toEqual('Hello there Bob')
 	})
 
-	test('missing arg', () => {
-		expect(interpolateTemplateString('Hello there {{name}}', {})).toEqual('Hello there name')
+	test('missing arg preserves placeholder', () => {
+		expect(interpolateTemplateString('Hello there {{name}}', {})).toEqual('Hello there {{name}}')
 	})
 
 	test('repeated arg', () => {
 		expect(interpolateTemplateString('Hello there {{name}} {{name}} {{name}}', { name: 'Bob' })).toEqual(
 			'Hello there Bob Bob Bob'
 		)
+	})
+
+	test('mixed known and unknown args', () => {
+		expect(interpolateTemplateString('{{greeting}} {{name}}!', { greeting: 'Hello' })).toEqual('Hello {{name}}!')
 	})
 })
 

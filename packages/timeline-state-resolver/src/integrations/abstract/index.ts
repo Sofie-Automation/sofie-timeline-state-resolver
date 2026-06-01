@@ -6,7 +6,7 @@ import {
 	AbstractDeviceTypes,
 	AbstractActions,
 	StatusCode,
-	DeviceStatus,
+	DeviceStatusInput,
 } from 'timeline-state-resolver-types'
 import type {
 	Device,
@@ -66,7 +66,7 @@ export class AbstractDevice implements Device<AbstractDeviceTypes, AbstractDevic
 		}, {} as AbstractDeviceState)
 	}
 
-	getStatus(): Omit<DeviceStatus, 'active'> {
+	getStatus(): DeviceStatusInput {
 		return {
 			statusCode: StatusCode.GOOD,
 			messages: [],

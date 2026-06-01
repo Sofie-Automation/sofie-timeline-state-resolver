@@ -8,7 +8,7 @@ import type {
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
-	DeviceStatus,
+	DeviceStatusInput,
 	StatusCode,
 	TSRTimelineContent,
 	UdpSendCommandContent,
@@ -61,7 +61,7 @@ export class UdpSendDevice implements Device<UdpSendDeviceTypes, UdpSendDeviceSt
 		// Note: UDP is connectionless, so we consider it always connected as long as it hasn't been terminated
 		return !this._terminated
 	}
-	getStatus(): Omit<DeviceStatus, 'active'> {
+	getStatus(): DeviceStatusInput {
 		if (this._terminated) {
 			return {
 				statusCode: StatusCode.BAD,

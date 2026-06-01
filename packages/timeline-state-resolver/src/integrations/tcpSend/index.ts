@@ -8,7 +8,7 @@ import type {
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
-	DeviceStatus,
+	DeviceStatusInput,
 	StatusCode,
 	TSRTimelineContent,
 	TcpSendCommandContent,
@@ -66,7 +66,7 @@ export class TcpSendDevice implements Device<TcpSendDeviceTypes, TcpSendDeviceSt
 	get connected(): boolean {
 		return this.tcpConnection.connected
 	}
-	getStatus(): Omit<DeviceStatus, 'active'> {
+	getStatus(): DeviceStatusInput {
 		if (!this.connected) {
 			return {
 				statusCode: StatusCode.BAD,

@@ -8,7 +8,7 @@ import {
 	Mappings,
 	TSRTimelineContent,
 	Mapping,
-	DeviceStatus,
+	DeviceStatusInput,
 	StatusCode,
 	SingularLiveDeviceTypes,
 } from 'timeline-state-resolver-types'
@@ -77,7 +77,7 @@ export class SingularLiveDevice implements Device<
 		// Nothing to do
 	}
 
-	getStatus(): Omit<DeviceStatus, 'active'> {
+	getStatus(): DeviceStatusInput {
 		// Good, since this device has no status, really
 		return {
 			statusCode: StatusCode.GOOD,

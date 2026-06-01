@@ -1,10 +1,19 @@
 import WebSocket from 'ws'
-import { DeviceStatus, StatusCode, WebsocketClientOptions } from 'timeline-state-resolver-types'
+import {
+	DeviceStatusInput,
+	StatusCode,
+	WebsocketClientOptions,
+	WebSocketClientStatusDetail,
+	WebSocketClientStatusCode,
+} from 'timeline-state-resolver-types'
+import { createWebSocketClientStatusDetail } from './messages.js'
 
 export class WebSocketConnection {
 	private ws?: WebSocket
 	private isWsConnected = false
 	private readonly options: WebsocketClientOptions
+	private lastError?: { error: string; uri?: string }
+	private disconnectReason?: string
 
 	constructor(options: WebsocketClientOptions) {
 		this.options = options
@@ -26,21 +35,38 @@ export class WebSocketConnection {
 					this.ws.on('open', () => {
 						clearTimeout(timeout)
 						this.isWsConnected = true
+						this.lastError = undefined
+						this.disconnectReason = undefined
 						resolve()
 					})
 
 					this.ws.on('error', (error) => {
 						clearTimeout(timeout)
+						this.lastError = {
+							error: error.message || error.toString(),
+							uri: this.options.webSocket?.uri,
+						}
 						reject(error)
 					})
 				})
 
-				this.ws.on('close', () => {
+				this.ws.on('close', (code, reason) => {
 					this.isWsConnected = false
+					if (reason) {
+						this.disconnectReason = reason.toString()
+					} else if (code) {
+						this.disconnectReason = `Code ${code}`
+					} else {
+						this.disconnectReason = undefined
+					}
 				})
 			}
 		} catch (error) {
 			this.isWsConnected = false
+			this.lastError = {
+				error: error instanceof Error ? error.message : String(error),
+				uri: this.options.webSocket?.uri,
+			}
 			throw error
 		}
 	}
@@ -49,13 +75,30 @@ export class WebSocketConnection {
 		return this.isWsConnected ? true : false
 	}
 
-	connectionStatus(): Omit<DeviceStatus, 'active'> {
-		const messages: string[] = []
-		// Prepare for more detailed status messages:
-		messages.push(this.isWsConnected ? 'WS Connected' : 'WS Disconnected')
+	connectionStatus(): DeviceStatusInput {
+		const statusDetails: WebSocketClientStatusDetail[] = []
+
+		if (!this.isWsConnected) {
+			if (this.lastError) {
+				statusDetails.push(
+					createWebSocketClientStatusDetail(WebSocketClientStatusCode.CONNECTION_FAILED, {
+						uri: this.lastError.uri,
+						error: this.lastError.error,
+					})
+				)
+			} else {
+				statusDetails.push(
+					createWebSocketClientStatusDetail(WebSocketClientStatusCode.NOT_CONNECTED, {
+						uri: this.options.webSocket?.uri,
+						reason: this.disconnectReason,
+					})
+				)
+			}
+		}
+
 		return {
 			statusCode: this.isWsConnected ? StatusCode.GOOD : StatusCode.BAD,
-			messages,
+			statusDetails,
 		}
 	}
 

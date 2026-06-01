@@ -1,4 +1,5 @@
 import { DeviceType } from '../../generated/index.js'
+import type { DeviceStatusDetail } from '../../deviceStatusDetail.js'
 
 export type TimelineContentQuantelAny = TimelineContentQuantelClip
 export interface TimelineContentQuantelClip {
@@ -39,4 +40,28 @@ export interface QuantelTransitionDelay {
 
 	// For how long to delay the stop (ms)
 	delay: number
+}
+
+export const QuantelStatusCode = {
+	NOT_CONNECTED: 'DEVICE_QUANTEL_NOT_CONNECTED',
+	NOT_INITIALIZED: 'DEVICE_QUANTEL_NOT_INITIALIZED',
+	STATUS_MESSAGE: 'DEVICE_QUANTEL_STATUS_MESSAGE',
+} as const
+export type QuantelStatusCode = (typeof QuantelStatusCode)[keyof typeof QuantelStatusCode]
+
+export interface QuantelStatusContextMap {
+	[QuantelStatusCode.NOT_CONNECTED]: Record<string, never>
+	[QuantelStatusCode.NOT_INITIALIZED]: Record<string, never>
+	[QuantelStatusCode.STATUS_MESSAGE]: { statusMessage: string }
+}
+
+export type QuantelStatusDetail<T extends QuantelStatusCode = QuantelStatusCode> = DeviceStatusDetail<
+	T,
+	QuantelStatusContextMap[T]
+>
+
+export const QuantelStatusMessages: Record<QuantelStatusCode, string> = {
+	[QuantelStatusCode.NOT_CONNECTED]: 'Not connected',
+	[QuantelStatusCode.NOT_INITIALIZED]: 'Quantel device connection not initialized (restart required)',
+	[QuantelStatusCode.STATUS_MESSAGE]: '{{statusMessage}}',
 }

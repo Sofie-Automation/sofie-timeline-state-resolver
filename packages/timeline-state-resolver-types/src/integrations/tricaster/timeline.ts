@@ -1,4 +1,5 @@
 import { DeviceType } from '../../generated/index.js'
+import type { DeviceStatusDetail } from '../../deviceStatusDetail.js'
 
 export type TriCasterMixEffectName = 'main' | `v${number}`
 export type TriCasterKeyerName = `dsk${number}`
@@ -298,4 +299,22 @@ export interface TriCasterKeyer extends TriCasterLayer {
 	transitionEffect?: TriCasterTransitionEffect
 	/** Duration in seconds, applicable to effects other than 'cut' */
 	transitionDuration?: number
+}
+
+export const TriCasterStatusCode = {
+	NOT_CONNECTED: 'DEVICE_TRICASTER_NOT_CONNECTED',
+} as const
+export type TriCasterStatusCode = (typeof TriCasterStatusCode)[keyof typeof TriCasterStatusCode]
+
+export interface TriCasterStatusContextMap {
+	[TriCasterStatusCode.NOT_CONNECTED]: Record<string, never>
+}
+
+export type TriCasterStatusDetail<T extends TriCasterStatusCode = TriCasterStatusCode> = DeviceStatusDetail<
+	T,
+	TriCasterStatusContextMap[T]
+>
+
+export const TriCasterStatusMessages: Record<TriCasterStatusCode, string> = {
+	[TriCasterStatusCode.NOT_CONNECTED]: 'Not connected',
 }

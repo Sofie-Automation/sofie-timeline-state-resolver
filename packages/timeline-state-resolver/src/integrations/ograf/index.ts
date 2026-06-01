@@ -5,7 +5,7 @@ import {
 	StatusCode,
 	TSRTimelineContent,
 	OgrafDeviceTypes,
-	DeviceStatus,
+	DeviceStatusInput,
 	OgrafActionMethods,
 	OgrafActions,
 	DeltaStepPayload,
@@ -63,7 +63,7 @@ export class OGrafDevice implements Device<OgrafDeviceTypes, OGrafDeviceState, O
 	get connected(): boolean {
 		return this.ografConnectionStatus.connected
 	}
-	getStatus(): Omit<DeviceStatus, 'active'> {
+	getStatus(): DeviceStatusInput {
 		if (!this.connected) {
 			return {
 				statusCode: StatusCode.BAD,

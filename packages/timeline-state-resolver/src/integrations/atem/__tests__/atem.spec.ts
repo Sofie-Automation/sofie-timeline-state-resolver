@@ -13,12 +13,14 @@ import {
 	TSRTimelineContent,
 	TimelineContentAtemME,
 	StatusCode,
+	AtemStatusCode,
 } from 'timeline-state-resolver-types'
 import { literal } from '../../../lib.js'
 import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 import { compareAtemCommands, createDevice, extractAllCommands, waitForConnection } from './util.js'
 import { getDeviceContext } from '../../__tests__/testlib.js'
 import { DeviceTimelineState } from 'timeline-state-resolver-api'
+import { createAtemStatusDetail } from '../messages.js'
 
 describe('Atem', () => {
 	const mockTime = new MockTime()
@@ -59,8 +61,13 @@ describe('Atem', () => {
 		const atem = getAtemConnection(device)
 
 		expect(device.getStatus()).toEqual({
-			messages: ['Atem disconnected'],
 			statusCode: StatusCode.BAD,
+			statusDetails: [
+				createAtemStatusDetail(AtemStatusCode.DISCONNECTED, {
+					host: '',
+					deviceName: 'Test Device',
+				}),
+			],
 		})
 
 		await device.init(
@@ -69,15 +76,20 @@ describe('Atem', () => {
 			})
 		)
 		expect(device.getStatus()).toEqual({
-			messages: ['Atem disconnected'],
 			statusCode: StatusCode.BAD,
+			statusDetails: [
+				createAtemStatusDetail(AtemStatusCode.DISCONNECTED, {
+					host: '127.0.0.1',
+					deviceName: 'Test Device',
+				}),
+			],
 		})
 
 		// Check OK once connected
 		await waitForConnection(device)
 		expect(device.getStatus()).toEqual({
-			messages: [],
 			statusCode: StatusCode.GOOD,
+			statusDetails: [],
 		})
 
 		// Report two psus as connected
@@ -85,31 +97,43 @@ describe('Atem', () => {
 		testState.info.power = [true, true]
 		atem.emit('stateChanged', testState, ['info.power'])
 		expect(device.getStatus()).toEqual({
-			messages: [],
 			statusCode: StatusCode.GOOD,
+			statusDetails: [],
 		})
 
-		// Report one psus as offline
+		// Report one failed psu
 		testState.info.power = [true, false]
 		atem.emit('stateChanged', testState, ['info.power'])
 		expect(device.getStatus()).toEqual({
-			messages: ['Atem PSU 2 is faulty. The device has 2 PSU(s) in total.'],
 			statusCode: StatusCode.WARNING_MAJOR,
+			statusDetails: [
+				createAtemStatusDetail(AtemStatusCode.PSU_FAULT, {
+					deviceName: 'Test Device',
+					host: '127.0.0.1',
+					psuNumber: 2,
+					totalPsus: 2,
+				}),
+			],
 		})
 
 		// Report only one psu
 		testState.info.power = [true]
 		atem.emit('stateChanged', testState, ['info.power'])
 		expect(device.getStatus()).toEqual({
-			messages: [],
 			statusCode: StatusCode.GOOD,
+			statusDetails: [],
 		})
 
 		// Disconnect
 		atem.emit('disconnected')
 		expect(device.getStatus()).toEqual({
-			messages: ['Atem disconnected'],
 			statusCode: StatusCode.BAD,
+			statusDetails: [
+				createAtemStatusDetail(AtemStatusCode.DISCONNECTED, {
+					host: '127.0.0.1',
+					deviceName: 'Test Device',
+				}),
+			],
 		})
 	})
 

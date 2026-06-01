@@ -104,7 +104,7 @@ describe('WebSocketClientDevice', () => {
 			MockWebSocketConnection.prototype.connected.mockReturnValue(true)
 			expect(device.getStatus()).toEqual({
 				statusCode: StatusCode.BAD,
-				messages: ['No Connection'],
+				statusDetails: [],
 			})
 
 			//@ts-expect-error - is set to private

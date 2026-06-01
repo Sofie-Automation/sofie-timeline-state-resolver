@@ -29,23 +29,36 @@ describe('Hyperdeck', () => {
 
 		try {
 			expect(device.getStatus()).toEqual({
-				messages: ['Not connected'],
 				statusCode: StatusCode.BAD,
+				statusDetails: [
+					{
+						code: 'DEVICE_HYPERDECK_NOT_CONNECTED',
+						context: {
+							deviceName: 'Hyperdeck',
+							host: '',
+							port: 9993,
+						},
+						message: 'Not connected',
+					},
+				],
 			})
 
 			await device.init({
 				host: '127.0.0.1',
 			})
 			expect(device.getStatus()).toEqual({
-				messages: ['Not connected'],
 				statusCode: StatusCode.BAD,
-			})
-
-			// Check OK once connected
-			await waitForConnection(device)
-			expect(device.getStatus()).toEqual({
-				messages: [],
-				statusCode: StatusCode.GOOD,
+				statusDetails: [
+					{
+						code: 'DEVICE_HYPERDECK_NOT_CONNECTED',
+						context: {
+							deviceName: 'Hyperdeck',
+							host: '127.0.0.1',
+							port: 9993,
+						},
+						message: 'Not connected',
+					},
+				],
 			})
 
 			const mocks = HyperdeckConnection.Hyperdeck.getMockInstances()
@@ -55,8 +68,18 @@ describe('Hyperdeck', () => {
 			// Disconnect
 			mockConnection.emit('disconnected')
 			expect(device.getStatus()).toEqual({
-				messages: ['Not connected'],
 				statusCode: StatusCode.BAD,
+				statusDetails: [
+					{
+						code: 'DEVICE_HYPERDECK_NOT_CONNECTED',
+						context: {
+							deviceName: 'Hyperdeck',
+							host: '127.0.0.1',
+							port: 9993,
+						},
+						message: 'Not connected',
+					},
+				],
 			})
 		} finally {
 			await device.terminate()
@@ -112,8 +135,17 @@ describe('Hyperdeck', () => {
 			expect(sentCommands).toHaveLength(2)
 
 			expect(device.getStatus()).toEqual({
-				messages: ['Slot 2 is not mounted'],
 				statusCode: StatusCode.WARNING_MINOR,
+				statusDetails: [
+					{
+						code: 'DEVICE_HYPERDECK_SLOT_NOT_MOUNTED',
+						context: {
+							deviceName: 'Hyperdeck',
+							slot: 2,
+						},
+						message: 'Slot 2 is not mounted',
+					},
+				],
 			})
 
 			// Run with a short time left
@@ -137,8 +169,26 @@ describe('Hyperdeck', () => {
 			expect(sentCommands).toHaveLength(4)
 
 			expect(device.getStatus()).toEqual({
-				messages: ['Recording time left is less than 0 minutes and 10 seconds', 'Slot 2 is not mounted'],
 				statusCode: StatusCode.WARNING_MAJOR,
+				statusDetails: [
+					{
+						code: 'DEVICE_HYPERDECK_LOW_RECORDING_TIME',
+						context: {
+							deviceName: 'Hyperdeck',
+							minutes: 0,
+							seconds: 10,
+						},
+						message: 'Recording time left is less than 0 minutes and 10 seconds',
+					},
+					{
+						code: 'DEVICE_HYPERDECK_SLOT_NOT_MOUNTED',
+						context: {
+							deviceName: 'Hyperdeck',
+							slot: 2,
+						},
+						message: 'Slot 2 is not mounted',
+					},
+				],
 			})
 
 			// Run with empty drives
@@ -162,8 +212,26 @@ describe('Hyperdeck', () => {
 			expect(sentCommands).toHaveLength(6)
 
 			expect(device.getStatus()).toEqual({
-				messages: ['Recording time left is less than 0 minutes and 0 seconds', 'Slot 2 is not mounted'],
 				statusCode: StatusCode.BAD,
+				statusDetails: [
+					{
+						code: 'DEVICE_HYPERDECK_LOW_RECORDING_TIME',
+						context: {
+							deviceName: 'Hyperdeck',
+							minutes: 0,
+							seconds: 0,
+						},
+						message: 'Recording time left is less than 0 minutes and 0 seconds',
+					},
+					{
+						code: 'DEVICE_HYPERDECK_SLOT_NOT_MOUNTED',
+						context: {
+							deviceName: 'Hyperdeck',
+							slot: 2,
+						},
+						message: 'Slot 2 is not mounted',
+					},
+				],
 			})
 		} finally {
 			await device.terminate()

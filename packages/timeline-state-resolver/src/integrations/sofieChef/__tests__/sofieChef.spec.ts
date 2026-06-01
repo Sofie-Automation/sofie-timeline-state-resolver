@@ -90,7 +90,7 @@ describe('SofieChef', () => {
 
 		expect(device.getStatus()).toMatchObject({
 			statusCode: StatusCode.BAD,
-			messages: ['Window 5: whoopsie'],
+			statusDetails: [{ message: 'Window 5: whoopsie' }],
 		})
 
 		// Simulate loss-of-connection:
@@ -100,7 +100,7 @@ describe('SofieChef', () => {
 
 		expect(device.getStatus()).toMatchObject({
 			statusCode: StatusCode.BAD,
-			messages: ['Not connected'],
+			statusDetails: [{ message: 'Not connected' }],
 		})
 
 		// Simulate that connection is back:
@@ -110,7 +110,7 @@ describe('SofieChef', () => {
 
 		expect(device.getStatus()).toMatchObject({
 			statusCode: StatusCode.GOOD,
-			messages: [],
+			statusDetails: [],
 		})
 	})
 })

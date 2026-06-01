@@ -7,7 +7,7 @@ import {
 	MultiOscOptions,
 	SomeMappingMultiOsc,
 	Mapping,
-	DeviceStatus,
+	DeviceStatusInput,
 	StatusCode,
 	MultiOscDeviceTypes,
 } from 'timeline-state-resolver-types'
@@ -93,8 +93,8 @@ export class MultiOSCMessageDevice implements Device<
 	get connected(): boolean {
 		return false
 	}
-	getStatus(): Omit<DeviceStatus, 'active'> {
-		const status = {
+	getStatus(): DeviceStatusInput {
+		const status: DeviceStatusInput = {
 			statusCode: StatusCode.GOOD,
 			messages: [] as string[],
 		}

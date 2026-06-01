@@ -96,7 +96,9 @@ describe('telemetrics', () => {
 			SOCKET_EVENTS.get('error')!(new Error(errorMessage))
 
 			const result = device.getStatus()
-			expect(result.messages).toContainEqual(errorMessage)
+			expect(result.statusCode).toBe(StatusCode.BAD)
+			const details = 'statusDetails' in result ? result.statusDetails : []
+			expect(details.some((d) => d.message === errorMessage)).toBe(true)
 		})
 
 		it('on close, closed with error, status is BAD', () => {

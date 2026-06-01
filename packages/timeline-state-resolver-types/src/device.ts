@@ -1,5 +1,6 @@
 import type { DeviceTypeExt } from './index.js'
 import type { DeviceCommonOptions } from './generated/common-options.js'
+import type { DeviceStatusDetail } from './deviceStatusDetail.js'
 
 export enum StatusCode {
 	UNKNOWN = 0, // Status unknown
@@ -11,9 +12,31 @@ export enum StatusCode {
 }
 export interface DeviceStatus {
 	statusCode: StatusCode
+	/**
+	 * Human-readable status messages.
+	 * Derived from statusDetails[].message at the TSR boundary, or provided directly by legacy devices.
+	 */
 	messages: Array<string>
+
+	/**
+	 * Structured status details.
+	 * Each detail carries a pre-rendered message and, for devices that support it, a status code
+	 * and context object that consumers can use to apply custom message templates via
+	 * interpolateTemplateString().
+	 */
+	statusDetails?: Array<DeviceStatusDetail>
 	active: boolean
 }
+
+/**
+ * What a device's getStatus() may return.
+ * Devices that have been migrated return { statusCode, statusDetails }.
+ * Legacy or simple devices may return { statusCode, messages }.
+ * TSR normalises this to DeviceStatus at the connectionChanged boundary.
+ */
+export type DeviceStatusInput =
+	| { statusCode: StatusCode; messages: Array<string> }
+	| { statusCode: StatusCode; statusDetails: Array<DeviceStatusDetail> }
 
 export interface DeviceOptionsBase<TType extends DeviceTypeExt, TOptions>
 	extends SlowReportOptions, DeviceCommonOptions {

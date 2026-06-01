@@ -1,5 +1,5 @@
 import { DeviceType } from '../../generated/index.js'
-// import {EmberParameterType} from './generated/lawo'
+import type { DeviceStatusDetail } from '../../deviceStatusDetail.js'
 
 export type EmberValue = number | string | boolean | Buffer | null
 enum ParameterType {
@@ -70,4 +70,19 @@ export interface TimelineContentLawoEmberProperty extends TimelineContentLawoBas
 export interface TimelineContentLawoEmberRetrigger extends TimelineContentLawoBase {
 	type: TimelineContentTypeLawo.TRIGGER_VALUE
 	triggerValue: string
+}
+
+export const LawoStatusCode = {
+	NOT_CONNECTED: 'DEVICE_LAWO_NOT_CONNECTED',
+} as const
+export type LawoStatusCode = (typeof LawoStatusCode)[keyof typeof LawoStatusCode]
+
+export interface LawoStatusContextMap {
+	[LawoStatusCode.NOT_CONNECTED]: Record<string, never>
+}
+
+export type LawoStatusDetail<T extends LawoStatusCode = LawoStatusCode> = DeviceStatusDetail<T, LawoStatusContextMap[T]>
+
+export const LawoStatusMessages: Record<LawoStatusCode, string> = {
+	[LawoStatusCode.NOT_CONNECTED]: 'Not connected',
 }

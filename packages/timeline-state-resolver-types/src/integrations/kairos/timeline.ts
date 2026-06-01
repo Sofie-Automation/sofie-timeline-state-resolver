@@ -1,4 +1,4 @@
-import type { DeviceType } from '../../index.js'
+import { DeviceType } from '../../generated/index.js'
 import type {
 	RefPath,
 	MediaClipRef,

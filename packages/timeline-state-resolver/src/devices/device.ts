@@ -4,7 +4,7 @@ import {
 	DeviceType,
 	MediaObject,
 	DeviceOptionsBase,
-	DeviceStatus,
+	DeviceStatusInput,
 	TSRTimelineContent,
 	ActionExecutionResult,
 } from 'timeline-state-resolver-types'
@@ -48,7 +48,7 @@ export type DeviceEventsOLD = {
 	debug: [...debug: any[]]
 	debugState: [state: object]
 	/** The connection status has changed */
-	connectionChanged: [status: DeviceStatus]
+	connectionChanged: [status: DeviceStatusInput]
 	/** A message to the resolver that something has happened that warrants a reset of the resolver (to re-run it again) */
 	resetResolver: []
 
@@ -81,7 +81,7 @@ export interface IDevice<TOptions extends DeviceOptionsBase<any, any>> {
 	canConnect: boolean
 	connected: boolean
 
-	getStatus: () => DeviceStatus
+	getStatus: () => DeviceStatusInput
 
 	deviceId: string
 	deviceName: string
@@ -186,7 +186,7 @@ export abstract class Device<
 	abstract get canConnect(): boolean
 	abstract get connected(): boolean
 
-	abstract getStatus(): DeviceStatus
+	abstract getStatus(): DeviceStatusInput
 
 	setDebugLogging(debug: boolean) {
 		this.debugLogging = debug

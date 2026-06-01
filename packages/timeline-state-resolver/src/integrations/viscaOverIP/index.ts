@@ -2,7 +2,7 @@ import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState 
 import {
 	ActionExecutionResult,
 	ActionExecutionResultCode,
-	DeviceStatus,
+	DeviceStatusInput,
 	StatusCode,
 	TSRTimelineContent,
 	ViscaOverIPActionMethods,
@@ -57,7 +57,7 @@ export class ViscaOverIpDevice implements Device<ViscaOverIPDeviceTypes, ViscaDe
 		return false
 	}
 
-	getStatus(): Omit<DeviceStatus, 'active'> {
+	getStatus(): DeviceStatusInput {
 		return {
 			statusCode: StatusCode.GOOD,
 			messages: [],

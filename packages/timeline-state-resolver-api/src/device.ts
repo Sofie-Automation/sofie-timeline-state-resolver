@@ -1,6 +1,12 @@
 import type { SlowSentCommandInfo, SlowFulfilledCommandInfo, CommandReport } from './commandReport.js'
 import type { FinishedTrace } from './trace.js'
-import type { Mappings, DeviceStatus, MediaObject, Mapping, DeviceTimelineState } from 'timeline-state-resolver-types'
+import type {
+	Mappings,
+	DeviceStatusInput,
+	MediaObject,
+	Mapping,
+	DeviceTimelineState,
+} from 'timeline-state-resolver-types'
 
 /**
  * The intended usage of this is for each device to define an alias with the generic types provided.
@@ -53,7 +59,7 @@ export interface Device<
 	terminate(): Promise<void>
 
 	get connected(): boolean
-	getStatus(): Omit<DeviceStatus, 'active'>
+	getStatus(): DeviceStatusInput
 
 	// todo - add media objects
 
@@ -139,7 +145,7 @@ export interface DeviceEvents {
 	debug: [...debug: any[]]
 	debugState: [state: object]
 	/** The connection status has changed */
-	connectionChanged: [status: Omit<DeviceStatus, 'active'>]
+	connectionChanged: [status: DeviceStatusInput]
 	/** A message to the resolver that something has happened that warrants a reset of the resolver (to re-run it again) */
 	resetResolver: []
 	/** A message to the resolver that the device needs to receive all known states */
@@ -174,6 +180,9 @@ export interface DeviceContextAPI<
 	DeviceState,
 	AddressState = void,
 > {
+	/** Human-readable name for this device */
+	deviceName: string
+
 	logger: {
 		/** Emit a "error" message */
 		error: (context: string, err: Error) => void
@@ -191,7 +200,7 @@ export interface DeviceContextAPI<
 	getCurrentTime: () => number
 
 	/** Notify that the connection status has changed. */
-	connectionChanged: (status: Omit<DeviceStatus, 'active'>) => void
+	connectionChanged: (status: DeviceStatusInput) => void
 	/**
 	 * Notify the conductor that it should reset the resolver, in order to trigger it again.
 	 * Note: this will not change anything about the current state and should technically not lead

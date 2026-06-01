@@ -1,5 +1,6 @@
 import {
-	DeviceStatus,
+	DeviceStatusInput,
+	DeviceStatusDetail,
 	DeviceType,
 	OSCDeviceType,
 	OscDeviceTypes,
@@ -9,6 +10,7 @@ import {
 	SomeOSCValue,
 	StatusCode,
 	TSRTimelineContent,
+	OSCStatusCode,
 } from 'timeline-state-resolver-types'
 import type { Device, CommandWithContext, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import * as osc from 'osc'
@@ -17,6 +19,7 @@ import Debug from 'debug'
 import _ from 'underscore'
 import { Easing } from '../../devices/transitions/easings.js'
 import { assertNever } from '../../lib.js'
+import { createOSCStatusDetail } from './messages.js'
 const debug = Debug('timeline-state-resolver:osc')
 
 export interface OscDeviceState {
@@ -193,16 +196,27 @@ export class OscDevice implements Device<OscDeviceTypes, OscDeviceState, OscComm
 	get connected(): boolean {
 		return this._oscClientStatus === 'connected'
 	}
-	getStatus(): Omit<DeviceStatus, 'active'> {
+	getStatus(): DeviceStatusInput {
+		let statusCode = StatusCode.GOOD
+		const statusDetails: DeviceStatusDetail[] = []
+		const deviceName = 'OSC'
+
 		if (this.options?.type === OSCDeviceType.TCP) {
-			return {
-				statusCode: this._oscClientStatus === 'disconnected' ? StatusCode.BAD : StatusCode.GOOD,
-				messages: this._oscClientStatus === 'disconnected' ? ['Disconnected'] : [],
+			if (this._oscClientStatus === 'disconnected') {
+				statusCode = StatusCode.BAD
+				statusDetails.push(
+					createOSCStatusDetail(OSCStatusCode.TCP_DISCONNECTED, {
+						deviceName,
+						host: this.options?.host ?? '',
+						port: this.options?.port ?? 0,
+					})
+				)
 			}
 		}
+
 		return {
-			statusCode: StatusCode.GOOD,
-			messages: [],
+			statusCode,
+			statusDetails,
 		}
 	}
 

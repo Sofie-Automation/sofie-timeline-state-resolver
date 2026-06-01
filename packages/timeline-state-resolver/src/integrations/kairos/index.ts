@@ -1,5 +1,5 @@
 import {
-	DeviceStatus,
+	DeviceStatusInput,
 	StatusCode,
 	KairosOptions,
 	Mappings,
@@ -106,7 +106,7 @@ export class KairosDevice implements Device<KairosDeviceTypes, KairosDeviceState
 	/**
 	 * Check status and return it with useful messages appended.
 	 */
-	public getStatus(): Omit<DeviceStatus, 'active'> {
+	public getStatus(): DeviceStatusInput {
 		if (!this.connected) {
 			return {
 				statusCode: StatusCode.BAD,

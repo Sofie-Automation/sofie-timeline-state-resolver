@@ -7,7 +7,7 @@ import type {
 } from 'timeline-state-resolver-api'
 import {
 	ActionExecutionResultCode,
-	DeviceStatus,
+	DeviceStatusInput,
 	DeviceType,
 	StatusCode,
 	TimelineContentTypeWebSocketClient,
@@ -74,8 +74,8 @@ export class WebSocketClientDevice implements Device<
 		return this.connection?.connected() ?? false
 	}
 
-	public getStatus(): Omit<DeviceStatus, 'active'> {
-		return this.connection?.connectionStatus() ?? { statusCode: StatusCode.BAD, messages: ['No Connection'] }
+	public getStatus(): DeviceStatusInput {
+		return this.connection?.connectionStatus() ?? { statusCode: StatusCode.BAD, statusDetails: [] }
 	}
 
 	public convertTimelineStateToDeviceState(state: DeviceTimelineState<TSRTimelineContent>): WebSocketClientDeviceState {

@@ -190,6 +190,7 @@ describe('DeviceInstance', () => {
 		expect(status).toEqual({
 			statusCode: StatusCode.GOOD,
 			messages: [],
+			statusDetails: [],
 			active: false, // because it has no mappings
 		})
 
@@ -203,6 +204,7 @@ describe('DeviceInstance', () => {
 		expect(status2).toEqual({
 			statusCode: StatusCode.GOOD,
 			messages: [],
+			statusDetails: [],
 			active: true, // because it has mappings now
 		})
 	})
