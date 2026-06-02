@@ -42,6 +42,24 @@
 			},
 			"required": ["functionName"],
 			"additionalProperties": false
+		},
+		"switcher": {
+			"type": "object",
+			"properties": {
+				"switcherId": {
+					"type": "string",
+					"ui:title": "Switcher ID",
+					"ui:description": "The GUID of the Composer switcher object. Mutually exclusive with Switcher Name.",
+					"ui:summaryTitle": "Switcher ID"
+				},
+				"switcherName": {
+					"type": "string",
+					"ui:title": "Switcher Name",
+					"ui:description": "The name of the Composer switcher object. Mutually exclusive with Switcher ID.",
+					"ui:summaryTitle": "Switcher Name"
+				}
+			},
+			"additionalProperties": false
 		}
 	}
 }

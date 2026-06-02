@@ -13,6 +13,7 @@ export interface VindralComposerDeviceState {
 	connectors: Record<string, VindralConnectorState | undefined>
 	sceneLayers: Record<string, VindralSceneLayerState | undefined>
 	scriptEngines: Record<string, VindralScriptEngineState | undefined>
+	switchers: Record<string, VindralSwitcherState | undefined>
 }
 
 export interface VindralConnectorState {
@@ -35,6 +36,15 @@ export interface VindralScriptEngineState {
 	timelineObjIds: string[]
 }
 
+export interface VindralSwitcherState {
+	selector: { target?: string; targetName?: string }
+	foregroundInputName?: string
+	backgroundInputName?: string
+	crossfadeTransitionDuration?: number
+	transition?: 'cut' | 'crossfade'
+	timelineObjIds: string[]
+}
+
 export function buildVindralState(
 	timelineState: DeviceTimelineState<TSRTimelineContent>,
 	mappings: Mappings<SomeMappingVindralComposer>
@@ -44,6 +54,7 @@ export function buildVindralState(
 		connectors: {},
 		sceneLayers: {},
 		scriptEngines: {},
+		switchers: {},
 	}
 
 	for (const obj of timelineState.objects) {
@@ -84,6 +95,20 @@ export function buildVindralState(
 				state.scriptEngines[m.functionName] = {
 					functionName: m.functionName,
 					parameter: c.scriptEngine.parameter,
+					timelineObjIds: [obj.id],
+				}
+				break
+			}
+			case MappingVindralComposerType.Switcher: {
+				if (content.type !== TimelineContentTypeVindralComposer.SWITCHER) break
+				const c = content
+				const m = mapping.options
+				state.switchers[layerId] = {
+					selector: m.switcherId ? { target: m.switcherId } : { targetName: m.switcherName },
+					foregroundInputName: c.switcher.foregroundInputName,
+					backgroundInputName: c.switcher.backgroundInputName,
+					crossfadeTransitionDuration: c.switcher.crossfadeTransitionDuration,
+					transition: c.switcher.transition,
 					timelineObjIds: [obj.id],
 				}
 				break

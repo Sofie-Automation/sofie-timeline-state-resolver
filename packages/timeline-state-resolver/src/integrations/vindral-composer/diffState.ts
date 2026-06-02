@@ -50,6 +50,51 @@ export function diffVindralStates(
 		}
 	}
 
+	// Switchers: setProperty commands are emitted first (before invokeCommand) so inputs and duration
+	// are applied on the device before the transition fires.
+	for (const key of allKeys(resolvedOld.switchers, newState.switchers)) {
+		const old = resolvedOld.switchers[key]
+		const next = newState.switchers[key]
+		if (!next) continue
+
+		const timelineObjId = next.timelineObjIds.join(' & ')
+		const context = `switcher layer=${key}`
+
+		if (next.foregroundInputName !== undefined && old?.foregroundInputName !== next.foregroundInputName) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'ForegroundInputName', value: next.foregroundInputName },
+			})
+		}
+		if (next.backgroundInputName !== undefined && old?.backgroundInputName !== next.backgroundInputName) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'BackgroundInputName', value: next.backgroundInputName },
+			})
+		}
+		if (next.crossfadeTransitionDuration !== undefined && old?.crossfadeTransitionDuration !== next.crossfadeTransitionDuration) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'CrossfadeTransitionDuration', value: next.crossfadeTransitionDuration },
+			})
+		}
+
+		if (next.transition !== undefined && old?.transition !== next.transition) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: {
+					type: 'invoke-command',
+					selector: next.selector,
+					command: next.transition === 'cut' ? 'CutCommand' : 'CrossfadeCommand',
+				},
+			})
+		}
+	}
+
 	return commands
 }
 

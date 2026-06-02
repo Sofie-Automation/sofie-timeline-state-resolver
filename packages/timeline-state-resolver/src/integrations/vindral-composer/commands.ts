@@ -8,6 +8,8 @@ export type VindralCommandAny =
 	| VindralTriggerConnectorCommand
 	| VindralSetLayerSourceCommand
 	| VindralExecuteScriptCommand
+	| VindralSetPropertyCommand
+	| VindralInvokeCommandCommand
 
 export interface VindralTriggerConnectorCommand {
 	type: 'trigger-connector'
@@ -29,6 +31,25 @@ export interface VindralExecuteScriptCommand {
 	parameter?: Record<string, unknown>
 }
 
+export interface VindralObjectSelector {
+	target?: string
+	targetName?: string
+	targetType?: string
+}
+
+export interface VindralSetPropertyCommand {
+	type: 'set-property'
+	selector: VindralObjectSelector
+	property: string
+	value: string | number | boolean
+}
+
+export interface VindralInvokeCommandCommand {
+	type: 'invoke-command'
+	selector: VindralObjectSelector
+	command: string
+}
+
 export async function sendCommand(connection: VindralComposer, command: VindralCommandAny): Promise<void> {
 	switch (command.type) {
 		case 'trigger-connector':
@@ -45,6 +66,12 @@ export async function sendCommand(connection: VindralComposer, command: VindralC
 			return
 		case 'execute-script':
 			await connection.executeScriptFunction(command.functionName, command.parameter)
+			return
+		case 'set-property':
+			await connection.setProperty({ ...command.selector, property: command.property, value: command.value })
+			return
+		case 'invoke-command':
+			await connection.invokeCommand(command.selector, command.command)
 			return
 		default:
 			assertNever(command)

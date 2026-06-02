@@ -41,13 +41,20 @@ export interface MappingVindralComposerScriptEngine {
 	mappingType: MappingVindralComposerType.ScriptEngine
 }
 
+export interface MappingVindralComposerSwitcher {
+	switcherId?: string
+	switcherName?: string
+	mappingType: MappingVindralComposerType.Switcher
+}
+
 export enum MappingVindralComposerType {
 	Connector = 'connector',
 	SceneLayer = 'scene-layer',
 	ScriptEngine = 'script-engine',
+	Switcher = 'switcher',
 }
 
-export type SomeMappingVindralComposer = MappingVindralComposerConnector | MappingVindralComposerSceneLayer | MappingVindralComposerScriptEngine
+export type SomeMappingVindralComposer = MappingVindralComposerConnector | MappingVindralComposerSceneLayer | MappingVindralComposerScriptEngine | MappingVindralComposerSwitcher
 
 export interface TriggerConnectorPayload {
 	/**

@@ -1,15 +1,15 @@
 import {
 	DeviceType,
+	Mappings,
 	MappingVindralComposerType,
-	type Mappings,
-	type SomeMappingVindralComposer,
+	SomeMappingVindralComposer,
 	TimelineContentTypeVindralComposer,
 } from 'timeline-state-resolver-types'
-import { buildVindralState, type VindralComposerDeviceState } from '../stateBuilder.js'
+import { buildVindralState, VindralComposerDeviceState } from '../stateBuilder.js'
 import { diffVindralStates } from '../diffState.js'
 import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 import { EMPTY_STATE } from './lib.js'
-import type { VindralCommandWithContext } from '../commands.js'
+import { VindralCommandWithContext } from '../commands.js'
 
 const MAPPINGS: Mappings<SomeMappingVindralComposer> = {
 	connLayer: {
@@ -26,6 +26,11 @@ const MAPPINGS: Mappings<SomeMappingVindralComposer> = {
 		device: DeviceType.VINDRAL_COMPOSER,
 		deviceId: 'vc0',
 		options: { mappingType: MappingVindralComposerType.ScriptEngine, functionName: 'myFunc' },
+	},
+	swLayer: {
+		device: DeviceType.VINDRAL_COMPOSER,
+		deviceId: 'vc0',
+		options: { mappingType: MappingVindralComposerType.Switcher, switcherId: 'abc-123' },
 	},
 }
 
@@ -221,6 +226,89 @@ describe('diffState', () => {
 					command: { type: 'execute-script', functionName: 'myFunc', parameter: undefined },
 				},
 			])
+		})
+	})
+
+	// ── Switchers ──────────────────────────────────────────────────────────────
+
+	describe('switchers', () => {
+		const swObj = (switcher: {
+			foregroundInputName?: string
+			backgroundInputName?: string
+			crossfadeTransitionDuration?: number
+			transition?: 'cut' | 'crossfade'
+		}) => ({
+			enable: { start: 0 },
+			id: 'obj0',
+			layer: 'swLayer',
+			content: {
+				deviceType: DeviceType.VINDRAL_COMPOSER,
+				type: TimelineContentTypeVindralComposer.SWITCHER,
+				switcher,
+			} as const,
+		})
+
+		test('new switcher with all fields → setProperty commands then invokeCommand', () => {
+			const commands = diffVindralStates(
+				{ ...EMPTY_STATE, stateTime: 0 },
+				makeState([swObj({ foregroundInputName: 'cam1', backgroundInputName: 'cam2', crossfadeTransitionDuration: 500, transition: 'crossfade' })]),
+				MAPPINGS
+			)
+			// setProperty commands must come before invokeCommand
+			expect(commands).toStrictEqual([
+				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'ForegroundInputName', value: 'cam1' } },
+				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'BackgroundInputName', value: 'cam2' } },
+				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'CrossfadeTransitionDuration', value: 500 } },
+				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CrossfadeCommand' } },
+			])
+		})
+
+		test('cut transition → CutCommand', () => {
+			compareStates(
+				MAPPINGS,
+				{ ...EMPTY_STATE, stateTime: 0 },
+				makeState([swObj({ transition: 'cut' })]),
+				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CutCommand' } }]
+			)
+		})
+
+		test('unchanged switcher → no commands', () => {
+			const s = makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })])
+			compareStates(MAPPINGS, s, s, [])
+		})
+
+		test('only property changes → setProperty commands, no invokeCommand', () => {
+			compareStates(
+				MAPPINGS,
+				makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })]),
+				makeState([swObj({ foregroundInputName: 'cam3', transition: 'cut' })]),
+				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'ForegroundInputName', value: 'cam3' } }]
+			)
+		})
+
+		test('transition type change → invokeCommand only (property unchanged)', () => {
+			compareStates(
+				MAPPINGS,
+				makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })]),
+				makeState([swObj({ foregroundInputName: 'cam1', transition: 'crossfade' })]),
+				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CrossfadeCommand' } }]
+			)
+		})
+
+		test('switcher without transition → only setProperty commands', () => {
+			compareStates(
+				MAPPINGS,
+				{ ...EMPTY_STATE, stateTime: 0 },
+				makeState([swObj({ foregroundInputName: 'cam1', backgroundInputName: 'cam2' })]),
+				[
+					{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'ForegroundInputName', value: 'cam1' } },
+					{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'BackgroundInputName', value: 'cam2' } },
+				]
+			)
+		})
+
+		test('switcher removed → no commands', () => {
+			compareStates(MAPPINGS, makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })]), { ...EMPTY_STATE, stateTime: 0 }, [])
 		})
 	})
 })

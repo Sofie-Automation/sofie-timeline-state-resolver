@@ -4,12 +4,14 @@ export enum TimelineContentTypeVindralComposer {
 	CONNECTOR = 'connector',
 	SCENE_LAYER = 'scene-layer',
 	SCRIPT_ENGINE = 'script-engine',
+	SWITCHER = 'switcher',
 }
 
 export type TimelineContentVindralComposerAny =
 	| TimelineContentVindralComposerConnector
 	| TimelineContentVindralComposerSceneLayer
 	| TimelineContentVindralComposerScriptEngine
+	| TimelineContentVindralComposerSwitcher
 
 export interface TimelineContentVindralComposerConnector {
 	deviceType: DeviceType.VINDRAL_COMPOSER
@@ -47,5 +49,20 @@ export interface TimelineContentVindralComposerScriptEngine {
 		 * The function name is defined on the mapping.
 		 */
 		parameter?: Record<string, unknown>
+	}
+}
+
+export interface TimelineContentVindralComposerSwitcher {
+	deviceType: DeviceType.VINDRAL_COMPOSER
+	type: TimelineContentTypeVindralComposer.SWITCHER
+	switcher: {
+		/** Input name to set as the foreground (program) source */
+		foregroundInputName?: string
+		/** Input name to set as the background (preview) source */
+		backgroundInputName?: string
+		/** Duration in milliseconds for crossfade transitions */
+		crossfadeTransitionDuration?: number
+		/** Transition command to invoke when this object becomes active or the command type changes */
+		transition?: 'cut' | 'crossfade'
 	}
 }
