@@ -47,14 +47,33 @@ export interface MappingVindralComposerSwitcher {
 	mappingType: MappingVindralComposerType.Switcher
 }
 
+export interface MappingVindralComposerMediaPlayer {
+	/**
+	 * GUID of the Video File Input. Used for setProperty / invokeCommand calls.
+	 * Both mediaPlayerId AND mediaPlayerName are required: the GUID is used for generic
+	 * property/command calls while the name is required for the atomic load-and-play
+	 * endpoint (playVideoFileInput) which handles clip-load timing internally.
+	 */
+	mediaPlayerId: string
+	/** Display name of the Video File Input as configured in Composer. Required alongside mediaPlayerId — see its description. */
+	mediaPlayerName: string
+	/**
+	 * Sets the AutoPlayOnMediaChange property on the device.
+	 * When true, the player automatically begins playing when the source changes.
+	 */
+	autoPlayOnMediaChange?: boolean
+	mappingType: MappingVindralComposerType.MediaPlayer
+}
+
 export enum MappingVindralComposerType {
 	Connector = 'connector',
 	SceneLayer = 'scene-layer',
 	ScriptEngine = 'script-engine',
 	Switcher = 'switcher',
+	MediaPlayer = 'media-player',
 }
 
-export type SomeMappingVindralComposer = MappingVindralComposerConnector | MappingVindralComposerSceneLayer | MappingVindralComposerScriptEngine | MappingVindralComposerSwitcher
+export type SomeMappingVindralComposer = MappingVindralComposerConnector | MappingVindralComposerSceneLayer | MappingVindralComposerScriptEngine | MappingVindralComposerSwitcher | MappingVindralComposerMediaPlayer
 
 export interface TriggerConnectorPayload {
 	/**

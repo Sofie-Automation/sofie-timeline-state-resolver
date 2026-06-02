@@ -60,6 +60,30 @@
 				}
 			},
 			"additionalProperties": false
+		},
+		"media-player": {
+			"type": "object",
+			"properties": {
+				"mediaPlayerId": {
+					"type": "string",
+					"ui:title": "Media Player ID",
+					"ui:description": "The GUID of the Video File Input. Both Media Player ID and Media Player Name are required — the GUID is used for property/command calls while the name is needed for the atomic load-and-play endpoint.",
+					"ui:summaryTitle": "Player ID"
+				},
+				"mediaPlayerName": {
+					"type": "string",
+					"ui:title": "Media Player Name",
+					"ui:description": "The name of the Video File Input as configured in Composer. Required alongside Media Player ID — see its description.",
+					"ui:summaryTitle": "Player Name"
+				},
+				"autoPlayOnMediaChange": {
+					"type": "boolean",
+					"ui:title": "Auto Play On Media Change",
+					"ui:description": "Sets the AutoPlayOnMediaChange property on the device. When true, the player automatically begins playing when the source changes."
+				}
+			},
+			"required": ["mediaPlayerId", "mediaPlayerName"],
+			"additionalProperties": false
 		}
 	}
 }

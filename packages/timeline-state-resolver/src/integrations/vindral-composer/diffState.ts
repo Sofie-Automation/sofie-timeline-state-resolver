@@ -95,6 +95,93 @@ export function diffVindralStates(
 		}
 	}
 
+	// Media players: setProperty commands first so InTime, OutTime etc. are applied before
+	// SourceUrl is set and before any play/pause command fires.
+	// StopCommand is only sent when sourceUrl is explicitly set to '' — it stops playback
+	// and clears the player to black. It is intentionally NOT sent on object disappear.
+	for (const key of allKeys(resolvedOld.mediaPlayers, newState.mediaPlayers)) {
+		const old = resolvedOld.mediaPlayers[key]
+		const next = newState.mediaPlayers[key]
+		if (!next) continue
+
+		const timelineObjId = next.timelineObjIds.join(' & ')
+		const context = `media-player layer=${key}`
+
+		if (next.inTime !== undefined && old?.inTime !== next.inTime) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'InTime', value: next.inTime },
+			})
+		}
+		if (next.outTime !== undefined && old?.outTime !== next.outTime) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'OutTime', value: next.outTime },
+			})
+		}
+		if (next.playbackEndCondition !== undefined && old?.playbackEndCondition !== next.playbackEndCondition) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'PlayBackEndCondition', value: next.playbackEndCondition },
+			})
+		}
+		if (next.autoPlay !== undefined && old?.autoPlay !== next.autoPlay) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'AutoPlay', value: next.autoPlay },
+			})
+		}
+		if (next.autoPlayOnMediaChange !== undefined && old?.autoPlayOnMediaChange !== next.autoPlayOnMediaChange) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'AutoPlayOnMediaChange', value: next.autoPlayOnMediaChange },
+			})
+		}
+		const nextSourceUrl = next.sourceUrl
+		const sourceChanged = nextSourceUrl !== undefined && old?.sourceUrl !== nextSourceUrl
+		let usedPlayVideoFileInput = false
+
+		if (sourceChanged) {
+			if (nextSourceUrl === '') {
+				// Empty string signals "stop and clear the player". StopCommand stops playback
+				// and clears to black — the playing field is intentionally ignored here.
+				commands.push({ timelineObjId, context, command: { type: 'invoke-command', selector: next.selector, command: 'StopCommand' } })
+			} else if (next.playing === true) {
+				// Both mediaPlayerId and mediaPlayerName are required on the mapping, so
+				// targetName is always available here. Use the atomic load-and-play endpoint
+				// so the device handles clip-load timing before starting playback.
+				commands.push({ timelineObjId, context, command: { type: 'play-video-file-input', inputName: next.selector.targetName!, sourceUri: nextSourceUrl } })
+				usedPlayVideoFileInput = true
+			} else {
+				commands.push({
+					timelineObjId,
+					context,
+					command: { type: 'set-property', selector: next.selector, property: 'SourceUrl', value: nextSourceUrl },
+				})
+			}
+		}
+
+		// Skip play/pause when StopCommand or play-video-file-input already covers it.
+		if (!usedPlayVideoFileInput && (nextSourceUrl !== '' || !sourceChanged)) {
+			if (next.playing !== undefined && old?.playing !== next.playing) {
+				commands.push({
+					timelineObjId,
+					context,
+					command: {
+						type: 'invoke-command',
+						selector: next.selector,
+						command: next.playing ? 'PlayCommand' : 'PauseCommand',
+					},
+				})
+			}
+		}
+	}
+
 	return commands
 }
 

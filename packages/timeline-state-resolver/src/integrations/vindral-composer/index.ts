@@ -92,6 +92,7 @@ export class VindralComposerDevice implements Device<
 		try {
 			await sendCommand(this._connection, command.command)
 		} catch (error: unknown) {
+			this.context.logger.error('VindralComposer', error as Error)
 			this.context.commandError(error as Error, command)
 		}
 	}

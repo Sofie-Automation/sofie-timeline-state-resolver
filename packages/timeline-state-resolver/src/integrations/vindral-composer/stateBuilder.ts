@@ -5,6 +5,7 @@ import {
 	type Mappings,
 	type TSRTimelineContent,
 	type SomeMappingVindralComposer,
+	VindralComposerPlaybackEndCondition,
 } from 'timeline-state-resolver-types'
 import type { DeviceTimelineState } from 'timeline-state-resolver-api'
 
@@ -14,6 +15,19 @@ export interface VindralComposerDeviceState {
 	sceneLayers: Record<string, VindralSceneLayerState | undefined>
 	scriptEngines: Record<string, VindralScriptEngineState | undefined>
 	switchers: Record<string, VindralSwitcherState | undefined>
+	mediaPlayers: Record<string, VindralMediaPlayerState | undefined>
+}
+
+export interface VindralMediaPlayerState {
+	selector: { target?: string; targetName?: string }
+	autoPlayOnMediaChange?: boolean
+	sourceUrl?: string
+	inTime?: number
+	outTime?: number
+	playbackEndCondition?: VindralComposerPlaybackEndCondition
+	autoPlay?: boolean
+	playing?: boolean
+	timelineObjIds: string[]
 }
 
 export interface VindralConnectorState {
@@ -55,6 +69,7 @@ export function buildVindralState(
 		sceneLayers: {},
 		scriptEngines: {},
 		switchers: {},
+		mediaPlayers: {},
 	}
 
 	for (const obj of timelineState.objects) {
@@ -109,6 +124,23 @@ export function buildVindralState(
 					backgroundInputName: c.switcher.backgroundInputName,
 					crossfadeTransitionDuration: c.switcher.crossfadeTransitionDuration,
 					transition: c.switcher.transition,
+					timelineObjIds: [obj.id],
+				}
+				break
+			}
+			case MappingVindralComposerType.MediaPlayer: {
+				if (content.type !== TimelineContentTypeVindralComposer.MEDIA_PLAYER) break
+				const c = content
+				const m = mapping.options
+				state.mediaPlayers[layerId] = {
+					selector: { target: m.mediaPlayerId, targetName: m.mediaPlayerName },
+					autoPlayOnMediaChange: m.autoPlayOnMediaChange,
+					sourceUrl: c.mediaPlayer.sourceUrl,
+					inTime: c.mediaPlayer.inTime,
+					outTime: c.mediaPlayer.outTime,
+					playbackEndCondition: c.mediaPlayer.playbackEndCondition,
+					autoPlay: c.mediaPlayer.autoPlay,
+					playing: c.mediaPlayer.playing,
 					timelineObjIds: [obj.id],
 				}
 				break

@@ -10,6 +10,7 @@ export type VindralCommandAny =
 	| VindralExecuteScriptCommand
 	| VindralSetPropertyCommand
 	| VindralInvokeCommandCommand
+	| VindralPlayVideoFileInputCommand
 
 export interface VindralTriggerConnectorCommand {
 	type: 'trigger-connector'
@@ -50,6 +51,13 @@ export interface VindralInvokeCommandCommand {
 	command: string
 }
 
+/** Atomic load-and-play via the dedicated endpoint — handles clip-load timing internally. */
+export interface VindralPlayVideoFileInputCommand {
+	type: 'play-video-file-input'
+	inputName: string
+	sourceUri: string
+}
+
 export async function sendCommand(connection: VindralComposer, command: VindralCommandAny): Promise<void> {
 	switch (command.type) {
 		case 'trigger-connector':
@@ -72,6 +80,9 @@ export async function sendCommand(connection: VindralComposer, command: VindralC
 			return
 		case 'invoke-command':
 			await connection.invokeCommand(command.selector, command.command)
+			return
+		case 'play-video-file-input':
+			await connection.playVideoFileInput(command.inputName, command.sourceUri)
 			return
 		default:
 			assertNever(command)

@@ -5,6 +5,13 @@ export enum TimelineContentTypeVindralComposer {
 	SCENE_LAYER = 'scene-layer',
 	SCRIPT_ENGINE = 'script-engine',
 	SWITCHER = 'switcher',
+	MEDIA_PLAYER = 'media-player',
+}
+
+export enum VindralComposerPlaybackEndCondition {
+	Loop = 0,
+	Hold = 1,
+	Stop = 2,
 }
 
 export type TimelineContentVindralComposerAny =
@@ -12,6 +19,7 @@ export type TimelineContentVindralComposerAny =
 	| TimelineContentVindralComposerSceneLayer
 	| TimelineContentVindralComposerScriptEngine
 	| TimelineContentVindralComposerSwitcher
+	| TimelineContentVindralComposerMediaPlayer
 
 export interface TimelineContentVindralComposerConnector {
 	deviceType: DeviceType.VINDRAL_COMPOSER
@@ -64,5 +72,24 @@ export interface TimelineContentVindralComposerSwitcher {
 		crossfadeTransitionDuration?: number
 		/** Transition command to invoke when this object becomes active or the command type changes */
 		transition?: 'cut' | 'crossfade'
+	}
+}
+
+export interface TimelineContentVindralComposerMediaPlayer {
+	deviceType: DeviceType.VINDRAL_COMPOSER
+	type: TimelineContentTypeVindralComposer.MEDIA_PLAYER
+	mediaPlayer: {
+		/** URL or path of the media file to load into the player */
+		sourceUrl?: string
+		/** In-point within the media, in milliseconds */
+		inTime?: number
+		/** Out-point within the media, in milliseconds */
+		outTime?: number
+		/** Behaviour when playback reaches the out-point */
+		playbackEndCondition?: VindralComposerPlaybackEndCondition
+		/** Sets the AutoPlay device property; the device will auto-play on source change when true */
+		autoPlay?: boolean
+		/** When true, invokes PlayCommand; when false, invokes PauseCommand; when absent, no play/pause command is sent */
+		playing?: boolean
 	}
 }

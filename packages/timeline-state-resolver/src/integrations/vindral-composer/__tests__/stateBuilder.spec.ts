@@ -4,6 +4,7 @@ import {
 	MappingVindralComposerType,
 	SomeMappingVindralComposer,
 	TimelineContentTypeVindralComposer,
+	VindralComposerPlaybackEndCondition,
 } from 'timeline-state-resolver-types'
 import { buildVindralState } from '../stateBuilder.js'
 import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
@@ -29,6 +30,11 @@ const MAPPINGS: Mappings<SomeMappingVindralComposer> = {
 		device: DeviceType.VINDRAL_COMPOSER,
 		deviceId: 'vc0',
 		options: { mappingType: MappingVindralComposerType.Switcher, switcherId: 'abc-123' },
+	},
+	mpLayer: {
+		device: DeviceType.VINDRAL_COMPOSER,
+		deviceId: 'vc0',
+		options: { mappingType: MappingVindralComposerType.MediaPlayer, mediaPlayerId: 'player-guid', mediaPlayerName: 'ClipPlayer1', autoPlayOnMediaChange: true },
 	},
 }
 
@@ -67,6 +73,7 @@ describe('stateBuilder', () => {
 			sceneLayers: {},
 			scriptEngines: {},
 			switchers: {},
+			mediaPlayers: {},
 		})
 	})
 
@@ -97,6 +104,7 @@ describe('stateBuilder', () => {
 			},
 			scriptEngines: {},
 			switchers: {},
+			mediaPlayers: {},
 		})
 	})
 
@@ -127,6 +135,7 @@ describe('stateBuilder', () => {
 				myFunc: { functionName: 'myFunc', parameter: { speed: 2 }, timelineObjIds: ['obj0'] },
 			},
 			switchers: {},
+			mediaPlayers: {},
 		})
 	})
 
@@ -169,6 +178,7 @@ describe('stateBuilder', () => {
 					timelineObjIds: ['obj0'],
 				},
 			},
+			mediaPlayers: {},
 		})
 	})
 
@@ -198,6 +208,95 @@ describe('stateBuilder', () => {
 			crossfadeTransitionDuration: undefined,
 			transition: undefined,
 		})
+	})
+
+	test('media player mapping — all fields with ID selector', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'mpLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.MEDIA_PLAYER,
+							mediaPlayer: {
+								sourceUrl: 'http://cdn.example.com/clip.mp4',
+								inTime: 1000,
+								outTime: 5000,
+								playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
+								autoPlay: true,
+								playing: true,
+							},
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.mediaPlayers['mpLayer']).toStrictEqual({
+			selector: { target: 'player-guid', targetName: 'ClipPlayer1' },
+			autoPlayOnMediaChange: true,
+			sourceUrl: 'http://cdn.example.com/clip.mp4',
+			inTime: 1000,
+			outTime: 5000,
+			playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
+			autoPlay: true,
+			playing: true,
+			timelineObjIds: ['obj0'],
+		})
+		expect(result.connectors).toStrictEqual({})
+		expect(result.switchers).toStrictEqual({})
+	})
+
+	test('media player mapping — selector carries both target and targetName', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'mpLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.MEDIA_PLAYER,
+							mediaPlayer: { sourceUrl: 'http://cdn.example.com/other.mp4' },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.mediaPlayers['mpLayer']).toMatchObject({
+			selector: { target: 'player-guid', targetName: 'ClipPlayer1' },
+			autoPlayOnMediaChange: true,
+			sourceUrl: 'http://cdn.example.com/other.mp4',
+		})
+	})
+
+	test('media player with wrong content type is ignored', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'mpLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.CONNECTOR,
+							connector: { name: 'cam1' },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.mediaPlayers['mpLayer']).toBeUndefined()
 	})
 
 	test('object with wrong device type is ignored', () => {
