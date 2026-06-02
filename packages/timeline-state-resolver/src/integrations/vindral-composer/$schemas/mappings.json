@@ -1,0 +1,47 @@
+{
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/mapping-schema.json",
+	"default": "scene-layer",
+	"mappings": {
+		"connector": {
+			"type": "object",
+			"properties": {},
+			"required": [],
+			"additionalProperties": false
+		},
+		"scene-layer": {
+			"type": "object",
+			"properties": {
+				"scene": {
+					"type": "string",
+					"ui:title": "Scene",
+					"ui:description": "The Scene name as configured in Composer",
+					"ui:summaryTitle": "Scene",
+					"default": "Main"
+				},
+				"layer": {
+					"type": "string",
+					"ui:title": "Layer",
+					"ui:description": "The Layer name within that Scene",
+					"ui:summaryTitle": "Layer",
+					"default": "Background"
+				}
+			},
+			"required": ["scene", "layer"],
+			"additionalProperties": false
+		},
+		"script-engine": {
+			"type": "object",
+			"properties": {
+				"functionName": {
+					"type": "string",
+					"ui:title": "Function Name",
+					"ui:description": "The Script Engine function name to execute",
+					"ui:summaryTitle": "Function",
+					"default": ""
+				}
+			},
+			"required": ["functionName"],
+			"additionalProperties": false
+		}
+	}
+}

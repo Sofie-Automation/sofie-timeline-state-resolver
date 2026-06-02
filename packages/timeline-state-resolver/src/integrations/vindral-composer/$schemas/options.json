@@ -1,0 +1,33 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "Vindral Composer Options",
+	"type": "object",
+	"properties": {
+		"host": {
+			"type": "string",
+			"description": "Hostname or IP address of the Composer instance",
+			"ui:title": "Host",
+			"default": "localhost"
+		},
+		"wsPort": {
+			"type": "integer",
+			"description": "WebSocket port",
+			"ui:title": "WebSocket Port",
+			"default": 8081
+		},
+		"httpPort": {
+			"type": "integer",
+			"description": "HTTP Web API port",
+			"ui:title": "HTTP Port",
+			"default": 44433
+		},
+		"autoReconnect": {
+			"type": "boolean",
+			"description": "Whether to reconnect automatically on disconnect",
+			"ui:title": "Auto Reconnect",
+			"default": true
+		}
+	},
+	"required": [],
+	"additionalProperties": false
+}

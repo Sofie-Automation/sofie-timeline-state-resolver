@@ -11147,6 +11147,7 @@ asn1@evs-broadcast/node-asn1:
     type-fest: "npm:^3.13.1"
     underscore: "npm:^1.13.8"
     utf-8-validate: "npm:^6.0.6"
+    vindral-composer-connection: "npm:^0.1.0"
     ws: "npm:^8.21.0"
     xml-js: "npm:^1.6.11"
   languageName: unknown
@@ -11868,6 +11869,15 @@ asn1@evs-broadcast/node-asn1:
     "@types/unist": "npm:^3.0.0"
     vfile-message: "npm:^4.0.0"
   checksum: 10c0/e5d9eb4810623f23758cfc2205323e33552fb5972e5c2e6587babe08fe4d24859866277404fb9e2a20afb71013860d96ec806cb257536ae463c87d70022ab9ef
+  languageName: node
+  linkType: hard
+
+"vindral-composer-connection@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "vindral-composer-connection@npm:0.1.0"
+  dependencies:
+    tslib: "npm:^2.8.1"
+  checksum: 10c0/207ceb03bccde4e90f9fc86a9c9e3c2d6babfc5ec2aaf24fe60ebf1ef54ef684ab2a499d4bbc17b95fac9af0a01aeb609c5d5286a2a3fa6b464890abb3ce08cd
   languageName: node
   linkType: hard
 

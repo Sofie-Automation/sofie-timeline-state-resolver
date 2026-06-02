@@ -79,6 +79,9 @@ import type { TricasterDeviceTypes } from './tricaster.js'
 export * from './udpSend'
 import type { UdpSendDeviceTypes } from './udpSend.js'
 
+export * from './vindral-composer'
+import type { VindralComposerDeviceTypes } from './vindral-composer.js'
+
 export * from './viscaOverIP'
 import type { ViscaOverIPDeviceTypes } from './viscaOverIP.js'
 
@@ -119,6 +122,7 @@ export interface TSRDeviceTypesMap {
 	[DeviceType.TELEMETRICS]: TelemetricsDeviceTypes
 	[DeviceType.TRICASTER]: TricasterDeviceTypes
 	[DeviceType.UDP_SEND]: UdpSendDeviceTypes
+	[DeviceType.VINDRAL_COMPOSER]: VindralComposerDeviceTypes
 	[DeviceType.VISCA_OVER_IP]: ViscaOverIPDeviceTypes
 	[DeviceType.VIZMSE]: VizMSEDeviceTypes
 	[DeviceType.VMIX]: VmixDeviceTypes

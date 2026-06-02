@@ -1,0 +1,51 @@
+import type { DeviceType } from '../../index.js'
+
+export enum TimelineContentTypeVindralComposer {
+	CONNECTOR = 'connector',
+	SCENE_LAYER = 'scene-layer',
+	SCRIPT_ENGINE = 'script-engine',
+}
+
+export type TimelineContentVindralComposerAny =
+	| TimelineContentVindralComposerConnector
+	| TimelineContentVindralComposerSceneLayer
+	| TimelineContentVindralComposerScriptEngine
+
+export interface TimelineContentVindralComposerConnector {
+	deviceType: DeviceType.VINDRAL_COMPOSER
+	type: TimelineContentTypeVindralComposer.CONNECTOR
+	connector: {
+		/** Trigger the connector by name. Mutually exclusive with `value`. Required if `value` is absent. */
+		name?: string
+		/** Trigger the connector by value. Mutually exclusive with `name`. Required if `name` is absent. */
+		value?: string
+		/**
+		 * Optional key/value pairs passed to the connector, accessible via `@@paramname` in Connector commands.
+		 */
+		params?: Record<string, string>
+	}
+}
+
+export interface TimelineContentVindralComposerSceneLayer {
+	deviceType: DeviceType.VINDRAL_COMPOSER
+	type: TimelineContentTypeVindralComposer.SCENE_LAYER
+	sceneLayer: {
+		/**
+		 * Name of the input source to assign to this layer.
+		 * The source must already exist in the Composer Inputs list — URLs are not valid.
+		 */
+		source: string
+	}
+}
+
+export interface TimelineContentVindralComposerScriptEngine {
+	deviceType: DeviceType.VINDRAL_COMPOSER
+	type: TimelineContentTypeVindralComposer.SCRIPT_ENGINE
+	scriptEngine: {
+		/**
+		 * Optional JSON-serializable parameter object passed to the script function.
+		 * The function name is defined on the mapping.
+		 */
+		parameter?: Record<string, unknown>
+	}
+}

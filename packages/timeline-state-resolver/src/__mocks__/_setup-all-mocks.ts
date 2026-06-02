@@ -1,5 +1,6 @@
 import * as atemConnection from './atem-connection.js'
 import * as casparcgConnection from './casparcg-connection.js'
+import * as vindralComposerConnection from './vindral-composer-connection.js'
 import * as emberplusConnection from './emberplus-connection.js'
 import * as emberplus from './emberplus.js'
 import * as got from './got.js'
@@ -15,6 +16,7 @@ import * as ws from './ws.js'
 
 export function setupAllMocks() {
 	jest.mock('atem-connection', () => atemConnection)
+	jest.mock('vindral-composer-connection', () => vindralComposerConnection)
 	jest.mock('casparcg-connection', () => casparcgConnection)
 	jest.mock('emberplus-connection', () => emberplusConnection)
 	jest.mock('emberplus', () => emberplus)

@@ -24,6 +24,8 @@
     "unit": "lerna run --stream unit",
     "unitci": "lerna run --stream unitci",
     "watch": "run build:main --watch --preserveWatchOutput",
+    "dev": "run watch",
+    "dev:quick-tsr": "yarn workspace quick-tsr run start",
     "docs": "typedoc .",
     "release:set-version": "lerna version --exact --no-changelog --no-git-tag-version --no-push --yes",
     "release:bump-release": "lerna version --exact --conventional-commits --changelog-preset conventionalcommits --conventional-graduate --tag-version-prefix='' --no-push --force-publish='*'",

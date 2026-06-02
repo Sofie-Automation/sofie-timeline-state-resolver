@@ -75,6 +75,9 @@ export type DeviceOptionsTricaster = DeviceOptionsBase<DeviceType.TRICASTER, Tri
 import type { UdpSendOptions } from './udpSend.js'
 export type DeviceOptionsUdpSend = DeviceOptionsBase<DeviceType.UDP_SEND, UdpSendOptions>
 
+import type { VindralComposerOptions } from './vindral-composer.js'
+export type DeviceOptionsVindralComposer = DeviceOptionsBase<DeviceType.VINDRAL_COMPOSER, VindralComposerOptions>
+
 import type { ViscaOverIPOptions } from './viscaOverIP.js'
 export type DeviceOptionsViscaOverIP = DeviceOptionsBase<DeviceType.VISCA_OVER_IP, ViscaOverIPOptions>
 
@@ -115,6 +118,7 @@ export interface DeviceOptionsMap {
 	[DeviceType.TELEMETRICS]: DeviceOptionsTelemetrics
 	[DeviceType.TRICASTER]: DeviceOptionsTricaster
 	[DeviceType.UDP_SEND]: DeviceOptionsUdpSend
+	[DeviceType.VINDRAL_COMPOSER]: DeviceOptionsVindralComposer
 	[DeviceType.VISCA_OVER_IP]: DeviceOptionsViscaOverIP
 	[DeviceType.VIZMSE]: DeviceOptionsVizMSE
 	[DeviceType.VMIX]: DeviceOptionsVmix
@@ -153,6 +157,7 @@ export enum DeviceType {
 	TELEMETRICS = 'TELEMETRICS',
 	TRICASTER = 'TRICASTER',
 	UDP_SEND = 'UDP_SEND',
+	VINDRAL_COMPOSER = 'VINDRAL_COMPOSER',
 	VISCA_OVER_IP = 'VISCA_OVER_IP',
 	VIZMSE = 'VIZMSE',
 	VMIX = 'VMIX',
