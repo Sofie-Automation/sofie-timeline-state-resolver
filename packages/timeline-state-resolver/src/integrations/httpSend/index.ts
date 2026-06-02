@@ -114,7 +114,10 @@ export class HTTPSendDevice implements Device<HttpSendDeviceTypes, HttpSendDevic
 				context: { url: interpolateTemplateStringIfNeeded(cmd.url) },
 			}
 		}
-		if (cmd.paramsType && !(cmd.type in TimelineContentTypeHTTPParamType)) {
+		if (
+			cmd.paramsType &&
+			!Object.values<TimelineContentTypeHTTPParamType>(TimelineContentTypeHTTPParamType).includes(cmd.paramsType)
+		) {
 			return {
 				result: ActionExecutionResultCode.Error,
 				response: t('Failed to send command: params type is invalid'),
