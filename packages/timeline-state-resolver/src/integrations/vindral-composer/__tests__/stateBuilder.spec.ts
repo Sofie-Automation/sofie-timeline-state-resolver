@@ -263,6 +263,7 @@ describe('stateBuilder', () => {
 			playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
 			autoPlay: true,
 			playing: true,
+			stereoGainDb: undefined,
 			timelineObjIds: ['obj0'],
 		})
 		expect(result.connectors).toStrictEqual({})
