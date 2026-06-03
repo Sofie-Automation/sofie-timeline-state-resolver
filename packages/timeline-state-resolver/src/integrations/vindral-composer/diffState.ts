@@ -50,10 +50,22 @@ export function diffVindralStates(
 		}
 	}
 
-	// Switchers: setProperty commands are emitted first (before invokeCommand) so inputs and duration
-	// are applied on the device before the transition fires.
-	for (const key of allKeys(resolvedOld.switchers, newState.switchers)) {
-		const old = resolvedOld.switchers[key]
+	commands.push(...diffSwitchers(resolvedOld, newState))
+	commands.push(...diffMediaPlayers(resolvedOld, newState))
+
+	return commands
+}
+
+// Switchers: setProperty commands are emitted first (before invokeCommand) so inputs and duration
+// are applied on the device before the transition fires.
+function diffSwitchers(
+	oldState: VindralComposerDeviceState,
+	newState: VindralComposerDeviceState
+): VindralCommandWithContext[] {
+	const commands: VindralCommandWithContext[] = []
+
+	for (const key of allKeys(oldState.switchers, newState.switchers)) {
+		const old = oldState.switchers[key]
 		const next = newState.switchers[key]
 		if (!next) continue
 
@@ -64,21 +76,39 @@ export function diffVindralStates(
 			commands.push({
 				timelineObjId,
 				context,
-				command: { type: 'set-property', selector: next.selector, property: 'ForegroundInputName', value: next.foregroundInputName },
+				command: {
+					type: 'set-property',
+					selector: next.selector,
+					property: 'ForegroundInputName',
+					value: next.foregroundInputName,
+				},
 			})
 		}
 		if (next.backgroundInputName !== undefined && old?.backgroundInputName !== next.backgroundInputName) {
 			commands.push({
 				timelineObjId,
 				context,
-				command: { type: 'set-property', selector: next.selector, property: 'BackgroundInputName', value: next.backgroundInputName },
+				command: {
+					type: 'set-property',
+					selector: next.selector,
+					property: 'BackgroundInputName',
+					value: next.backgroundInputName,
+				},
 			})
 		}
-		if (next.crossfadeTransitionDuration !== undefined && old?.crossfadeTransitionDuration !== next.crossfadeTransitionDuration) {
+		if (
+			next.crossfadeTransitionDuration !== undefined &&
+			old?.crossfadeTransitionDuration !== next.crossfadeTransitionDuration
+		) {
 			commands.push({
 				timelineObjId,
 				context,
-				command: { type: 'set-property', selector: next.selector, property: 'CrossfadeTransitionDuration', value: next.crossfadeTransitionDuration },
+				command: {
+					type: 'set-property',
+					selector: next.selector,
+					property: 'CrossfadeTransitionDuration',
+					value: next.crossfadeTransitionDuration,
+				},
 			})
 		}
 
@@ -95,12 +125,21 @@ export function diffVindralStates(
 		}
 	}
 
-	// Media players: setProperty commands first so InTime, OutTime etc. are applied before
-	// SourceUrl is set and before any play/pause command fires.
-	// StopCommand is only sent when sourceUrl is explicitly set to '' — it stops playback
-	// and clears the player to black. It is intentionally NOT sent on object disappear.
-	for (const key of allKeys(resolvedOld.mediaPlayers, newState.mediaPlayers)) {
-		const old = resolvedOld.mediaPlayers[key]
+	return commands
+}
+
+// Media players: setProperty commands first so InTime, OutTime etc. are applied before
+// SourceUrl is set and before any play/pause command fires.
+// StopCommand is only sent when sourceUrl is explicitly set to '' — it stops playback
+// and clears the player to black. It is intentionally NOT sent on object disappear.
+function diffMediaPlayers(
+	oldState: VindralComposerDeviceState,
+	newState: VindralComposerDeviceState
+): VindralCommandWithContext[] {
+	const commands: VindralCommandWithContext[] = []
+
+	for (const key of allKeys(oldState.mediaPlayers, newState.mediaPlayers)) {
+		const old = oldState.mediaPlayers[key]
 		const next = newState.mediaPlayers[key]
 		if (!next) continue
 
@@ -125,7 +164,12 @@ export function diffVindralStates(
 			commands.push({
 				timelineObjId,
 				context,
-				command: { type: 'set-property', selector: next.selector, property: 'PlayBackEndCondition', value: next.playbackEndCondition },
+				command: {
+					type: 'set-property',
+					selector: next.selector,
+					property: 'PlayBackEndCondition',
+					value: next.playbackEndCondition,
+				},
 			})
 		}
 		if (next.autoPlay !== undefined && old?.autoPlay !== next.autoPlay) {
@@ -139,9 +183,15 @@ export function diffVindralStates(
 			commands.push({
 				timelineObjId,
 				context,
-				command: { type: 'set-property', selector: next.selector, property: 'AutoPlayOnMediaChange', value: next.autoPlayOnMediaChange },
+				command: {
+					type: 'set-property',
+					selector: next.selector,
+					property: 'AutoPlayOnMediaChange',
+					value: next.autoPlayOnMediaChange,
+				},
 			})
 		}
+
 		const nextSourceUrl = next.sourceUrl
 		const sourceChanged = nextSourceUrl !== undefined && old?.sourceUrl !== nextSourceUrl
 		let usedPlayVideoFileInput = false
@@ -150,12 +200,20 @@ export function diffVindralStates(
 			if (nextSourceUrl === '') {
 				// Empty string signals "stop and clear the player". StopCommand stops playback
 				// and clears to black — the playing field is intentionally ignored here.
-				commands.push({ timelineObjId, context, command: { type: 'invoke-command', selector: next.selector, command: 'StopCommand' } })
+				commands.push({
+					timelineObjId,
+					context,
+					command: { type: 'invoke-command', selector: next.selector, command: 'StopCommand' },
+				})
 			} else if (next.playing === true) {
 				// Both mediaPlayerId and mediaPlayerName are required on the mapping, so
 				// targetName is always available here. Use the atomic load-and-play endpoint
 				// so the device handles clip-load timing before starting playback.
-				commands.push({ timelineObjId, context, command: { type: 'play-video-file-input', inputName: next.selector.targetName!, sourceUri: nextSourceUrl } })
+				commands.push({
+					timelineObjId,
+					context,
+					command: { type: 'play-video-file-input', inputName: next.selector.targetName!, sourceUri: nextSourceUrl },
+				})
 				usedPlayVideoFileInput = true
 			} else {
 				commands.push({

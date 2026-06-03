@@ -118,13 +118,15 @@ export function buildVindralState(
 				if (content.type !== TimelineContentTypeVindralComposer.SWITCHER) break
 				const c = content
 				const m = mapping.options
-				state.switchers[layerId] = {
+				const switcherKey = m.switcherId ?? m.switcherName ?? layerId
+				const existing = state.switchers[switcherKey]
+				state.switchers[switcherKey] = {
 					selector: m.switcherId ? { target: m.switcherId } : { targetName: m.switcherName },
-					foregroundInputName: c.switcher.foregroundInputName,
-					backgroundInputName: c.switcher.backgroundInputName,
-					crossfadeTransitionDuration: c.switcher.crossfadeTransitionDuration,
-					transition: c.switcher.transition,
-					timelineObjIds: [obj.id],
+					foregroundInputName: c.switcher.foregroundInputName ?? existing?.foregroundInputName,
+					backgroundInputName: c.switcher.backgroundInputName ?? existing?.backgroundInputName,
+					crossfadeTransitionDuration: c.switcher.crossfadeTransitionDuration ?? existing?.crossfadeTransitionDuration,
+					transition: c.switcher.transition ?? existing?.transition,
+					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
 				}
 				break
 			}

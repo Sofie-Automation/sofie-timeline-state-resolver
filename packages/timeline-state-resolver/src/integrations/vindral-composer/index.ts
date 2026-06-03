@@ -33,7 +33,12 @@ export class VindralComposerDevice implements Device<
 	}
 
 	async init(options: VindralComposerOptions): Promise<boolean> {
-		this._connection = new VindralComposer(options)
+		this._connection = new VindralComposer({
+			host: options.host,
+			wsPort: options.wsPort,
+			httpPort: options.httpPort,
+			autoReconnect: options.autoReconnect,
+		})
 
 		this._connection.on('connected', () => {
 			this._connected = true
