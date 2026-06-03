@@ -48,21 +48,16 @@ export interface MappingVindralComposerSwitcher {
 }
 
 export interface MappingVindralComposerMediaPlayer {
-	/**
-	 * GUID of the Video File Input. Used for setProperty / invokeCommand calls.
-	 * Both mediaPlayerId AND mediaPlayerName are required: the GUID is used for generic
-	 * property/command calls while the name is required for the atomic load-and-play
-	 * endpoint (playVideoFileInput) which handles clip-load timing internally.
-	 */
 	mediaPlayerId: string
-	/** Display name of the Video File Input as configured in Composer. Required alongside mediaPlayerId — see its description. */
 	mediaPlayerName: string
-	/**
-	 * Sets the AutoPlayOnMediaChange property on the device.
-	 * When true, the player automatically begins playing when the source changes.
-	 */
 	autoPlayOnMediaChange?: boolean
 	mappingType: MappingVindralComposerType.MediaPlayer
+}
+
+export interface MappingVindralComposerHtml {
+	webPageRendererId?: string
+	webPageRendererName?: string
+	mappingType: MappingVindralComposerType.Html
 }
 
 export enum MappingVindralComposerType {
@@ -71,9 +66,16 @@ export enum MappingVindralComposerType {
 	ScriptEngine = 'script-engine',
 	Switcher = 'switcher',
 	MediaPlayer = 'media-player',
+	Html = 'html',
 }
 
-export type SomeMappingVindralComposer = MappingVindralComposerConnector | MappingVindralComposerSceneLayer | MappingVindralComposerScriptEngine | MappingVindralComposerSwitcher | MappingVindralComposerMediaPlayer
+export type SomeMappingVindralComposer =
+	| MappingVindralComposerConnector
+	| MappingVindralComposerSceneLayer
+	| MappingVindralComposerScriptEngine
+	| MappingVindralComposerSwitcher
+	| MappingVindralComposerMediaPlayer
+	| MappingVindralComposerHtml
 
 export interface TriggerConnectorPayload {
 	/**
@@ -107,11 +109,13 @@ export interface ExecuteScriptFunctionPayload {
 
 export enum VindralComposerActions {
 	TriggerConnector = 'triggerConnector',
-	ExecuteScriptFunction = 'executeScriptFunction'
+	ExecuteScriptFunction = 'executeScriptFunction',
 }
 export interface VindralComposerActionMethods {
-	[VindralComposerActions.TriggerConnector]: (payload: TriggerConnectorPayload) => Promise<ActionExecutionResult<void>>,
-	[VindralComposerActions.ExecuteScriptFunction]: (payload: ExecuteScriptFunctionPayload) => Promise<ActionExecutionResult<void>>
+	[VindralComposerActions.TriggerConnector]: (payload: TriggerConnectorPayload) => Promise<ActionExecutionResult<void>>
+	[VindralComposerActions.ExecuteScriptFunction]: (
+		payload: ExecuteScriptFunctionPayload
+	) => Promise<ActionExecutionResult<void>>
 }
 
 export interface VindralComposerDeviceTypes {

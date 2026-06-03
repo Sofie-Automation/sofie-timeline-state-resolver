@@ -52,6 +52,7 @@ export function diffVindralStates(
 
 	commands.push(...diffSwitchers(resolvedOld, newState))
 	commands.push(...diffMediaPlayers(resolvedOld, newState))
+	commands.push(...diffHtmlRenderers(resolvedOld, newState))
 
 	return commands
 }
@@ -247,6 +248,63 @@ function diffMediaPlayers(
 					},
 				})
 			}
+		}
+	}
+
+	return commands
+}
+
+// HTML renderers: set property before invoking commands so the URL is applied before
+// Start/Stop/Reload fires. No cleanup on disappear — fire-and-forget like connectors.
+function diffHtmlRenderers(
+	oldState: VindralComposerDeviceState,
+	newState: VindralComposerDeviceState
+): VindralCommandWithContext[] {
+	const commands: VindralCommandWithContext[] = []
+
+	for (const key of allKeys(oldState.htmlRenderers, newState.htmlRenderers)) {
+		const old = oldState.htmlRenderers[key]
+		const next = newState.htmlRenderers[key]
+		if (!next) continue
+
+		const timelineObjId = next.timelineObjIds.join(' & ')
+		const context = `html-renderer key=${key}`
+
+		if (next.url !== undefined && old?.url !== next.url) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: {
+					type: 'set-property',
+					selector: next.selector,
+					property: 'WebPageRendererUrl',
+					value: next.url,
+				},
+			})
+		}
+
+		if (next.running !== undefined && old?.running !== next.running) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: {
+					type: 'invoke-command',
+					selector: next.selector,
+					command: next.running ? 'StartCommand' : 'StopCommand',
+				},
+			})
+		}
+
+		if (next.reloadKey !== undefined && old?.reloadKey !== next.reloadKey) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: {
+					type: 'invoke-command',
+					selector: next.selector,
+					command: 'ReloadCommand',
+				},
+			})
 		}
 	}
 

@@ -6,6 +6,7 @@ export enum TimelineContentTypeVindralComposer {
 	SCRIPT_ENGINE = 'script-engine',
 	SWITCHER = 'switcher',
 	MEDIA_PLAYER = 'media-player',
+	HTML = 'html',
 }
 
 export enum VindralComposerPlaybackEndCondition {
@@ -20,6 +21,7 @@ export type TimelineContentVindralComposerAny =
 	| TimelineContentVindralComposerScriptEngine
 	| TimelineContentVindralComposerSwitcher
 	| TimelineContentVindralComposerMediaPlayer
+	| TimelineContentVindralComposerHtml
 
 export interface TimelineContentVindralComposerConnector {
 	deviceType: DeviceType.VINDRAL_COMPOSER
@@ -91,5 +93,21 @@ export interface TimelineContentVindralComposerMediaPlayer {
 		autoPlay?: boolean
 		/** When true, invokes PlayCommand; when false, invokes PauseCommand; when absent, no play/pause command is sent */
 		playing?: boolean
+	}
+}
+
+export interface TimelineContentVindralComposerHtml {
+	deviceType: DeviceType.VINDRAL_COMPOSER
+	type: TimelineContentTypeVindralComposer.HTML
+	html: {
+		/** URL to set as the WebPageRendererUrl property. When absent, no URL change is sent. */
+		url?: string
+		/** When true, invokes StartCommand; when false, invokes StopCommand; when absent, no command is sent */
+		running?: boolean
+		/**
+		 * When this value changes (and is non-undefined), a ReloadCommand is invoked.
+		 * Changing this key is the mechanism for triggering a reload without changing the URL.
+		 */
+		reloadKey?: string | number
 	}
 }

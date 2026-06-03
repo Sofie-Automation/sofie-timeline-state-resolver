@@ -7,6 +7,7 @@ import {
 	type SomeMappingVindralComposer,
 	VindralComposerPlaybackEndCondition,
 } from 'timeline-state-resolver-types'
+import { assertNever } from '../../lib.js'
 import type { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 export interface VindralComposerDeviceState {
@@ -16,6 +17,7 @@ export interface VindralComposerDeviceState {
 	scriptEngines: Record<string, VindralScriptEngineState | undefined>
 	switchers: Record<string, VindralSwitcherState | undefined>
 	mediaPlayers: Record<string, VindralMediaPlayerState | undefined>
+	htmlRenderers: Record<string, VindralHtmlState | undefined>
 }
 
 export interface VindralMediaPlayerState {
@@ -59,6 +61,14 @@ export interface VindralSwitcherState {
 	timelineObjIds: string[]
 }
 
+export interface VindralHtmlState {
+	selector: { target?: string; targetName?: string }
+	url?: string
+	running?: boolean
+	reloadKey?: string | number
+	timelineObjIds: string[]
+}
+
 export function buildVindralState(
 	timelineState: DeviceTimelineState<TSRTimelineContent>,
 	mappings: Mappings<SomeMappingVindralComposer>
@@ -70,6 +80,7 @@ export function buildVindralState(
 		scriptEngines: {},
 		switchers: {},
 		mediaPlayers: {},
+		htmlRenderers: {},
 	}
 
 	for (const obj of timelineState.objects) {
@@ -147,6 +158,22 @@ export function buildVindralState(
 				}
 				break
 			}
+			case MappingVindralComposerType.Html: {
+				if (content.type !== TimelineContentTypeVindralComposer.HTML) break
+				const c = content
+				const m = mapping.options
+				const htmlKey = m.webPageRendererId ?? m.webPageRendererName ?? layerId
+				state.htmlRenderers[htmlKey] = {
+					selector: m.webPageRendererId ? { target: m.webPageRendererId } : { targetName: m.webPageRendererName },
+					url: c.html.url,
+					running: c.html.running,
+					reloadKey: c.html.reloadKey,
+					timelineObjIds: [obj.id],
+				}
+				break
+			}
+			default:
+				assertNever(mapping.options)
 		}
 	}
 	return state

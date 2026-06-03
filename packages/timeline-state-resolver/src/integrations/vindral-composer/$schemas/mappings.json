@@ -84,6 +84,24 @@
 			},
 			"required": ["mediaPlayerId", "mediaPlayerName"],
 			"additionalProperties": false
+		},
+		"html": {
+			"type": "object",
+			"properties": {
+				"webPageRendererId": {
+					"type": "string",
+					"ui:title": "Web Page Renderer ID",
+					"ui:description": "The GUID of the Web Page Renderer object in Composer. Mutually exclusive with Web Page Renderer Name.",
+					"ui:summaryTitle": "Renderer ID"
+				},
+				"webPageRendererName": {
+					"type": "string",
+					"ui:title": "Web Page Renderer Name",
+					"ui:description": "The name of the Web Page Renderer object as configured in Composer. Mutually exclusive with Web Page Renderer ID.",
+					"ui:summaryTitle": "Renderer Name"
+				}
+			},
+			"additionalProperties": false
 		}
 	}
 }

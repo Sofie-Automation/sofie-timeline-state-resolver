@@ -34,7 +34,21 @@ const MAPPINGS: Mappings<SomeMappingVindralComposer> = {
 	mpLayer: {
 		device: DeviceType.VINDRAL_COMPOSER,
 		deviceId: 'vc0',
-		options: { mappingType: MappingVindralComposerType.MediaPlayer, mediaPlayerId: 'player-guid', mediaPlayerName: 'ClipPlayer1', autoPlayOnMediaChange: true },
+		options: {
+			mappingType: MappingVindralComposerType.MediaPlayer,
+			mediaPlayerId: 'player-guid',
+			mediaPlayerName: 'ClipPlayer1',
+			autoPlayOnMediaChange: true,
+		},
+	},
+	htmlLayer: {
+		device: DeviceType.VINDRAL_COMPOSER,
+		deviceId: 'vc0',
+		options: {
+			mappingType: MappingVindralComposerType.Html,
+			webPageRendererId: 'html-guid',
+			webPageRendererName: 'WebRenderer1',
+		},
 	},
 }
 
@@ -74,6 +88,7 @@ describe('stateBuilder', () => {
 			scriptEngines: {},
 			switchers: {},
 			mediaPlayers: {},
+			htmlRenderers: {},
 		})
 	})
 
@@ -105,6 +120,7 @@ describe('stateBuilder', () => {
 			scriptEngines: {},
 			switchers: {},
 			mediaPlayers: {},
+			htmlRenderers: {},
 		})
 	})
 
@@ -136,6 +152,7 @@ describe('stateBuilder', () => {
 			},
 			switchers: {},
 			mediaPlayers: {},
+			htmlRenderers: {},
 		})
 	})
 
@@ -169,7 +186,7 @@ describe('stateBuilder', () => {
 			sceneLayers: {},
 			scriptEngines: {},
 			switchers: {
-				swLayer: {
+				'abc-123': {
 					selector: { target: 'abc-123' },
 					foregroundInputName: 'cam1',
 					backgroundInputName: 'cam2',
@@ -179,6 +196,7 @@ describe('stateBuilder', () => {
 				},
 			},
 			mediaPlayers: {},
+			htmlRenderers: {},
 		})
 	})
 
@@ -201,7 +219,7 @@ describe('stateBuilder', () => {
 			},
 			MAPPINGS
 		)
-		expect(result.switchers['swLayer']).toMatchObject({
+		expect(result.switchers['abc-123']).toMatchObject({
 			selector: { target: 'abc-123' },
 			foregroundInputName: 'cam3',
 			backgroundInputName: undefined,
@@ -297,6 +315,87 @@ describe('stateBuilder', () => {
 			MAPPINGS
 		)
 		expect(result.mediaPlayers['mpLayer']).toBeUndefined()
+	})
+
+	// ── HTML Renderers ────────────────────────────────────────────────────────
+
+	test('html mapping — all fields with ID selector', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'htmlLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.HTML,
+							html: { url: 'https://example.com', running: true, reloadKey: 1 },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.htmlRenderers['html-guid']).toStrictEqual({
+			selector: { target: 'html-guid' },
+			url: 'https://example.com',
+			running: true,
+			reloadKey: 1,
+			timelineObjIds: ['obj0'],
+		})
+		expect(result.connectors).toStrictEqual({})
+		expect(result.mediaPlayers).toStrictEqual({})
+	})
+
+	test('html mapping — partial fields (no url)', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'htmlLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.HTML,
+							html: { running: false },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.htmlRenderers['html-guid']).toMatchObject({
+			selector: { target: 'html-guid' },
+			url: undefined,
+			running: false,
+			reloadKey: undefined,
+		})
+	})
+
+	test('html mapping with wrong content type is ignored', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'htmlLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.CONNECTOR,
+							connector: { name: 'cam1' },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.htmlRenderers['html-guid']).toBeUndefined()
 	})
 
 	test('object with wrong device type is ignored', () => {
