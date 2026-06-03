@@ -36,7 +36,12 @@ const MAPPINGS: Mappings<SomeMappingVindralComposer> = {
 	mpLayer: {
 		device: DeviceType.VINDRAL_COMPOSER,
 		deviceId: 'vc0',
-		options: { mappingType: MappingVindralComposerType.MediaPlayer, mediaPlayerId: 'player-guid', mediaPlayerName: 'ClipPlayer1', autoPlayOnMediaChange: true },
+		options: {
+			mappingType: MappingVindralComposerType.MediaPlayer,
+			mediaPlayerId: 'player-guid',
+			mediaPlayerName: 'ClipPlayer1',
+			autoPlayOnMediaChange: true,
+		},
 	},
 }
 
@@ -257,25 +262,64 @@ describe('diffState', () => {
 		test('new switcher with all fields → setProperty commands then invokeCommand', () => {
 			const commands = diffVindralStates(
 				{ ...EMPTY_STATE, stateTime: 0 },
-				makeState([swObj({ foregroundInputName: 'cam1', backgroundInputName: 'cam2', crossfadeTransitionDuration: 500, transition: 'crossfade' })]),
+				makeState([
+					swObj({
+						foregroundInputName: 'cam1',
+						backgroundInputName: 'cam2',
+						crossfadeTransitionDuration: 500,
+						transition: 'crossfade',
+					}),
+				]),
 				MAPPINGS
 			)
 			// setProperty commands must come before invokeCommand
 			expect(commands).toStrictEqual([
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'ForegroundInputName', value: 'cam1' } },
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'BackgroundInputName', value: 'cam2' } },
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'CrossfadeTransitionDuration', value: 500 } },
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CrossfadeCommand' } },
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: {
+						type: 'set-property',
+						selector: { target: 'abc-123' },
+						property: 'ForegroundInputName',
+						value: 'cam1',
+					},
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: {
+						type: 'set-property',
+						selector: { target: 'abc-123' },
+						property: 'BackgroundInputName',
+						value: 'cam2',
+					},
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: {
+						type: 'set-property',
+						selector: { target: 'abc-123' },
+						property: 'CrossfadeTransitionDuration',
+						value: 500,
+					},
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CrossfadeCommand' },
+				},
 			])
 		})
 
 		test('cut transition → CutCommand', () => {
-			compareStates(
-				MAPPINGS,
-				{ ...EMPTY_STATE, stateTime: 0 },
-				makeState([swObj({ transition: 'cut' })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CutCommand' } }]
-			)
+			compareStates(MAPPINGS, { ...EMPTY_STATE, stateTime: 0 }, makeState([swObj({ transition: 'cut' })]), [
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CutCommand' },
+				},
+			])
 		})
 
 		test('unchanged switcher → no commands', () => {
@@ -288,7 +332,18 @@ describe('diffState', () => {
 				MAPPINGS,
 				makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })]),
 				makeState([swObj({ foregroundInputName: 'cam3', transition: 'cut' })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'ForegroundInputName', value: 'cam3' } }]
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: { target: 'abc-123' },
+							property: 'ForegroundInputName',
+							value: 'cam3',
+						},
+					},
+				]
 			)
 		})
 
@@ -297,7 +352,13 @@ describe('diffState', () => {
 				MAPPINGS,
 				makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })]),
 				makeState([swObj({ foregroundInputName: 'cam1', transition: 'crossfade' })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CrossfadeCommand' } }]
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CrossfadeCommand' },
+					},
+				]
 			)
 		})
 
@@ -307,14 +368,37 @@ describe('diffState', () => {
 				{ ...EMPTY_STATE, stateTime: 0 },
 				makeState([swObj({ foregroundInputName: 'cam1', backgroundInputName: 'cam2' })]),
 				[
-					{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'ForegroundInputName', value: 'cam1' } },
-					{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: { target: 'abc-123' }, property: 'BackgroundInputName', value: 'cam2' } },
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: { target: 'abc-123' },
+							property: 'ForegroundInputName',
+							value: 'cam1',
+						},
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: { target: 'abc-123' },
+							property: 'BackgroundInputName',
+							value: 'cam2',
+						},
+					},
 				]
 			)
 		})
 
 		test('switcher removed → no commands', () => {
-			compareStates(MAPPINGS, makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })]), { ...EMPTY_STATE, stateTime: 0 }, [])
+			compareStates(
+				MAPPINGS,
+				makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })]),
+				{ ...EMPTY_STATE, stateTime: 0 },
+				[]
+			)
 		})
 	})
 
@@ -344,16 +428,54 @@ describe('diffState', () => {
 		test('new media player with playing=true → properties then play-video-file-input (atomic load+play)', () => {
 			const commands = diffVindralStates(
 				{ ...EMPTY_STATE, stateTime: 0 },
-				makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 0, outTime: 5000, playbackEndCondition: VindralComposerPlaybackEndCondition.Loop, autoPlay: true, playing: true })]),
+				makeState([
+					mpObj({
+						sourceUrl: 'clip.mp4',
+						inTime: 0,
+						outTime: 5000,
+						playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
+						autoPlay: true,
+						playing: true,
+					}),
+				]),
 				MAPPINGS
 			)
 			expect(commands).toStrictEqual([
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'InTime', value: 0 } },
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'OutTime', value: 5000 } },
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'PlayBackEndCondition', value: VindralComposerPlaybackEndCondition.Loop } },
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlay', value: true } },
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true } },
-				{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip.mp4' } },
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'InTime', value: 0 },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'OutTime', value: 5000 },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: {
+						type: 'set-property',
+						selector: SELECTOR,
+						property: 'PlayBackEndCondition',
+						value: VindralComposerPlaybackEndCondition.Loop,
+					},
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlay', value: true },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip.mp4' },
+				},
 			])
 		})
 
@@ -363,23 +485,38 @@ describe('diffState', () => {
 				{ ...EMPTY_STATE, stateTime: 0 },
 				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: false })]),
 				[
-					{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true } },
-					{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip.mp4' } },
-					{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: SELECTOR, command: 'PauseCommand' } },
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip.mp4' },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: SELECTOR, command: 'PauseCommand' },
+					},
 				]
 			)
 		})
 
 		test('new media player without playing → setProperty SourceUrl, no invoke', () => {
-			compareStates(
-				MAPPINGS,
-				{ ...EMPTY_STATE, stateTime: 0 },
-				makeState([mpObj({ sourceUrl: 'clip.mp4' })]),
-				[
-					{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true } },
-					{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip.mp4' } },
-				]
-			)
+			compareStates(MAPPINGS, { ...EMPTY_STATE, stateTime: 0 }, makeState([mpObj({ sourceUrl: 'clip.mp4' })]), [
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip.mp4' },
+				},
+			])
 		})
 
 		test('unchanged media player → no commands', () => {
@@ -392,7 +529,13 @@ describe('diffState', () => {
 				MAPPINGS,
 				makeState([mpObj({ sourceUrl: 'clip-a.mp4', playing: true })]),
 				makeState([mpObj({ sourceUrl: 'clip-b.mp4', playing: true })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip-b.mp4' } }]
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip-b.mp4' },
+					},
+				]
 			)
 		})
 
@@ -401,25 +544,53 @@ describe('diffState', () => {
 				MAPPINGS,
 				makeState([mpObj({ sourceUrl: 'clip-a.mp4', playing: false })]),
 				makeState([mpObj({ sourceUrl: 'clip-b.mp4', playing: false })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip-b.mp4' } }]
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip-b.mp4' },
+					},
+				]
 			)
 		})
 
-		test('sourceUrl set to empty string → StopCommand (stops and clears)', () => {
+		test('sourceUrl set to empty string → StopCommand then clear-source', () => {
 			compareStates(
 				MAPPINGS,
 				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]),
 				makeState([mpObj({ sourceUrl: '' })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: SELECTOR, command: 'StopCommand' } }]
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: SELECTOR, command: 'StopCommand' },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'clear-source', target: 'player-guid' },
+					},
+				]
 			)
 		})
 
-		test('sourceUrl set to empty string → StopCommand only, no extra PauseCommand', () => {
+		test('sourceUrl set to empty string → StopCommand then clear-source, no extra PauseCommand', () => {
 			compareStates(
 				MAPPINGS,
 				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]),
 				makeState([mpObj({ sourceUrl: '', playing: false })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: SELECTOR, command: 'StopCommand' } }]
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: SELECTOR, command: 'StopCommand' },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'clear-source', target: 'player-guid' },
+					},
+				]
 			)
 		})
 
@@ -428,7 +599,13 @@ describe('diffState', () => {
 				MAPPINGS,
 				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: false })]),
 				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: SELECTOR, command: 'PlayCommand' } }]
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: SELECTOR, command: 'PlayCommand' },
+					},
+				]
 			)
 		})
 
@@ -437,7 +614,13 @@ describe('diffState', () => {
 				MAPPINGS,
 				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]),
 				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: false })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'invoke-command', selector: SELECTOR, command: 'PauseCommand' } }]
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: SELECTOR, command: 'PauseCommand' },
+					},
+				]
 			)
 		})
 
@@ -446,12 +629,28 @@ describe('diffState', () => {
 				MAPPINGS,
 				makeState([mpObj({ sourceUrl: 'clip.mp4', playbackEndCondition: VindralComposerPlaybackEndCondition.Loop })]),
 				makeState([mpObj({ sourceUrl: 'clip.mp4', playbackEndCondition: VindralComposerPlaybackEndCondition.Hold })]),
-				[{ timelineObjId: 'obj0', context: expect.any(String), command: { type: 'set-property', selector: SELECTOR, property: 'PlayBackEndCondition', value: VindralComposerPlaybackEndCondition.Hold } }]
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: SELECTOR,
+							property: 'PlayBackEndCondition',
+							value: VindralComposerPlaybackEndCondition.Hold,
+						},
+					},
+				]
 			)
 		})
 
 		test('media player removed → no commands (no StopCommand on disappear)', () => {
-			compareStates(MAPPINGS, makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]), { ...EMPTY_STATE, stateTime: 0 }, [])
+			compareStates(
+				MAPPINGS,
+				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]),
+				{ ...EMPTY_STATE, stateTime: 0 },
+				[]
+			)
 		})
 	})
 })

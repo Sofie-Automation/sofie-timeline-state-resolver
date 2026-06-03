@@ -130,8 +130,10 @@ function diffSwitchers(
 
 // Media players: setProperty commands first so InTime, OutTime etc. are applied before
 // SourceUrl is set and before any play/pause command fires.
-// StopCommand is only sent when sourceUrl is explicitly set to '' — it stops playback
-// and clears the player to black. It is intentionally NOT sent on object disappear.
+// When sourceUrl is set to '' the sequence is: StopCommand (stops playback), then
+// clear-source (/api/source/clear?target=<guid>) to fully clear the player. The clear
+// is skipped when no target GUID is available on the selector. Neither command is sent
+// on object disappear — only on an explicit empty-string sourceUrl.
 function diffMediaPlayers(
 	oldState: VindralComposerDeviceState,
 	newState: VindralComposerDeviceState
@@ -198,13 +200,21 @@ function diffMediaPlayers(
 
 		if (sourceChanged) {
 			if (nextSourceUrl === '') {
-				// Empty string signals "stop and clear the player". StopCommand stops playback
-				// and clears to black — the playing field is intentionally ignored here.
+				// Empty string signals "stop and clear the player". Issue StopCommand first to
+				// halt playback, then clear-source to fully clear the player via the dedicated
+				// HTTP endpoint. The playing field is intentionally ignored here.
 				commands.push({
 					timelineObjId,
 					context,
 					command: { type: 'invoke-command', selector: next.selector, command: 'StopCommand' },
 				})
+				if (next.selector.target) {
+					commands.push({
+						timelineObjId,
+						context,
+						command: { type: 'clear-source', target: next.selector.target },
+					})
+				}
 			} else if (next.playing === true) {
 				// Both mediaPlayerId and mediaPlayerName are required on the mapping, so
 				// targetName is always available here. Use the atomic load-and-play endpoint

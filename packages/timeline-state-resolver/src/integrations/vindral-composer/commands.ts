@@ -11,6 +11,7 @@ export type VindralCommandAny =
 	| VindralSetPropertyCommand
 	| VindralInvokeCommandCommand
 	| VindralPlayVideoFileInputCommand
+	| VindralClearSourceCommand
 
 export interface VindralTriggerConnectorCommand {
 	type: 'trigger-connector'
@@ -58,6 +59,12 @@ export interface VindralPlayVideoFileInputCommand {
 	sourceUri: string
 }
 
+/** Clear a source by target GUID via `/api/source/clear?target=<guid>`. */
+export interface VindralClearSourceCommand {
+	type: 'clear-source'
+	target: string
+}
+
 export async function sendCommand(connection: VindralComposer, command: VindralCommandAny): Promise<void> {
 	switch (command.type) {
 		case 'trigger-connector':
@@ -83,6 +90,9 @@ export async function sendCommand(connection: VindralComposer, command: VindralC
 			return
 		case 'play-video-file-input':
 			await connection.playVideoFileInput(command.inputName, command.sourceUri)
+			return
+		case 'clear-source':
+			await connection.clearSource(command.target)
 			return
 		default:
 			assertNever(command)
