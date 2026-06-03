@@ -376,6 +376,44 @@ describe('stateBuilder', () => {
 		})
 	})
 
+	test('html mapping — two objects merge (later fields win over undefined)', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'htmlLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.HTML,
+							html: { url: 'https://example.com', running: true },
+						},
+					}),
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj1',
+						layer: 'htmlLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.HTML,
+							html: { reloadKey: 42 },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.htmlRenderers['html-guid']).toStrictEqual({
+			selector: { target: 'html-guid' },
+			url: 'https://example.com',
+			running: true,
+			reloadKey: 42,
+			timelineObjIds: ['obj0', 'obj1'],
+		})
+	})
+
 	test('html mapping with wrong content type is ignored', () => {
 		const result = buildVindralState(
 			{

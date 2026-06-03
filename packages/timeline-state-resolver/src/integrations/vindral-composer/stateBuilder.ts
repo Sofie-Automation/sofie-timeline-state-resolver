@@ -163,12 +163,13 @@ export function buildVindralState(
 				const c = content
 				const m = mapping.options
 				const htmlKey = m.webPageRendererId ?? m.webPageRendererName ?? layerId
+				const existing = state.htmlRenderers[htmlKey]
 				state.htmlRenderers[htmlKey] = {
 					selector: m.webPageRendererId ? { target: m.webPageRendererId } : { targetName: m.webPageRendererName },
-					url: c.html.url,
-					running: c.html.running,
-					reloadKey: c.html.reloadKey,
-					timelineObjIds: [obj.id],
+					url: c.html.url ?? existing?.url,
+					running: c.html.running ?? existing?.running,
+					reloadKey: c.html.reloadKey ?? existing?.reloadKey,
+					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
 				}
 				break
 			}

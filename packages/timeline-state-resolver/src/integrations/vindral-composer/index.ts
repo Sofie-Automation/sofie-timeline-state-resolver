@@ -8,7 +8,7 @@ import {
 	type VindralComposerDeviceTypes,
 	type VindralComposerActionMethods,
 } from 'timeline-state-resolver-types'
-import { VindralComposer } from 'vindral-composer-connection'
+import { VindralComposer, type VindralComposerOptions as VindralComposerConnectionOptions } from 'vindral-composer-connection'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { buildVindralState, type VindralComposerDeviceState } from './stateBuilder.js'
 import { diffVindralStates } from './diffState.js'
@@ -33,12 +33,13 @@ export class VindralComposerDevice implements Device<
 	}
 
 	async init(options: VindralComposerOptions): Promise<boolean> {
-		this._connection = new VindralComposer({
-			host: options.host,
-			wsPort: options.wsPort,
-			httpPort: options.httpPort,
-			autoReconnect: options.autoReconnect,
-		})
+		// Only pass defined values so the library's built-in defaults are not overridden by undefined
+		const connOptions: VindralComposerConnectionOptions = {}
+		if (options.host !== undefined) connOptions.host = options.host
+		if (options.wsPort !== undefined) connOptions.wsPort = options.wsPort
+		if (options.httpPort !== undefined) connOptions.httpPort = options.httpPort
+		if (options.autoReconnect !== undefined) connOptions.autoReconnect = options.autoReconnect
+		this._connection = new VindralComposer(connOptions)
 
 		this._connection.on('connected', () => {
 			this._connected = true
