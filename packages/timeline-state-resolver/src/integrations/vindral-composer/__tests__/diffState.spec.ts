@@ -421,6 +421,7 @@ describe('diffState', () => {
 			playbackEndCondition?: VindralComposerPlaybackEndCondition
 			autoPlay?: boolean
 			playing?: boolean
+			stereoGainDb?: number
 		}) => ({
 			enable: { start: 0 },
 			id: 'obj0',
@@ -648,6 +649,51 @@ describe('diffState', () => {
 							property: 'PlayBackEndCondition',
 							value: VindralComposerPlaybackEndCondition.Hold,
 						},
+					},
+				]
+			)
+		})
+
+		test('stereoGainDb set → set-property StereoGainDb', () => {
+			compareStates(
+				MAPPINGS,
+				{ ...EMPTY_STATE, stateTime: 0 },
+				makeState([mpObj({ sourceUrl: 'clip.mp4', stereoGainDb: -6 })]),
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'set-property', selector: SELECTOR, property: 'StereoGainDb', value: -6 },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip.mp4' },
+					},
+				]
+			)
+		})
+
+		test('stereoGainDb unchanged → no StereoGainDb command', () => {
+			const s = makeState([mpObj({ sourceUrl: 'clip.mp4', stereoGainDb: -6 })])
+			compareStates(MAPPINGS, s, s, [])
+		})
+
+		test('stereoGainDb changed → set-property StereoGainDb only', () => {
+			compareStates(
+				MAPPINGS,
+				makeState([mpObj({ sourceUrl: 'clip.mp4', stereoGainDb: -6 })]),
+				makeState([mpObj({ sourceUrl: 'clip.mp4', stereoGainDb: 0 })]),
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'set-property', selector: SELECTOR, property: 'StereoGainDb', value: 0 },
 					},
 				]
 			)

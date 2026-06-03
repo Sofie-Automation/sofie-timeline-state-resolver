@@ -194,6 +194,13 @@ function diffMediaPlayers(
 				},
 			})
 		}
+		if (next.stereoGainDb !== undefined && old?.stereoGainDb !== next.stereoGainDb) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'StereoGainDb', value: next.stereoGainDb },
+			})
+		}
 
 		const nextSourceUrl = next.sourceUrl
 		const sourceChanged = nextSourceUrl !== undefined && old?.sourceUrl !== nextSourceUrl

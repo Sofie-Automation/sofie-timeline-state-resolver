@@ -93,6 +93,8 @@ export interface TimelineContentVindralComposerMediaPlayer {
 		autoPlay?: boolean
 		/** When true, invokes PlayCommand; when false, invokes PauseCommand; when absent, no play/pause command is sent */
 		playing?: boolean
+		/** Audio level adjustment in dB applied to the stereo mix of the media element (maps to the StereoGainDb device property) */
+		stereoGainDb?: number
 	}
 }
 

@@ -29,6 +29,7 @@ export interface VindralMediaPlayerState {
 	playbackEndCondition?: VindralComposerPlaybackEndCondition
 	autoPlay?: boolean
 	playing?: boolean
+	stereoGainDb?: number
 	timelineObjIds: string[]
 }
 
@@ -154,6 +155,7 @@ export function buildVindralState(
 					playbackEndCondition: c.mediaPlayer.playbackEndCondition,
 					autoPlay: c.mediaPlayer.autoPlay,
 					playing: c.mediaPlayer.playing,
+					stereoGainDb: c.mediaPlayer.stereoGainDb,
 					timelineObjIds: [obj.id],
 				}
 				break

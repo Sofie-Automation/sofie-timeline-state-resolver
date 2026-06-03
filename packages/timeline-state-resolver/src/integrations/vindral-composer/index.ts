@@ -8,7 +8,10 @@ import {
 	type VindralComposerDeviceTypes,
 	type VindralComposerActionMethods,
 } from 'timeline-state-resolver-types'
-import { VindralComposer, type VindralComposerOptions as VindralComposerConnectionOptions } from 'vindral-composer-connection'
+import {
+	VindralComposer,
+	type VindralComposerOptions as VindralComposerConnectionOptions,
+} from 'vindral-composer-connection'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
 import { buildVindralState, type VindralComposerDeviceState } from './stateBuilder.js'
 import { diffVindralStates } from './diffState.js'
