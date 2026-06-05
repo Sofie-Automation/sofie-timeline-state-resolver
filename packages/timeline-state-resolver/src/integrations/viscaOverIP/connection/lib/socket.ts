@@ -133,7 +133,7 @@ export class ViscaUdpSocket extends EventEmitter {
 
 		this._sendNextPacket()
 
-		this._localPacketId = this._localPacketId++ % this._maxPacketID
+		this._localPacketId = (this._localPacketId + 1) % this._maxPacketID
 
 		return promise
 	}
@@ -150,21 +150,25 @@ export class ViscaUdpSocket extends EventEmitter {
 		this._lastReceivedAt = Date.now()
 
 		const type = packet.readUInt16BE(0) as CommandType
-		const length = packet.readUInt32BE(4)
+		const length = packet.readUInt16BE(2)
 
 		if (this._debug) this.log('type', type, !!this._inFlight)
 		if (type === CommandType.ViscaReply && this._inFlight) {
 			// @todo: think about what resolves a command.
-			if (length === 3 && packet.readUInt8(9) === 0x41) {
+			if (length === 3 && (packet.readUInt8(9) & 0xf0) === 0x40) {
 				// supposedly an ack
 				return // completion resolves, and not ack so we skip
-			} else if (length === 4 && packet.readUInt8(9) === 0x51) {
+			} else if (length === 3 && (packet.readUInt8(9) & 0xf0) === 0x50) {
 				// supposedly a completion
+				if (this._connectionState === ConnectionState.Connecting) {
+					this._connectionState = ConnectionState.Connected
+					this.emit('connected')
+				}
 				this._inFlight.promise.resolve()
-			} else if (length === 4 && packet.readUInt16BE(9) === 0x6002) {
+			} else if (length === 4 && (packet.readUInt8(9) & 0xf0) === 0x60 && packet.readUInt8(10) === 0x02) {
 				// supposedly a syntax error
 				this._inFlight.promise.reject(new Error('Syntax Error'))
-			} else if (length === 4 && packet.readUInt16BE(9) === 0x6141) {
+			} else if (length === 4 && (packet.readUInt8(9) & 0xf0) === 0x60 && packet.readUInt8(10) === 0x41) {
 				// supposedly not executable
 				this._inFlight.promise.reject(new Error('Not executable'))
 			} else {
