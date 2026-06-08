@@ -50,6 +50,15 @@ const MAPPINGS: Mappings<SomeMappingVindralComposer> = {
 			webPageRendererName: 'WebRenderer1',
 		},
 	},
+	asLayer: {
+		device: DeviceType.VINDRAL_COMPOSER,
+		deviceId: 'vc0',
+		options: {
+			mappingType: MappingVindralComposerType.AudioSource,
+			audioSourceId: 'as-guid',
+			audioSourceName: 'AudioSource1',
+		},
+	},
 }
 
 describe('stateBuilder', () => {
@@ -89,6 +98,7 @@ describe('stateBuilder', () => {
 			switchers: {},
 			mediaPlayers: {},
 			htmlRenderers: {},
+			audioSources: {},
 		})
 	})
 
@@ -121,6 +131,7 @@ describe('stateBuilder', () => {
 			switchers: {},
 			mediaPlayers: {},
 			htmlRenderers: {},
+			audioSources: {},
 		})
 	})
 
@@ -153,6 +164,7 @@ describe('stateBuilder', () => {
 			switchers: {},
 			mediaPlayers: {},
 			htmlRenderers: {},
+			audioSources: {},
 		})
 	})
 
@@ -197,6 +209,7 @@ describe('stateBuilder', () => {
 			},
 			mediaPlayers: {},
 			htmlRenderers: {},
+			audioSources: {},
 		})
 	})
 
@@ -263,7 +276,6 @@ describe('stateBuilder', () => {
 			playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
 			autoPlay: true,
 			playing: true,
-			stereoGainDb: undefined,
 			timelineObjIds: ['obj0'],
 		})
 		expect(result.connectors).toStrictEqual({})
@@ -435,6 +447,133 @@ describe('stateBuilder', () => {
 			MAPPINGS
 		)
 		expect(result.htmlRenderers['html-guid']).toBeUndefined()
+	})
+
+	// ── Audio Sources ─────────────────────────────────────────────────────────
+
+	test('audio-source mapping — all fields with ID selector', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'asLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.AUDIO_SOURCE,
+							audioSource: { stereoGainDb: -6, pan: 50, mute: false },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.audioSources['as-guid']).toStrictEqual({
+			selector: { target: 'as-guid' },
+			stereoGainDb: -6,
+			pan: 50,
+			mute: false,
+			timelineObjIds: ['obj0'],
+		})
+		expect(result.mediaPlayers).toStrictEqual({})
+	})
+
+	test('audio-source mapping — selector falls back to name when no ID', () => {
+		const nameOnlyMappings: Mappings<SomeMappingVindralComposer> = {
+			...MAPPINGS,
+			asLayer: {
+				device: DeviceType.VINDRAL_COMPOSER,
+				deviceId: 'vc0',
+				options: {
+					mappingType: MappingVindralComposerType.AudioSource,
+					audioSourceName: 'AudioSource1',
+				},
+			},
+		}
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'asLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.AUDIO_SOURCE,
+							audioSource: { mute: true },
+						},
+					}),
+				],
+			},
+			nameOnlyMappings
+		)
+		expect(result.audioSources['AudioSource1']).toMatchObject({
+			selector: { targetName: 'AudioSource1' },
+			mute: true,
+		})
+	})
+
+	test('audio-source mapping — two objects merge (later fields win over undefined)', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'asLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.AUDIO_SOURCE,
+							audioSource: { stereoGainDb: -6, pan: 50 },
+						},
+					}),
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj1',
+						layer: 'asLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.AUDIO_SOURCE,
+							audioSource: { mute: true },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.audioSources['as-guid']).toStrictEqual({
+			selector: { target: 'as-guid' },
+			stereoGainDb: -6,
+			pan: 50,
+			mute: true,
+			timelineObjIds: ['obj0', 'obj1'],
+		})
+	})
+
+	test('audio-source with wrong content type is ignored', () => {
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'asLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.CONNECTOR,
+							connector: { name: 'cam1' },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.audioSources['as-guid']).toBeUndefined()
 	})
 
 	test('object with wrong device type is ignored', () => {

@@ -102,6 +102,24 @@
 				}
 			},
 			"additionalProperties": false
+		},
+		"audio-source": {
+			"type": "object",
+			"properties": {
+				"audioSourceId": {
+					"type": "string",
+					"ui:title": "Audio Source ID",
+					"ui:description": "The GUID of the audio source object in Composer. Mutually exclusive with Audio Source Name.",
+					"ui:summaryTitle": "Source ID"
+				},
+				"audioSourceName": {
+					"type": "string",
+					"ui:title": "Audio Source Name",
+					"ui:description": "The name of the audio source object as configured in Composer. Mutually exclusive with Audio Source ID.",
+					"ui:summaryTitle": "Source Name"
+				}
+			},
+			"additionalProperties": false
 		}
 	}
 }

@@ -53,6 +53,7 @@ export function diffVindralStates(
 	commands.push(...diffSwitchers(resolvedOld, newState))
 	commands.push(...diffMediaPlayers(resolvedOld, newState))
 	commands.push(...diffHtmlRenderers(resolvedOld, newState))
+	commands.push(...diffAudioSources(resolvedOld, newState))
 
 	return commands
 }
@@ -194,14 +195,6 @@ function diffMediaPlayers(
 				},
 			})
 		}
-		if (next.stereoGainDb !== undefined && old?.stereoGainDb !== next.stereoGainDb) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: { type: 'set-property', selector: next.selector, property: 'StereoGainDb', value: next.stereoGainDb },
-			})
-		}
-
 		const nextSourceUrl = next.sourceUrl
 		const sourceChanged = nextSourceUrl !== undefined && old?.sourceUrl !== nextSourceUrl
 		let usedPlayVideoFileInput = false
@@ -311,6 +304,46 @@ function diffHtmlRenderers(
 					selector: next.selector,
 					command: 'ReloadCommand',
 				},
+			})
+		}
+	}
+
+	return commands
+}
+
+function diffAudioSources(
+	oldState: VindralComposerDeviceState,
+	newState: VindralComposerDeviceState
+): VindralCommandWithContext[] {
+	const commands: VindralCommandWithContext[] = []
+
+	for (const key of allKeys(oldState.audioSources, newState.audioSources)) {
+		const old = oldState.audioSources[key]
+		const next = newState.audioSources[key]
+		if (!next) continue
+
+		const timelineObjId = next.timelineObjIds.join(' & ')
+		const context = `audio-source key=${key}`
+
+		if (next.stereoGainDb !== undefined && old?.stereoGainDb !== next.stereoGainDb) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'StereoGainDb', value: next.stereoGainDb },
+			})
+		}
+		if (next.pan !== undefined && old?.pan !== next.pan) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'Pan', value: next.pan },
+			})
+		}
+		if (next.mute !== undefined && old?.mute !== next.mute) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'set-property', selector: next.selector, property: 'Mute', value: next.mute },
 			})
 		}
 	}

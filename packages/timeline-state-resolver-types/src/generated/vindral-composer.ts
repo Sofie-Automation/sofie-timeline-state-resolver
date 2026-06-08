@@ -60,6 +60,12 @@ export interface MappingVindralComposerHtml {
 	mappingType: MappingVindralComposerType.Html
 }
 
+export interface MappingVindralComposerAudioSource {
+	audioSourceId?: string
+	audioSourceName?: string
+	mappingType: MappingVindralComposerType.AudioSource
+}
+
 export enum MappingVindralComposerType {
 	Connector = 'connector',
 	SceneLayer = 'scene-layer',
@@ -67,6 +73,7 @@ export enum MappingVindralComposerType {
 	Switcher = 'switcher',
 	MediaPlayer = 'media-player',
 	Html = 'html',
+	AudioSource = 'audio-source',
 }
 
 export type SomeMappingVindralComposer =
@@ -76,6 +83,7 @@ export type SomeMappingVindralComposer =
 	| MappingVindralComposerSwitcher
 	| MappingVindralComposerMediaPlayer
 	| MappingVindralComposerHtml
+	| MappingVindralComposerAudioSource
 
 export interface TriggerConnectorPayload {
 	/**

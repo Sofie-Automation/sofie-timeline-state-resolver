@@ -7,6 +7,7 @@ export enum TimelineContentTypeVindralComposer {
 	SWITCHER = 'switcher',
 	MEDIA_PLAYER = 'media-player',
 	HTML = 'html',
+	AUDIO_SOURCE = 'audio-source',
 }
 
 export enum VindralComposerPlaybackEndCondition {
@@ -22,6 +23,7 @@ export type TimelineContentVindralComposerAny =
 	| TimelineContentVindralComposerSwitcher
 	| TimelineContentVindralComposerMediaPlayer
 	| TimelineContentVindralComposerHtml
+	| TimelineContentVindralComposerAudioSource
 
 export interface TimelineContentVindralComposerConnector {
 	deviceType: DeviceType.VINDRAL_COMPOSER
@@ -93,8 +95,19 @@ export interface TimelineContentVindralComposerMediaPlayer {
 		autoPlay?: boolean
 		/** When true, invokes PlayCommand; when false, invokes PauseCommand; when absent, no play/pause command is sent */
 		playing?: boolean
-		/** Audio level adjustment in dB applied to the stereo mix of the media element (maps to the StereoGainDb device property) */
+	}
+}
+
+export interface TimelineContentVindralComposerAudioSource {
+	deviceType: DeviceType.VINDRAL_COMPOSER
+	type: TimelineContentTypeVindralComposer.AUDIO_SOURCE
+	audioSource: {
+		/** Audio level adjustment in dB (-80 to +24) applied to the stereo mix (maps to the StereoGainDb device property) */
 		stereoGainDb?: number
+		/** Stereo pan position (-100 to 100, maps to the Pan device property) */
+		pan?: number
+		/** When true, mutes the audio source (maps to the Mute device property) */
+		mute?: boolean
 	}
 }
 

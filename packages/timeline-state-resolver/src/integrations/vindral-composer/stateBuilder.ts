@@ -7,7 +7,7 @@ import {
 	type SomeMappingVindralComposer,
 	VindralComposerPlaybackEndCondition,
 } from 'timeline-state-resolver-types'
-import { assertNever } from '../../lib.js'
+import { assertNever, Complete } from '../../lib.js'
 import type { DeviceTimelineState } from 'timeline-state-resolver-api'
 
 export interface VindralComposerDeviceState {
@@ -18,6 +18,7 @@ export interface VindralComposerDeviceState {
 	switchers: Record<string, VindralSwitcherState | undefined>
 	mediaPlayers: Record<string, VindralMediaPlayerState | undefined>
 	htmlRenderers: Record<string, VindralHtmlState | undefined>
+	audioSources: Record<string, VindralAudioSourceState | undefined>
 }
 
 export interface VindralMediaPlayerState {
@@ -29,7 +30,14 @@ export interface VindralMediaPlayerState {
 	playbackEndCondition?: VindralComposerPlaybackEndCondition
 	autoPlay?: boolean
 	playing?: boolean
+	timelineObjIds: string[]
+}
+
+export interface VindralAudioSourceState {
+	selector: { target?: string; targetName?: string }
 	stereoGainDb?: number
+	pan?: number
+	mute?: boolean
 	timelineObjIds: string[]
 }
 
@@ -82,6 +90,7 @@ export function buildVindralState(
 		switchers: {},
 		mediaPlayers: {},
 		htmlRenderers: {},
+		audioSources: {},
 	}
 
 	for (const obj of timelineState.objects) {
@@ -100,7 +109,7 @@ export function buildVindralState(
 					value: c.connector.value,
 					params: c.connector.params,
 					timelineObjIds: [obj.id],
-				}
+				} satisfies Complete<VindralConnectorState>
 				break
 			}
 			case MappingVindralComposerType.SceneLayer: {
@@ -112,7 +121,7 @@ export function buildVindralState(
 					layer: m.layer,
 					source: c.sceneLayer.source,
 					timelineObjIds: [obj.id],
-				}
+				} satisfies Complete<VindralSceneLayerState>
 				break
 			}
 			case MappingVindralComposerType.ScriptEngine: {
@@ -123,7 +132,7 @@ export function buildVindralState(
 					functionName: m.functionName,
 					parameter: c.scriptEngine.parameter,
 					timelineObjIds: [obj.id],
-				}
+				} satisfies Complete<VindralScriptEngineState>
 				break
 			}
 			case MappingVindralComposerType.Switcher: {
@@ -139,7 +148,7 @@ export function buildVindralState(
 					crossfadeTransitionDuration: c.switcher.crossfadeTransitionDuration ?? existing?.crossfadeTransitionDuration,
 					transition: c.switcher.transition ?? existing?.transition,
 					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
-				}
+				} satisfies Complete<VindralSwitcherState>
 				break
 			}
 			case MappingVindralComposerType.MediaPlayer: {
@@ -155,9 +164,23 @@ export function buildVindralState(
 					playbackEndCondition: c.mediaPlayer.playbackEndCondition,
 					autoPlay: c.mediaPlayer.autoPlay,
 					playing: c.mediaPlayer.playing,
-					stereoGainDb: c.mediaPlayer.stereoGainDb,
 					timelineObjIds: [obj.id],
-				}
+				} satisfies Complete<VindralMediaPlayerState>
+				break
+			}
+			case MappingVindralComposerType.AudioSource: {
+				if (content.type !== TimelineContentTypeVindralComposer.AUDIO_SOURCE) break
+				const c = content
+				const m = mapping.options
+				const key = m.audioSourceId ?? m.audioSourceName ?? layerId
+				const existing = state.audioSources[key]
+				state.audioSources[key] = {
+					selector: m.audioSourceId ? { target: m.audioSourceId } : { targetName: m.audioSourceName },
+					stereoGainDb: c.audioSource.stereoGainDb ?? existing?.stereoGainDb,
+					pan: c.audioSource.pan ?? existing?.pan,
+					mute: c.audioSource.mute ?? existing?.mute,
+					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
+				} satisfies Complete<VindralAudioSourceState>
 				break
 			}
 			case MappingVindralComposerType.Html: {
@@ -172,7 +195,7 @@ export function buildVindralState(
 					running: c.html.running ?? existing?.running,
 					reloadKey: c.html.reloadKey ?? existing?.reloadKey,
 					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
-				}
+				} satisfies Complete<VindralHtmlState>
 				break
 			}
 			default:

@@ -7,4 +7,5 @@ export const EMPTY_STATE: Omit<VindralComposerDeviceState, 'stateTime'> = {
 	switchers: {},
 	mediaPlayers: {},
 	htmlRenderers: {},
+	audioSources: {},
 }
