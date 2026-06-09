@@ -149,7 +149,25 @@ export async function sendCommand(
 			}
 			break
 		case 'scene-layer': {
-			const values = { ...command.values }
+			const values: Partial<UpdateSceneLayerObject> = { ...command.values }
+			if (
+				values.dissolveEnabled !== undefined ||
+				values.dissolveTime !== undefined ||
+				values.dissolveMode !== undefined
+			) {
+				// Dissolve settings need to be applied first in order to be applied to the source change that may be specified in this command
+				const dissolveValues: Partial<UpdateSceneLayerObject> = {
+					dissolveEnabled: values.dissolveEnabled,
+					dissolveTime: values.dissolveTime,
+					dissolveMode: values.dissolveMode,
+				}
+
+				delete values.dissolveEnabled
+				delete values.dissolveTime
+				delete values.dissolveMode
+
+				await kairos.updateSceneLayer(command.ref, dissolveValues)
+			}
 			if (values.sourceA) {
 				// Handle loading ramrec/still into RAM if needed
 				const source = values.sourceA
