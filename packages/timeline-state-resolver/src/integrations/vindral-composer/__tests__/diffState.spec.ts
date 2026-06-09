@@ -688,8 +688,13 @@ describe('diffState', () => {
 			} as const,
 		})
 
-		test('new html renderer with url → set-property WebPageRendererUrl', () => {
+		test('new html renderer with url → StopCommand then set-property WebPageRendererUrl', () => {
 			compareStates(MAPPINGS, { ...EMPTY_STATE, stateTime: 0 }, makeState([htmlObj({ url: 'https://example.com' })]), [
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StopCommand' },
+				},
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
@@ -708,12 +713,17 @@ describe('diffState', () => {
 			compareStates(MAPPINGS, s, s, [])
 		})
 
-		test('url changed → set-property WebPageRendererUrl', () => {
+		test('url changed → StopCommand then set-property WebPageRendererUrl', () => {
 			compareStates(
 				MAPPINGS,
 				makeState([htmlObj({ url: 'https://old.com' })]),
 				makeState([htmlObj({ url: 'https://new.com' })]),
 				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StopCommand' },
+					},
 					{
 						timelineObjId: 'obj0',
 						context: expect.any(String),
@@ -792,6 +802,121 @@ describe('diffState', () => {
 			compareStates(MAPPINGS, makeState([htmlObj({ reloadKey: 1 })]), makeState([htmlObj({ reloadKey: 1 })]), [])
 		})
 
+		test('url changed while running → StopCommand, set-property, StartCommand', () => {
+			compareStates(
+				MAPPINGS,
+				makeState([htmlObj({ url: 'https://old.com', running: true })]),
+				makeState([htmlObj({ url: 'https://new.com', running: true })]),
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StopCommand' },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: HTML_SELECTOR,
+							property: 'WebPageRendererUrl',
+							value: 'https://new.com',
+						},
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StartCommand' },
+					},
+				]
+			)
+		})
+
+		test('url changed while running + reloadKey changes → StopCommand, set-property, StartCommand (no redundant ReloadCommand)', () => {
+			compareStates(
+				MAPPINGS,
+				makeState([htmlObj({ url: 'https://old.com', running: true, reloadKey: 1 })]),
+				makeState([htmlObj({ url: 'https://new.com', running: true, reloadKey: 2 })]),
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StopCommand' },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: HTML_SELECTOR,
+							property: 'WebPageRendererUrl',
+							value: 'https://new.com',
+						},
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StartCommand' },
+					},
+				]
+			)
+		})
+
+		test('url changed while not running → StopCommand then set-property, no restart', () => {
+			compareStates(
+				MAPPINGS,
+				makeState([htmlObj({ url: 'https://old.com', running: false })]),
+				makeState([htmlObj({ url: 'https://new.com', running: false })]),
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StopCommand' },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: HTML_SELECTOR,
+							property: 'WebPageRendererUrl',
+							value: 'https://new.com',
+						},
+					},
+				]
+			)
+		})
+
+		test('url changed + running true→false → StopCommand, set-property, StopCommand', () => {
+			compareStates(
+				MAPPINGS,
+				makeState([htmlObj({ url: 'https://old.com', running: true })]),
+				makeState([htmlObj({ url: 'https://new.com', running: false })]),
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StopCommand' },
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: HTML_SELECTOR,
+							property: 'WebPageRendererUrl',
+							value: 'https://new.com',
+						},
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StopCommand' },
+					},
+				]
+			)
+		})
+
 		test('html renderer removed → no commands', () => {
 			compareStates(
 				MAPPINGS,
@@ -801,13 +926,18 @@ describe('diffState', () => {
 			)
 		})
 
-		test('url + running appear together → set-property before invoke-command', () => {
+		test('url + running appear together → StopCommand, set-property, StartCommand (no redundant ReloadCommand)', () => {
 			const commands = diffVindralStates(
 				{ ...EMPTY_STATE, stateTime: 0 },
 				makeState([htmlObj({ url: 'https://example.com', running: true, reloadKey: 1 })]),
 				MAPPINGS
 			)
 			expect(commands).toStrictEqual([
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StopCommand' },
+				},
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
@@ -822,11 +952,6 @@ describe('diffState', () => {
 					timelineObjId: 'obj0',
 					context: expect.any(String),
 					command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StartCommand' },
-				},
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'ReloadCommand' },
 				},
 			])
 		})

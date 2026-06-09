@@ -256,6 +256,9 @@ function diffMediaPlayers(
 
 // HTML renderers: set property before invoking commands so the URL is applied before
 // Start/Stop/Reload fires. No cleanup on disappear — fire-and-forget like connectors.
+// When the URL changes while the renderer is already running, a Stop→setUrl→Start cycle
+// is required — Composer ignores WebPageRendererUrl changes on the non-WebGL variants
+// while the renderer is active.
 function diffHtmlRenderers(
 	oldState: VindralComposerDeviceState,
 	newState: VindralComposerDeviceState
@@ -270,20 +273,32 @@ function diffHtmlRenderers(
 		const timelineObjId = next.timelineObjIds.join(' & ')
 		const context = `html-renderer key=${key}`
 
-		if (next.url !== undefined && old?.url !== next.url) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'set-property',
-					selector: next.selector,
-					property: 'WebPageRendererUrl',
-					value: next.url,
+		const nextUrl = next.url
+		const urlChanged = nextUrl !== undefined && old?.url !== nextUrl
+
+		if (urlChanged) {
+			commands.push(
+				{
+					// Stop before setting the URL — Composer ignores WebPageRendererUrl changes while running.
+					timelineObjId,
+					context,
+					command: { type: 'invoke-command', selector: next.selector, command: 'StopCommand' },
 				},
-			})
+				{
+					timelineObjId,
+					context,
+					command: {
+						type: 'set-property',
+						selector: next.selector,
+						property: 'WebPageRendererUrl',
+						value: nextUrl,
+					},
+				}
+			)
 		}
 
-		if (next.running !== undefined && old?.running !== next.running) {
+		const runningChanged = next.running !== undefined && old?.running !== next.running
+		if (runningChanged) {
 			commands.push({
 				timelineObjId,
 				context,
@@ -293,9 +308,16 @@ function diffHtmlRenderers(
 					command: next.running ? 'StartCommand' : 'StopCommand',
 				},
 			})
+		} else if (urlChanged && next.running === true) {
+			// URL change forced a stop above; restart since the desired state is still running.
+			commands.push({
+				timelineObjId,
+				context,
+				command: { type: 'invoke-command', selector: next.selector, command: 'StartCommand' },
+			})
 		}
 
-		if (next.reloadKey !== undefined && old?.reloadKey !== next.reloadKey) {
+		if (!urlChanged && next.reloadKey !== undefined && old?.reloadKey !== next.reloadKey) {
 			commands.push({
 				timelineObjId,
 				context,
