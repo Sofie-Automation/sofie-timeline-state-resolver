@@ -51,6 +51,7 @@ export function diffVindralStates(
 	}
 
 	commands.push(...diffSwitchers(resolvedOld, newState))
+	commands.push(...diffSwitcherOverlays(resolvedOld, newState))
 	commands.push(...diffMediaPlayers(resolvedOld, newState))
 	commands.push(...diffHtmlRenderers(resolvedOld, newState))
 	commands.push(...diffAudioSources(resolvedOld, newState))
@@ -122,6 +123,51 @@ function diffSwitchers(
 					type: 'invoke-command',
 					selector: next.selector,
 					command: next.transition === 'cut' ? 'CutCommand' : 'CrossfadeCommand',
+				},
+			})
+		}
+	}
+
+	return commands
+}
+
+// Switcher overlays: set MvOverlay{N} property before invoking show/hide command so the
+// input is applied on the device before the overlay visibility changes.
+function diffSwitcherOverlays(
+	oldState: VindralComposerDeviceState,
+	newState: VindralComposerDeviceState
+): VindralCommandWithContext[] {
+	const commands: VindralCommandWithContext[] = []
+
+	for (const key of allKeys(oldState.switcherOverlays, newState.switcherOverlays)) {
+		const old = oldState.switcherOverlays[key]
+		const next = newState.switcherOverlays[key]
+		if (!next) continue
+
+		const timelineObjId = next.timelineObjIds.join(' & ')
+		const context = `switcher-overlay layer=${key}`
+		const n = next.overlayNumber
+
+		if (next.inputName !== undefined && old?.inputName !== next.inputName) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: {
+					type: 'set-property',
+					selector: next.selector,
+					property: `MvOverlay${n}`,
+					value: next.inputName,
+				},
+			})
+		}
+		if (next.show !== undefined && old?.show !== next.show) {
+			commands.push({
+				timelineObjId,
+				context,
+				command: {
+					type: 'invoke-command',
+					selector: next.selector,
+					command: next.show ? `Overlay${n}ShowCommand` : `Overlay${n}HideCommand`,
 				},
 			})
 		}

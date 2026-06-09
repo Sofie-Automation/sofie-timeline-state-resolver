@@ -5,6 +5,7 @@ export const EMPTY_STATE: Omit<VindralComposerDeviceState, 'stateTime'> = {
 	sceneLayers: {},
 	scriptEngines: {},
 	switchers: {},
+	switcherOverlays: {},
 	mediaPlayers: {},
 	htmlRenderers: {},
 	audioSources: {},

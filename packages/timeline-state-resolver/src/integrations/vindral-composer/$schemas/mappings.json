@@ -120,6 +120,33 @@
 				}
 			},
 			"additionalProperties": false
+		},
+		"switcher-overlay": {
+			"type": "object",
+			"properties": {
+				"switcherId": {
+					"type": "string",
+					"ui:title": "Switcher ID",
+					"ui:description": "The GUID of the Composer switcher object. Mutually exclusive with Switcher Name.",
+					"ui:summaryTitle": "Switcher ID"
+				},
+				"switcherName": {
+					"type": "string",
+					"ui:title": "Switcher Name",
+					"ui:description": "The name of the Composer switcher object. Mutually exclusive with Switcher ID.",
+					"ui:summaryTitle": "Switcher Name"
+				},
+				"overlay": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 4,
+					"ui:title": "Overlay Number",
+					"ui:description": "The overlay slot number (1-4) on the switcher.",
+					"ui:summaryTitle": "Overlay"
+				}
+			},
+			"required": ["overlay"],
+			"additionalProperties": false
 		}
 	}
 }

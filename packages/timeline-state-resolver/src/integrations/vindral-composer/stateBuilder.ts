@@ -16,6 +16,7 @@ export interface VindralComposerDeviceState {
 	sceneLayers: Record<string, VindralSceneLayerState | undefined>
 	scriptEngines: Record<string, VindralScriptEngineState | undefined>
 	switchers: Record<string, VindralSwitcherState | undefined>
+	switcherOverlays: Record<string, VindralSwitcherOverlayState | undefined>
 	mediaPlayers: Record<string, VindralMediaPlayerState | undefined>
 	htmlRenderers: Record<string, VindralHtmlState | undefined>
 	audioSources: Record<string, VindralAudioSourceState | undefined>
@@ -70,6 +71,14 @@ export interface VindralSwitcherState {
 	timelineObjIds: string[]
 }
 
+export interface VindralSwitcherOverlayState {
+	selector: { target?: string; targetName?: string }
+	overlayNumber: number
+	inputName?: string
+	show?: boolean
+	timelineObjIds: string[]
+}
+
 export interface VindralHtmlState {
 	selector: { target?: string; targetName?: string }
 	url?: string
@@ -88,6 +97,7 @@ export function buildVindralState(
 		sceneLayers: {},
 		scriptEngines: {},
 		switchers: {},
+		switcherOverlays: {},
 		mediaPlayers: {},
 		htmlRenderers: {},
 		audioSources: {},
@@ -149,6 +159,21 @@ export function buildVindralState(
 					transition: c.switcher.transition ?? existing?.transition,
 					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
 				} satisfies Complete<VindralSwitcherState>
+				break
+			}
+			case MappingVindralComposerType.SwitcherOverlay: {
+				if (content.type !== TimelineContentTypeVindralComposer.SWITCHER_OVERLAY) break
+				const c = content
+				const m = mapping.options
+				const overlayKey = `${m.switcherId ?? m.switcherName ?? layerId}/${m.overlay}`
+				const existing = state.switcherOverlays[overlayKey]
+				state.switcherOverlays[overlayKey] = {
+					selector: m.switcherId ? { target: m.switcherId } : { targetName: m.switcherName },
+					overlayNumber: m.overlay,
+					inputName: c.switcherOverlay.inputName ?? existing?.inputName,
+					show: c.switcherOverlay.show ?? existing?.show,
+					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
+				} satisfies Complete<VindralSwitcherOverlayState>
 				break
 			}
 			case MappingVindralComposerType.MediaPlayer: {

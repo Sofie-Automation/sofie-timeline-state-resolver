@@ -5,6 +5,7 @@ export enum TimelineContentTypeVindralComposer {
 	SCENE_LAYER = 'scene-layer',
 	SCRIPT_ENGINE = 'script-engine',
 	SWITCHER = 'switcher',
+	SWITCHER_OVERLAY = 'switcher-overlay',
 	MEDIA_PLAYER = 'media-player',
 	HTML = 'html',
 	AUDIO_SOURCE = 'audio-source',
@@ -21,6 +22,7 @@ export type TimelineContentVindralComposerAny =
 	| TimelineContentVindralComposerSceneLayer
 	| TimelineContentVindralComposerScriptEngine
 	| TimelineContentVindralComposerSwitcher
+	| TimelineContentVindralComposerSwitcherOverlay
 	| TimelineContentVindralComposerMediaPlayer
 	| TimelineContentVindralComposerHtml
 	| TimelineContentVindralComposerAudioSource
@@ -76,6 +78,17 @@ export interface TimelineContentVindralComposerSwitcher {
 		crossfadeTransitionDuration?: number
 		/** Transition command to invoke when this object becomes active or the command type changes */
 		transition?: 'cut' | 'crossfade'
+	}
+}
+
+export interface TimelineContentVindralComposerSwitcherOverlay {
+	deviceType: DeviceType.VINDRAL_COMPOSER
+	type: TimelineContentTypeVindralComposer.SWITCHER_OVERLAY
+	switcherOverlay: {
+		/** Input name to assign to this overlay slot (maps to the MvOverlay{N} device property) */
+		inputName?: string
+		/** When true, invokes Overlay{N}ShowCommand; when false, invokes Overlay{N}HideCommand; when absent, no command is sent */
+		show?: boolean
 	}
 }
 
