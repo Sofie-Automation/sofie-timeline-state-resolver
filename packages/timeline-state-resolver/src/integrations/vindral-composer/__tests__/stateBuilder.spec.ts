@@ -289,6 +289,7 @@ describe('stateBuilder', () => {
 			playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
 			autoPlay: true,
 			playing: true,
+			instanceStartTime: 0,
 			timelineObjIds: ['obj0'],
 		})
 		expect(result.connectors).toStrictEqual({})

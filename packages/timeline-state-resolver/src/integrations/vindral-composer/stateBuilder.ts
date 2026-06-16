@@ -26,11 +26,14 @@ export interface VindralMediaPlayerState {
 	selector: { target?: string; targetName?: string }
 	autoPlayOnMediaChange?: boolean
 	sourceUrl?: string
+	/** The in-point to seek to when the clip goes live (lookahead offset already folded in). */
 	inTime?: number
 	outTime?: number
 	playbackEndCondition?: VindralComposerPlaybackEndCondition
 	autoPlay?: boolean
 	playing?: boolean
+	/** Wall-clock start of the timeline object instance. Used to catch a playing clip up to "now". */
+	instanceStartTime: number
 	timelineObjIds: string[]
 }
 
@@ -199,6 +202,7 @@ export function buildVindralState(
 					playbackEndCondition: c.mediaPlayer.playbackEndCondition,
 					autoPlay: c.mediaPlayer.autoPlay,
 					playing: c.mediaPlayer.playing,
+					instanceStartTime: obj.instance.start,
 					timelineObjIds: [obj.id],
 				} satisfies Complete<VindralMediaPlayerState>
 				break

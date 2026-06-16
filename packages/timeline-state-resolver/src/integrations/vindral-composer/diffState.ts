@@ -1,6 +1,6 @@
 import type { SomeMappingVindralComposer, Mappings } from 'timeline-state-resolver-types'
 import { isEqual } from 'underscore'
-import { buildVindralState, type VindralComposerDeviceState } from './stateBuilder.js'
+import { buildVindralState, type VindralComposerDeviceState, type VindralMediaPlayerState } from './stateBuilder.js'
 import type { VindralCommandWithContext } from './commands.js'
 
 export function diffVindralStates(
@@ -205,11 +205,17 @@ function diffMediaPlayers(
 		const timelineObjId = next.timelineObjIds.join(' & ')
 		const context = `media-player layer=${key}`
 
-		if (next.inTime !== undefined && old?.inTime !== next.inTime) {
+		// Resolve the in-point to seek to, advancing a playing clip by how long its object has
+		// already been live so a clip started partway through resumes from the right position.
+		// Gate re-sends on the stable anchor (raw inTime + instance start), not the computed
+		// value, so a continuing clip is not re-seeked on every state re-resolve.
+		const nextInTime = resolveInTime(next, newState.stateTime)
+		const inTimeAnchorChanged = old?.inTime !== next.inTime || old?.instanceStartTime !== next.instanceStartTime
+		if (nextInTime !== undefined && inTimeAnchorChanged) {
 			commands.push({
 				timelineObjId,
 				context,
-				command: { type: 'set-property', selector: next.selector, property: 'InTime', value: next.inTime },
+				command: { type: 'set-property', selector: next.selector, property: 'InTime', value: nextInTime },
 			})
 		}
 		if (next.outTime !== undefined && old?.outTime !== next.outTime) {
@@ -307,6 +313,17 @@ function diffMediaPlayers(
 	}
 
 	return commands
+}
+
+// Resolve the InTime to send for a media player. A clip that is playing is advanced by how
+// long its timeline object has already been live (now - instance start), so a clip started
+// partway through resumes from the correct position rather than restarting at its in-point.
+// A paused/loading clip sits at its raw in-point. Lookahead objects have a future start, so
+// the elapsed term is 0 and only the (already folded in) lookahead offset applies.
+function resolveInTime(mp: VindralMediaPlayerState, stateTime: number): number | undefined {
+	const elapsed = mp.playing === true ? Math.max(0, stateTime - mp.instanceStartTime) : 0
+	if (mp.inTime === undefined) return elapsed > 0 ? elapsed : undefined
+	return mp.inTime + elapsed
 }
 
 // HTML renderers: set property before invoking commands so the URL is applied before

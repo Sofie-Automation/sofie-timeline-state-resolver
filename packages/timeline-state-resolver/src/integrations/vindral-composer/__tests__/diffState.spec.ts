@@ -596,6 +596,71 @@ describe('diffState', () => {
 			compareStates(MAPPINGS, s, s, [])
 		})
 
+		test('playing clip started in the past → InTime advanced by elapsed time', () => {
+			// Object started at t=0 but the state is resolved at t=3000, so a playing clip should
+			// resume 3000ms past its in-point (1000 + 3000 = 4000).
+			const commands = diffVindralStates(
+				{ ...EMPTY_STATE, stateTime: 3000 },
+				makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 3000),
+				MAPPINGS
+			)
+			expect(commands).toStrictEqual([
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'InTime', value: 4000 },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip.mp4' },
+				},
+			])
+		})
+
+		test('paused clip started in the past → InTime stays at the raw in-point (no catch-up)', () => {
+			const commands = diffVindralStates(
+				{ ...EMPTY_STATE, stateTime: 3000 },
+				makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: false })], 3000),
+				MAPPINGS
+			)
+			expect(commands).toStrictEqual([
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'InTime', value: 1000 },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip.mp4' },
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'invoke-command', selector: SELECTOR, command: 'PauseCommand' },
+				},
+			])
+		})
+
+		test('continuing playing clip is not re-seeked when re-resolved at a later time', () => {
+			// Same object (same instance start + in-point), state re-resolved 2000ms later. The
+			// computed InTime drifts, but the stable anchor is unchanged so no InTime is re-sent.
+			const old = makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 3000)
+			const next = makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 5000)
+			compareStates(MAPPINGS, old, next, [])
+		})
+
 		test('sourceUrl changed with playing=true → play-video-file-input (no separate PlayCommand)', () => {
 			compareStates(
 				MAPPINGS,
