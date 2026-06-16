@@ -60,7 +60,9 @@ export function diffVindralStates(
 }
 
 // Switchers: setProperty commands are emitted first (before invokeCommand) so inputs and duration
-// are applied on the device before the transition fires.
+// are applied on the device before the transition fires. The transition is a "take" that commits
+// the staged background (preview) input to program, so it fires whenever the background input
+// changes — not when the transition type string changes.
 function diffSwitchers(
 	oldState: VindralComposerDeviceState,
 	newState: VindralComposerDeviceState
@@ -115,7 +117,14 @@ function diffSwitchers(
 			})
 		}
 
-		if (next.transition !== undefined && old?.transition !== next.transition) {
+		// Fire the transition whenever the background (preview) input changes — comparing the
+		// transition string would miss repeated takes that reuse the same transition type. A
+		// null/absent transition stages the background without taking.
+		if (
+			next.transition &&
+			next.backgroundInputName !== undefined &&
+			old?.backgroundInputName !== next.backgroundInputName
+		) {
 			commands.push({
 				timelineObjId,
 				context,

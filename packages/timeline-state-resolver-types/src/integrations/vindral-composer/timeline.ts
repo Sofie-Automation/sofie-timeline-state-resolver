@@ -76,8 +76,11 @@ export interface TimelineContentVindralComposerSwitcher {
 		backgroundInputName?: string
 		/** Duration in milliseconds for crossfade transitions */
 		crossfadeTransitionDuration?: number
-		/** Transition command to invoke when this object becomes active or the command type changes */
-		transition?: 'cut' | 'crossfade'
+		/**
+		 * Transition command to invoke when the background (preview) input changes, committing it to
+		 * program. `null` explicitly stages the background without taking; absent leaves it unchanged.
+		 */
+		transition?: 'cut' | 'crossfade' | null
 	}
 }
 

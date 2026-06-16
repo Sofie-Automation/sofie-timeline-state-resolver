@@ -67,7 +67,7 @@ export interface VindralSwitcherState {
 	foregroundInputName?: string
 	backgroundInputName?: string
 	crossfadeTransitionDuration?: number
-	transition?: 'cut' | 'crossfade'
+	transition?: 'cut' | 'crossfade' | null
 	timelineObjIds: string[]
 }
 
@@ -156,7 +156,9 @@ export function buildVindralState(
 					foregroundInputName: c.switcher.foregroundInputName ?? existing?.foregroundInputName,
 					backgroundInputName: c.switcher.backgroundInputName ?? existing?.backgroundInputName,
 					crossfadeTransitionDuration: c.switcher.crossfadeTransitionDuration ?? existing?.crossfadeTransitionDuration,
-					transition: c.switcher.transition ?? existing?.transition,
+					// null explicitly clears the transition (stage without taking); only fall back to
+					// existing when this object doesn't specify a transition at all.
+					transition: c.switcher.transition !== undefined ? c.switcher.transition : existing?.transition,
 					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
 				} satisfies Complete<VindralSwitcherState>
 				break

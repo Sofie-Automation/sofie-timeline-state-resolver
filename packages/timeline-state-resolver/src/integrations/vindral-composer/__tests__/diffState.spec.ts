@@ -274,7 +274,7 @@ describe('diffState', () => {
 			foregroundInputName?: string
 			backgroundInputName?: string
 			crossfadeTransitionDuration?: number
-			transition?: 'cut' | 'crossfade'
+			transition?: 'cut' | 'crossfade' | null
 		}) => ({
 			enable: { start: 0 },
 			id: 'obj0',
@@ -340,13 +340,28 @@ describe('diffState', () => {
 		})
 
 		test('cut transition → CutCommand', () => {
-			compareStates(MAPPINGS, { ...EMPTY_STATE, stateTime: 0 }, makeState([swObj({ transition: 'cut' })]), [
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CutCommand' },
-				},
-			])
+			compareStates(
+				MAPPINGS,
+				{ ...EMPTY_STATE, stateTime: 0 },
+				makeState([swObj({ backgroundInputName: 'cam2', transition: 'cut' })]),
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: { target: 'abc-123' },
+							property: 'BackgroundInputName',
+							value: 'cam2',
+						},
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CutCommand' },
+					},
+				]
+			)
 		})
 
 		test('unchanged switcher → no commands', () => {
@@ -374,16 +389,46 @@ describe('diffState', () => {
 			)
 		})
 
-		test('transition type change → invokeCommand only (property unchanged)', () => {
+		test('background input change with unchanged transition type → setProperty then transition', () => {
 			compareStates(
 				MAPPINGS,
-				makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })]),
-				makeState([swObj({ foregroundInputName: 'cam1', transition: 'crossfade' })]),
+				makeState([swObj({ backgroundInputName: 'cam2', transition: 'crossfade' })]),
+				makeState([swObj({ backgroundInputName: 'cam4', transition: 'crossfade' })]),
 				[
 					{
 						timelineObjId: 'obj0',
 						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: { target: 'abc-123' },
+							property: 'BackgroundInputName',
+							value: 'cam4',
+						},
+					},
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
 						command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CrossfadeCommand' },
+					},
+				]
+			)
+		})
+
+		test('transition: null stages background without taking', () => {
+			compareStates(
+				MAPPINGS,
+				{ ...EMPTY_STATE, stateTime: 0 },
+				makeState([swObj({ backgroundInputName: 'cam2', transition: null })]),
+				[
+					{
+						timelineObjId: 'obj0',
+						context: expect.any(String),
+						command: {
+							type: 'set-property',
+							selector: { target: 'abc-123' },
+							property: 'BackgroundInputName',
+							value: 'cam2',
+						},
 					},
 				]
 			)
