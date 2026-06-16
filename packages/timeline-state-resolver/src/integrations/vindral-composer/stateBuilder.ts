@@ -182,11 +182,19 @@ export function buildVindralState(
 				if (content.type !== TimelineContentTypeVindralComposer.MEDIA_PLAYER) break
 				const c = content
 				const m = mapping.options
+
+				// When inserted by lookahead, seek the preloaded clip forward so it is at the
+				// position it should be once it goes live (lookaheadOffset = amount already played).
+				const inTimeWithLookaheadOffset =
+					c.mediaPlayer.inTime !== undefined && obj.lookaheadOffset !== undefined
+						? c.mediaPlayer.inTime + obj.lookaheadOffset
+						: (c.mediaPlayer.inTime ?? obj.lookaheadOffset)
+
 				state.mediaPlayers[layerId] = {
 					selector: { target: m.mediaPlayerId, targetName: m.mediaPlayerName },
 					autoPlayOnMediaChange: m.autoPlayOnMediaChange,
 					sourceUrl: c.mediaPlayer.sourceUrl,
-					inTime: c.mediaPlayer.inTime,
+					inTime: !obj.isLookahead ? c.mediaPlayer.inTime : inTimeWithLookaheadOffset,
 					outTime: c.mediaPlayer.outTime,
 					playbackEndCondition: c.mediaPlayer.playbackEndCondition,
 					autoPlay: c.mediaPlayer.autoPlay,
