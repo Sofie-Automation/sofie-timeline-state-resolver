@@ -18,6 +18,7 @@ import {
 	MediaSoundRef,
 	refToPath,
 	ResponseError,
+	refSceneLayerEffect,
 } from 'kairos-connection'
 import {
 	AuxRef,
@@ -36,6 +37,7 @@ import {
 } from 'timeline-state-resolver-types'
 import * as _ from 'underscore'
 import {
+	getLayerEffectEffectName,
 	KairosDeviceState,
 	KairosDeviceStateAux,
 	KairosDeviceStateClipPlayers,
@@ -161,6 +163,15 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 				this.aware.add(refScene(mapping.options.sceneName))
 			} else if (mapping.options.mappingType === MappingKairosType.SceneLayer) {
 				this.aware.add(refSceneLayer(refScene(mapping.options.sceneName), mapping.options.layerName))
+			} else if (mapping.options.mappingType === MappingKairosType.SceneLayerEffect) {
+				const effectName = getLayerEffectEffectName(mapping.options)
+				if (effectName.length > 0)
+					this.aware.add(
+						refSceneLayerEffect(
+							refSceneLayer(refScene(mapping.options.sceneName), mapping.options.layerName),
+							effectName
+						)
+					)
 			} else if (mapping.options.mappingType === MappingKairosType.Aux) {
 				this.aware.add(refAuxName(mapping.options.auxName))
 			} else if (mapping.options.mappingType === MappingKairosType.Macro) {
@@ -300,7 +311,12 @@ export class KairosApplicationMonitor extends EventEmitter<KairosApplicationMoni
 			} else if (sourceRef.realm === 'audio-player') {
 				await ensureExists(this.kairos.audioPlayerExists(sourceRef), `Audio Player "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'scene-layer-effect') {
-				// There is no method to check a sceneLayerEffect individually (yet)
+				const layerRef = refSceneLayer(refScene(sourceRef.scenePath), sourceRef.layerPath)
+				const layerEffects = await this.kairos.listSceneLayerEffects(layerRef)
+
+				if (!layerEffects.find((effect) => _.isEqual(effect.effectPath, sourceRef.effectPath))) {
+					issues.push(`Layer Effect ${refToPath(sourceRef)} not found on the Kairos.`)
+				}
 			} else if (sourceRef.realm === 'aux') {
 				await ensureExists(this.kairos.auxExists(sourceRef), `Aux "${refToPath(sourceRef)}"`)
 			} else if (sourceRef.realm === 'media-clip') {
