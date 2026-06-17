@@ -28,6 +28,8 @@ export class VindralComposerDevice implements Device<
 > {
 	private _connection: VindralComposer | undefined
 	private _connected = false
+	/** When true, supported operations are routed through tsr* Script Engine helper functions. */
+	private _useScriptEngine = false
 
 	readonly actions: VindralComposerActionMethods
 
@@ -42,6 +44,7 @@ export class VindralComposerDevice implements Device<
 		if (options.wsPort !== undefined) connOptions.wsPort = options.wsPort
 		if (options.httpPort !== undefined) connOptions.httpPort = options.httpPort
 		if (options.autoReconnect !== undefined) connOptions.autoReconnect = options.autoReconnect
+		this._useScriptEngine = options.useScriptEngine ?? false
 		this._connection = new VindralComposer(connOptions)
 
 		this._connection.on('connected', () => {
@@ -92,7 +95,9 @@ export class VindralComposerDevice implements Device<
 		_time: number
 	): VindralCommandWithContext[] {
 		if (!this._connected) return []
-		return diffVindralStates(oldState, newState, mappings)
+		return diffVindralStates(oldState, newState, mappings, this._useScriptEngine, (msg) =>
+			this.context.logger.warning(msg)
+		)
 	}
 
 	async sendCommand(command: VindralCommandWithContext): Promise<void> {

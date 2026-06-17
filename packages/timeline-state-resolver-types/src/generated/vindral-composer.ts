@@ -24,6 +24,10 @@ export interface VindralComposerOptions {
 	 * Whether to reconnect automatically on disconnect
 	 */
 	autoReconnect?: boolean
+	/**
+	 * Route supported operations (currently media player load/play) through TSR helper functions (tsr*) in the Composer Script Engine instead of direct HTTP property/command calls. This lets the device load a clip, seek and start playback as one atomic operation that reacts to the clip-loaded event inside Composer, avoiding the load-timing guesswork of the raw HTTP API. Requires the TSR helper script to be loaded in the Composer project (see SCRIPT_ENGINE.md). Leave off to use the minimal direct-HTTP flow.
+	 */
+	useScriptEngine?: boolean
 }
 
 export interface MappingVindralComposerConnector {

@@ -3,10 +3,21 @@ import { isEqual } from 'underscore'
 import { buildVindralState, type VindralComposerDeviceState, type VindralMediaPlayerState } from './stateBuilder.js'
 import type { VindralCommandWithContext } from './commands.js'
 
+/**
+ * Name of the TSR media-player helper function expected in the Composer Script Engine when
+ * `useScriptEngine` is enabled. It receives the full desired play-state of a media player and
+ * reconciles it atomically (load → wait-for-parse → seek → play). See SCRIPT_ENGINE.md for the
+ * payload contract and a reference implementation. Prefixed `tsr` to scope it away from a project's
+ * own script functions.
+ */
+export const TSR_SCRIPT_FN_MEDIA_PLAYER = 'tsrMediaPlayer'
+
 export function diffVindralStates(
 	oldState: VindralComposerDeviceState | undefined,
 	newState: VindralComposerDeviceState,
-	mappings: Mappings<SomeMappingVindralComposer>
+	mappings: Mappings<SomeMappingVindralComposer>,
+	useScriptEngine: boolean,
+	logWarning: (message: string) => void
 ): VindralCommandWithContext[] {
 	const resolvedOld = oldState ?? buildVindralState({ time: 0, objects: [] }, mappings)
 	const commands: VindralCommandWithContext[] = []
@@ -52,7 +63,7 @@ export function diffVindralStates(
 
 	commands.push(...diffSwitchers(resolvedOld, newState))
 	commands.push(...diffSwitcherOverlays(resolvedOld, newState))
-	commands.push(...diffMediaPlayers(resolvedOld, newState))
+	commands.push(...diffMediaPlayers(resolvedOld, newState, useScriptEngine, logWarning))
 	commands.push(...diffHtmlRenderers(resolvedOld, newState))
 	commands.push(...diffAudioSources(resolvedOld, newState))
 
@@ -185,7 +196,7 @@ function diffSwitcherOverlays(
 	return commands
 }
 
-// Media players: setProperty commands first so InTime, OutTime etc. are applied before
+// Media players: setProperty commands first so the remaining properties are applied before
 // SourceUrl is set and before any play/pause command fires.
 // When sourceUrl is set to '' the sequence is: StopCommand (stops playback), then
 // clear-source (/api/source/clear?target=<guid>) to fully clear the player. The clear
@@ -193,7 +204,9 @@ function diffSwitcherOverlays(
 // on object disappear — only on an explicit empty-string sourceUrl.
 function diffMediaPlayers(
 	oldState: VindralComposerDeviceState,
-	newState: VindralComposerDeviceState
+	newState: VindralComposerDeviceState,
+	useScriptEngine: boolean,
+	logWarning: (message: string) => void
 ): VindralCommandWithContext[] {
 	const commands: VindralCommandWithContext[] = []
 
@@ -205,25 +218,60 @@ function diffMediaPlayers(
 		const timelineObjId = next.timelineObjIds.join(' & ')
 		const context = `media-player layer=${key}`
 
-		// Resolve the in-point to seek to, advancing a playing clip by how long its object has
-		// already been live so a clip started partway through resumes from the right position.
-		// Gate re-sends on the stable anchor (raw inTime + instance start), not the computed
-		// value, so a continuing clip is not re-seeked on every state re-resolve.
-		const nextInTime = resolveInTime(next, newState.stateTime)
-		const inTimeAnchorChanged = old?.inTime !== next.inTime || old?.instanceStartTime !== next.instanceStartTime
-		if (nextInTime !== undefined && inTimeAnchorChanged) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: { type: 'set-property', selector: next.selector, property: 'InTime', value: nextInTime },
-			})
+		// Script-engine flow: route the entire media-player control surface through a single
+		// tsrMediaPlayer call carrying the full desired play-state. The helper reconciles it
+		// atomically inside Composer — (re)loading the clip, deferring the seek/play until it has
+		// actually parsed, and superseding any in-flight load when a newer state arrives — so TSR
+		// never has to guess when the clip is ready and a seek/play can't be dropped by a race.
+		if (useScriptEngine) {
+			// Gate emission on the in-point anchor (raw inTime + instance start), not the computed
+			// value, so a continuing clip is not re-sent on every re-resolve.
+			const scriptInTime = resolveInTime(next, newState.stateTime)
+			const inTimeAnchorChanged = old?.inTime !== next.inTime || old?.instanceStartTime !== next.instanceStartTime
+			const sourceChanged = next.sourceUrl !== undefined && old?.sourceUrl !== next.sourceUrl
+			const changed =
+				sourceChanged ||
+				inTimeAnchorChanged ||
+				old?.outTime !== next.outTime ||
+				old?.playbackEndCondition !== next.playbackEndCondition ||
+				old?.autoPlay !== next.autoPlay ||
+				old?.autoPlayOnMediaChange !== next.autoPlayOnMediaChange ||
+				old?.playing !== next.playing
+
+			if (changed) {
+				const parameter: Record<string, unknown> = { name: next.selector.targetName! }
+				// Only include sourceUrl when it changed (incl. '' to stop+clear); absent → the script
+				// leaves the loaded source untouched and just applies the rest.
+				if (sourceChanged) parameter.sourceUrl = next.sourceUrl
+				if (next.playing !== undefined) parameter.playing = next.playing
+				// Send the resolved in-point (catch-up + lookahead folded in) on a (re)load or when the
+				// anchor moved.
+				if (scriptInTime !== undefined && (sourceChanged || inTimeAnchorChanged)) parameter.inTime = scriptInTime
+				if (next.outTime !== undefined) parameter.outTime = next.outTime
+				if (next.playbackEndCondition !== undefined) parameter.playbackEndCondition = next.playbackEndCondition
+				if (next.autoPlay !== undefined) parameter.autoPlay = next.autoPlay
+				if (next.autoPlayOnMediaChange !== undefined) parameter.autoPlayOnMediaChange = next.autoPlayOnMediaChange
+				commands.push({
+					timelineObjId,
+					context,
+					command: { type: 'execute-script', functionName: TSR_SCRIPT_FN_MEDIA_PLAYER, parameter },
+				})
+			}
+			continue
+		}
+
+		// The direct HTTP flow cannot seek — the device ignores InTime/OutTime property writes here,
+		// so only the Script Engine flow can honour in/out points. Warn (gated on change/appearance
+		// to avoid spam) when an object asks for them, and do not emit the ineffective commands.
+		if (next.inTime !== undefined && old?.inTime !== next.inTime) {
+			logWarning(
+				`media-player layer=${key}: in/out points require the Script Engine flow (useScriptEngine); ignoring inTime=${next.inTime}`
+			)
 		}
 		if (next.outTime !== undefined && old?.outTime !== next.outTime) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: { type: 'set-property', selector: next.selector, property: 'OutTime', value: next.outTime },
-			})
+			logWarning(
+				`media-player layer=${key}: in/out points require the Script Engine flow (useScriptEngine); ignoring outTime=${next.outTime}`
+			)
 		}
 		if (next.playbackEndCondition !== undefined && old?.playbackEndCondition !== next.playbackEndCondition) {
 			commands.push({

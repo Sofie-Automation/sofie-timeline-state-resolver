@@ -1,0 +1,200 @@
+//############################
+// TSR (Timeline State Resolver) media-player helper
+//############################
+// Reconciles a Video File Input to the full desired play-state TSR sends via
+//   /api/scriptengine/execute?function=tsrMediaPlayer&parameter=<JSON>
+// Load -> wait-for-parse -> seek -> play, atomically; supersedes in-flight loads.
+// NOTE: an uncaught throw sets ScriptEngineStatus=Error and halts ALL script entry
+// points (OnRenderFrame, connectors, API functions) until the script is reloaded, so
+// every host-invoked function here is fully wrapped in try/catch.
+
+// Per-input generation counter. Each call bumps it; a pending poll whose stamped gen
+// no longer matches is stale and bails — this is how a newer state or a stop cancels
+// an in-flight load. Module-level, persists across renders like previousVolumes above.
+var tsrMediaPlayerGen = {}
+
+/**
+ * Reconcile a media player to the full desired play-state described by `parameter`.
+ * Loads the clip if a source is given, defers seek + play until it has parsed, and
+ * supersedes any in-flight load when a newer call (or a stop) arrives.
+ * @param {string} parameter - JSON string of the desired play-state. Fields: name (required),
+ *   sourceUrl ('' = stop+clear; absent = leave source as-is), playing, inTime (ms), outTime (ms),
+ *   playbackEndCondition, autoPlay, autoPlayOnMediaChange, loadTimeoutMs (default 10000).
+ * @returns {string} A status string (never throws).
+ */
+function tsrMediaPlayer(parameter) {
+	try {
+		Logger.Debug('tsrMediaPlayer: request ' + parameter)
+		var p = JSON.parse(parameter)
+		if (!p || !p.name) {
+			Logger.Error('tsrMediaPlayer: missing required "name": ' + parameter)
+			return 'tsrMediaPlayer error: missing name'
+		}
+		var input = Project.GetMovieInputByName(p.name)
+		if (input == null) {
+			Logger.Error('tsrMediaPlayer: no Video File Input named ' + p.name)
+			return 'tsrMediaPlayer error: no such input ' + p.name
+		}
+
+		var gen = (tsrMediaPlayerGen[p.name] || 0) + 1
+		tsrMediaPlayerGen[p.name] = gen
+		p.__gen = gen
+
+		// SourceUrl is LOCKED while a clip is playing. The only source-load that is proven to work
+		// on this build is VS1LoadFile above: StopCommand.Execute() (which unlocks the property),
+		// then a DIRECT assignment of a System.Uri — not SetObjectProperty's string->Uri converter,
+		// which was not changing the source here. We follow that exactly.
+		// (Other, non-locked props still go through SetObjectProperty, which handles enum/TimeCode
+		//  string conversion. StartMediaPlayBack/Pause/Stop take the name, per their signature.)
+
+		// Stop + clear. The gen bump above already invalidated any pending load callback.
+		if (p.sourceUrl === '') {
+			if (input.StopCommand && input.StopCommand.CanExecute) input.StopCommand.Execute()
+			input.SourceUrl = null // clearing stops + clears
+			Logger.Debug('tsrMediaPlayer: cleared ' + p.name)
+			return 'tsrMediaPlayer cleared: ' + p.name
+		}
+
+		// Force autostart off so nothing rolls before we have seeked; restored post-load.
+		// (Also makes 'Playing' an unambiguous "previous clip still running" signal in the poll.)
+		Project.SetObjectProperty(input, 'AutoPlay', false)
+		Project.SetObjectProperty(input, 'AutoPlayOnMediaChange', false)
+		if (p.playbackEndCondition !== undefined)
+			Project.SetObjectProperty(input, 'PlayBackEndCondition', p.playbackEndCondition)
+
+		if (p.sourceUrl !== undefined) {
+			// (Re)load, mirroring VS1LoadFile: stop to unlock SourceUrl, then assign a System.Uri
+			// directly. UriKind.Relative wraps the path string as-is (no parsing), so any
+			// absolute/relative path the device accepts via HTTP works here too.
+			if (input.StopCommand && input.StopCommand.CanExecute) input.StopCommand.Execute()
+			input.SourceUrl = System.Uri(p.sourceUrl, System.UriKind.Relative)
+			p.__deadline = Date.now() + (p.loadTimeoutMs || 10000)
+			Logger.Debug('tsrMediaPlayer: ' + p.name + ' loading "' + p.sourceUrl + '" (gen ' + gen + '), waiting for parse')
+			Project.AddTimedCallback('tsrMediaPlayerApply', JSON.stringify(p), 'tsrmp:' + p.name, 30)
+		} else {
+			// No source change — the clip is already loaded, so seek + play immediately.
+			Logger.Debug('tsrMediaPlayer: ' + p.name + ' no source change, applying immediately (gen ' + gen + ')')
+			tsrMediaPlayerApplyLoaded(p, input)
+		}
+		return 'tsrMediaPlayer applied: ' + p.name
+	} catch (e) {
+		Logger.Error('tsrMediaPlayer: unexpected error: ' + e)
+		return 'tsrMediaPlayer error: ' + e
+	}
+}
+
+/**
+ * Deferred step: fires from the frame loop via AddTimedCallback. Re-schedules itself until the
+ * clip is past Parsing (or times out / errors), then seeks and plays/pauses. Bails immediately
+ * if a newer call has superseded it. Never throws.
+ * @param {string} parameter - JSON string stamped with __gen and __deadline by tsrMediaPlayer.
+ */
+function tsrMediaPlayerApply(parameter) {
+	try {
+		var p = JSON.parse(parameter)
+		if (tsrMediaPlayerGen[p.name] !== p.__gen) return // superseded
+		var input = Project.GetMovieInputByName(p.name)
+		if (input == null) return
+
+		// MediaPlayerState stringifies to its INTEGER value on this build:
+		//   0 NoMedia, 1 Parsing, 2 Playing, 3 Paused, 4 Stopped, >=5 error (ErrorParsing=5, ...).
+		// We forced AutoPlay off before the reload, so a freshly-loaded clip settles to Paused(3)/
+		// Stopped(4) and NEVER to Playing(2) — a Playing(2) here means the PREVIOUS clip is still
+		// running and the new file has not taken over yet, so keep waiting. (Falls back to enum
+		// NAME matching in case another Composer build stringifies the state to a name.)
+		var stateRaw = '' + input.MediaPlayerState
+		var state = parseInt(stateRaw, 10)
+		var loading = isNaN(state)
+			? stateRaw === 'NoMedia' || stateRaw === 'Parsing' || stateRaw === 'Playing'
+			: state === 0 || state === 1 || state === 2
+		var errored = isNaN(state) ? stateRaw.indexOf('Error') >= 0 : state >= 5
+
+		if (loading) {
+			if (Date.now() >= p.__deadline) {
+				Logger.Error('tsrMediaPlayer: timed out waiting for ' + p.name + ' to load (state=' + stateRaw + ')')
+				return
+			}
+			Project.AddTimedCallback('tsrMediaPlayerApply', JSON.stringify(p), 'tsrmp:' + p.name, 30)
+			return
+		}
+		if (errored) {
+			Logger.Error('tsrMediaPlayer: ' + p.name + ' failed to load (state=' + stateRaw + ')')
+			return
+		}
+
+		Logger.Debug('tsrMediaPlayer: ' + p.name + ' parsed (state=' + stateRaw + '), applying (gen ' + p.__gen + ')')
+		tsrMediaPlayerApplyLoaded(p, input)
+	} catch (e) {
+		Logger.Error('tsrMediaPlayerApply: unexpected error: ' + e)
+	}
+}
+
+/**
+ * Apply seek + autoplay flags + play/pause to an already-loaded clip. Called only from the two
+ * try/catch-wrapped entry points above, so it does not catch itself.
+ * @param {Object} p - Parsed desired play-state.
+ * @param {Object} input - The MediaFileInput resolved by the caller.
+ */
+function tsrMediaPlayerApplyLoaded(p, input) {
+	if (p.inTime !== undefined) tsrSetTimeCodeProperty(input, p.name, 'InTime', p.inTime)
+	if (p.outTime !== undefined) tsrSetTimeCodeProperty(input, p.name, 'OutTime', p.outTime)
+
+	// Restore the operator-requested autoplay flags now that we have seeked.
+	if (p.autoPlay !== undefined) Project.SetObjectProperty(input, 'AutoPlay', p.autoPlay)
+	if (p.autoPlayOnMediaChange !== undefined)
+		Project.SetObjectProperty(input, 'AutoPlayOnMediaChange', p.autoPlayOnMediaChange)
+
+	if (p.playing === true) {
+		Logger.Debug('tsrMediaPlayer: ' + p.name + ' play')
+		Project.StartMediaPlayBack(p.name)
+	} else if (p.playing === false) {
+		Logger.Debug('tsrMediaPlayer: ' + p.name + ' pause')
+		Project.PauseMediaPlayBack(p.name)
+	}
+}
+
+/**
+ * Set a TimeCode property (InTime/OutTime) from a millisecond value. InTime/OutTime are TimeCode
+ * (default "0:00:00:00"), not milliseconds; SetObjectProperty's TypeConverter runs TimeCode.Parse
+ * on a "H:MM:SS:FF" string, so we build that string from ms + the project frame rate.
+ * @param {Object} input - The MediaFileInput to set the property on (object overload).
+ * @param {string} name - Input name (for logging).
+ * @param {string} propertyName - 'InTime' or 'OutTime'.
+ * @param {number} ms - Position in milliseconds.
+ */
+function tsrSetTimeCodeProperty(input, name, propertyName, ms) {
+	var fps = getProjectFrameRate()
+	if (isNaN(fps) || fps <= 0) {
+		Logger.Error('tsrMediaPlayer: cannot set ' + propertyName + ' on ' + name + ' — unknown frame rate')
+		return
+	}
+	var tc = tsrMsToTimeCode(ms, fps)
+	if (Project.SetObjectProperty(input, propertyName, tc))
+		Logger.Debug('tsrMediaPlayer: set ' + propertyName + ' on ' + name + ' = ' + tc + ' (' + ms + ' ms)')
+	else Logger.Error('tsrMediaPlayer: failed to set ' + propertyName + ' on ' + name + ' = ' + tc + ' (' + ms + ' ms)')
+}
+
+/**
+ * Convert milliseconds to a "H:MM:SS:FF" timecode string for the given frame rate.
+ * @param {number} ms - Position in milliseconds.
+ * @param {number} fps - Project frame rate.
+ * @returns {string} Timecode string parseable by TimeCode.Parse.
+ */
+function tsrMsToTimeCode(ms, fps) {
+	var fpsInt = Math.round(fps) // approximates 29.97/59.94 like setVideoDelay does
+	var totalFrames = Math.round((ms / 1000) * fps)
+	var frames = totalFrames % fpsInt
+	var totalSeconds = Math.floor(totalFrames / fpsInt)
+	function pad(n) {
+		return (n < 10 ? '0' : '') + n
+	}
+	return (
+		Math.floor(totalSeconds / 3600) +
+		':' +
+		pad(Math.floor(totalSeconds / 60) % 60) +
+		':' +
+		pad(totalSeconds % 60) +
+		':' +
+		pad(frames)
+	)
+}

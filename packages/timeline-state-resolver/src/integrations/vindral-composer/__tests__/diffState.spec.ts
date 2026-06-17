@@ -7,10 +7,22 @@ import {
 	VindralComposerPlaybackEndCondition,
 } from 'timeline-state-resolver-types'
 import { buildVindralState, VindralComposerDeviceState } from '../stateBuilder.js'
-import { diffVindralStates } from '../diffState.js'
+import { diffVindralStates as diffVindralStatesImpl, TSR_SCRIPT_FN_MEDIA_PLAYER } from '../diffState.js'
 import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 import { EMPTY_STATE } from './lib.js'
 import { VindralCommandWithContext } from '../commands.js'
+
+// The production diffVindralStates requires useScriptEngine + logWarning. Default them here so the
+// many call sites below stay terse; tests that care pass them explicitly.
+function diffVindralStates(
+	oldState: VindralComposerDeviceState | undefined,
+	newState: VindralComposerDeviceState,
+	mappings: Mappings<SomeMappingVindralComposer>,
+	useScriptEngine = false,
+	logWarning: (message: string) => void = () => undefined
+): VindralCommandWithContext[] {
+	return diffVindralStatesImpl(oldState, newState, mappings, useScriptEngine, logWarning)
+}
 
 const MAPPINGS: Mappings<SomeMappingVindralComposer> = {
 	connLayer: {
@@ -498,6 +510,8 @@ describe('diffState', () => {
 		const SELECTOR = { target: 'player-guid', targetName: 'ClipPlayer1' }
 
 		test('new media player with playing=true → properties then play-video-file-input (atomic load+play)', () => {
+			// in/out points are not applied by the direct flow (only the script engine can seek), so
+			// no InTime/OutTime commands are emitted here.
 			const commands = diffVindralStates(
 				{ ...EMPTY_STATE, stateTime: 0 },
 				makeState([
@@ -513,16 +527,6 @@ describe('diffState', () => {
 				MAPPINGS
 			)
 			expect(commands).toStrictEqual([
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'set-property', selector: SELECTOR, property: 'InTime', value: 0 },
-				},
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'set-property', selector: SELECTOR, property: 'OutTime', value: 5000 },
-				},
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
@@ -596,20 +600,18 @@ describe('diffState', () => {
 			compareStates(MAPPINGS, s, s, [])
 		})
 
-		test('playing clip started in the past → InTime advanced by elapsed time', () => {
-			// Object started at t=0 but the state is resolved at t=3000, so a playing clip should
-			// resume 3000ms past its in-point (1000 + 3000 = 4000).
+		test('playing clip with inTime → inTime ignored (no InTime command), warning logged', () => {
+			// The direct flow cannot seek, so a specified inTime produces no InTime command — just a
+			// warning — and the clip loads + plays from its natural start.
+			const logWarning = jest.fn()
 			const commands = diffVindralStates(
 				{ ...EMPTY_STATE, stateTime: 3000 },
 				makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 3000),
-				MAPPINGS
+				MAPPINGS,
+				false,
+				logWarning
 			)
 			expect(commands).toStrictEqual([
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'set-property', selector: SELECTOR, property: 'InTime', value: 4000 },
-				},
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
@@ -621,20 +623,16 @@ describe('diffState', () => {
 					command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip.mp4' },
 				},
 			])
+			expect(logWarning).toHaveBeenCalledWith(expect.stringContaining('inTime=1000'))
 		})
 
-		test('paused clip started in the past → InTime stays at the raw in-point (no catch-up)', () => {
+		test('paused clip with inTime → inTime ignored (no InTime command)', () => {
 			const commands = diffVindralStates(
 				{ ...EMPTY_STATE, stateTime: 3000 },
 				makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: false })], 3000),
 				MAPPINGS
 			)
 			expect(commands).toStrictEqual([
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'set-property', selector: SELECTOR, property: 'InTime', value: 1000 },
-				},
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
@@ -788,6 +786,176 @@ describe('diffState', () => {
 				{ ...EMPTY_STATE, stateTime: 0 },
 				[]
 			)
+		})
+	})
+
+	// ── Media Players (Script Engine flow) ───────────────────────────────────────
+
+	describe('media players — script engine flow', () => {
+		const mpObj = (mediaPlayer: {
+			sourceUrl?: string
+			inTime?: number
+			outTime?: number
+			playbackEndCondition?: VindralComposerPlaybackEndCondition
+			autoPlay?: boolean
+			playing?: boolean
+		}) => ({
+			enable: { start: 0 },
+			id: 'obj0',
+			layer: 'mpLayer',
+			content: {
+				deviceType: DeviceType.VINDRAL_COMPOSER,
+				type: TimelineContentTypeVindralComposer.MEDIA_PLAYER,
+				mediaPlayer,
+			} as const,
+		})
+
+		const scriptCommand = (parameter: Record<string, unknown>) => ({
+			timelineObjId: 'obj0',
+			context: expect.any(String),
+			command: { type: 'execute-script', functionName: TSR_SCRIPT_FN_MEDIA_PLAYER, parameter },
+		})
+
+		test('source appears with playing=true → single tsrMediaPlayer with full desired state', () => {
+			const commands = diffVindralStates(
+				{ ...EMPTY_STATE, stateTime: 0 },
+				makeState([
+					mpObj({
+						sourceUrl: 'clip.mp4',
+						inTime: 0,
+						outTime: 5000,
+						playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
+						autoPlay: true,
+						playing: true,
+					}),
+				]),
+				MAPPINGS,
+				true
+			)
+			expect(commands).toStrictEqual([
+				scriptCommand({
+					name: 'ClipPlayer1',
+					sourceUrl: 'clip.mp4',
+					playing: true,
+					inTime: 0,
+					outTime: 5000,
+					playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
+					autoPlay: true,
+					autoPlayOnMediaChange: true,
+				}),
+			])
+		})
+
+		test('source appears with playing=false → tsrMediaPlayer with playing=false and no inTime', () => {
+			const commands = diffVindralStates(
+				{ ...EMPTY_STATE, stateTime: 0 },
+				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: false })]),
+				MAPPINGS,
+				true
+			)
+			expect(commands).toStrictEqual([
+				scriptCommand({
+					name: 'ClipPlayer1',
+					sourceUrl: 'clip.mp4',
+					playing: false,
+					autoPlayOnMediaChange: true,
+				}),
+			])
+		})
+
+		test('playing clip started in the past → tsrMediaPlayer carries elapsed-adjusted inTime', () => {
+			const commands = diffVindralStates(
+				{ ...EMPTY_STATE, stateTime: 3000 },
+				makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 3000),
+				MAPPINGS,
+				true
+			)
+			expect(commands).toStrictEqual([
+				scriptCommand({
+					name: 'ClipPlayer1',
+					sourceUrl: 'clip.mp4',
+					playing: true,
+					inTime: 4000,
+					autoPlayOnMediaChange: true,
+				}),
+			])
+		})
+
+		test('source changed → single tsrMediaPlayer carrying the new source', () => {
+			const commands = diffVindralStates(
+				makeState([mpObj({ sourceUrl: 'clip-a.mp4', playing: true })]),
+				makeState([mpObj({ sourceUrl: 'clip-b.mp4', playing: true })]),
+				MAPPINGS,
+				true
+			)
+			expect(commands).toStrictEqual([
+				scriptCommand({
+					name: 'ClipPlayer1',
+					sourceUrl: 'clip-b.mp4',
+					playing: true,
+					autoPlayOnMediaChange: true,
+				}),
+			])
+		})
+
+		test('seek with no source change → tsrMediaPlayer with inTime and no sourceUrl', () => {
+			const commands = diffVindralStates(
+				makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: false })]),
+				makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 2000, playing: false })]),
+				MAPPINGS,
+				true
+			)
+			expect(commands).toStrictEqual([
+				scriptCommand({
+					name: 'ClipPlayer1',
+					playing: false,
+					inTime: 2000,
+					autoPlayOnMediaChange: true,
+				}),
+			])
+		})
+
+		test('play/pause toggle with no source change → tsrMediaPlayer with playing only (no sourceUrl)', () => {
+			const commands = diffVindralStates(
+				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: false })]),
+				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]),
+				MAPPINGS,
+				true
+			)
+			expect(commands).toStrictEqual([
+				scriptCommand({
+					name: 'ClipPlayer1',
+					playing: true,
+					autoPlayOnMediaChange: true,
+				}),
+			])
+		})
+
+		test('source set to empty string → tsrMediaPlayer with sourceUrl empty (stop + clear)', () => {
+			const commands = diffVindralStates(
+				makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]),
+				makeState([mpObj({ sourceUrl: '' })]),
+				MAPPINGS,
+				true
+			)
+			expect(commands).toStrictEqual([
+				scriptCommand({
+					name: 'ClipPlayer1',
+					sourceUrl: '',
+					autoPlayOnMediaChange: true,
+				}),
+			])
+		})
+
+		test('continuing playing clip re-resolved later → no command (anchor unchanged)', () => {
+			const old = makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 3000)
+			const next = makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 5000)
+			expect(diffVindralStates(old, next, MAPPINGS, true)).toStrictEqual([])
+		})
+
+		test('unchanged media player → no commands', () => {
+			const s = makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })])
+			expect(diffVindralStates(s, s, MAPPINGS, true)).toStrictEqual([])
 		})
 	})
 
