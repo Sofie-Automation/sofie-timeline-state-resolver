@@ -61,10 +61,15 @@ export function diffVindralStates(
 	return commands
 }
 
-// Switchers: setProperty commands are emitted first (before invokeCommand) so inputs and duration
-// are applied on the device before the transition fires. The transition is a "take" that commits
-// the staged background (preview) input to program, so it fires whenever the background input
-// changes — not when the transition type string changes.
+// Switchers: the caller always expresses the desired program via foregroundInputName.
+// - Without a transition, foreground (program) and background (preview) are set directly.
+// - With a transition, the desired foregroundInputName is staged into the background (preview) and
+//   then taken to program by the transition, so the caller never has to reason about preview vs
+//   program. The raw backgroundInputName is ignored in this mode.
+// setProperty commands are emitted before the transition invokeCommand so the staged input + duration
+// are applied on the device before the take fires. The take fires whenever the desired program input
+// changes — not when the transition type string changes (which would miss repeated takes reusing the
+// same transition type).
 function diffSwitchers(
 	oldState: VindralComposerDeviceState,
 	newState: VindralComposerDeviceState
@@ -78,16 +83,6 @@ function diffSwitchers(
 
 		const context = `switcher layer=${key}`
 
-		if (next.foregroundInputName !== undefined && old?.foregroundInputName !== next.foregroundInputName) {
-			commands.push(
-				createSetPropertyCommand(next, context, next.selector, 'ForegroundInputName', next.foregroundInputName)
-			)
-		}
-		if (next.backgroundInputName !== undefined && old?.backgroundInputName !== next.backgroundInputName) {
-			commands.push(
-				createSetPropertyCommand(next, context, next.selector, 'BackgroundInputName', next.backgroundInputName)
-			)
-		}
 		if (
 			next.crossfadeTransitionDuration !== undefined &&
 			old?.crossfadeTransitionDuration !== next.crossfadeTransitionDuration
@@ -103,17 +98,34 @@ function diffSwitchers(
 			)
 		}
 
-		// Fire the transition whenever the background (preview) input changes — comparing the
-		// transition string would miss repeated takes that reuse the same transition type. A
-		// null/absent transition stages the background without taking.
-		if (
-			next.transition &&
-			next.backgroundInputName !== undefined &&
-			old?.backgroundInputName !== next.backgroundInputName
-		) {
-			commands.push(
-				createInvokeCommand(next, context, next.selector, next.transition === 'cut' ? 'CutCommand' : 'CrossfadeCommand')
-			)
+		if (next.transition) {
+			// A transition is requested: stage the desired program (foregroundInputName) into the
+			// background (preview) and take it to program. The raw backgroundInputName is ignored here.
+			if (next.foregroundInputName !== undefined && old?.foregroundInputName !== next.foregroundInputName) {
+				commands.push(
+					createSetPropertyCommand(next, context, next.selector, 'BackgroundInputName', next.foregroundInputName)
+				)
+				commands.push(
+					createInvokeCommand(
+						next,
+						context,
+						next.selector,
+						next.transition === 'cut' ? 'CutCommand' : 'CrossfadeCommand'
+					)
+				)
+			}
+		} else {
+			// No transition: set program (foreground) and preview (background) directly.
+			if (next.foregroundInputName !== undefined && old?.foregroundInputName !== next.foregroundInputName) {
+				commands.push(
+					createSetPropertyCommand(next, context, next.selector, 'ForegroundInputName', next.foregroundInputName)
+				)
+			}
+			if (next.backgroundInputName !== undefined && old?.backgroundInputName !== next.backgroundInputName) {
+				commands.push(
+					createSetPropertyCommand(next, context, next.selector, 'BackgroundInputName', next.backgroundInputName)
+				)
+			}
 		}
 	}
 

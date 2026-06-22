@@ -19,7 +19,7 @@ describe('diffState — switchers', () => {
 		} as const,
 	})
 
-	test('new switcher with all fields → setProperty commands then invokeCommand', () => {
+	test('transition set → stages foreground into preview (ignoring backgroundInputName) then takes', () => {
 		const commands = diffVindralStates(
 			{ ...EMPTY_STATE, stateTime: 0 },
 			makeState([
@@ -32,28 +32,9 @@ describe('diffState — switchers', () => {
 			]),
 			MAPPINGS
 		)
-		// setProperty commands must come before invokeCommand
+		// backgroundInputName 'cam2' is ignored; the desired program 'cam1' is staged into the preview
+		// (BackgroundInputName) and taken to program. setProperty commands come before the take.
 		expect(commands).toStrictEqual([
-			{
-				timelineObjId: 'obj0',
-				context: expect.any(String),
-				command: {
-					type: 'set-property',
-					selector: { target: 'abc-123' },
-					property: 'ForegroundInputName',
-					value: 'cam1',
-				},
-			},
-			{
-				timelineObjId: 'obj0',
-				context: expect.any(String),
-				command: {
-					type: 'set-property',
-					selector: { target: 'abc-123' },
-					property: 'BackgroundInputName',
-					value: 'cam2',
-				},
-			},
 			{
 				timelineObjId: 'obj0',
 				context: expect.any(String),
@@ -67,16 +48,26 @@ describe('diffState — switchers', () => {
 			{
 				timelineObjId: 'obj0',
 				context: expect.any(String),
+				command: {
+					type: 'set-property',
+					selector: { target: 'abc-123' },
+					property: 'BackgroundInputName',
+					value: 'cam1',
+				},
+			},
+			{
+				timelineObjId: 'obj0',
+				context: expect.any(String),
 				command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CrossfadeCommand' },
 			},
 		])
 	})
 
-	test('cut transition → CutCommand', () => {
+	test('cut transition → stage foreground into preview then CutCommand', () => {
 		compareStates(
 			MAPPINGS,
 			{ ...EMPTY_STATE, stateTime: 0 },
-			makeState([swObj({ backgroundInputName: 'cam2', transition: 'cut' })]),
+			makeState([swObj({ foregroundInputName: 'cam2', transition: 'cut' })]),
 			[
 				{
 					timelineObjId: 'obj0',
@@ -102,7 +93,7 @@ describe('diffState — switchers', () => {
 		compareStates(MAPPINGS, s, s, [])
 	})
 
-	test('only property changes → setProperty commands, no invokeCommand', () => {
+	test('foreground change with a transition → stage new foreground into preview then take', () => {
 		compareStates(
 			MAPPINGS,
 			makeState([swObj({ foregroundInputName: 'cam1', transition: 'cut' })]),
@@ -114,19 +105,24 @@ describe('diffState — switchers', () => {
 					command: {
 						type: 'set-property',
 						selector: { target: 'abc-123' },
-						property: 'ForegroundInputName',
+						property: 'BackgroundInputName',
 						value: 'cam3',
 					},
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'invoke-command', selector: { target: 'abc-123' }, command: 'CutCommand' },
 				},
 			]
 		)
 	})
 
-	test('background input change with unchanged transition type → setProperty then transition', () => {
+	test('foreground change with unchanged transition type → setProperty then transition (repeated take)', () => {
 		compareStates(
 			MAPPINGS,
-			makeState([swObj({ backgroundInputName: 'cam2', transition: 'crossfade' })]),
-			makeState([swObj({ backgroundInputName: 'cam4', transition: 'crossfade' })]),
+			makeState([swObj({ foregroundInputName: 'cam2', transition: 'crossfade' })]),
+			makeState([swObj({ foregroundInputName: 'cam4', transition: 'crossfade' })]),
 			[
 				{
 					timelineObjId: 'obj0',
@@ -147,7 +143,7 @@ describe('diffState — switchers', () => {
 		)
 	})
 
-	test('transition: null stages background without taking', () => {
+	test('transition: null → background set directly (no take)', () => {
 		compareStates(
 			MAPPINGS,
 			{ ...EMPTY_STATE, stateTime: 0 },

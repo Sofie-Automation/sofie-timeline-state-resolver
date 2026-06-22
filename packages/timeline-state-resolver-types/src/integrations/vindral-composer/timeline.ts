@@ -70,15 +70,24 @@ export interface TimelineContentVindralComposerSwitcher {
 	deviceType: DeviceType.VINDRAL_COMPOSER
 	type: TimelineContentTypeVindralComposer.SWITCHER
 	switcher: {
-		/** Input name to set as the foreground (program) source */
+		/**
+		 * The desired program (foreground) input. When a `transition` is set, TSR stages this into the
+		 * preview and brings it to program via the transition; otherwise it is set directly as the
+		 * program source.
+		 */
 		foregroundInputName?: string
-		/** Input name to set as the background (preview) source */
+		/**
+		 * Input name to set directly as the background (preview) source. Ignored when a `transition` is
+		 * set — in that mode use `foregroundInputName`, which TSR routes through the transition.
+		 */
 		backgroundInputName?: string
 		/** Duration in milliseconds for crossfade transitions */
 		crossfadeTransitionDuration?: number
 		/**
-		 * Transition command to invoke when the background (preview) input changes, committing it to
-		 * program. `null` explicitly stages the background without taking; absent leaves it unchanged.
+		 * When set, `foregroundInputName` is staged into the preview and this transition is invoked to
+		 * take it to program; the take fires whenever `foregroundInputName` changes (not when the
+		 * transition type changes). When absent or `null`, foreground and background are set directly
+		 * with no take.
 		 */
 		transition?: 'cut' | 'crossfade' | null
 	}
