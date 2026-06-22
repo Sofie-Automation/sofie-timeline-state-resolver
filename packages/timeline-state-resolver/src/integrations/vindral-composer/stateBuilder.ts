@@ -5,7 +5,7 @@ import {
 	type Mappings,
 	type TSRTimelineContent,
 	type SomeMappingVindralComposer,
-	VindralComposerPlaybackEndCondition,
+	VindralComposerPlaybackEndBehaviour,
 } from 'timeline-state-resolver-types'
 import { assertNever, Complete } from '../../lib.js'
 import type { DeviceTimelineState } from 'timeline-state-resolver-api'
@@ -29,8 +29,7 @@ export interface VindralMediaPlayerState {
 	/** The in-point to seek to when the clip goes live (lookahead offset already folded in). */
 	inTime?: number
 	outTime?: number
-	playbackEndCondition?: VindralComposerPlaybackEndCondition
-	autoPlay?: boolean
+	endBehaviour?: VindralComposerPlaybackEndBehaviour
 	playing?: boolean
 	/** Wall-clock start of the timeline object instance. Used to catch a playing clip up to "now". */
 	instanceStartTime: number
@@ -116,92 +115,91 @@ export function buildVindralState(
 		switch (mapping.options.mappingType) {
 			case MappingVindralComposerType.Connector: {
 				if (content.type !== TimelineContentTypeVindralComposer.CONNECTOR) break
-				const c = content
+
 				state.connectors[layerId] = {
-					name: c.connector.name,
-					value: c.connector.value,
-					params: c.connector.params,
+					name: content.connector.name,
+					value: content.connector.value,
+					params: content.connector.params,
 					timelineObjIds: [obj.id],
 				} satisfies Complete<VindralConnectorState>
 				break
 			}
 			case MappingVindralComposerType.SceneLayer: {
 				if (content.type !== TimelineContentTypeVindralComposer.SCENE_LAYER) break
-				const c = content
-				const m = mapping.options
-				state.sceneLayers[`${m.scene}/${m.layer}`] = {
-					scene: m.scene,
-					layer: m.layer,
-					source: c.sceneLayer.source,
+
+				state.sceneLayers[`${mapping.options.scene}/${mapping.options.layer}`] = {
+					scene: mapping.options.scene,
+					layer: mapping.options.layer,
+					source: content.sceneLayer.source,
 					timelineObjIds: [obj.id],
 				} satisfies Complete<VindralSceneLayerState>
 				break
 			}
 			case MappingVindralComposerType.ScriptEngine: {
 				if (content.type !== TimelineContentTypeVindralComposer.SCRIPT_ENGINE) break
-				const c = content
-				const m = mapping.options
-				state.scriptEngines[m.functionName] = {
-					functionName: m.functionName,
-					parameter: c.scriptEngine.parameter,
+
+				state.scriptEngines[mapping.options.functionName] = {
+					functionName: mapping.options.functionName,
+					parameter: content.scriptEngine.parameter,
 					timelineObjIds: [obj.id],
 				} satisfies Complete<VindralScriptEngineState>
 				break
 			}
 			case MappingVindralComposerType.Switcher: {
 				if (content.type !== TimelineContentTypeVindralComposer.SWITCHER) break
-				const c = content
-				const m = mapping.options
-				const switcherKey = m.switcherId ?? m.switcherName ?? layerId
+
+				const switcherKey = mapping.options.switcherId ?? mapping.options.switcherName ?? layerId
 				const existing = state.switchers[switcherKey]
 				state.switchers[switcherKey] = {
-					selector: m.switcherId ? { target: m.switcherId } : { targetName: m.switcherName },
-					foregroundInputName: c.switcher.foregroundInputName ?? existing?.foregroundInputName,
-					backgroundInputName: c.switcher.backgroundInputName ?? existing?.backgroundInputName,
-					crossfadeTransitionDuration: c.switcher.crossfadeTransitionDuration ?? existing?.crossfadeTransitionDuration,
+					selector: mapping.options.switcherId
+						? { target: mapping.options.switcherId }
+						: { targetName: mapping.options.switcherName },
+					foregroundInputName: content.switcher.foregroundInputName ?? existing?.foregroundInputName,
+					backgroundInputName: content.switcher.backgroundInputName ?? existing?.backgroundInputName,
+					crossfadeTransitionDuration:
+						content.switcher.crossfadeTransitionDuration ?? existing?.crossfadeTransitionDuration,
 					// null explicitly clears the transition (stage without taking); only fall back to
 					// existing when this object doesn't specify a transition at all.
-					transition: c.switcher.transition !== undefined ? c.switcher.transition : existing?.transition,
+					transition: content.switcher.transition !== undefined ? content.switcher.transition : existing?.transition,
 					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
 				} satisfies Complete<VindralSwitcherState>
 				break
 			}
 			case MappingVindralComposerType.SwitcherOverlay: {
 				if (content.type !== TimelineContentTypeVindralComposer.SWITCHER_OVERLAY) break
-				const c = content
-				const m = mapping.options
-				const overlayKey = `${m.switcherId ?? m.switcherName ?? layerId}/${m.overlay}`
+
+				const overlayKey = `${mapping.options.switcherId ?? mapping.options.switcherName ?? layerId}/${mapping.options.overlay}`
 				const existing = state.switcherOverlays[overlayKey]
+
 				state.switcherOverlays[overlayKey] = {
-					selector: m.switcherId ? { target: m.switcherId } : { targetName: m.switcherName },
-					overlayNumber: m.overlay,
-					inputName: c.switcherOverlay.inputName ?? existing?.inputName,
-					show: c.switcherOverlay.show ?? existing?.show,
+					selector: mapping.options.switcherId
+						? { target: mapping.options.switcherId }
+						: { targetName: mapping.options.switcherName },
+					overlayNumber: mapping.options.overlay,
+					inputName: content.switcherOverlay.inputName ?? existing?.inputName,
+					show: content.switcherOverlay.show ?? existing?.show,
 					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
 				} satisfies Complete<VindralSwitcherOverlayState>
 				break
 			}
 			case MappingVindralComposerType.MediaPlayer: {
 				if (content.type !== TimelineContentTypeVindralComposer.MEDIA_PLAYER) break
-				const c = content
-				const m = mapping.options
 
 				// When inserted by lookahead, seek the preloaded clip forward so it is at the
 				// position it should be once it goes live (lookaheadOffset = amount already played).
 				const inTimeWithLookaheadOffset =
-					c.mediaPlayer.inTime !== undefined && obj.lookaheadOffset !== undefined
-						? c.mediaPlayer.inTime + obj.lookaheadOffset
-						: (c.mediaPlayer.inTime ?? obj.lookaheadOffset)
+					content.mediaPlayer.inTime !== undefined && obj.lookaheadOffset !== undefined
+						? content.mediaPlayer.inTime + obj.lookaheadOffset
+						: (content.mediaPlayer.inTime ?? obj.lookaheadOffset)
 
 				state.mediaPlayers[layerId] = {
-					selector: { target: m.mediaPlayerId, targetName: m.mediaPlayerName },
-					autoPlayOnMediaChange: m.autoPlayOnMediaChange,
-					sourceUrl: c.mediaPlayer.sourceUrl,
-					inTime: !obj.isLookahead ? c.mediaPlayer.inTime : inTimeWithLookaheadOffset,
-					outTime: c.mediaPlayer.outTime,
-					playbackEndCondition: c.mediaPlayer.playbackEndCondition,
-					autoPlay: c.mediaPlayer.autoPlay,
-					playing: c.mediaPlayer.playing,
+					selector: { target: mapping.options.mediaPlayerId, targetName: mapping.options.mediaPlayerName },
+					autoPlayOnMediaChange: mapping.options.autoPlayOnMediaChange,
+					sourceUrl: content.mediaPlayer.sourceUrl,
+					inTime: !obj.isLookahead ? content.mediaPlayer.inTime : inTimeWithLookaheadOffset,
+					outTime: content.mediaPlayer.outTime,
+					endBehaviour: content.mediaPlayer.endBehaviour,
+					playing: content.mediaPlayer.playing,
 					instanceStartTime: obj.instance.start,
 					timelineObjIds: [obj.id],
 				} satisfies Complete<VindralMediaPlayerState>
@@ -209,30 +207,34 @@ export function buildVindralState(
 			}
 			case MappingVindralComposerType.AudioSource: {
 				if (content.type !== TimelineContentTypeVindralComposer.AUDIO_SOURCE) break
-				const c = content
-				const m = mapping.options
-				const key = m.audioSourceId ?? m.audioSourceName ?? layerId
+
+				const key = mapping.options.audioSourceId ?? mapping.options.audioSourceName ?? layerId
 				const existing = state.audioSources[key]
+
 				state.audioSources[key] = {
-					selector: m.audioSourceId ? { target: m.audioSourceId } : { targetName: m.audioSourceName },
-					stereoGainDb: c.audioSource.stereoGainDb ?? existing?.stereoGainDb,
-					pan: c.audioSource.pan ?? existing?.pan,
-					mute: c.audioSource.mute ?? existing?.mute,
+					selector: mapping.options.audioSourceId
+						? { target: mapping.options.audioSourceId }
+						: { targetName: mapping.options.audioSourceName },
+					stereoGainDb: content.audioSource.stereoGainDb ?? existing?.stereoGainDb,
+					pan: content.audioSource.pan ?? existing?.pan,
+					mute: content.audioSource.mute ?? existing?.mute,
 					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
 				} satisfies Complete<VindralAudioSourceState>
 				break
 			}
 			case MappingVindralComposerType.Html: {
 				if (content.type !== TimelineContentTypeVindralComposer.HTML) break
-				const c = content
-				const m = mapping.options
-				const htmlKey = m.webPageRendererId ?? m.webPageRendererName ?? layerId
+
+				const htmlKey = mapping.options.webPageRendererId ?? mapping.options.webPageRendererName ?? layerId
 				const existing = state.htmlRenderers[htmlKey]
+
 				state.htmlRenderers[htmlKey] = {
-					selector: m.webPageRendererId ? { target: m.webPageRendererId } : { targetName: m.webPageRendererName },
-					url: c.html.url ?? existing?.url,
-					running: c.html.running ?? existing?.running,
-					reloadKey: c.html.reloadKey ?? existing?.reloadKey,
+					selector: mapping.options.webPageRendererId
+						? { target: mapping.options.webPageRendererId }
+						: { targetName: mapping.options.webPageRendererName },
+					url: content.html.url ?? existing?.url,
+					running: content.html.running ?? existing?.running,
+					reloadKey: content.html.reloadKey ?? existing?.reloadKey,
 					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
 				} satisfies Complete<VindralHtmlState>
 				break

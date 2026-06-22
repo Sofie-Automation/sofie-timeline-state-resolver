@@ -1,16 +1,8 @@
 import type { SomeMappingVindralComposer, Mappings } from 'timeline-state-resolver-types'
 import { isEqual } from 'underscore'
 import { buildVindralState, type VindralComposerDeviceState, type VindralMediaPlayerState } from './stateBuilder.js'
-import type { VindralCommandWithContext } from './commands.js'
-
-/**
- * Name of the TSR media-player helper function expected in the Composer Script Engine when
- * `useScriptEngine` is enabled. It receives the full desired play-state of a media player and
- * reconciles it atomically (load → wait-for-parse → seek → play). See SCRIPT_ENGINE.md for the
- * payload contract and a reference implementation. Prefixed `tsr` to scope it away from a project's
- * own script functions.
- */
-export const TSR_SCRIPT_FN_MEDIA_PLAYER = 'tsrMediaPlayer'
+import type { VindralCommandWithContext, VindralObjectSelector } from './commands.js'
+import { TSR_SCRIPT_FN_MEDIA_PLAYER } from './constants.js'
 
 export function diffVindralStates(
 	oldState: VindralComposerDeviceState | undefined,
@@ -85,47 +77,31 @@ function diffSwitchers(
 		const next = newState.switchers[key]
 		if (!next) continue
 
-		const timelineObjId = next.timelineObjIds.join(' & ')
 		const context = `switcher layer=${key}`
 
 		if (next.foregroundInputName !== undefined && old?.foregroundInputName !== next.foregroundInputName) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'set-property',
-					selector: next.selector,
-					property: 'ForegroundInputName',
-					value: next.foregroundInputName,
-				},
-			})
+			commands.push(
+				createSetPropertyCommand(next, context, next.selector, 'ForegroundInputName', next.foregroundInputName)
+			)
 		}
 		if (next.backgroundInputName !== undefined && old?.backgroundInputName !== next.backgroundInputName) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'set-property',
-					selector: next.selector,
-					property: 'BackgroundInputName',
-					value: next.backgroundInputName,
-				},
-			})
+			commands.push(
+				createSetPropertyCommand(next, context, next.selector, 'BackgroundInputName', next.backgroundInputName)
+			)
 		}
 		if (
 			next.crossfadeTransitionDuration !== undefined &&
 			old?.crossfadeTransitionDuration !== next.crossfadeTransitionDuration
 		) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'set-property',
-					selector: next.selector,
-					property: 'CrossfadeTransitionDuration',
-					value: next.crossfadeTransitionDuration,
-				},
-			})
+			commands.push(
+				createSetPropertyCommand(
+					next,
+					context,
+					next.selector,
+					'CrossfadeTransitionDuration',
+					next.crossfadeTransitionDuration
+				)
+			)
 		}
 
 		// Fire the transition whenever the background (preview) input changes — comparing the
@@ -136,15 +112,9 @@ function diffSwitchers(
 			next.backgroundInputName !== undefined &&
 			old?.backgroundInputName !== next.backgroundInputName
 		) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'invoke-command',
-					selector: next.selector,
-					command: next.transition === 'cut' ? 'CutCommand' : 'CrossfadeCommand',
-				},
-			})
+			commands.push(
+				createInvokeCommand(next, context, next.selector, next.transition === 'cut' ? 'CutCommand' : 'CrossfadeCommand')
+			)
 		}
 	}
 
@@ -164,32 +134,21 @@ function diffSwitcherOverlays(
 		const next = newState.switcherOverlays[key]
 		if (!next) continue
 
-		const timelineObjId = next.timelineObjIds.join(' & ')
 		const context = `switcher-overlay layer=${key}`
 		const n = next.overlayNumber
 
 		if (next.inputName !== undefined && old?.inputName !== next.inputName) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'set-property',
-					selector: next.selector,
-					property: `MvOverlay${n}`,
-					value: next.inputName,
-				},
-			})
+			commands.push(createSetPropertyCommand(next, context, next.selector, `MvOverlay${n}`, next.inputName))
 		}
 		if (next.show !== undefined && old?.show !== next.show) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'invoke-command',
-					selector: next.selector,
-					command: next.show ? `Overlay${n}ShowCommand` : `Overlay${n}HideCommand`,
-				},
-			})
+			commands.push(
+				createInvokeCommand(
+					next,
+					context,
+					next.selector,
+					next.show ? `Overlay${n}ShowCommand` : `Overlay${n}HideCommand`
+				)
+			)
 		}
 	}
 
@@ -233,8 +192,7 @@ function diffMediaPlayers(
 				sourceChanged ||
 				inTimeAnchorChanged ||
 				old?.outTime !== next.outTime ||
-				old?.playbackEndCondition !== next.playbackEndCondition ||
-				old?.autoPlay !== next.autoPlay ||
+				old?.endBehaviour !== next.endBehaviour ||
 				old?.autoPlayOnMediaChange !== next.autoPlayOnMediaChange ||
 				old?.playing !== next.playing
 
@@ -248,8 +206,7 @@ function diffMediaPlayers(
 				// anchor moved.
 				if (scriptInTime !== undefined && (sourceChanged || inTimeAnchorChanged)) parameter.inTime = scriptInTime
 				if (next.outTime !== undefined) parameter.outTime = next.outTime
-				if (next.playbackEndCondition !== undefined) parameter.playbackEndCondition = next.playbackEndCondition
-				if (next.autoPlay !== undefined) parameter.autoPlay = next.autoPlay
+				if (next.endBehaviour !== undefined) parameter.playbackEndCondition = next.endBehaviour
 				if (next.autoPlayOnMediaChange !== undefined) parameter.autoPlayOnMediaChange = next.autoPlayOnMediaChange
 				commands.push({
 					timelineObjId,
@@ -273,36 +230,13 @@ function diffMediaPlayers(
 				`media-player layer=${key}: in/out points require the Script Engine flow (useScriptEngine); ignoring outTime=${next.outTime}`
 			)
 		}
-		if (next.playbackEndCondition !== undefined && old?.playbackEndCondition !== next.playbackEndCondition) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'set-property',
-					selector: next.selector,
-					property: 'PlayBackEndCondition',
-					value: next.playbackEndCondition,
-				},
-			})
-		}
-		if (next.autoPlay !== undefined && old?.autoPlay !== next.autoPlay) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: { type: 'set-property', selector: next.selector, property: 'AutoPlay', value: next.autoPlay },
-			})
+		if (next.endBehaviour !== undefined && old?.endBehaviour !== next.endBehaviour) {
+			commands.push(createSetPropertyCommand(next, context, next.selector, 'PlayBackEndCondition', next.endBehaviour))
 		}
 		if (next.autoPlayOnMediaChange !== undefined && old?.autoPlayOnMediaChange !== next.autoPlayOnMediaChange) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'set-property',
-					selector: next.selector,
-					property: 'AutoPlayOnMediaChange',
-					value: next.autoPlayOnMediaChange,
-				},
-			})
+			commands.push(
+				createSetPropertyCommand(next, context, next.selector, 'AutoPlayOnMediaChange', next.autoPlayOnMediaChange)
+			)
 		}
 		const nextSourceUrl = next.sourceUrl
 		const sourceChanged = nextSourceUrl !== undefined && old?.sourceUrl !== nextSourceUrl
@@ -313,11 +247,7 @@ function diffMediaPlayers(
 				// Empty string signals "stop and clear the player". Issue StopCommand first to
 				// halt playback, then clear-source to fully clear the player via the dedicated
 				// HTTP endpoint. The playing field is intentionally ignored here.
-				commands.push({
-					timelineObjId,
-					context,
-					command: { type: 'invoke-command', selector: next.selector, command: 'StopCommand' },
-				})
+				commands.push(createInvokeCommand(next, context, next.selector, 'StopCommand'))
 				if (next.selector.target) {
 					commands.push({
 						timelineObjId,
@@ -336,26 +266,14 @@ function diffMediaPlayers(
 				})
 				usedPlayVideoFileInput = true
 			} else {
-				commands.push({
-					timelineObjId,
-					context,
-					command: { type: 'set-property', selector: next.selector, property: 'SourceUrl', value: nextSourceUrl },
-				})
+				commands.push(createSetPropertyCommand(next, context, next.selector, 'SourceUrl', nextSourceUrl))
 			}
 		}
 
 		// Skip play/pause when StopCommand or play-video-file-input already covers it.
 		if (!usedPlayVideoFileInput && (nextSourceUrl !== '' || !sourceChanged)) {
 			if (next.playing !== undefined && old?.playing !== next.playing) {
-				commands.push({
-					timelineObjId,
-					context,
-					command: {
-						type: 'invoke-command',
-						selector: next.selector,
-						command: next.playing ? 'PlayCommand' : 'PauseCommand',
-					},
-				})
+				commands.push(createInvokeCommand(next, context, next.selector, next.playing ? 'PlayCommand' : 'PauseCommand'))
 			}
 		}
 	}
@@ -390,7 +308,6 @@ function diffHtmlRenderers(
 		const next = newState.htmlRenderers[key]
 		if (!next) continue
 
-		const timelineObjId = next.timelineObjIds.join(' & ')
 		const context = `html-renderer key=${key}`
 
 		const nextUrl = next.url
@@ -398,55 +315,22 @@ function diffHtmlRenderers(
 
 		if (urlChanged) {
 			commands.push(
-				{
-					// Stop before setting the URL — Composer ignores WebPageRendererUrl changes while running.
-					timelineObjId,
-					context,
-					command: { type: 'invoke-command', selector: next.selector, command: 'StopCommand' },
-				},
-				{
-					timelineObjId,
-					context,
-					command: {
-						type: 'set-property',
-						selector: next.selector,
-						property: 'WebPageRendererUrl',
-						value: nextUrl,
-					},
-				}
+				// Stop before setting the URL — Composer ignores WebPageRendererUrl changes while running.
+				createInvokeCommand(next, context, next.selector, 'StopCommand'),
+				createSetPropertyCommand(next, context, next.selector, 'WebPageRendererUrl', nextUrl)
 			)
 		}
 
 		const runningChanged = next.running !== undefined && old?.running !== next.running
 		if (runningChanged) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'invoke-command',
-					selector: next.selector,
-					command: next.running ? 'StartCommand' : 'StopCommand',
-				},
-			})
+			commands.push(createInvokeCommand(next, context, next.selector, next.running ? 'StartCommand' : 'StopCommand'))
 		} else if (urlChanged && next.running === true) {
 			// URL change forced a stop above; restart since the desired state is still running.
-			commands.push({
-				timelineObjId,
-				context,
-				command: { type: 'invoke-command', selector: next.selector, command: 'StartCommand' },
-			})
+			commands.push(createInvokeCommand(next, context, next.selector, 'StartCommand'))
 		}
 
 		if (!urlChanged && next.reloadKey !== undefined && old?.reloadKey !== next.reloadKey) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: {
-					type: 'invoke-command',
-					selector: next.selector,
-					command: 'ReloadCommand',
-				},
-			})
+			commands.push(createInvokeCommand(next, context, next.selector, 'ReloadCommand'))
 		}
 	}
 
@@ -464,29 +348,16 @@ function diffAudioSources(
 		const next = newState.audioSources[key]
 		if (!next) continue
 
-		const timelineObjId = next.timelineObjIds.join(' & ')
 		const context = `audio-source key=${key}`
 
 		if (next.stereoGainDb !== undefined && old?.stereoGainDb !== next.stereoGainDb) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: { type: 'set-property', selector: next.selector, property: 'StereoGainDb', value: next.stereoGainDb },
-			})
+			commands.push(createSetPropertyCommand(next, context, next.selector, 'StereoGainDb', next.stereoGainDb))
 		}
 		if (next.pan !== undefined && old?.pan !== next.pan) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: { type: 'set-property', selector: next.selector, property: 'Pan', value: next.pan },
-			})
+			commands.push(createSetPropertyCommand(next, context, next.selector, 'Pan', next.pan))
 		}
 		if (next.mute !== undefined && old?.mute !== next.mute) {
-			commands.push({
-				timelineObjId,
-				context,
-				command: { type: 'set-property', selector: next.selector, property: 'Mute', value: next.mute },
-			})
+			commands.push(createSetPropertyCommand(next, context, next.selector, 'Mute', next.mute))
 		}
 	}
 
@@ -495,4 +366,40 @@ function diffAudioSources(
 
 function allKeys<V>(a: Record<string, V | undefined>, b: Record<string, V | undefined>): string[] {
 	return [...new Set([...Object.keys(a), ...Object.keys(b)])]
+}
+
+function createSetPropertyCommand<T extends { timelineObjIds: string[] }>(
+	state: T,
+	context: string,
+	selector: VindralObjectSelector,
+	property: string,
+	value: string | number | boolean
+): VindralCommandWithContext {
+	return {
+		timelineObjId: state.timelineObjIds.join(' & '),
+		context,
+		command: {
+			type: 'set-property',
+			selector,
+			property,
+			value,
+		},
+	}
+}
+
+function createInvokeCommand<T extends { timelineObjIds: string[] }>(
+	state: T,
+	context: string,
+	selector: VindralObjectSelector,
+	command: string
+): VindralCommandWithContext {
+	return {
+		timelineObjId: state.timelineObjIds.join(' & '),
+		context,
+		command: {
+			type: 'invoke-command',
+			selector,
+			command,
+		},
+	}
 }

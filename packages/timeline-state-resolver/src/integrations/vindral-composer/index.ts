@@ -96,6 +96,7 @@ export class VindralComposerDevice implements Device<
 	): VindralCommandWithContext[] {
 		if (!this._connected) return []
 		return diffVindralStates(oldState, newState, mappings, this._useScriptEngine, (msg) =>
+			// nocommit - should this bubble back as a major warning?
 			this.context.logger.warning(msg)
 		)
 	}

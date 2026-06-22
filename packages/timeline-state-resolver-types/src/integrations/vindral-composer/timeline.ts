@@ -11,7 +11,7 @@ export enum TimelineContentTypeVindralComposer {
 	AUDIO_SOURCE = 'audio-source',
 }
 
-export enum VindralComposerPlaybackEndCondition {
+export enum VindralComposerPlaybackEndBehaviour {
 	Loop = 0,
 	Hold = 1,
 	Stop = 2,
@@ -90,7 +90,7 @@ export interface TimelineContentVindralComposerSwitcherOverlay {
 	switcherOverlay: {
 		/** Input name to assign to this overlay slot (maps to the MvOverlay{N} device property) */
 		inputName?: string
-		/** When true, invokes Overlay{N}ShowCommand; when false, invokes Overlay{N}HideCommand; when absent, no command is sent */
+		/** When true, invokes Overlay{N}ShowCommand; when false, invokes Overlay{N}HideCommand */
 		show?: boolean
 	}
 }
@@ -106,10 +106,8 @@ export interface TimelineContentVindralComposerMediaPlayer {
 		/** Out-point within the media, in milliseconds */
 		outTime?: number
 		/** Behaviour when playback reaches the out-point */
-		playbackEndCondition?: VindralComposerPlaybackEndCondition
-		/** Sets the AutoPlay device property; the device will auto-play on source change when true */
-		autoPlay?: boolean
-		/** When true, invokes PlayCommand; when false, invokes PauseCommand; when absent, no play/pause command is sent */
+		endBehaviour?: VindralComposerPlaybackEndBehaviour
+		/** If the video is playing or is paused (defaults to true) */ // nocommit - check this default
 		playing?: boolean
 	}
 }
@@ -131,12 +129,12 @@ export interface TimelineContentVindralComposerHtml {
 	deviceType: DeviceType.VINDRAL_COMPOSER
 	type: TimelineContentTypeVindralComposer.HTML
 	html: {
-		/** URL to set as the WebPageRendererUrl property. When absent, no URL change is sent. */
+		/** URL to set as the WebPageRendererUrl property. */
 		url?: string
-		/** When true, invokes StartCommand; when false, invokes StopCommand; when absent, no command is sent */
+		/** If the renderer is running or is unloaded (defaults to true) */ // nocommit - check this default
 		running?: boolean
 		/**
-		 * When this value changes (and is non-undefined), a ReloadCommand is invoked.
+		 * When this value changes (and is non-undefined), the page in the renderer is invoked.
 		 * Changing this key is the mechanism for triggering a reload without changing the URL.
 		 */
 		reloadKey?: string | number

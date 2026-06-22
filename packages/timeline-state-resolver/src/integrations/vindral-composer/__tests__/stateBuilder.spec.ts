@@ -4,7 +4,7 @@ import {
 	MappingVindralComposerType,
 	SomeMappingVindralComposer,
 	TimelineContentTypeVindralComposer,
-	VindralComposerPlaybackEndCondition,
+	VindralComposerPlaybackEndBehaviour,
 } from 'timeline-state-resolver-types'
 import { buildVindralState } from '../stateBuilder.js'
 import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
@@ -270,8 +270,7 @@ describe('stateBuilder', () => {
 								sourceUrl: 'http://cdn.example.com/clip.mp4',
 								inTime: 1000,
 								outTime: 5000,
-								playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
-								autoPlay: true,
+								playbackEndCondition: VindralComposerPlaybackEndBehaviour.Loop,
 								playing: true,
 							},
 						},
@@ -286,8 +285,7 @@ describe('stateBuilder', () => {
 			sourceUrl: 'http://cdn.example.com/clip.mp4',
 			inTime: 1000,
 			outTime: 5000,
-			playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
-			autoPlay: true,
+			endBehaviour: VindralComposerPlaybackEndBehaviour.Loop,
 			playing: true,
 			instanceStartTime: 0,
 			timelineObjIds: ['obj0'],

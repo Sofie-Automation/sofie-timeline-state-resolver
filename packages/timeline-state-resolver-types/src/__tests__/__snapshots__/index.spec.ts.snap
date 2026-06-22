@@ -128,7 +128,7 @@ exports[`index imports 1`] = `
   "VMixTransitionType",
   "VideoFormat",
   "VindralComposerActions",
-  "VindralComposerPlaybackEndCondition",
+  "VindralComposerPlaybackEndBehaviour",
   "ViscaOverIPActions",
   "VizMSEActions",
   "VizMSEStatusCode",

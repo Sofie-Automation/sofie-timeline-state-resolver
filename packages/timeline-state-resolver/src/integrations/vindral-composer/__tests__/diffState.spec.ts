@@ -4,13 +4,14 @@ import {
 	MappingVindralComposerType,
 	SomeMappingVindralComposer,
 	TimelineContentTypeVindralComposer,
-	VindralComposerPlaybackEndCondition,
+	VindralComposerPlaybackEndBehaviour,
 } from 'timeline-state-resolver-types'
 import { buildVindralState, VindralComposerDeviceState } from '../stateBuilder.js'
-import { diffVindralStates as diffVindralStatesImpl, TSR_SCRIPT_FN_MEDIA_PLAYER } from '../diffState.js'
+import { diffVindralStates as diffVindralStatesImpl } from '../diffState.js'
 import { makeDeviceTimelineStateObject } from '../../../__mocks__/objects.js'
 import { EMPTY_STATE } from './lib.js'
 import { VindralCommandWithContext } from '../commands.js'
+import { TSR_SCRIPT_FN_MEDIA_PLAYER } from '../constants.js'
 
 // The production diffVindralStates requires useScriptEngine + logWarning. Default them here so the
 // many call sites below stay terse; tests that care pass them explicitly.
@@ -493,8 +494,7 @@ describe('diffState', () => {
 			sourceUrl?: string
 			inTime?: number
 			outTime?: number
-			playbackEndCondition?: VindralComposerPlaybackEndCondition
-			autoPlay?: boolean
+			endBehaviour?: VindralComposerPlaybackEndBehaviour
 			playing?: boolean
 		}) => ({
 			enable: { start: 0 },
@@ -519,8 +519,7 @@ describe('diffState', () => {
 						sourceUrl: 'clip.mp4',
 						inTime: 0,
 						outTime: 5000,
-						playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
-						autoPlay: true,
+						endBehaviour: VindralComposerPlaybackEndBehaviour.Loop,
 						playing: true,
 					}),
 				]),
@@ -534,13 +533,8 @@ describe('diffState', () => {
 						type: 'set-property',
 						selector: SELECTOR,
 						property: 'PlayBackEndCondition',
-						value: VindralComposerPlaybackEndCondition.Loop,
+						value: VindralComposerPlaybackEndBehaviour.Loop,
 					},
-				},
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlay', value: true },
 				},
 				{
 					timelineObjId: 'obj0',
@@ -759,11 +753,11 @@ describe('diffState', () => {
 			)
 		})
 
-		test('playbackEndCondition changed → setProperty only', () => {
+		test('endBehaviour changed → setProperty only', () => {
 			compareStates(
 				MAPPINGS,
-				makeState([mpObj({ sourceUrl: 'clip.mp4', playbackEndCondition: VindralComposerPlaybackEndCondition.Loop })]),
-				makeState([mpObj({ sourceUrl: 'clip.mp4', playbackEndCondition: VindralComposerPlaybackEndCondition.Hold })]),
+				makeState([mpObj({ sourceUrl: 'clip.mp4', endBehaviour: VindralComposerPlaybackEndBehaviour.Loop })]),
+				makeState([mpObj({ sourceUrl: 'clip.mp4', endBehaviour: VindralComposerPlaybackEndBehaviour.Hold })]),
 				[
 					{
 						timelineObjId: 'obj0',
@@ -772,7 +766,7 @@ describe('diffState', () => {
 							type: 'set-property',
 							selector: SELECTOR,
 							property: 'PlayBackEndCondition',
-							value: VindralComposerPlaybackEndCondition.Hold,
+							value: VindralComposerPlaybackEndBehaviour.Hold,
 						},
 					},
 				]
@@ -796,8 +790,7 @@ describe('diffState', () => {
 			sourceUrl?: string
 			inTime?: number
 			outTime?: number
-			playbackEndCondition?: VindralComposerPlaybackEndCondition
-			autoPlay?: boolean
+			endBehaviour?: VindralComposerPlaybackEndBehaviour
 			playing?: boolean
 		}) => ({
 			enable: { start: 0 },
@@ -824,8 +817,7 @@ describe('diffState', () => {
 						sourceUrl: 'clip.mp4',
 						inTime: 0,
 						outTime: 5000,
-						playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
-						autoPlay: true,
+						endBehaviour: VindralComposerPlaybackEndBehaviour.Loop,
 						playing: true,
 					}),
 				]),
@@ -839,8 +831,7 @@ describe('diffState', () => {
 					playing: true,
 					inTime: 0,
 					outTime: 5000,
-					playbackEndCondition: VindralComposerPlaybackEndCondition.Loop,
-					autoPlay: true,
+					playbackEndCondition: VindralComposerPlaybackEndBehaviour.Loop,
 					autoPlayOnMediaChange: true,
 				}),
 			])
