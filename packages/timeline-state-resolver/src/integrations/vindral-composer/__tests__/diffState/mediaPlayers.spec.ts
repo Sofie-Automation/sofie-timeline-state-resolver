@@ -91,7 +91,8 @@ describe('diffState — media players', () => {
 		)
 	})
 
-	test('new media player without playing → setProperty SourceUrl, no invoke', () => {
+	test('new media player without playing → defaults to playing → properties then play-video-file-input', () => {
+		// playing defaults to true when omitted, so the clip loads and plays via the atomic endpoint.
 		compareStates(MAPPINGS, { ...EMPTY_STATE, stateTime: 0 }, makeState([mpObj({ sourceUrl: 'clip.mp4' })]), [
 			{
 				timelineObjId: 'obj0',
@@ -101,7 +102,7 @@ describe('diffState — media players', () => {
 			{
 				timelineObjId: 'obj0',
 				context: expect.any(String),
-				command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip.mp4' },
+				command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip.mp4' },
 			},
 		])
 	})

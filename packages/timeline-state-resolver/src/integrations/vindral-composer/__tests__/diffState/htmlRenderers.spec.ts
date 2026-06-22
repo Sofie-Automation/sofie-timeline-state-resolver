@@ -16,7 +16,8 @@ describe('diffState — html renderers', () => {
 		} as const,
 	})
 
-	test('new html renderer with url → StopCommand then set-property WebPageRendererUrl', () => {
+	test('new html renderer with url → StopCommand, set-property, StartCommand (running defaults to true)', () => {
+		// running defaults to true when omitted, so the renderer is started after the URL is applied.
 		compareStates(MAPPINGS, { ...EMPTY_STATE, stateTime: 0 }, makeState([htmlObj({ url: 'https://example.com' })]), [
 			{
 				timelineObjId: 'obj0',
@@ -33,6 +34,11 @@ describe('diffState — html renderers', () => {
 					value: 'https://example.com',
 				},
 			},
+			{
+				timelineObjId: 'obj0',
+				context: expect.any(String),
+				command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StartCommand' },
+			},
 		])
 	})
 
@@ -41,7 +47,8 @@ describe('diffState — html renderers', () => {
 		compareStates(MAPPINGS, s, s, [])
 	})
 
-	test('url changed → StopCommand then set-property WebPageRendererUrl', () => {
+	test('url changed → StopCommand, set-property, StartCommand (running defaults to true)', () => {
+		// Both states default running to true, so the URL change forces a Stop→setUrl→Start cycle.
 		compareStates(
 			MAPPINGS,
 			makeState([htmlObj({ url: 'https://old.com' })]),
@@ -61,6 +68,11 @@ describe('diffState — html renderers', () => {
 						property: 'WebPageRendererUrl',
 						value: 'https://new.com',
 					},
+				},
+				{
+					timelineObjId: 'obj0',
+					context: expect.any(String),
+					command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StartCommand' },
 				},
 			]
 		)
@@ -116,8 +128,13 @@ describe('diffState — html renderers', () => {
 		])
 	})
 
-	test('reloadKey appears on first object → ReloadCommand', () => {
+	test('reloadKey appears on first object → StartCommand (running defaults to true) then ReloadCommand', () => {
 		compareStates(MAPPINGS, { ...EMPTY_STATE, stateTime: 0 }, makeState([htmlObj({ reloadKey: 'v1' })]), [
+			{
+				timelineObjId: 'obj0',
+				context: expect.any(String),
+				command: { type: 'invoke-command', selector: HTML_SELECTOR, command: 'StartCommand' },
+			},
 			{
 				timelineObjId: 'obj0',
 				context: expect.any(String),

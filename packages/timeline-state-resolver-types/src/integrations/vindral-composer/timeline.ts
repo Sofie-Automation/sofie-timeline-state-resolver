@@ -107,7 +107,7 @@ export interface TimelineContentVindralComposerMediaPlayer {
 		outTime?: number
 		/** Behaviour when playback reaches the out-point */
 		endBehaviour?: VindralComposerPlaybackEndBehaviour
-		/** If the video is playing or is paused (defaults to true) */ // nocommit - check this default
+		/** If the video is playing or is paused (defaults to true) */
 		playing?: boolean
 	}
 }
@@ -131,7 +131,7 @@ export interface TimelineContentVindralComposerHtml {
 	html: {
 		/** URL to set as the WebPageRendererUrl property. */
 		url?: string
-		/** If the renderer is running or is unloaded (defaults to true) */ // nocommit - check this default
+		/** If the renderer is running or is unloaded (defaults to true) */
 		running?: boolean
 		/**
 		 * When this value changes (and is non-undefined), the page in the renderer is invoked.

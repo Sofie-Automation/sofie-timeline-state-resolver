@@ -151,10 +151,12 @@ describe('diffState — media players — script engine flow', () => {
 			MAPPINGS,
 			true
 		)
+		// playing defaults to true when omitted, so it is carried through alongside the empty source
 		expect(commands).toStrictEqual([
 			scriptCommand({
 				name: 'ClipPlayer1',
 				sourceUrl: '',
+				playing: true,
 				autoPlayOnMediaChange: true,
 			}),
 		])

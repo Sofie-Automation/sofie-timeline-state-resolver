@@ -199,7 +199,7 @@ export function buildVindralState(
 					inTime: !obj.isLookahead ? content.mediaPlayer.inTime : inTimeWithLookaheadOffset,
 					outTime: content.mediaPlayer.outTime,
 					endBehaviour: content.mediaPlayer.endBehaviour,
-					playing: content.mediaPlayer.playing,
+					playing: content.mediaPlayer.playing ?? true,
 					instanceStartTime: obj.instance.start,
 					timelineObjIds: [obj.id],
 				} satisfies Complete<VindralMediaPlayerState>
@@ -233,7 +233,7 @@ export function buildVindralState(
 						? { target: mapping.options.webPageRendererId }
 						: { targetName: mapping.options.webPageRendererName },
 					url: content.html.url ?? existing?.url,
-					running: content.html.running ?? existing?.running,
+					running: content.html.running ?? existing?.running ?? true,
 					reloadKey: content.html.reloadKey ?? existing?.reloadKey,
 					timelineObjIds: [...(existing?.timelineObjIds ?? []), obj.id],
 				} satisfies Complete<VindralHtmlState>
