@@ -8,8 +8,7 @@ export function diffVindralStates(
 	oldState: VindralComposerDeviceState | undefined,
 	newState: VindralComposerDeviceState,
 	mappings: Mappings<SomeMappingVindralComposer>,
-	useScriptEngine: boolean,
-	logWarning: (message: string) => void
+	useScriptEngine: boolean
 ): VindralCommandWithContext[] {
 	const resolvedOld = oldState ?? buildVindralState({ time: 0, objects: [] }, mappings)
 	const commands: VindralCommandWithContext[] = []
@@ -55,7 +54,7 @@ export function diffVindralStates(
 
 	commands.push(...diffSwitchers(resolvedOld, newState))
 	commands.push(...diffSwitcherOverlays(resolvedOld, newState))
-	commands.push(...diffMediaPlayers(resolvedOld, newState, useScriptEngine, logWarning))
+	commands.push(...diffMediaPlayers(resolvedOld, newState, useScriptEngine))
 	commands.push(...diffHtmlRenderers(resolvedOld, newState))
 	commands.push(...diffAudioSources(resolvedOld, newState))
 
@@ -164,8 +163,7 @@ function diffSwitcherOverlays(
 function diffMediaPlayers(
 	oldState: VindralComposerDeviceState,
 	newState: VindralComposerDeviceState,
-	useScriptEngine: boolean,
-	logWarning: (message: string) => void
+	useScriptEngine: boolean
 ): VindralCommandWithContext[] {
 	const commands: VindralCommandWithContext[] = []
 
@@ -218,18 +216,9 @@ function diffMediaPlayers(
 		}
 
 		// The direct HTTP flow cannot seek — the device ignores InTime/OutTime property writes here,
-		// so only the Script Engine flow can honour in/out points. Warn (gated on change/appearance
-		// to avoid spam) when an object asks for them, and do not emit the ineffective commands.
-		if (next.inTime !== undefined && old?.inTime !== next.inTime) {
-			logWarning(
-				`media-player layer=${key}: in/out points require the Script Engine flow (useScriptEngine); ignoring inTime=${next.inTime}`
-			)
-		}
-		if (next.outTime !== undefined && old?.outTime !== next.outTime) {
-			logWarning(
-				`media-player layer=${key}: in/out points require the Script Engine flow (useScriptEngine); ignoring outTime=${next.outTime}`
-			)
-		}
+		// so only the Script Engine flow can honour in/out points. The ineffective commands are not
+		// emitted; the unsupported request is surfaced to logs + device status via the single detector
+		// getDisabledScriptEngineWarnings (do not add a parallel warning path here).
 		if (next.endBehaviour !== undefined && old?.endBehaviour !== next.endBehaviour) {
 			commands.push(createSetPropertyCommand(next, context, next.selector, 'PlayBackEndCondition', next.endBehaviour))
 		}
@@ -366,6 +355,25 @@ function diffAudioSources(
 
 function allKeys<V>(a: Record<string, V | undefined>, b: Record<string, V | undefined>): string[] {
 	return [...new Set([...Object.keys(a), ...Object.keys(b)])]
+}
+
+// Single source of truth for features that only the Script Engine flow can honour. When
+// useScriptEngine is disabled but a desired state still asks for them, the device cannot apply them.
+// The device drives BOTH its per-change log lines and its persistent status warning from this, so a
+// new Script Engine feature only needs adding here. It reflects the current desired state (not
+// deltas), so the status stays accurate while the offending object persists.
+export function getDisabledScriptEngineWarnings(state: VindralComposerDeviceState): string[] {
+	const warnings: string[] = []
+	for (const key of Object.keys(state.mediaPlayers)) {
+		const mp = state.mediaPlayers[key]
+		if (!mp) continue
+		if (mp.inTime !== undefined || mp.outTime !== undefined) {
+			warnings.push(
+				`media-player layer=${key}: in/out points require the Script Engine flow (useScriptEngine), which is disabled`
+			)
+		}
+	}
+	return warnings
 }
 
 function createSetPropertyCommand<T extends { timelineObjIds: string[] }>(

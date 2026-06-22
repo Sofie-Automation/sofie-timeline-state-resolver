@@ -5,16 +5,15 @@ import { makeDeviceTimelineStateObject } from '../../../../__mocks__/objects.js'
 import { VindralCommandWithContext } from '../../commands.js'
 import { MAPPINGS } from '../lib.js'
 
-// The production diffVindralStates requires useScriptEngine + logWarning. Default them here so the
-// many call sites below stay terse; tests that care pass them explicitly.
+// The production diffVindralStates requires useScriptEngine. Default it here so the many call sites
+// below stay terse; tests that care pass it explicitly.
 export function diffVindralStates(
 	oldState: VindralComposerDeviceState | undefined,
 	newState: VindralComposerDeviceState,
 	mappings: Mappings<SomeMappingVindralComposer>,
-	useScriptEngine = false,
-	logWarning: (message: string) => void = () => undefined
+	useScriptEngine = false
 ): VindralCommandWithContext[] {
-	return diffVindralStatesImpl(oldState, newState, mappings, useScriptEngine, logWarning)
+	return diffVindralStatesImpl(oldState, newState, mappings, useScriptEngine)
 }
 
 export function compareStates(

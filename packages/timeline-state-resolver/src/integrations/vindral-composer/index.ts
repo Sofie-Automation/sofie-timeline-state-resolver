@@ -13,8 +13,9 @@ import {
 	type VindralComposerOptions as VindralComposerConnectionOptions,
 } from 'vindral-composer-connection'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
+import { isEqual } from 'underscore'
 import { buildVindralState, type VindralComposerDeviceState } from './stateBuilder.js'
-import { diffVindralStates } from './diffState.js'
+import { diffVindralStates, getDisabledScriptEngineWarnings } from './diffState.js'
 import { type VindralCommandWithContext, sendCommand } from './commands.js'
 import { getActions } from './actions.js'
 
@@ -30,6 +31,8 @@ export class VindralComposerDevice implements Device<
 	private _connected = false
 	/** When true, supported operations are routed through tsr* Script Engine helper functions. */
 	private _useScriptEngine = false
+	/** Warnings about desired-state features that cannot be applied (e.g. Script Engine disabled). */
+	private _stateWarnings: string[] = []
 
 	readonly actions: VindralComposerActionMethods
 
@@ -76,9 +79,13 @@ export class VindralComposerDevice implements Device<
 	}
 
 	getStatus(): Omit<DeviceStatus, 'active'> {
-		return this._connected
-			? { statusCode: StatusCode.GOOD, messages: [] }
-			: { statusCode: StatusCode.BAD, messages: ['VindralComposer disconnected'] }
+		if (!this._connected) {
+			return { statusCode: StatusCode.BAD, messages: ['VindralComposer disconnected'] }
+		}
+		if (this._stateWarnings.length > 0) {
+			return { statusCode: StatusCode.WARNING_MAJOR, messages: this._stateWarnings }
+		}
+		return { statusCode: StatusCode.GOOD, messages: [] }
 	}
 
 	convertTimelineStateToDeviceState(
@@ -95,10 +102,22 @@ export class VindralComposerDevice implements Device<
 		_time: number
 	): VindralCommandWithContext[] {
 		if (!this._connected) return []
-		return diffVindralStates(oldState, newState, mappings, this._useScriptEngine, (msg) =>
-			// nocommit - should this bubble back as a major warning?
-			this.context.logger.warning(msg)
-		)
+
+		// Single source of truth for "features the disabled Script Engine flow cannot honour":
+		// getDisabledScriptEngineWarnings. Drive both the per-change log lines (gated on newly-appeared
+		// warnings to avoid spam) and the persistent device status from it, so a future Script Engine
+		// feature only has to be added to the detector to get both behaviours.
+		const warnings = this._useScriptEngine ? [] : getDisabledScriptEngineWarnings(newState)
+		const previousWarnings = this._useScriptEngine || !oldState ? [] : getDisabledScriptEngineWarnings(oldState)
+		for (const warning of warnings) {
+			if (!previousWarnings.includes(warning)) this.context.logger.warning(warning)
+		}
+		if (!isEqual(warnings, this._stateWarnings)) {
+			this._stateWarnings = warnings
+			this._connectionChanged()
+		}
+
+		return diffVindralStates(oldState, newState, mappings, this._useScriptEngine)
 	}
 
 	async sendCommand(command: VindralCommandWithContext): Promise<void> {

@@ -112,16 +112,14 @@ describe('diffState — media players', () => {
 		compareStates(MAPPINGS, s, s, [])
 	})
 
-	test('playing clip with inTime → inTime ignored (no InTime command), warning logged', () => {
-		// The direct flow cannot seek, so a specified inTime produces no InTime command — just a
-		// warning — and the clip loads + plays from its natural start.
-		const logWarning = jest.fn()
+	test('playing clip with inTime → inTime ignored (no InTime command)', () => {
+		// The direct flow cannot seek, so a specified inTime produces no InTime command and the clip
+		// loads + plays from its natural start. The unsupported request is surfaced separately via
+		// getDisabledScriptEngineWarnings (covered in scriptEngineWarnings.spec.ts).
 		const commands = diffVindralStates(
 			{ ...EMPTY_STATE, stateTime: 3000 },
 			makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 3000),
-			MAPPINGS,
-			false,
-			logWarning
+			MAPPINGS
 		)
 		expect(commands).toStrictEqual([
 			{
@@ -135,7 +133,6 @@ describe('diffState — media players', () => {
 				command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip.mp4' },
 			},
 		])
-		expect(logWarning).toHaveBeenCalledWith(expect.stringContaining('inTime=1000'))
 	})
 
 	test('paused clip with inTime → inTime ignored (no InTime command)', () => {
