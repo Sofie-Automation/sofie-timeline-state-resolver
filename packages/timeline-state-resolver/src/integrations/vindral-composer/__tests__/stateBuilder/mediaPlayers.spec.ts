@@ -71,6 +71,8 @@ describe('stateBuilder — media players', () => {
 			selector: { target: 'player-guid', targetName: 'ClipPlayer1' },
 			autoPlayOnMediaChange: true,
 			sourceUrl: 'http://cdn.example.com/other.mp4',
+			// playing defaults to true when omitted
+			playing: true,
 		})
 	})
 

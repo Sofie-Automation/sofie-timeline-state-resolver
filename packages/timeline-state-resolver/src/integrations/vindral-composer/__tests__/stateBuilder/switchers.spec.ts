@@ -77,4 +77,38 @@ describe('stateBuilder — switchers', () => {
 			transition: undefined,
 		})
 	})
+
+	test('switcher mapping — transition: null is stored explicitly, clearing a prior transition', () => {
+		// Unlike undefined (which falls back to the existing transition when merging), an explicit
+		// null clears it — so a later object setting transition: null overrides an earlier 'cut'.
+		const result = buildVindralState(
+			{
+				time: 0,
+				objects: [
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj0',
+						layer: 'swLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.SWITCHER,
+							switcher: { transition: 'cut' },
+						},
+					}),
+					makeDeviceTimelineStateObject({
+						enable: { start: 0 },
+						id: 'obj1',
+						layer: 'swLayer',
+						content: {
+							deviceType: DeviceType.VINDRAL_COMPOSER,
+							type: TimelineContentTypeVindralComposer.SWITCHER,
+							switcher: { transition: null },
+						},
+					}),
+				],
+			},
+			MAPPINGS
+		)
+		expect(result.switchers['abc-123']?.transition).toBeNull()
+	})
 })
