@@ -116,9 +116,19 @@ function diffSwitchers(
 			}
 		} else {
 			// No transition: set program (foreground) and preview (background) directly.
-			if (next.foregroundInputName !== undefined && old?.foregroundInputName !== next.foregroundInputName) {
+			// Re-assert foreground when leaving transition mode: the take pulse only stages a cut/
+			// crossfade and updates merged state, but may not have actually moved program on the device.
+			const foregroundChanged =
+				next.foregroundInputName !== undefined && old?.foregroundInputName !== next.foregroundInputName
+			const reaffirmForegroundAfterTake =
+				next.foregroundInputName !== undefined &&
+				next.foregroundInputName !== '' &&
+				old?.transition != null &&
+				next.transition == null
+
+			if (foregroundChanged || reaffirmForegroundAfterTake) {
 				commands.push(
-					createSetPropertyCommand(next, context, next.selector, 'ForegroundInputName', next.foregroundInputName)
+					createSetPropertyCommand(next, context, next.selector, 'ForegroundInputName', next.foregroundInputName!)
 				)
 			}
 			if (next.backgroundInputName !== undefined && old?.backgroundInputName !== next.backgroundInputName) {
