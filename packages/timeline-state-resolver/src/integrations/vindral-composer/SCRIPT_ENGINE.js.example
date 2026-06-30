@@ -1,3 +1,9 @@
+// Merge this block into the Vindral Composer project Script Engine after the required
+// Project/Logger section (see Composer script template).
+//
+// Sofie TSR: useScriptEngine: true on the VINDRAL_COMPOSER playout device.
+// Composer: EnableScriptEngine + EnableScriptEngineApiCalls.
+
 //############################
 // TSR (Timeline State Resolver) media-player helper
 //############################
