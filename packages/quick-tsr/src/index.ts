@@ -12,7 +12,21 @@ console.log('Starting Quick-TSR')
 
 // const tsr = new TSRHandler(console.log)
 
-const watcher = chokidar.watch('input/**', { ignored: /^\./, persistent: true })
+/** Input folder relative to the package root (cwd). Defaults to `input`. */
+let inputDir = 'input'
+if (process.argv.length > 2) {
+	inputDir = path.resolve(process.argv[2])
+}
+
+if (!fs.existsSync(inputDir) || !fs.statSync(inputDir).isDirectory()) {
+	console.error(`Input folder does not exist or is not a directory: ${inputDir}`)
+	console.error(`Usage: yarn start [input-folder]`)
+	// eslint-disable-next-line n/no-process-exit -- exit on error
+	process.exit(1)
+}
+
+const inputDirPosix = inputDir.replaceAll('\\', '/')
+const watcher = chokidar.watch(`${inputDirPosix}/**`, { ignored: /^\./, persistent: true })
 
 watcher
 	.on('add', () => {
@@ -42,8 +56,9 @@ function reloadInput(changed?: { path: string; stats: fs.Stats }) {
 	const newInput: Input = pendingInput ?? structuredClone(currentInput)
 	pendingInput = newInput
 
-	_.each(getAllFilesInDirectory('input/'), (filePath) => {
-		const requirePath = '../' + filePath.replace(/\\/g, '/')
+	_.each(getAllFilesInDirectory(inputDir), (filePath) => {
+		// Absolute path so input folders outside this package (e.g. another repo) resolve correctly.
+		const requirePath = path.resolve(filePath)
 
 		if (requirePath.match(/[/\\]_/)) {
 			// ignore and folders files that begin with "_"
@@ -53,7 +68,9 @@ function reloadInput(changed?: { path: string; stats: fs.Stats }) {
 		if (filePath.match(/\.ts$/)) {
 			if (changed) {
 				// Only update if the file has updated:
-				if (changed.path !== filePath) {
+				const changedNorm = path.normalize(changed.path)
+				const fileNorm = path.normalize(filePath)
+				if (changedNorm !== fileNorm && path.resolve(changedNorm) !== path.resolve(fileNorm)) {
 					return
 				}
 			}
@@ -218,4 +235,4 @@ export interface TSRSettings {
 
 // ------------
 reloadInput()
-console.log('Listening to changes in /input...')
+console.log(`Listening to changes in ${inputDirPosix}...`)
