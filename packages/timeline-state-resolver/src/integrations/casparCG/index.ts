@@ -72,7 +72,7 @@ const MEDIA_RETRY_INTERVAL = 10 * 1000 // default time in ms between checking wh
 export function casparFormatToFps(format: string | undefined): number | undefined {
 	if (!format) return undefined
 
-	const match = format.toLowerCase().match(/(\d{4})$/)
+	const match = /(\d{4})$/.exec(format.toLowerCase())
 	if (!match) return undefined
 
 	const rateCode = Number(match[1])

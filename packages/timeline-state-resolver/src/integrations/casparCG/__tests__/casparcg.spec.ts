@@ -341,7 +341,7 @@ describe('CasparCG', () => {
 		expect(casparFormatToFps('1080p2997')).toEqual(30000 / 1001)
 		expect(casparFormatToFps('1080i5994')).toEqual(60000 / 1001)
 		expect(casparFormatToFps('1080p2398')).toEqual(24000 / 1001)
-		expect(casparFormatToFps('pal')).toEqual(undefined)
+		expect(casparFormatToFps('pal')).toBeUndefined()
 	})
 
 	test.each([
