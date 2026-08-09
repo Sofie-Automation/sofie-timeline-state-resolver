@@ -640,6 +640,33 @@ describe('Conductor', () => {
 		}
 	})
 
+	test('resync states does not throw when device has no state yet', async () => {
+		const conductor = createConductor()
+
+		try {
+			await conductor.init()
+			await addConnections(conductor.connectionManager, {
+				device0: {
+					type: DeviceType.ABSTRACT,
+					options: {},
+				},
+			})
+
+			const device0 = await getMockDeviceWrapper(conductor, 'device0')
+			const handleStateMock = device0.handleState as unknown as jest.Mock<Promise<void>, [unknown, unknown]>
+			handleStateMock.mockResolvedValue(undefined)
+
+			// no setTimelineAndMappings has been called, so the device has no replay state yet
+			const conductorWithResync = conductor as unknown as { resyncDeviceStates: (deviceId: string) => void }
+			expect(() => conductorWithResync.resyncDeviceStates('device0')).not.toThrow()
+			await mockTime.tick()
+
+			expect(device0.handleState).not.toHaveBeenCalled()
+		} finally {
+			await conductor.destroy()
+		}
+	})
+
 	test('estimateResolveTime', () => {
 		// Ensure that the resolveTime follows a certain curve:
 		expect([

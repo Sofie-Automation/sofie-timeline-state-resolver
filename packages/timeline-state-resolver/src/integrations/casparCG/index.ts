@@ -1128,6 +1128,8 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			if (channelFps && channelFps > 0) return channelFps
 		}
 
+		// Fallback: pick any detected channel's fps (object iteration order is non-deterministic,
+		// but in practice all channels share the same fps).
 		const firstDetectedFps = Object.values<number>(this._detectedChannelFps).find((fps) => fps > 0)
 		if (firstDetectedFps) return firstDetectedFps
 

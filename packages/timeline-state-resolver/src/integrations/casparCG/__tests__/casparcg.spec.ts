@@ -2024,6 +2024,178 @@ describe('CasparCG', () => {
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).command).toBe(Commands.CgStop)
 	})
+	test('CasparCG: Multiple mappings for 1 layer does not deep-merge array template data', async () => {
+		const commandReceiver0: any = jest.fn(async () => {
+			return Promise.resolve()
+		})
+		const myLayerMapping0: Mapping<SomeMappingCasparCG> = {
+			device: DeviceType.CASPARCG,
+			deviceId: 'myCCG',
+			options: {
+				mappingType: MappingCasparCGType.Layer,
+				channel: 2,
+				layer: 42,
+			},
+		}
+		const myLayerMapping: Mappings = {
+			myLayer0: myLayerMapping0,
+			myLayer1: myLayerMapping0,
+		}
+
+		const myConductor = new Conductor({
+			multiThreadedResolver: false,
+			getCurrentTime: mockTime.getCurrentTime,
+		})
+		await myConductor.init()
+		await addConnections(myConductor.connectionManager, {
+			myCCG: {
+				type: DeviceType.CASPARCG,
+				options: {
+					host: '127.0.0.1',
+				},
+				commandReceiver: commandReceiver0,
+				skipVirginCheck: true,
+			},
+		})
+		await mockTime.advanceTimeToTicks(10100)
+		commandReceiver0.mockClear()
+
+		myConductor.setTimelineAndMappings(
+			[
+				{
+					id: 'obj0',
+					enable: {
+						start: mockTime.getCurrentTime() - 1000,
+						duration: 2000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.TEMPLATE,
+
+						name: 'LT',
+						templateType: 'html',
+						data: ['first'],
+						useStopCommand: true,
+					},
+				},
+				{
+					id: 'obj1',
+					enable: {
+						start: mockTime.getCurrentTime() - 1000,
+						duration: 2000,
+					},
+					layer: 'myLayer1',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.TEMPLATE,
+
+						name: 'LT',
+						templateType: 'html',
+						data: ['second'],
+						useStopCommand: true,
+					},
+				},
+			],
+			myLayerMapping
+		)
+
+		await mockTime.advanceTimeToTicks(10200)
+
+		// arrays are not deep-merged; the last-applied layer's data wins as-is
+		expect(commandReceiver0).toHaveBeenCalledTimes(1)
+		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
+			channel: 2,
+			layer: 42,
+			data: ['second'],
+		})
+	})
+	test('CasparCG: Multiple mappings for 1 layer does not merge into null template data', async () => {
+		const commandReceiver0: any = jest.fn(async () => {
+			return Promise.resolve()
+		})
+		const myLayerMapping0: Mapping<SomeMappingCasparCG> = {
+			device: DeviceType.CASPARCG,
+			deviceId: 'myCCG',
+			options: {
+				mappingType: MappingCasparCGType.Layer,
+				channel: 2,
+				layer: 42,
+			},
+		}
+		const myLayerMapping: Mappings = {
+			myLayer0: myLayerMapping0,
+			myLayer1: myLayerMapping0,
+		}
+
+		const myConductor = new Conductor({
+			multiThreadedResolver: false,
+			getCurrentTime: mockTime.getCurrentTime,
+		})
+		await myConductor.init()
+		await addConnections(myConductor.connectionManager, {
+			myCCG: {
+				type: DeviceType.CASPARCG,
+				options: {
+					host: '127.0.0.1',
+				},
+				commandReceiver: commandReceiver0,
+				skipVirginCheck: true,
+			},
+		})
+		await mockTime.advanceTimeToTicks(10100)
+		commandReceiver0.mockClear()
+
+		myConductor.setTimelineAndMappings(
+			[
+				{
+					id: 'obj0',
+					enable: {
+						start: mockTime.getCurrentTime() - 1000,
+						duration: 2000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.TEMPLATE,
+
+						name: 'LT',
+						templateType: 'html',
+						data: null,
+						useStopCommand: true,
+					},
+				},
+				{
+					id: 'obj1',
+					enable: {
+						start: mockTime.getCurrentTime() - 1000,
+						duration: 2000,
+					},
+					layer: 'myLayer1',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.TEMPLATE,
+
+						name: 'LT',
+						templateType: 'html',
+						data: { foo: 'bar' },
+						useStopCommand: true,
+					},
+				},
+			],
+			myLayerMapping
+		)
+
+		await mockTime.advanceTimeToTicks(10200)
+
+		// null is not a mergeable object; the last-applied layer's data wins as-is
+		expect(commandReceiver0).toHaveBeenCalledTimes(1)
+		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
+			channel: 2,
+			layer: 42,
+			data: { foo: 'bar' },
+		})
+	})
 	test('CasparCG: MEDIA lookahead sums seek and lookaheadOffset', async () => {
 		const commandReceiver0: any = jest.fn(async () => Promise.resolve())
 
