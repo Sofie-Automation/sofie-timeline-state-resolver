@@ -770,10 +770,10 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		return this.connectionManager.getConnection(deviceId)?.device.handleState(filledState, mappings)
 	}
 
-	private _getReplayStateWithCurrentTime(state: DeviceState, now: number): Timeline.TimelineState<TSRTimelineContent> {
+	private _getReplayStateWithCurrentTime(state: DeviceState, now: number): DeviceTimelineState<TSRTimelineContent> {
 		const filledState = fillStateFromDatastore(state.state, this._datastore)
 
-		if (state.time <= now && filledState.time < now) {
+		if (state.state.time <= now && filledState.time < now) {
 			filledState.time = now
 		}
 

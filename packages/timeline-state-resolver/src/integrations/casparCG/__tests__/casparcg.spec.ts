@@ -2055,7 +2055,8 @@ describe('CasparCG', () => {
 			},
 		})
 
-		await mockTime.advanceTimeToTicks(10000)
+		// let the connection's fps-detection handshake complete before applying the timeline
+		await mockTime.advanceTimeToTicks(10050)
 		commandReceiver0.mockClear()
 
 		myConductor.setTimelineAndMappings(
@@ -2082,13 +2083,13 @@ describe('CasparCG', () => {
 			myLayerMapping
 		)
 
-		await mockTime.advanceTimeToTicks(10100)
+		await mockTime.advanceTimeToTicks(10150)
 
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
 			channel: 2,
 			layer: 42,
-			seek: 3, // (80 + 40) * 25 / 1000
+			seek: 6, // (80 + 40) * 50 / 1000 (interlaced field-rate)
 		})
 	})
 	test('CasparCG: MEDIA lookahead with seek and no lookaheadOffset', async () => {
@@ -2122,7 +2123,8 @@ describe('CasparCG', () => {
 			},
 		})
 
-		await mockTime.advanceTimeToTicks(10000)
+		// let the connection's fps-detection handshake complete before applying the timeline
+		await mockTime.advanceTimeToTicks(10050)
 		commandReceiver0.mockClear()
 
 		myConductor.setTimelineAndMappings(
@@ -2148,13 +2150,13 @@ describe('CasparCG', () => {
 			myLayerMapping
 		)
 
-		await mockTime.advanceTimeToTicks(10100)
+		await mockTime.advanceTimeToTicks(10150)
 
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
 			channel: 2,
 			layer: 42,
-			seek: 2, // 80 * 25 / 1000
+			seek: 5, // 100 * 50 / 1000 (interlaced field-rate)
 		})
 	})
 	test('CasparCG: MEDIA lookahead with lookaheadOffset and no seek', async () => {
@@ -2188,7 +2190,8 @@ describe('CasparCG', () => {
 			},
 		})
 
-		await mockTime.advanceTimeToTicks(10000)
+		// let the connection's fps-detection handshake complete before applying the timeline
+		await mockTime.advanceTimeToTicks(10050)
 		commandReceiver0.mockClear()
 
 		myConductor.setTimelineAndMappings(
@@ -2214,13 +2217,13 @@ describe('CasparCG', () => {
 			myLayerMapping
 		)
 
-		await mockTime.advanceTimeToTicks(10100)
+		await mockTime.advanceTimeToTicks(10150)
 
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
 			channel: 2,
 			layer: 42,
-			seek: 1, // 40 * 25 / 1000
+			seek: 2, // 40 * 50 / 1000 (interlaced field-rate)
 		})
 	})
 	test('CasparCG: MEDIA lookahead with no lookaheadOffset and no seek', async () => {
@@ -2254,7 +2257,8 @@ describe('CasparCG', () => {
 			},
 		})
 
-		await mockTime.advanceTimeToTicks(10000)
+		// let the connection's fps-detection handshake complete before applying the timeline
+		await mockTime.advanceTimeToTicks(10050)
 		commandReceiver0.mockClear()
 
 		myConductor.setTimelineAndMappings(
@@ -2279,7 +2283,7 @@ describe('CasparCG', () => {
 			myLayerMapping
 		)
 
-		await mockTime.advanceTimeToTicks(10100)
+		await mockTime.advanceTimeToTicks(10150)
 
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
