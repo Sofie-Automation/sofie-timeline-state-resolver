@@ -70,6 +70,22 @@ const debug = Debug('timeline-state-resolver:casparcg')
 
 const MEDIA_RETRY_INTERVAL = 10 * 1000 // default time in ms between checking whether a file needs to be retried loading
 
+export function casparFormatToFps(format: string | undefined): number | undefined {
+	if (!format) return undefined
+
+	const match = format.toLowerCase().match(/(\d{4})$/)
+	if (!match) return undefined
+
+	const rateCode = Number(match[1])
+	if (!rateCode) return undefined
+
+	if (rateCode === 2398) return 24000 / 1001
+	if (rateCode === 2997) return 30000 / 1001
+	if (rateCode === 5994) return 60000 / 1001
+
+	return rateCode / 100
+}
+
 export interface DeviceOptionsCasparCGInternal extends DeviceOptionsCasparCG {
 	commandReceiver?: CommandReceiver
 	/** Allow skipping the resync upon connection, for unit tests */
@@ -1088,9 +1104,13 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		if (!infoEntries?.length) return
 
 		for (const entry of infoEntries) {
+			const formatRate = casparFormatToFps(entry.format)
 			const channelRate = Number(entry.channelRate) || 0
 			const frameRate = Number(entry.frameRate) || 0
-			const detected = entry.interlaced ? channelRate || frameRate : frameRate || channelRate
+			// For interlaced formats, CasparCG reports the field rate via channelRate,
+			// so keep using that value for timing calculations rather than forcing the
+			// lower frame-rate value.
+			const detected = formatRate || (entry.interlaced ? channelRate || frameRate : frameRate || channelRate)
 
 			if (detected > 0) {
 				this._detectedChannelFps[entry.channel] = detected
