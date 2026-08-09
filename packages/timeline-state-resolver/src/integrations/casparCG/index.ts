@@ -100,12 +100,12 @@ export type CommandReceiver = (time: number, cmd: AMCPCommand, context: string, 
 export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, DeviceOptionsCasparCGInternal> {
 	/** Setup in init */
 	private _ccg: BasicCasparCGAPI | undefined
-	private _commandReceiver: CommandReceiver = this._defaultCommandReceiver.bind(this)
-	private _doOnTime: DoOnTime
+	private readonly _commandReceiver: CommandReceiver = this._defaultCommandReceiver.bind(this)
+	private readonly _doOnTime: DoOnTime
 	private initOptions?: CasparCGOptions
 	private _connected = false
 	private _queueOverflow = false
-	private _transitionHandler: InternalTransitionHandler = new InternalTransitionHandler()
+	private readonly _transitionHandler: InternalTransitionHandler = new InternalTransitionHandler()
 	private _retryTimeout: NodeJS.Timeout | undefined
 	private _retryTime: number | null = null
 	private _currentState: { channels: Record<string, any> } = { channels: {} }

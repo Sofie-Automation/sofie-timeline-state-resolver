@@ -219,7 +219,7 @@ export class Pharos extends EventEmitter<PharosEvents> {
 	private _isConnecting = false
 	private _isReconnecting = false
 	private _aboutToReconnect = false
-	private _pendingMessages: Array<{ msg: string; resolve: (v?: any) => void; reject: (e: any) => void }> = []
+	private readonly _pendingMessages: Array<{ msg: string; resolve: (v?: any) => void; reject: (e: any) => void }> = []
 	private _requestPromises: { [id: string]: Array<{ resolve: (v: any) => void; reject: (e: any) => void }> } = {}
 	private _broadcastCallbacks: { [id: string]: Array<(data: any) => void> } = {}
 

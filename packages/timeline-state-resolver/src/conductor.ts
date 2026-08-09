@@ -155,11 +155,11 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 		[deviceId: string]: DeviceState[]
 	} = {}
 
-	private _options: ConductorOptions
+	private readonly _options: ConductorOptions
 
 	public readonly connectionManager: ConnectionManager
 
-	private _getCurrentTime?: () => number
+	private readonly _getCurrentTime?: () => number
 
 	private _nextResolveTime = 0
 	private _resolved: {
@@ -175,28 +175,28 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 	}
 	private _resolveTimelineTrigger: NodeJS.Timeout | undefined
 	private _isInitialized = false
-	private _doOnTime: DoOnTime
-	private _multiThreadedResolver = false
-	private _useCacheWhenResolving = false
+	private readonly _doOnTime: DoOnTime
+	private readonly _multiThreadedResolver: boolean = false
+	private readonly _useCacheWhenResolving: boolean = false
 	private _estimateResolveTimeMultiplier = 1
 
-	private _callbackInstances = new Map<string, CallbackInstance>() // key = instanceId
+	private readonly _callbackInstances = new Map<string, CallbackInstance>() // key = instanceId
 	private _triggerSendStartStopCallbacksTimeout: NodeJS.Timeout | null = null
 	private _sentCallbacks: TimelineCallbacks = {}
 
-	private _actionQueue: PQueue = new PQueue({
+	private readonly _actionQueue: PQueue = new PQueue({
 		concurrency: 1,
 	})
 
 	private _statMeasureStart = 0
 	private _statMeasureReason = ''
-	private _statReports: StatReport[] = []
+	private readonly _statReports: StatReport[] = []
 
 	private _resolver!: ThreadedClass<AsyncResolver>
 
-	private _interval: NodeJS.Timeout
+	private readonly _interval: NodeJS.Timeout
 	private _timelineHash: string | undefined
-	private activationId: string | undefined
+	private readonly activationId: string | undefined
 
 	constructor(options: ConductorOptions = {}) {
 		super()
