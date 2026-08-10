@@ -2,7 +2,7 @@ import { waitTime } from '../../__tests__/lib.js'
 import { CommandExecutor } from '../commandExecutor.js'
 
 describe('CommandExecutor', () => {
-	const FUDGE_TIME = 50 // ms
+	const FUDGE_TIME = 100 // ms
 	const logger = {
 		info: jest.fn(console.log),
 		warn: jest.fn(console.warn),

@@ -12,6 +12,7 @@ export interface AtemOptions {
 	host: string
 	port?: number
 	mediaPoolAssets?: AtemMediaPoolAsset[]
+	tmpNRKLogBlackFrames?: boolean
 }
 export interface AtemMediaPoolAsset {
 	path: string

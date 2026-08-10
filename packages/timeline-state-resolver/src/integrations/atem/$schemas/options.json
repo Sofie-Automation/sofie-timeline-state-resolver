@@ -45,6 +45,11 @@
 				"required": ["path", "type", "position"],
 				"additionalProperties": false
 			}
+		},
+		"tmpNRKLogBlackFrames": {
+			"type": "boolean",
+			"ui:title": "TMP: NRK Test Black Frames logging",
+			"ui:description": "This is a temporary option for NRK to log black frames in the media pool. It will be removed in the future."
 		}
 	},
 	"required": ["host"],

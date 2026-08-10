@@ -56,6 +56,8 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 	private _connected = false // note: ideally this should be replaced by this._atem.connected
 	private _host = ''
 
+	private options: AtemOptions | undefined = undefined
+
 	private _atemStatus: {
 		psus: Array<boolean>
 	} = {
@@ -71,6 +73,8 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 	 * and initiates Atem State lib.
 	 */
 	async init(options: AtemOptions): Promise<boolean> {
+		this.options = options
+
 		this._atem.on('disconnected', () => {
 			this._connected = false
 			this._connectionChanged()
@@ -216,6 +220,43 @@ export class AtemDevice implements Device<AtemDeviceTypes, AtemDeviceState, Atem
 		const commands = AtemState.diffStates(this._protocolVersion, oldAtemState, newAtemState, diffOptions)
 
 		if (commands.length > 0) {
+			if (this.options?.tmpNRKLogBlackFrames) {
+				// NRK-specific debugging to track down a bug in prod
+
+				const lookForSource = [
+					0, // Black
+					2001, // Color1
+					2002, // Color2
+				]
+				const meIndex = 1
+				const me2 = newAtemState.video.mixEffects[1]
+				if (me2) {
+					if ('programInput' in me2) {
+						if (lookForSource.includes(me2.programInput)) {
+							this.context.logger.warning(
+								`ATEM_DEBUG: MixEffect.programInput changed to ${me2.programInput}! newAtemState: ${JSON.stringify(
+									newAtemState
+								)}, oldAtemState: ${JSON.stringify(oldAtemState)}`
+							)
+						}
+					}
+				}
+				for (const command of commands) {
+					if (
+						command instanceof AtemCommands.ProgramInputCommand &&
+						command.mixEffect === meIndex &&
+						lookForSource.includes(command.properties.source)
+					) {
+						this.context.logger.warning(
+							`ATEM_DEBUG: Atem.ProgramInputCommand(${command.mixEffect}, ${
+								command.properties.source
+							})! newAtemState: ${JSON.stringify(newAtemState)}, oldAtemState: ${JSON.stringify(oldAtemState)}`
+						)
+						// trace!
+					}
+				}
+			}
+
 			return [
 				{
 					command: commands,
