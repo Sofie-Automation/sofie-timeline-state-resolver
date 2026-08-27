@@ -1,5 +1,7 @@
 import { waitTime } from '../../__tests__/lib.js'
 import { CommandExecutor } from '../commandExecutor.js'
+import { SalvoStrategy } from '../executor/SalvoStrategy.js'
+import { SequentialStrategy } from '../executor/SequentialStrategy.js'
 
 describe('CommandExecutor', () => {
 	const FUDGE_TIME = 50 // ms
@@ -24,7 +26,7 @@ describe('CommandExecutor', () => {
 	})
 	test('salvo commands', async () => {
 		timeToExecuteCommand = 100 // ms
-		const commandExecutor = new CommandExecutor(logger, 'salvo', sendCommand)
+		const commandExecutor = new CommandExecutor(new SalvoStrategy(logger, sendCommand))
 
 		startTime = Date.now()
 		await commandExecutor.executeCommands([
@@ -44,7 +46,7 @@ describe('CommandExecutor', () => {
 	})
 	test('salvo commands, with preliminary', async () => {
 		timeToExecuteCommand = 100 // ms
-		const commandExecutor = new CommandExecutor(logger, 'salvo', sendCommand)
+		const commandExecutor = new CommandExecutor(new SalvoStrategy(logger, sendCommand))
 
 		startTime = Date.now()
 		await commandExecutor.executeCommands([
@@ -62,7 +64,7 @@ describe('CommandExecutor', () => {
 	})
 	test('sequential commands', async () => {
 		timeToExecuteCommand = 100 // ms
-		const commandExecutor = new CommandExecutor(logger, 'sequential', sendCommand)
+		const commandExecutor = new CommandExecutor(new SequentialStrategy(logger, sendCommand))
 
 		startTime = Date.now()
 		await commandExecutor.executeCommands([
@@ -82,7 +84,7 @@ describe('CommandExecutor', () => {
 	})
 	test('sequential commands, multiple queues', async () => {
 		timeToExecuteCommand = 100 // ms
-		const commandExecutor = new CommandExecutor(logger, 'sequential', sendCommand)
+		const commandExecutor = new CommandExecutor(new SequentialStrategy(logger, sendCommand))
 
 		startTime = Date.now()
 		await commandExecutor.executeCommands([
@@ -112,7 +114,7 @@ describe('CommandExecutor', () => {
 	})
 	test('sequential commands, with preliminary', async () => {
 		timeToExecuteCommand = 100 // ms
-		const commandExecutor = new CommandExecutor(logger, 'sequential', sendCommand)
+		const commandExecutor = new CommandExecutor(new SequentialStrategy(logger, sendCommand))
 
 		startTime = Date.now()
 		await commandExecutor.executeCommands([
@@ -134,50 +136,20 @@ describe('CommandExecutor', () => {
 		expect(Math.abs(receivedCommandTimes['A3'] - 600)).toBeLessThan(FUDGE_TIME)
 	})
 	test('sequential with preliminary, in multiple queues', async () => {
-		const commandExecutor = new CommandExecutor(logger, 'sequential', sendCommand)
+		const commandExecutor = new CommandExecutor(new SequentialStrategy(logger, sendCommand))
 
 		startTime = Date.now()
 		await commandExecutor.executeCommands([
 			// Commands are 2 queues, A and B
 			// in random order, with preliminary times
-			{
-				command: 'A-0',
-				queueId: 'queueA',
-			},
-			{
-				command: 'A-300',
-				queueId: 'queueA',
-				preliminary: 300,
-			},
-			{
-				command: 'B-300',
-				queueId: 'queueB',
-				preliminary: 300,
-			},
-			{
-				command: 'A-1000',
-				queueId: 'queueA',
-				preliminary: 1000,
-			},
-			{
-				command: 'B-1000',
-				queueId: 'queueB',
-				preliminary: 1000,
-			},
-			{
-				command: 'B-500',
-				queueId: 'queueB',
-				preliminary: 500,
-			},
-			{
-				command: 'A-500',
-				queueId: 'queueA',
-				preliminary: 500,
-			},
-			{
-				command: 'B-0',
-				queueId: 'queueB',
-			},
+			{ command: 'A-0', queueId: 'queueA' },
+			{ command: 'A-300', queueId: 'queueA', preliminary: 300 },
+			{ command: 'B-300', queueId: 'queueB', preliminary: 300 },
+			{ command: 'A-1000', queueId: 'queueA', preliminary: 1000 },
+			{ command: 'B-1000', queueId: 'queueB', preliminary: 1000 },
+			{ command: 'B-500', queueId: 'queueB', preliminary: 500 },
+			{ command: 'A-500', queueId: 'queueA', preliminary: 500 },
+			{ command: 'B-0', queueId: 'queueB' },
 		])
 
 		expect(sendCommand).toHaveBeenCalledTimes(8)
