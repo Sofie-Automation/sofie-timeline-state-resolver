@@ -11,7 +11,7 @@
 		},
 		"wsPort": {
 			"type": "integer",
-			"description": "WebSocket port",
+			"description": "WebSocket port (set to 0 to disable)",
 			"ui:title": "WebSocket Port",
 			"default": 8081
 		},
