@@ -18,6 +18,7 @@ import type { CommandWithContext } from 'timeline-state-resolver-api'
 import { isEqual } from 'underscore'
 import { assertNever } from '../../lib.js'
 import type { KairosRamLoader } from './lib/kairosRamLoader.js'
+import { SceneLayerEffectRef, TimelineContentKairosSceneAnySceneLayerEffect } from 'timeline-state-resolver-types'
 
 export type KairosCommandWithContext = CommandWithContext<KairosCommandAny, string>
 
@@ -25,6 +26,7 @@ export type KairosCommandAny =
 	| KairosSceneCommand
 	| KairosSceneRecallSnapshotCommand
 	| KairosSceneLayerCommand
+	| KairosSceneLayerEffectCommand
 	| KairosAuxCommand
 	| KairosMacroCommand
 	| KairosClipPlayerCommand
@@ -57,6 +59,13 @@ export interface KairosSceneLayerCommand {
 	sceneLayerId: string
 
 	values: Partial<UpdateSceneLayerObject>
+}
+export interface KairosSceneLayerEffectCommand {
+	type: 'scene-layer-effect'
+
+	ref: SceneLayerEffectRef
+
+	effect: TimelineContentKairosSceneAnySceneLayerEffect
 }
 
 export interface KairosAuxCommand {
@@ -149,7 +158,25 @@ export async function sendCommand(
 			}
 			break
 		case 'scene-layer': {
-			const values = { ...command.values }
+			const values: Partial<UpdateSceneLayerObject> = { ...command.values }
+			if (
+				values.dissolveEnabled !== undefined ||
+				values.dissolveTime !== undefined ||
+				values.dissolveMode !== undefined
+			) {
+				// Dissolve settings need to be applied first in order to be applied to the source change that may be specified in this command
+				const dissolveValues: Partial<UpdateSceneLayerObject> = {
+					dissolveEnabled: values.dissolveEnabled,
+					dissolveTime: values.dissolveTime,
+					dissolveMode: values.dissolveMode,
+				}
+
+				delete values.dissolveEnabled
+				delete values.dissolveTime
+				delete values.dissolveMode
+
+				await kairos.updateSceneLayer(command.ref, dissolveValues)
+			}
 			if (values.sourceA) {
 				// Handle loading ramrec/still into RAM if needed
 				const source = values.sourceA
@@ -203,6 +230,47 @@ export async function sendCommand(
 			}
 
 			await kairos.updateSceneLayer(command.ref, values)
+			break
+		}
+		case 'scene-layer-effect': {
+			const effect = command.effect
+			const ref = command.ref
+
+			if (effect.type === 'crop') {
+				await kairos.updateSceneLayerEffectCrop(ref, effect.values)
+			} else if (effect.type === 'transform2D') {
+				await kairos.updateSceneLayerEffectTransform2D(ref, effect.values)
+			} else if (effect.type === 'luminanceKey') {
+				await kairos.updateSceneLayerEffectLuminanceKey(ref, effect.values)
+			} else if (effect.type === 'chromaKey') {
+				await kairos.updateSceneLayerEffectChromaKey(ref, effect.values)
+			} else if (effect.type === 'yUVCorrection') {
+				await kairos.updateSceneLayerEffectYUVCorrection(ref, effect.values)
+			} else if (effect.type === 'rGBCorrection') {
+				await kairos.updateSceneLayerEffectRGBCorrection(ref, effect.values)
+			} else if (effect.type === 'lUTCorrection') {
+				await kairos.updateSceneLayerEffectLUTCorrection(ref, effect.values)
+			} else if (effect.type === 'virtualPTZ') {
+				await kairos.updateSceneLayerEffectVirtualPTZ(ref, effect.values)
+			} else if (effect.type === 'toneCurveCorrection') {
+				await kairos.updateSceneLayerEffectToneCurveCorrection(ref, effect.values)
+			} else if (effect.type === 'matrixCorrection') {
+				await kairos.updateSceneLayerEffectMatrixCorrection(ref, effect.values)
+			} else if (effect.type === 'temperatureCorrection') {
+				await kairos.updateSceneLayerEffectTemperatureCorrection(ref, effect.values)
+			} else if (effect.type === 'linearKey') {
+				await kairos.updateSceneLayerEffectLinearKey(ref, effect.values)
+			} else if (effect.type === 'position') {
+				await kairos.updateSceneLayerEffectPosition(ref, effect.values)
+			} else if (effect.type === 'pCrop') {
+				await kairos.updateSceneLayerEffectPCrop(ref, effect.values)
+			} else if (effect.type === 'filmLook') {
+				await kairos.updateSceneLayerEffectFilmLook(ref, effect.values)
+			} else if (effect.type === 'glowEffect') {
+				await kairos.updateSceneLayerEffectGlowEffect(ref, effect.values)
+			} else {
+				assertNever(effect)
+			}
 			break
 		}
 		case 'aux':

@@ -202,6 +202,52 @@ describe('VMixStateDiffer', () => {
 		})
 	})
 
+	it('plays an input when restarting it, even if it was already playing', () => {
+		const { differ, oldState, newState } = createTestEnvironment()
+
+		oldState.reportedState.existingInputs['2'] = {
+			...differ.getDefaultInputState('2'),
+			restart: { value: false },
+			playing: { value: true },
+		}
+		newState.reportedState.existingInputs['2'] = {
+			...differ.getDefaultInputState('2'),
+			restart: { value: true },
+			playing: { value: true },
+		}
+
+		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+		expect(commands.length).toBe(2)
+		expect(commands[0].command).toMatchObject<VMixStateCommand>({
+			command: VMixCommand.RESTART_INPUT,
+			input: '2',
+		})
+		expect(commands[1].command).toMatchObject<VMixStateCommand>({
+			command: VMixCommand.PLAY_INPUT,
+			input: '2',
+		})
+	})
+
+	it('does not play an already playing input when it is not being restarted', () => {
+		const { differ, oldState, newState } = createTestEnvironment()
+
+		oldState.reportedState.existingInputs['2'] = {
+			...differ.getDefaultInputState('2'),
+			restart: { value: true },
+			playing: { value: true },
+		}
+		newState.reportedState.existingInputs['2'] = {
+			...differ.getDefaultInputState('2'),
+			restart: { value: true },
+			playing: { value: true },
+		}
+
+		const commands = differ.getCommandsToAchieveState(Date.now(), oldState, newState)
+
+		expect(commands).toHaveLength(0)
+	})
+
 	test('Address input by its layer', async () => {
 		const { differ, oldState, newState } = createTestEnvironment()
 

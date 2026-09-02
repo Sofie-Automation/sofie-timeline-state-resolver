@@ -201,4 +201,51 @@ describe('diffState — switchers', () => {
 			[]
 		)
 	})
+
+	test('leaving transition mode re-asserts ForegroundInputName when program input unchanged', () => {
+		const duringTake = makeState([
+			swObj({ foregroundInputName: 'vs2', transition: 'crossfade', crossfadeTransitionDuration: 480 }),
+		])
+		const afterTake = makeState([swObj({ foregroundInputName: 'vs2', transition: null })])
+
+		const commands = diffVindralStates(duringTake, afterTake, MAPPINGS)
+
+		expect(commands).toEqual([
+			expect.objectContaining({
+				command: expect.objectContaining({
+					type: 'set-property',
+					property: 'ForegroundInputName',
+					value: 'vs2',
+				}),
+			}),
+		])
+	})
+
+	test('direct path sets ForegroundInputName when program input changes', () => {
+		const commands = diffVindralStates(
+			{
+				...EMPTY_STATE,
+				stateTime: 0,
+				switchers: {
+					'abc-123': {
+						selector: { target: 'abc-123' },
+						foregroundInputName: 'black',
+						timelineObjIds: [],
+					},
+				},
+			},
+			makeState([swObj({ foregroundInputName: 'vs2', transition: null })]),
+			MAPPINGS
+		)
+
+		expect(commands).toEqual([
+			expect.objectContaining({
+				command: expect.objectContaining({
+					type: 'set-property',
+					property: 'ForegroundInputName',
+					value: 'vs2',
+				}),
+			}),
+		])
+	})
 })

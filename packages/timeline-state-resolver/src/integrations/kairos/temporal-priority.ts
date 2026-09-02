@@ -1,5 +1,6 @@
 import { Mapping, MappingKairosType, Mappings, SomeMappingKairos } from 'timeline-state-resolver-types'
 import {
+	getLayerEffectEffectName,
 	KairosDeviceState,
 	KairosDeviceStateAux,
 	KairosDeviceStateClipPlayers,
@@ -24,6 +25,7 @@ import {
 	refRamRecorder,
 	refScene,
 	refSceneLayer,
+	refSceneLayerEffect,
 	refToPath,
 } from 'kairos-connection'
 
@@ -160,6 +162,18 @@ export function buildDependencyGraph(
 				node = dependencyGraph.get(
 					refToPath(refSceneLayer(refScene(mapping.options.sceneName), mapping.options.layerName))
 				)
+			} else if (mapping.options.mappingType === MappingKairosType.SceneLayerEffect) {
+				const effectName = getLayerEffectEffectName(mapping.options)
+				if (effectName.length > 0) {
+					node = dependencyGraph.get(
+						refToPath(
+							refSceneLayerEffect(
+								refSceneLayer(refScene(mapping.options.sceneName), mapping.options.layerName),
+								effectName
+							)
+						)
+					)
+				}
 			} else {
 				assertNever(mapping.options)
 				continue
@@ -236,6 +250,7 @@ export function orderCommandsByTemporalPriority(
 				command.command.type === 'scene' ||
 				command.command.type === 'scene-recall-snapshot' ||
 				command.command.type === 'scene-layer' ||
+				command.command.type === 'scene-layer-effect' ||
 				command.command.type === 'aux'
 			) {
 				ref = command.command.ref

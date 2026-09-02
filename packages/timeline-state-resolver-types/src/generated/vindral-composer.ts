@@ -13,7 +13,7 @@ export interface VindralComposerOptions {
 	 */
 	host?: string
 	/**
-	 * WebSocket port
+	 * WebSocket port (set to 0 to disable)
 	 */
 	wsPort?: number
 	/**
@@ -88,15 +88,7 @@ export enum MappingVindralComposerType {
 	SwitcherOverlay = 'switcher-overlay',
 }
 
-export type SomeMappingVindralComposer =
-	| MappingVindralComposerConnector
-	| MappingVindralComposerSceneLayer
-	| MappingVindralComposerScriptEngine
-	| MappingVindralComposerSwitcher
-	| MappingVindralComposerMediaPlayer
-	| MappingVindralComposerHtml
-	| MappingVindralComposerAudioSource
-	| MappingVindralComposerSwitcherOverlay
+export type SomeMappingVindralComposer = MappingVindralComposerConnector | MappingVindralComposerSceneLayer | MappingVindralComposerScriptEngine | MappingVindralComposerSwitcher | MappingVindralComposerMediaPlayer | MappingVindralComposerHtml | MappingVindralComposerAudioSource | MappingVindralComposerSwitcherOverlay
 
 export interface TriggerConnectorPayload {
 	/**
@@ -130,13 +122,11 @@ export interface ExecuteScriptFunctionPayload {
 
 export enum VindralComposerActions {
 	TriggerConnector = 'triggerConnector',
-	ExecuteScriptFunction = 'executeScriptFunction',
+	ExecuteScriptFunction = 'executeScriptFunction'
 }
 export interface VindralComposerActionMethods {
-	[VindralComposerActions.TriggerConnector]: (payload: TriggerConnectorPayload) => Promise<ActionExecutionResult<void>>
-	[VindralComposerActions.ExecuteScriptFunction]: (
-		payload: ExecuteScriptFunctionPayload
-	) => Promise<ActionExecutionResult<void>>
+	[VindralComposerActions.TriggerConnector]: (payload: TriggerConnectorPayload) => Promise<ActionExecutionResult<void>>,
+	[VindralComposerActions.ExecuteScriptFunction]: (payload: ExecuteScriptFunctionPayload) => Promise<ActionExecutionResult<void>>
 }
 
 export interface VindralComposerDeviceTypes {

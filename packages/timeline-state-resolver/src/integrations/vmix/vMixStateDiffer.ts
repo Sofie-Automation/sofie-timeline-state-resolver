@@ -420,6 +420,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		if (input.name === undefined) {
 			input.name = key
 		}
+		let isRestarting = false
 		const preTransitionCommands: Array<VMixStateCommandWithContext> = []
 		const postTransitionCommands: Array<VMixStateCommandWithContext> = []
 		/**
@@ -510,6 +511,7 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 			})
 		}
 		if (input.restart?.value !== undefined && oldInput.restart?.value !== input.restart.value && input.restart.value) {
+			isRestarting = true
 			commands.push({
 				command: {
 					command: VMixCommand.RESTART_INPUT,
@@ -680,8 +682,8 @@ export class VMixStateDiffer implements VMixDefaultStateFactory {
 		}
 		if (
 			input.playing?.value !== undefined &&
-			oldInput.playing?.value !== input.playing?.value &&
-			input.playing?.value
+			input.playing?.value &&
+			(oldInput.playing?.value !== input.playing?.value || isRestarting) // even if the value hasn't changed, we might need to issue "play" when restarting, in case the file reached the end and paused on its own; it should not have side effects if it is playing already
 		) {
 			commands.push({
 				command: {

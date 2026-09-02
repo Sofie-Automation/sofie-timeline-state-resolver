@@ -115,7 +115,7 @@ export function buildVindralState(
 		audioSources: {},
 	}
 
-	for (const obj of timelineState.objects) {
+	for (const obj of [...timelineState.objects].sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))) {
 		const layerId = String(obj.layer)
 		const mapping = mappings[layerId]
 		if (!mapping || mapping.device !== DeviceType.VINDRAL_COMPOSER) continue

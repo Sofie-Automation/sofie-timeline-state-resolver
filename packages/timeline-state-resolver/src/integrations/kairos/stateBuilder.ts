@@ -26,6 +26,10 @@ import {
 	KairosMacroActiveState,
 	TimelineContentKairosMacroInfo,
 	KairosTSRMappingRef,
+	MappingKairosSceneLayerEffect,
+	TimelineContentKairosSceneLayerEffect,
+	SceneLayerEffectRef,
+	TimelineContentKairosSceneAnySceneLayerEffect,
 } from 'timeline-state-resolver-types'
 import { assertNever } from '../../lib.js'
 import {
@@ -51,6 +55,7 @@ import {
 	refRamRecorder,
 	refImageStore,
 	UpdateAuxObject,
+	refSceneLayerEffect,
 } from 'kairos-connection'
 import { TimelineObjectInstance } from 'superfly-timeline'
 import { DeviceTimelineState, DeviceTimelineStateObject } from 'timeline-state-resolver-api'
@@ -60,6 +65,7 @@ export interface KairosDeviceState {
 	scenes: Record<string, KairosDeviceStateScenes>
 	sceneSnapshots: Record<string, KairosDeviceStateSceneSnapshots>
 	sceneLayers: Record<string, KairosDeviceStateSceneLayers>
+	sceneLayerEffects: Record<string, KairosDeviceStateSceneLayerEffects>
 	aux: Record<string, KairosDeviceStateAux>
 	macros: Record<string, KairosDeviceStateMacros>
 	clipPlayers: Record<number, KairosDeviceStateClipPlayers>
@@ -81,6 +87,9 @@ export type KairosDeviceStateSceneSnapshots =
 
 export type KairosDeviceStateSceneLayers =
 	| { ref: SceneLayerRef; state: Partial<UpdateSceneLayerObject>; timelineObjIds: string[] }
+	| undefined
+export type KairosDeviceStateSceneLayerEffects =
+	| { ref: SceneLayerEffectRef; state: TimelineContentKairosSceneAnySceneLayerEffect; timelineObjIds: string[] }
 	| undefined
 
 export type KairosDeviceStateAux =
@@ -145,6 +154,7 @@ export class KairosStateBuilder {
 		scenes: {},
 		sceneSnapshots: {},
 		sceneLayers: {},
+		sceneLayerEffects: {},
 		aux: {},
 		macros: {},
 		clipPlayers: {},
@@ -175,6 +185,11 @@ export class KairosStateBuilder {
 					case MappingKairosType.SceneLayer:
 						if (content.type === TimelineContentTypeKairos.SCENE_LAYER) {
 							builder._applySceneLayer(mappings, mapping.options, content, tlObject.id)
+						}
+						break
+					case MappingKairosType.SceneLayerEffect:
+						if (content.type === TimelineContentTypeKairos.SCENE_LAYER_EFFECT) {
+							builder._applySceneLayerEffect(mapping.options, content, tlObject.id)
 						}
 						break
 					case MappingKairosType.Aux:
@@ -304,6 +319,34 @@ export class KairosStateBuilder {
 			this.#deviceState.sceneLayers[sceneLayerId],
 			sceneLayerRef,
 			sceneLayerObj,
+			timelineObjId
+		)
+	}
+	private _applySceneLayerEffect(
+		mapping: MappingKairosSceneLayerEffect,
+		content: TimelineContentKairosSceneLayerEffect,
+		timelineObjId: string
+	): void {
+		if (!mapping.sceneName || mapping.sceneName.length === 0) return
+		if (!mapping.layerName || mapping.layerName.length === 0) return
+
+		if (content.effect.type !== mapping.effectType) return
+
+		const effectName = getLayerEffectEffectName(mapping)
+		if (effectName.length === 0) return
+
+		const sceneLayerRef = refSceneLayer(refScene(mapping.sceneName), mapping.layerName)
+		const sceneLayerEffectRef = refSceneLayerEffect(sceneLayerRef, effectName)
+
+		const sceneLayerEffectKey = refToPath(sceneLayerEffectRef)
+
+		const sceneLayerEffectObj: TimelineContentKairosSceneAnySceneLayerEffect = content.effect
+
+		// Perform a simple merge of the content into the state
+		this.#deviceState.sceneLayerEffects[sceneLayerEffectKey] = this._mergeState(
+			this.#deviceState.sceneLayerEffects[sceneLayerEffectKey],
+			sceneLayerEffectRef,
+			sceneLayerEffectObj,
 			timelineObjId
 		)
 	}
@@ -486,6 +529,7 @@ function lookupMappingRef(
 					return refImageStore(mapping.options.playerId)
 				case MappingKairosType.SoundPlayer:
 				case MappingKairosType.SceneLayer:
+				case MappingKairosType.SceneLayerEffect:
 				case MappingKairosType.Aux:
 				case MappingKairosType.Macro:
 					return undefined // Not supported as SourceRef
@@ -508,4 +552,29 @@ function omitUndefinedValues<T extends object>(obj: T): T {
 		if (obj[key] === undefined) delete obj[key]
 	}
 	return obj
+}
+export function getLayerEffectEffectName(mapping: MappingKairosSceneLayerEffect): string[] {
+	if (mapping.effectName && mapping.effectName.length > 0) return mapping.effectName
+
+	// else, use default Effect Name:
+	if (mapping.effectType === 'crop') return ['Crop']
+	else if (mapping.effectType === 'transform2D') return ['Transform2D']
+	else if (mapping.effectType === 'luminanceKey') return ['LuminanceKey']
+	else if (mapping.effectType === 'chromaKey') return ['ChromaKey']
+	else if (mapping.effectType === 'yUVCorrection') return ['YUVCorrection']
+	else if (mapping.effectType === 'rGBCorrection') return ['RGBCorrection']
+	else if (mapping.effectType === 'lUTCorrection') return ['LUTCorrection']
+	else if (mapping.effectType === 'virtualPTZ') return ['VirtualPTZ']
+	else if (mapping.effectType === 'toneCurveCorrection') return ['ToneCurveCorrection']
+	else if (mapping.effectType === 'matrixCorrection') return ['MatrixCorrection']
+	else if (mapping.effectType === 'temperatureCorrection') return ['TemperatureCorrection']
+	else if (mapping.effectType === 'linearKey') return ['LinearKey']
+	else if (mapping.effectType === 'position') return ['Position']
+	else if (mapping.effectType === 'pCrop') return ['PCrop']
+	else if (mapping.effectType === 'filmLook') return ['FilmLook']
+	else if (mapping.effectType === 'glowEffect') return ['GlowEffect']
+	else {
+		assertNever(mapping.effectType)
+		return []
+	}
 }

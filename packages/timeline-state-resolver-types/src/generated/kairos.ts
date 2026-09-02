@@ -35,6 +35,31 @@ export interface MappingKairosSceneLayer {
 	mappingType: MappingKairosType.SceneLayer
 }
 
+export interface MappingKairosSceneLayerEffect {
+	effectType:
+		| 'crop'
+		| 'transform2D'
+		| 'luminanceKey'
+		| 'chromaKey'
+		| 'yUVCorrection'
+		| 'rGBCorrection'
+		| 'lUTCorrection'
+		| 'virtualPTZ'
+		| 'toneCurveCorrection'
+		| 'matrixCorrection'
+		| 'temperatureCorrection'
+		| 'linearKey'
+		| 'position'
+		| 'pCrop'
+		| 'filmLook'
+		| 'glowEffect'
+	sceneName: string[]
+	layerName: string[]
+	effectName?: string[]
+	temporalPriority?: number
+	mappingType: MappingKairosType.SceneLayerEffect
+}
+
 export interface MappingKairosAux {
 	auxName: string
 	temporalPriority?: number
@@ -75,6 +100,7 @@ export interface MappingKairosSoundPlayer {
 export enum MappingKairosType {
 	Scene = 'scene',
 	SceneLayer = 'scene-layer',
+	SceneLayerEffect = 'scene-layer-effect',
 	Aux = 'aux',
 	Macro = 'macro',
 	ClipPlayer = 'clip-player',
@@ -83,7 +109,7 @@ export enum MappingKairosType {
 	SoundPlayer = 'sound-player',
 }
 
-export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosAux | MappingKairosMacro | MappingKairosClipPlayer | MappingKairosRamRecPlayer | MappingKairosImageStore | MappingKairosSoundPlayer
+export type SomeMappingKairos = MappingKairosScene | MappingKairosSceneLayer | MappingKairosSceneLayerEffect | MappingKairosAux | MappingKairosMacro | MappingKairosClipPlayer | MappingKairosRamRecPlayer | MappingKairosImageStore | MappingKairosSoundPlayer
 
 export interface ListScenesPayload {
 	scenePath: string[]
