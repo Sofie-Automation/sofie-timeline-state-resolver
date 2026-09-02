@@ -353,7 +353,7 @@ export class VizMSEDevice extends DeviceWithState<VizMSEState, VizMSEDeviceTypes
 		}
 
 		timelineState.objects.forEach((tlObj) => {
-			let foundMapping = mappings[tlObj.layer] as Mapping<SomeMappingVizMSE>
+			let foundMapping = mappings[tlObj.layer] as Mapping<SomeMappingVizMSE> | undefined
 
 			let isLookahead = false
 			if (!foundMapping && tlObj.isLookahead && tlObj.lookaheadForLayer) {
