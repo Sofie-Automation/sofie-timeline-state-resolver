@@ -27,6 +27,7 @@ import { TimelineContentKairosAny } from './integrations/kairos/timeline.js'
 import { DeviceType, TSRDeviceTypesMap } from './generated/index.js'
 import { TimelineContentUDPSendAny } from './integrations/udpSend/timeline.js'
 import { TimelineContentOgrafAny } from './integrations/ograf/timeline.js'
+import { TimelineContentVindralComposerAny } from './integrations/vindral-composer/timeline.js'
 
 export * from './integrations/abstract/timeline.js'
 export * from './integrations/atem/timeline.js'
@@ -55,6 +56,7 @@ export * from './integrations/multiOsc/timeline.js'
 export * from './integrations/udpSend/timeline.js'
 export * from './integrations/viscaOverIP/timeline.js'
 export * from './integrations/websocketClient/timeline.js'
+export * from './integrations/vindral-composer/timeline.js'
 
 export * from './actions.js'
 export * from './datastore.js'
@@ -137,6 +139,7 @@ export interface TimelineContentMap {
 	[DeviceType.TRICASTER]: TimelineContentTriCasterAny
 	[DeviceType.WEBSOCKET_CLIENT]: TimelineContentWebSocketClientAny
 	[DeviceType.UDP_SEND]: TimelineContentUDPSendAny
+	[DeviceType.VINDRAL_COMPOSER]: TimelineContentVindralComposerAny
 }
 
 export type TSRTimelineContent = TimelineContentMap[keyof TimelineContentMap]

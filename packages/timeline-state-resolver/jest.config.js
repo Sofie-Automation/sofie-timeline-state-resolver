@@ -17,7 +17,7 @@ module.exports = {
 	},
 	transformIgnorePatterns: [
 		// Jest can't handle esm libraries directly
-		'/node_modules/(?!(casparcg-connection|casparcg-state)/)',
+		'/node_modules/(?!(casparcg-connection|casparcg-state|vindral-composer-connection)/)',
 		// Don't transform our other packages
 		'/packages/[^/]+/dist/',
 	],

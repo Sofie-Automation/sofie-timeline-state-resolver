@@ -22,6 +22,7 @@ import { MultiOSCMessageDevice } from '../integrations/multiOsc/index.js'
 import { WebSocketClientDevice } from '../integrations/websocketClient/index.js'
 import { vMixDeviceEntry } from '../integrations/vmix/vMixDeviceEntry.js'
 import { KairosDevice } from '../integrations/kairos/index.js'
+import { VindralComposerDevice } from '../integrations/vindral-composer/index.js'
 import { SisyfosDeviceEntry } from '../integrations/sisyfos/entry.js'
 import { UdpSendDevice } from '../integrations/udpSend/index.js'
 import { OGrafDevice } from '../integrations/ograf/index.js'
@@ -52,6 +53,7 @@ export type ImplementedServiceDeviceTypes =
 	| DeviceType.VMIX
 	| DeviceType.KAIROS
 	| DeviceType.UDP_SEND
+	| DeviceType.VINDRAL_COMPOSER
 
 // TODO - move all device implementations here and remove the old Device classes
 export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
@@ -89,6 +91,12 @@ export const DevicesDict: Record<ImplementedServiceDeviceTypes, DeviceEntry> = {
 		deviceClass: KairosDevice,
 		canConnect: true,
 		deviceName: (deviceId: string) => 'Kairos ' + deviceId,
+		executionMode: () => 'sequential',
+	},
+	[DeviceType.VINDRAL_COMPOSER]: {
+		deviceClass: VindralComposerDevice,
+		canConnect: true,
+		deviceName: (deviceId: string) => 'VindralComposer ' + deviceId,
 		executionMode: () => 'sequential',
 	},
 	[DeviceType.LAWO]: {

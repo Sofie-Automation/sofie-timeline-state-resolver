@@ -69,6 +69,9 @@ import TricasterMappings = require('./$schemas/generated/tricaster/mappings.json
 import UdpSendActions = require('./$schemas/generated/udpSend/actions.json')
 import UdpSendOptions = require('./$schemas/generated/udpSend/options.json')
 import UdpSendMappings = require('./$schemas/generated/udpSend/mappings.json')
+import VindralComposerActions = require('./$schemas/generated/vindral-composer/actions.json')
+import VindralComposerOptions = require('./$schemas/generated/vindral-composer/options.json')
+import VindralComposerMappings = require('./$schemas/generated/vindral-composer/mappings.json')
 import ViscaOverIPActions = require('./$schemas/generated/viscaOverIP/actions.json')
 import ViscaOverIPOptions = require('./$schemas/generated/viscaOverIP/options.json')
 import ViscaOverIPMappings = require('./$schemas/generated/viscaOverIP/mappings.json')
@@ -212,6 +215,12 @@ export const builtinDeviceManifest: TSRManifest = {
 			actions: UdpSendActions.actions.map(stringifyActionSchema),
 			configSchema: JSON.stringify(UdpSendOptions),
 			mappingsSchemas: stringifyMappingSchema(UdpSendMappings),
+		},
+		[DeviceType.VINDRAL_COMPOSER]: {
+			displayName: generateTranslation('Vindral Composer'),
+			actions: VindralComposerActions.actions.map(stringifyActionSchema),
+			configSchema: JSON.stringify(VindralComposerOptions),
+			mappingsSchemas: stringifyMappingSchema(VindralComposerMappings),
 		},
 		[DeviceType.VISCA_OVER_IP]: {
 			displayName: generateTranslation('Visca Over IP'),

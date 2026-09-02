@@ -1,0 +1,50 @@
+{
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/action-schema.json",
+	"actions": [
+		{
+			"id": "triggerConnector",
+			"name": "Trigger Connector",
+			"destructive": true,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Trigger the connector by name. Mutually exclusive with `value`."
+					},
+					"value": {
+						"type": "string",
+						"description": "Trigger the connector by value. Mutually exclusive with `name`."
+					},
+					"params": {
+						"type": "object",
+						"description": "Optional key/value pairs passed to the connector, accessible via @@paramname in Connector commands.",
+						"additionalProperties": { "type": "string" }
+					}
+				},
+				"additionalProperties": false
+			}
+		},
+		{
+			"id": "executeScriptFunction",
+			"name": "Execute Script Function",
+			"destructive": true,
+			"payload": {
+				"type": "object",
+				"properties": {
+					"functionName": {
+						"type": "string",
+						"description": "The name of the script function to execute."
+					},
+					"parameter": {
+						"type": "object",
+						"description": "Optional JSON-serializable parameter object passed to the script function.",
+						"additionalProperties": true
+					}
+				},
+				"required": ["functionName"],
+				"additionalProperties": false
+			}
+		}
+	]
+}

@@ -1,0 +1,152 @@
+{
+	"$schema": "../../../../../timeline-state-resolver-api/$schemas/mapping-schema.json",
+	"default": "scene-layer",
+	"mappings": {
+		"connector": {
+			"type": "object",
+			"properties": {},
+			"required": [],
+			"additionalProperties": false
+		},
+		"scene-layer": {
+			"type": "object",
+			"properties": {
+				"scene": {
+					"type": "string",
+					"ui:title": "Scene",
+					"ui:description": "The Scene name as configured in Composer",
+					"ui:summaryTitle": "Scene",
+					"default": "Main"
+				},
+				"layer": {
+					"type": "string",
+					"ui:title": "Layer",
+					"ui:description": "The Layer name within that Scene",
+					"ui:summaryTitle": "Layer",
+					"default": "Background"
+				}
+			},
+			"required": ["scene", "layer"],
+			"additionalProperties": false
+		},
+		"script-engine": {
+			"type": "object",
+			"properties": {
+				"functionName": {
+					"type": "string",
+					"ui:title": "Function Name",
+					"ui:description": "The Script Engine function name to execute",
+					"ui:summaryTitle": "Function",
+					"default": ""
+				}
+			},
+			"required": ["functionName"],
+			"additionalProperties": false
+		},
+		"switcher": {
+			"type": "object",
+			"properties": {
+				"switcherId": {
+					"type": "string",
+					"ui:title": "Switcher ID",
+					"ui:description": "The GUID of the Composer switcher object. Mutually exclusive with Switcher Name.",
+					"ui:summaryTitle": "Switcher ID"
+				},
+				"switcherName": {
+					"type": "string",
+					"ui:title": "Switcher Name",
+					"ui:description": "The name of the Composer switcher object. Mutually exclusive with Switcher ID.",
+					"ui:summaryTitle": "Switcher Name"
+				}
+			},
+			"additionalProperties": false
+		},
+		"media-player": {
+			"type": "object",
+			"properties": {
+				"mediaPlayerId": {
+					"type": "string",
+					"ui:title": "Media Player ID",
+					"ui:description": "The GUID of the Video File Input. Both Media Player ID and Media Player Name are required — the GUID is used for property/command calls while the name is needed for the atomic load-and-play endpoint.",
+					"ui:summaryTitle": "Player ID"
+				},
+				"mediaPlayerName": {
+					"type": "string",
+					"ui:title": "Media Player Name",
+					"ui:description": "The name of the Video File Input as configured in Composer. Required alongside Media Player ID — see its description.",
+					"ui:summaryTitle": "Player Name"
+				},
+				"autoPlayOnMediaChange": {
+					"type": "boolean",
+					"ui:title": "Auto Play On Media Change",
+					"ui:description": "Sets the AutoPlayOnMediaChange property on the device. When true, the player automatically begins playing when the source changes."
+				}
+			},
+			"required": ["mediaPlayerId", "mediaPlayerName"],
+			"additionalProperties": false
+		},
+		"html": {
+			"type": "object",
+			"properties": {
+				"webPageRendererId": {
+					"type": "string",
+					"ui:title": "Web Page Renderer ID",
+					"ui:description": "The GUID of the Web Page Renderer object in Composer. Mutually exclusive with Web Page Renderer Name.",
+					"ui:summaryTitle": "Renderer ID"
+				},
+				"webPageRendererName": {
+					"type": "string",
+					"ui:title": "Web Page Renderer Name",
+					"ui:description": "The name of the Web Page Renderer object as configured in Composer. Mutually exclusive with Web Page Renderer ID.",
+					"ui:summaryTitle": "Renderer Name"
+				}
+			},
+			"additionalProperties": false
+		},
+		"audio-source": {
+			"type": "object",
+			"properties": {
+				"audioSourceId": {
+					"type": "string",
+					"ui:title": "Audio Source ID",
+					"ui:description": "The GUID of the audio source object in Composer. Mutually exclusive with Audio Source Name.",
+					"ui:summaryTitle": "Source ID"
+				},
+				"audioSourceName": {
+					"type": "string",
+					"ui:title": "Audio Source Name",
+					"ui:description": "The name of the audio source object as configured in Composer. Mutually exclusive with Audio Source ID.",
+					"ui:summaryTitle": "Source Name"
+				}
+			},
+			"additionalProperties": false
+		},
+		"switcher-overlay": {
+			"type": "object",
+			"properties": {
+				"switcherId": {
+					"type": "string",
+					"ui:title": "Switcher ID",
+					"ui:description": "The GUID of the Composer switcher object. Mutually exclusive with Switcher Name.",
+					"ui:summaryTitle": "Switcher ID"
+				},
+				"switcherName": {
+					"type": "string",
+					"ui:title": "Switcher Name",
+					"ui:description": "The name of the Composer switcher object. Mutually exclusive with Switcher ID.",
+					"ui:summaryTitle": "Switcher Name"
+				},
+				"overlay": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 4,
+					"ui:title": "Overlay Number",
+					"ui:description": "The overlay slot number (1-4) on the switcher.",
+					"ui:summaryTitle": "Overlay"
+				}
+			},
+			"required": ["overlay"],
+			"additionalProperties": false
+		}
+	}
+}

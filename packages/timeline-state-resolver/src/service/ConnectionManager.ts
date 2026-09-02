@@ -441,6 +441,7 @@ function createContainer(
 		case DeviceType.WEBSOCKET_CLIENT:
 		case DeviceType.KAIROS:
 		case DeviceType.QUANTEL:
+		case DeviceType.VINDRAL_COMPOSER:
 		case DeviceType.UDP_SEND: {
 			ensureIsImplementedAsService(deviceOptions.type)
 
