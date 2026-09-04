@@ -55,7 +55,6 @@ import {
 	NextUp,
 	Transition as StateTransition,
 	Mixer,
-	InternalState,
 } from 'casparcg-state'
 import { DoOnTime, SendMode } from '../../devices/doOnTime.js'
 import got from 'got'
@@ -69,6 +68,22 @@ import { convertScaleModeToConnection } from './util.js'
 const debug = Debug('timeline-state-resolver:casparcg')
 
 const MEDIA_RETRY_INTERVAL = 10 * 1000 // default time in ms between checking whether a file needs to be retried loading
+
+export function casparFormatToFps(format: string | undefined): number | undefined {
+	if (!format) return undefined
+
+	const match = /(\d{4})$/.exec(format.toLowerCase())
+	if (!match) return undefined
+
+	const rateCode = Number(match[1])
+	if (!rateCode) return undefined
+
+	if (rateCode === 2398) return 24000 / 1001
+	if (rateCode === 2997) return 30000 / 1001
+	if (rateCode === 5994) return 60000 / 1001
+
+	return rateCode / 100
+}
 
 export interface DeviceOptionsCasparCGInternal extends DeviceOptionsCasparCG {
 	commandReceiver?: CommandReceiver
@@ -85,15 +100,16 @@ export type CommandReceiver = (time: number, cmd: AMCPCommand, context: string, 
 export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, DeviceOptionsCasparCGInternal> {
 	/** Setup in init */
 	private _ccg: BasicCasparCGAPI | undefined
-	private _commandReceiver: CommandReceiver = this._defaultCommandReceiver.bind(this)
-	private _doOnTime: DoOnTime
+	private readonly _commandReceiver: CommandReceiver = this._defaultCommandReceiver.bind(this)
+	private readonly _doOnTime: DoOnTime
 	private initOptions?: CasparCGOptions
 	private _connected = false
 	private _queueOverflow = false
-	private _transitionHandler: InternalTransitionHandler = new InternalTransitionHandler()
+	private readonly _transitionHandler: InternalTransitionHandler = new InternalTransitionHandler()
 	private _retryTimeout: NodeJS.Timeout | undefined
 	private _retryTime: number | null = null
-	private _currentState: InternalState = { channels: {} }
+	private _currentState: { channels: Record<string, any> } = { channels: {} }
+	private _detectedChannelFps: { [channel: number]: number } = {}
 
 	constructor(deviceId: string, deviceOptions: DeviceOptionsCasparCGInternal, getCurrentTime: () => Promise<number>) {
 		super(deviceId, deviceOptions, getCurrentTime)
@@ -137,6 +153,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 					if (error) return true
 
 					const response = await request
+					this.updateDetectedFpsFromInfo(response?.data as InfoEntry[] | undefined)
 
 					const channelPromises: Promise<Response<InfoChannelEntry | undefined>>[] = []
 					const channelLength: number = response?.data?.['length'] ?? 0
@@ -148,7 +165,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 							this._currentState.channels[obj.channel] = {
 								channelNo: obj.channel,
 								videoMode: this.getVideMode(obj),
-								fps: obj.frameRate,
+								fps: this.getChannelFps(obj.channel),
 								layers: {},
 							}
 						}
@@ -267,11 +284,15 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 		const diffTrace = startTrace(`device:diffState`, { deviceId: this.deviceId })
 		const commandsToAchieveState = CasparCGState.diffStatesOrderedCommands(
-			oldCasparState as InternalState,
+			oldCasparState as { channels: Record<string, any> },
 			newCasparState,
 			newState.time
 		)
 		this.emit('timeTrace', endTrace(diffTrace))
+
+		// The installed casparcg-state version doesn't forward scaleMode into the generated
+		// commands, so it needs to be added back in here based on the target state.
+		this.injectScaleMode(commandsToAchieveState, newCasparState)
 
 		// clear any queued commands later than this time:
 		this._doOnTime.clearQueueNowAndAfter(previousStateTime)
@@ -331,7 +352,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 					? content.seek + layerProps.lookaheadOffset
 					: (content.seek ?? layerProps.lookaheadOffset)
 
-			stateLayer = literal<MediaLayer>({
+			stateLayer = literal<MediaLayer & Record<string, unknown>>({
 				id: layer.id,
 				layerNo: mapping.layer,
 				content: LayerContentType.MEDIA,
@@ -355,7 +376,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			})
 			// this.emitDebug(stateLayer)
 		} else if (content.type === TimelineContentTypeCasparCg.IP) {
-			stateLayer = literal<MediaLayer>({
+			stateLayer = literal<MediaLayer & Record<string, unknown>>({
 				id: layer.id,
 				layerNo: mapping.layer,
 				content: LayerContentType.MEDIA,
@@ -370,7 +391,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				scaleMode: convertScaleModeToConnection(content.scaleMode),
 			})
 		} else if (content.type === TimelineContentTypeCasparCg.INPUT) {
-			stateLayer = literal<InputLayer>({
+			stateLayer = literal<InputLayer & Record<string, unknown>>({
 				id: layer.id,
 				layerNo: mapping.layer,
 				content: LayerContentType.INPUT,
@@ -387,7 +408,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				afilter: content.audioFilter,
 			})
 		} else if (content.type === TimelineContentTypeCasparCg.TEMPLATE) {
-			stateLayer = literal<TemplateLayer>({
+			stateLayer = literal<TemplateLayer & Record<string, unknown>>({
 				id: layer.id,
 				layerNo: mapping.layer,
 				content: LayerContentType.TEMPLATE,
@@ -401,7 +422,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				cgStop: content.useStopCommand,
 			})
 		} else if (content.type === TimelineContentTypeCasparCg.HTMLPAGE) {
-			stateLayer = literal<HtmlPageLayer>({
+			stateLayer = literal<HtmlPageLayer & Record<string, unknown>>({
 				id: layer.id,
 				layerNo: mapping.layer,
 				content: LayerContentType.HTMLPAGE,
@@ -418,7 +439,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 					content.layer = routeMapping.options.layer
 				}
 			}
-			stateLayer = literal<RouteLayer>({
+			stateLayer = literal<RouteLayer & Record<string, unknown>>({
 				id: layer.id,
 				layerNo: mapping.layer,
 				content: LayerContentType.ROUTE,
@@ -438,7 +459,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			})
 		} else if (content.type === TimelineContentTypeCasparCg.RECORD) {
 			if (startTime) {
-				stateLayer = literal<RecordLayer>({
+				stateLayer = literal<RecordLayer & Record<string, unknown>>({
 					id: layer.id,
 					layerNo: mapping.layer,
 					content: LayerContentType.RECORD,
@@ -530,7 +551,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				// create a channel in state if necessary, or reuse existing channel
 				const channel = caspar.channels[mapping.options.channel] || { channelNo: mapping.options.channel, layers: {} }
 				channel.channelNo = mapping.options.channel
-				channel.fps = this.initOptions ? this.initOptions.fps || 25 : 25
+				channel.fps = this.getChannelFps(mapping.options.channel)
 				caspar.channels[channel.channelNo] = channel
 
 				let foregroundObj = timelineState.objects.find((obj) => obj.layer === layerName)
@@ -586,10 +607,19 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 					const currentTemplateData = (channel.layers[mapping.options.layer] as any as TemplateLayer | undefined)
 						?.templateData
 					const foregroundTemplateData = (foregroundStateLayer as any as TemplateLayer | undefined)?.templateData
+					const hasObjectTemplateData =
+						typeof currentTemplateData === 'object' &&
+						currentTemplateData !== null &&
+						!Array.isArray(currentTemplateData) &&
+						typeof foregroundTemplateData === 'object' &&
+						foregroundTemplateData !== null &&
+						!Array.isArray(foregroundTemplateData)
 					channel.layers[mapping.options.layer] = merge(channel.layers[mapping.options.layer], {
 						...foregroundStateLayer,
-						...(_.isObject(currentTemplateData) && _.isObject(foregroundTemplateData)
-							? { templateData: deepMerge(currentTemplateData, foregroundTemplateData) }
+						...(hasObjectTemplateData
+							? {
+									templateData: deepMerge(currentTemplateData, foregroundTemplateData),
+								}
 							: {}),
 						nextUp: backgroundStateLayer
 							? merge(
@@ -658,6 +688,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				response: t('Cannot clear CasparCG channels: no channels found'),
 			}
 		}
+		this.updateDetectedFpsFromInfo(response.data as InfoEntry[] | undefined)
 
 		await Promise.all(
 			response.data.map(async (_, i) => {
@@ -681,7 +712,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			this._currentState.channels[obj.channel] = {
 				channelNo: obj.channel,
 				videoMode: this.getVideMode(obj),
-				fps: obj.frameRate,
+				fps: this.getChannelFps(obj.channel),
 				layers: {},
 			}
 		})
@@ -1071,7 +1102,71 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		this.emit('connectionChanged', this.getStatus())
 	}
 
+	private updateDetectedFpsFromInfo(infoEntries: InfoEntry[] | undefined) {
+		if (!infoEntries?.length) return
+
+		for (const entry of infoEntries) {
+			const formatRate = casparFormatToFps(entry.format)
+			const channelRate = Number(entry.channelRate) || 0
+			const frameRate = Number(entry.frameRate) || 0
+			// For interlaced formats, CasparCG reports the field rate via channelRate,
+			// so keep using that value for timing calculations rather than forcing the
+			// lower frame-rate value.
+			const detected = formatRate || (entry.interlaced ? channelRate || frameRate : frameRate || channelRate)
+
+			if (detected > 0) {
+				this._detectedChannelFps[entry.channel] = detected
+			}
+		}
+	}
+
+	private getChannelFps(channel?: number): number {
+		if (this.initOptions?.fps && this.initOptions.fps > 0) return this.initOptions.fps
+
+		if (channel !== undefined) {
+			const channelFps = this._detectedChannelFps[channel]
+			if (channelFps && channelFps > 0) return channelFps
+		}
+
+		// Fallback: pick any detected channel's fps (object iteration order is non-deterministic,
+		// but in practice all channels share the same fps).
+		const firstDetectedFps = Object.values<number>(this._detectedChannelFps).find((fps) => fps > 0)
+		if (firstDetectedFps) return firstDetectedFps
+
+		return 25
+	}
+
 	private getVideMode(info: InfoEntry): string {
 		return `${info.format}${info.interlaced ? 'I' : 'P'}${info.frameRate}`
+	}
+
+	/**
+	 * The installed casparcg-state version doesn't know about scaleMode, so it never forwards it
+	 * into the generated Play/Load/Loadbg commands. Add it back in here, based on the target
+	 * layer's scaleMode in newCasparState.
+	 */
+	private injectScaleMode(commands: AMCPCommandWithContext[], newCasparState: State) {
+		for (const cmd of commands) {
+			const params = cmd.params as Record<string, unknown>
+			if (!('clip' in params)) continue
+
+			const channel = newCasparState.channels[Number(params.channel)]
+			const layer = channel?.layers[Number(params.layer)] as (LayerBase & Record<string, unknown>) | undefined
+			if (!layer) continue
+
+			const isBackgroundCommand =
+				cmd.command === Commands.Loadbg ||
+				cmd.command === Commands.LoadbgDecklink ||
+				cmd.command === Commands.LoadbgRoute ||
+				cmd.command === Commands.LoadbgHtml
+			const source = isBackgroundCommand
+				? (layer.nextUp as Record<string, unknown> | undefined)
+				: (layer as Record<string, unknown>)
+
+			const scaleMode = source?.scaleMode
+			if (scaleMode !== undefined) {
+				params.scaleMode = scaleMode
+			}
+		}
 	}
 }

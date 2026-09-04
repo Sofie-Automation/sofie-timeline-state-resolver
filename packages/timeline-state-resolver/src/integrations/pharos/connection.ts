@@ -219,7 +219,7 @@ export class Pharos extends EventEmitter<PharosEvents> {
 	private _isConnecting = false
 	private _isReconnecting = false
 	private _aboutToReconnect = false
-	private _pendingMessages: Array<{ msg: string; resolve: (v?: any) => void; reject: (e: any) => void }> = []
+	private readonly _pendingMessages: Array<{ msg: string; resolve: (v?: any) => void; reject: (e: any) => void }> = []
 	private _requestPromises: { [id: string]: Array<{ resolve: (v: any) => void; reject: (e: any) => void }> } = {}
 	private _broadcastCallbacks: { [id: string]: Array<(data: any) => void> } = {}
 
@@ -316,8 +316,8 @@ export class Pharos extends EventEmitter<PharosEvents> {
 	public async getTextSlot(names?: string | Array<string>): Promise<TextSlot> {
 		const params: any = {}
 		if (names) {
-			if (!_.isArray(names)) names = [names]
-			params.names = names.join(',') // TODO: test that this actually works
+			const namesArray: string[] = Array.isArray(names) ? names : [names]
+			params.names = namesArray.join(',') // TODO: test that this actually works
 		}
 		return this.request('text_slot', params)
 	}
@@ -335,8 +335,8 @@ export class Pharos extends EventEmitter<PharosEvents> {
 	public async getLuaVariables(vars?: string | Array<string>): Promise<LuaVariables> {
 		const params: any = {}
 		if (vars) {
-			if (!_.isArray(vars)) vars = [vars]
-			params.variables = vars.join(',')
+			const varsArray: string[] = Array.isArray(vars) ? vars : [vars]
+			params.variables = varsArray.join(',')
 		}
 		return this.request('lua', params)
 	}

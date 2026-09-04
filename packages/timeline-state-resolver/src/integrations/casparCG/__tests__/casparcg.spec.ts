@@ -15,7 +15,8 @@ import {
 } from 'timeline-state-resolver-types'
 import { MockTime } from '../../../__tests__/mockTime.js'
 import { addConnections, getMockCall } from '../../../__tests__/lib.js'
-import { Commands } from 'casparcg-connection'
+import { BasicCasparCGAPI, Commands } from 'casparcg-connection'
+import { casparFormatToFps } from '../index.js'
 
 // usage logCalls(commandReceiver0)
 // function logCalls (fcn) {
@@ -29,6 +30,7 @@ describe('CasparCG', () => {
 	const mockTime = new MockTime()
 	beforeEach(() => {
 		mockTime.init()
+		;(BasicCasparCGAPI as any).setInfoEntries()
 	})
 	test('CasparCG: Play AMB for 60s', async () => {
 		const commandReceiver0: any = jest.fn(async () => {
@@ -176,7 +178,7 @@ describe('CasparCG', () => {
 			channel: 2,
 			layer: 42,
 			clip: 'AMB',
-			seek: 25 * 10,
+			seek: 50 * 10,
 		})
 	})
 	test('CasparCG: Play AMB for 60s in 50fps', async () => {
@@ -261,6 +263,93 @@ describe('CasparCG', () => {
 		expect(getMockCall(commandReceiver0, 1, 1).command).toBe(Commands.Clear)
 		expect(getMockCall(commandReceiver0, 1, 1).params.channel).toEqual(2)
 		expect(getMockCall(commandReceiver0, 1, 1).params.layer).toEqual(42)
+	})
+
+	test.each([
+		['24fps', 24],
+		['23.98fps', 24000 / 1001],
+		['30fps', 30],
+		['29.97fps', 30000 / 1001],
+		['60fps', 60],
+		['59.94fps', 60000 / 1001],
+	])('CasparCG: MEDIA seek uses configured %s', async (_label, fps) => {
+		const commandReceiver0: any = jest.fn(async () => {
+			return Promise.resolve()
+		})
+		const myLayerMapping0: Mapping<SomeMappingCasparCG> = {
+			device: DeviceType.CASPARCG,
+			deviceId: 'myCCG',
+			options: {
+				mappingType: MappingCasparCGType.Layer,
+				channel: 2,
+				layer: 42,
+			},
+		}
+		const myLayerMapping: Mappings = {
+			myLayer0: myLayerMapping0,
+		}
+
+		const myConductor = new Conductor({
+			multiThreadedResolver: false,
+			getCurrentTime: mockTime.getCurrentTime,
+		})
+		await myConductor.init()
+		await addConnections(myConductor.connectionManager, {
+			myCCG: {
+				type: DeviceType.CASPARCG,
+				options: {
+					host: '127.0.0.1',
+					fps,
+				},
+				commandReceiver: commandReceiver0,
+				skipVirginCheck: true,
+			},
+		})
+		await mockTime.advanceTimeToTicks(10100)
+
+		commandReceiver0.mockClear()
+
+		myConductor.setTimelineAndMappings(
+			[
+				{
+					id: 'obj0',
+					enable: {
+						start: mockTime.getCurrentTime() - 60000, // 60 seconds ago
+						duration: 120000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.MEDIA,
+						file: 'AMB',
+					},
+				},
+			],
+			myLayerMapping
+		)
+
+		await mockTime.advanceTimeToTicks(10200)
+
+		expect(commandReceiver0).toHaveBeenCalledTimes(1)
+		expect(getMockCall(commandReceiver0, 0, 1).params.seek).toEqual(Math.floor(fps * 60))
+		await myConductor.destroy()
+	})
+
+	test('CasparCG: derives fractional fps from configured channel format', () => {
+		expect(casparFormatToFps('1080p3000')).toEqual(30)
+		expect(casparFormatToFps('1080p6000')).toEqual(60)
+		expect(casparFormatToFps('1080p2997')).toEqual(30000 / 1001)
+		expect(casparFormatToFps('1080i5994')).toEqual(60000 / 1001)
+		expect(casparFormatToFps('1080p2398')).toEqual(24000 / 1001)
+		expect(casparFormatToFps('pal')).toBeUndefined()
+	})
+
+	test.each([
+		['1080i5000', 50],
+		['1080i2997', 30000 / 1001],
+		['1080i5994', 60000 / 1001],
+	])('CasparCG: interlaced format %s maps to field-rate fps', (format, expectedFps) => {
+		expect(casparFormatToFps(format)).toEqual(expectedFps)
 	})
 
 	test('CasparCG: Play IP input for 60s', async () => {
@@ -682,7 +771,7 @@ describe('CasparCG', () => {
 				channel: 1,
 				layer: 42,
 			},
-			framesDelay: 2,
+			framesDelay: 4,
 			mode: 'BACKGROUND',
 		})
 
@@ -697,7 +786,7 @@ describe('CasparCG', () => {
 				channel: 2,
 				layer: 23,
 			},
-			framesDelay: 8,
+			framesDelay: 16,
 		})
 
 		// advance time to end of clip:
@@ -795,12 +884,12 @@ describe('CasparCG', () => {
 
 			transition: {
 				transitionType: 'MIX',
-				duration: 25,
+				duration: 50,
 				tween: 'LINEAR',
 				direction: 'LEFT',
 			},
 			clip: 'AMB',
-			seek: 25,
+			seek: 50,
 			loop: false,
 		})
 
@@ -812,7 +901,7 @@ describe('CasparCG', () => {
 			layer: 42,
 			transition: {
 				transitionType: 'MIX',
-				duration: 25,
+				duration: 50,
 				tween: 'LINEAR',
 				direction: 'RIGHT',
 			},
@@ -1686,9 +1775,9 @@ describe('CasparCG', () => {
 				transitionType: 'CUT',
 				direction: 'RIGHT',
 				tween: 'LINEAR',
-				duration: 56,
+				duration: 112,
 			},
-			seek: 252, // 10100 / 40
+			seek: 505, // 10100 / 20 for interlaced field-rate semantics
 		})
 
 		// apply command to internal ccg-state
@@ -1808,9 +1897,9 @@ describe('CasparCG', () => {
 			layer: 42,
 
 			clip: 'AMB',
-			inPoint: 12,
-			length: 125,
-			seek: 25 + 12, // started 1 second ago
+			inPoint: 24,
+			length: 250,
+			seek: 50 + 24, // started 1 second ago
 		})
 		commandReceiver0.mockClear()
 
@@ -1935,6 +2024,178 @@ describe('CasparCG', () => {
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).command).toBe(Commands.CgStop)
 	})
+	test('CasparCG: Multiple mappings for 1 layer does not deep-merge array template data', async () => {
+		const commandReceiver0: any = jest.fn(async () => {
+			return Promise.resolve()
+		})
+		const myLayerMapping0: Mapping<SomeMappingCasparCG> = {
+			device: DeviceType.CASPARCG,
+			deviceId: 'myCCG',
+			options: {
+				mappingType: MappingCasparCGType.Layer,
+				channel: 2,
+				layer: 42,
+			},
+		}
+		const myLayerMapping: Mappings = {
+			myLayer0: myLayerMapping0,
+			myLayer1: myLayerMapping0,
+		}
+
+		const myConductor = new Conductor({
+			multiThreadedResolver: false,
+			getCurrentTime: mockTime.getCurrentTime,
+		})
+		await myConductor.init()
+		await addConnections(myConductor.connectionManager, {
+			myCCG: {
+				type: DeviceType.CASPARCG,
+				options: {
+					host: '127.0.0.1',
+				},
+				commandReceiver: commandReceiver0,
+				skipVirginCheck: true,
+			},
+		})
+		await mockTime.advanceTimeToTicks(10100)
+		commandReceiver0.mockClear()
+
+		myConductor.setTimelineAndMappings(
+			[
+				{
+					id: 'obj0',
+					enable: {
+						start: mockTime.getCurrentTime() - 1000,
+						duration: 2000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.TEMPLATE,
+
+						name: 'LT',
+						templateType: 'html',
+						data: ['first'],
+						useStopCommand: true,
+					},
+				},
+				{
+					id: 'obj1',
+					enable: {
+						start: mockTime.getCurrentTime() - 1000,
+						duration: 2000,
+					},
+					layer: 'myLayer1',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.TEMPLATE,
+
+						name: 'LT',
+						templateType: 'html',
+						data: ['second'],
+						useStopCommand: true,
+					},
+				},
+			],
+			myLayerMapping
+		)
+
+		await mockTime.advanceTimeToTicks(10200)
+
+		// arrays are not deep-merged; the last-applied layer's data wins as-is
+		expect(commandReceiver0).toHaveBeenCalledTimes(1)
+		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
+			channel: 2,
+			layer: 42,
+			data: ['second'],
+		})
+	})
+	test('CasparCG: Multiple mappings for 1 layer does not merge into null template data', async () => {
+		const commandReceiver0: any = jest.fn(async () => {
+			return Promise.resolve()
+		})
+		const myLayerMapping0: Mapping<SomeMappingCasparCG> = {
+			device: DeviceType.CASPARCG,
+			deviceId: 'myCCG',
+			options: {
+				mappingType: MappingCasparCGType.Layer,
+				channel: 2,
+				layer: 42,
+			},
+		}
+		const myLayerMapping: Mappings = {
+			myLayer0: myLayerMapping0,
+			myLayer1: myLayerMapping0,
+		}
+
+		const myConductor = new Conductor({
+			multiThreadedResolver: false,
+			getCurrentTime: mockTime.getCurrentTime,
+		})
+		await myConductor.init()
+		await addConnections(myConductor.connectionManager, {
+			myCCG: {
+				type: DeviceType.CASPARCG,
+				options: {
+					host: '127.0.0.1',
+				},
+				commandReceiver: commandReceiver0,
+				skipVirginCheck: true,
+			},
+		})
+		await mockTime.advanceTimeToTicks(10100)
+		commandReceiver0.mockClear()
+
+		myConductor.setTimelineAndMappings(
+			[
+				{
+					id: 'obj0',
+					enable: {
+						start: mockTime.getCurrentTime() - 1000,
+						duration: 2000,
+					},
+					layer: 'myLayer0',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.TEMPLATE,
+
+						name: 'LT',
+						templateType: 'html',
+						data: null,
+						useStopCommand: true,
+					},
+				},
+				{
+					id: 'obj1',
+					enable: {
+						start: mockTime.getCurrentTime() - 1000,
+						duration: 2000,
+					},
+					layer: 'myLayer1',
+					content: {
+						deviceType: DeviceType.CASPARCG,
+						type: TimelineContentTypeCasparCg.TEMPLATE,
+
+						name: 'LT',
+						templateType: 'html',
+						data: { foo: 'bar' },
+						useStopCommand: true,
+					},
+				},
+			],
+			myLayerMapping
+		)
+
+		await mockTime.advanceTimeToTicks(10200)
+
+		// null is not a mergeable object; the last-applied layer's data wins as-is
+		expect(commandReceiver0).toHaveBeenCalledTimes(1)
+		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
+			channel: 2,
+			layer: 42,
+			data: { foo: 'bar' },
+		})
+	})
 	test('CasparCG: MEDIA lookahead sums seek and lookaheadOffset', async () => {
 		const commandReceiver0: any = jest.fn(async () => Promise.resolve())
 
@@ -1966,7 +2227,8 @@ describe('CasparCG', () => {
 			},
 		})
 
-		await mockTime.advanceTimeToTicks(10000)
+		// let the connection's fps-detection handshake complete before applying the timeline
+		await mockTime.advanceTimeToTicks(10050)
 		commandReceiver0.mockClear()
 
 		myConductor.setTimelineAndMappings(
@@ -1993,13 +2255,13 @@ describe('CasparCG', () => {
 			myLayerMapping
 		)
 
-		await mockTime.advanceTimeToTicks(10100)
+		await mockTime.advanceTimeToTicks(10150)
 
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
 			channel: 2,
 			layer: 42,
-			seek: 3, // (80 + 40) * 25 / 1000
+			seek: 6, // (80 + 40) * 50 / 1000 (interlaced field-rate)
 		})
 	})
 	test('CasparCG: MEDIA lookahead with seek and no lookaheadOffset', async () => {
@@ -2033,7 +2295,8 @@ describe('CasparCG', () => {
 			},
 		})
 
-		await mockTime.advanceTimeToTicks(10000)
+		// let the connection's fps-detection handshake complete before applying the timeline
+		await mockTime.advanceTimeToTicks(10050)
 		commandReceiver0.mockClear()
 
 		myConductor.setTimelineAndMappings(
@@ -2059,13 +2322,13 @@ describe('CasparCG', () => {
 			myLayerMapping
 		)
 
-		await mockTime.advanceTimeToTicks(10100)
+		await mockTime.advanceTimeToTicks(10150)
 
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
 			channel: 2,
 			layer: 42,
-			seek: 2, // 80 * 25 / 1000
+			seek: 5, // 100 * 50 / 1000 (interlaced field-rate)
 		})
 	})
 	test('CasparCG: MEDIA lookahead with lookaheadOffset and no seek', async () => {
@@ -2099,7 +2362,8 @@ describe('CasparCG', () => {
 			},
 		})
 
-		await mockTime.advanceTimeToTicks(10000)
+		// let the connection's fps-detection handshake complete before applying the timeline
+		await mockTime.advanceTimeToTicks(10050)
 		commandReceiver0.mockClear()
 
 		myConductor.setTimelineAndMappings(
@@ -2125,13 +2389,13 @@ describe('CasparCG', () => {
 			myLayerMapping
 		)
 
-		await mockTime.advanceTimeToTicks(10100)
+		await mockTime.advanceTimeToTicks(10150)
 
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({
 			channel: 2,
 			layer: 42,
-			seek: 1, // 40 * 25 / 1000
+			seek: 2, // 40 * 50 / 1000 (interlaced field-rate)
 		})
 	})
 	test('CasparCG: MEDIA lookahead with no lookaheadOffset and no seek', async () => {
@@ -2165,7 +2429,8 @@ describe('CasparCG', () => {
 			},
 		})
 
-		await mockTime.advanceTimeToTicks(10000)
+		// let the connection's fps-detection handshake complete before applying the timeline
+		await mockTime.advanceTimeToTicks(10050)
 		commandReceiver0.mockClear()
 
 		myConductor.setTimelineAndMappings(
@@ -2190,7 +2455,7 @@ describe('CasparCG', () => {
 			myLayerMapping
 		)
 
-		await mockTime.advanceTimeToTicks(10100)
+		await mockTime.advanceTimeToTicks(10150)
 
 		expect(commandReceiver0).toHaveBeenCalledTimes(1)
 		expect(getMockCall(commandReceiver0, 0, 1).params).toMatchObject({

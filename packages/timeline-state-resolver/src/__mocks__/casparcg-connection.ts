@@ -12,6 +12,31 @@ const mockDo = jest.fn()
 
 const instances: Array<BasicCasparCGAPI> = []
 
+const defaultInfoEntries = [
+	{
+		channel: 1,
+		format: 'pal',
+		channelRate: 50,
+		frameRate: 25,
+		interlaced: true,
+	},
+	{
+		channel: 2,
+		format: 'pal',
+		channelRate: 50,
+		frameRate: 25,
+		interlaced: true,
+	},
+	{
+		channel: 3,
+		format: 'pal',
+		channelRate: 50,
+		frameRate: 25,
+		interlaced: true,
+	},
+]
+let infoEntries = defaultInfoEntries
+
 export const Commands = orgCommands
 export const Enum = orgEnum
 export type AMCPCommand = orgAMCPCommand
@@ -44,29 +69,7 @@ export class BasicCasparCGAPI extends EventEmitter {
 					reqId: 'mockedReq',
 					command: command.command,
 					responseCode: 200, // note: we may need to mock some actual responses
-					data: [
-						{
-							channel: 1,
-							format: 'pal',
-							channelRate: 50,
-							frameRate: 25,
-							interlaced: true,
-						},
-						{
-							channel: 2,
-							format: 'pal',
-							channelRate: 50,
-							frameRate: 25,
-							interlaced: true,
-						},
-						{
-							channel: 3,
-							format: 'pal',
-							channelRate: 50,
-							frameRate: 25,
-							interlaced: true,
-						},
-					],
+					data: infoEntries,
 
 					type: ResponseTypes.OK,
 					message: 'The command has been executed.',
@@ -93,5 +96,9 @@ export class BasicCasparCGAPI extends EventEmitter {
 	}
 	static get instances() {
 		return instances
+	}
+
+	static setInfoEntries(newInfoEntries?: typeof defaultInfoEntries) {
+		infoEntries = newInfoEntries || defaultInfoEntries
 	}
 }
