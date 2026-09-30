@@ -137,7 +137,10 @@ exports[`index imports 1`] = `
   "WebSocketClientStatusCode",
   "WebSocketClientStatusMessages",
   "WebsocketClientActions",
+  "dereferenceEnvironmentStringIfNeeded",
+  "dereferenceEnvironmentStringsIfIndicated",
   "fillStateFromDatastore",
+  "fillStateFromEnvironment",
   "interpolateTemplateString",
   "interpolateTemplateStringIfNeeded",
 ]
