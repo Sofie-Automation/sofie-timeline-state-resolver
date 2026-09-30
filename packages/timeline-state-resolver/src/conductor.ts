@@ -798,12 +798,17 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 					])
 
 					for (const s of toBeFilled) {
-						const filledState = fillStateFromEnvironment(fillStateFromDatastore(s.state, this._datastore))
+						try {
+							const filledState = fillStateFromEnvironment(fillStateFromDatastore(s.state, this._datastore))
 
-						this.connectionManager
-							.getConnection(deviceId)
-							?.device.handleState(filledState, s.mappings)
-							.catch((e) => this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack))
+							this.connectionManager
+								.getConnection(deviceId)
+								?.device.handleState(filledState, s.mappings)
+								.catch((e) => this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack))
+						} catch (e) {
+							// handle environment-resolution errors
+							this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack)
+						}
 					}
 				}
 			})
@@ -822,12 +827,17 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 				])
 
 				for (const s of toBeFilled) {
-					const filledState = fillStateFromEnvironment(fillStateFromDatastore(s.state, this._datastore))
+					try {
+						const filledState = fillStateFromEnvironment(fillStateFromDatastore(s.state, this._datastore))
 
-					this.connectionManager
-						.getConnection(deviceId)
-						?.device.handleState(filledState, s.mappings)
-						.catch((e) => this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack))
+						this.connectionManager
+							.getConnection(deviceId)
+							?.device.handleState(filledState, s.mappings)
+							.catch((e) => this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack))
+					} catch (e) {
+						// handle environment-resolution errors
+						this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack)
+					}
 				}
 			})
 			.catch((e) => {

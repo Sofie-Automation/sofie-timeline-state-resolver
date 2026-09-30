@@ -16,7 +16,7 @@ export function dereferenceEnvironmentStringIfNeeded(value: string): string {
 
 	const environmentVariable = match[1]
 	const environmentValue = process.env[environmentVariable]
-	if (!environmentValue) throw new Error(`Environment variable '${environmentVariable}' not found`)
+	if (environmentValue === undefined) throw new Error(`Environment variable '${environmentVariable}' not found`)
 
 	return environmentValue
 }
