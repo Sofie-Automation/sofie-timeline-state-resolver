@@ -24,6 +24,7 @@ import {
 	TimelineDatastoreReferencesContent,
 	TimelineDatastoreReferences,
 	fillStateFromDatastore,
+	fillStateFromEnvironment,
 	TSRTimelineObjProps,
 } from 'timeline-state-resolver-types'
 
@@ -763,8 +764,8 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 			},
 		])
 
-		// replace references to the timeline datastore with the actual values
-		const filledState = fillStateFromDatastore(state, this._datastore)
+		// replace datastore and environment references with their actual values
+		const filledState = fillStateFromEnvironment(fillStateFromDatastore(state, this._datastore))
 
 		// send the filled state to the device handler
 		return this.connectionManager.getConnection(deviceId)?.device.handleState(filledState, mappings)
@@ -797,12 +798,17 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 					])
 
 					for (const s of toBeFilled) {
-						const filledState = fillStateFromDatastore(s.state, this._datastore)
+						try {
+							const filledState = fillStateFromEnvironment(fillStateFromDatastore(s.state, this._datastore))
 
-						this.connectionManager
-							.getConnection(deviceId)
-							?.device.handleState(filledState, s.mappings)
-							.catch((e) => this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack))
+							this.connectionManager
+								.getConnection(deviceId)
+								?.device.handleState(filledState, s.mappings)
+								.catch((e) => this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack))
+						} catch (e) {
+							// handle environment-resolution errors
+							this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack)
+						}
 					}
 				}
 			})
@@ -821,12 +827,17 @@ export class Conductor extends EventEmitter<ConductorEvents> {
 				])
 
 				for (const s of toBeFilled) {
-					const filledState = fillStateFromDatastore(s.state, this._datastore)
+					try {
+						const filledState = fillStateFromEnvironment(fillStateFromDatastore(s.state, this._datastore))
 
-					this.connectionManager
-						.getConnection(deviceId)
-						?.device.handleState(filledState, s.mappings)
-						.catch((e) => this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack))
+						this.connectionManager
+							.getConnection(deviceId)
+							?.device.handleState(filledState, s.mappings)
+							.catch((e) => this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack))
+					} catch (e) {
+						// handle environment-resolution errors
+						this.emit('error', 'resolveTimeline' + e + '\nStack: ' + (e as Error).stack)
+					}
 				}
 			})
 			.catch((e) => {
