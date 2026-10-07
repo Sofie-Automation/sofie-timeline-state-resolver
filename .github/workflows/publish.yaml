@@ -197,7 +197,7 @@ jobs:
 
           NPM_TAG=nightly
           if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            PACKAGE_NAME=$(node -p "require('./shared-lib/package.json').name")
+            PACKAGE_NAME=$(node -p "require('./packages/timeline-state-resolver/package.json').name")
             PUBLISHED_VERSION=$(yarn npm info --json $PACKAGE_NAME | jq -c '.version' -r)
             THIS_VERSION=$(node -p "require('./lerna.json').version")
             NPM_TAG=$(node ./scripts/determine-npm-tag.js "$PUBLISHED_VERSION" "$THIS_VERSION")
