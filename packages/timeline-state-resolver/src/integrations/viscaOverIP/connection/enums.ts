@@ -2,6 +2,7 @@ export enum CommandType {
 	ViscaCommand = 0x0100,
 	ViscaInquiry = 0x0110,
 	ViscaReply = 0x0111,
+	ViscaDeviceSetting = 0x0120,
 	ControlCommand = 0x0200,
 	ControlReply = 0x0201,
 }
