@@ -1,14 +1,9 @@
-import * as _ from 'underscore'
-import type { BaseDeviceAPI, CommandWithContext } from 'timeline-state-resolver-api'
+import type { CommandWithContext } from 'timeline-state-resolver-api'
 import { Measurement } from './measure.js'
-import { StateHandlerContext } from './stateHandler.js'
+import { ExecutionStrategy } from './executor/ExecutionStrategy.js'
 
-export class CommandExecutor<DeviceState, Command extends CommandWithContext<any, any>> {
-	constructor(
-		private logger: StateHandlerContext['logger'],
-		private mode: 'salvo' | 'sequential',
-		private sendCommand: BaseDeviceAPI<DeviceState, void, Command>['sendCommand']
-	) {}
+export class CommandExecutor<Command extends CommandWithContext<unknown, unknown>> {
+	constructor(private strategy: ExecutionStrategy<Command>) {}
 
 	async executeCommands(commands: Command[], measurement?: Measurement): Promise<void> {
 		if (commands.length === 0) return
@@ -18,77 +13,6 @@ export class CommandExecutor<DeviceState, Command extends CommandWithContext<any
 
 		const totalTime = commands[0].preliminary ?? 0
 
-		if (this.mode === 'salvo') {
-			return this._executeCommandsSalvo(totalTime, commands, measurement)
-		} else {
-			return this._executeCommandsSequential(totalTime, commands, measurement)
-		}
+		return this.strategy.execute(totalTime, commands, measurement)
 	}
-
-	private async _executeCommandsSalvo(
-		totalTime: number,
-		commands: Command[],
-		measurement?: Measurement
-	): Promise<void> {
-		const start = Date.now() // note - would be better to use monotonic time here but BigInt's are annoying
-
-		await Promise.allSettled(
-			commands.map(async (command) => {
-				const targetTime = start + totalTime - (command.preliminary ?? 0)
-
-				const timeToWait = targetTime - Date.now()
-				if (timeToWait > 0) {
-					await sleep(timeToWait)
-				}
-
-				measurement?.executeCommand(command)
-				try {
-					await this.sendCommand(command)
-				} catch (e) {
-					this.logger.error('Error while executing command', e as any)
-				} finally {
-					measurement?.finishedCommandExecution(command)
-				}
-			})
-		)
-	}
-
-	private async _executeCommandsSequential(
-		totalTime: number,
-		commands: Command[],
-		measurement?: Measurement
-	): Promise<void> {
-		const start = Date.now() // note - would be better to use monotonic time here but BigInt's are annoying
-
-		const commandQueues = _.groupBy(commands || [], (command) => command.queueId ?? '$$default')
-
-		await Promise.allSettled(
-			Object.values<Command[]>(commandQueues).map(async (commandsInQueue): Promise<void> => {
-				try {
-					for (const command of commandsInQueue) {
-						const targetTime = start + totalTime - (command.preliminary ?? 0)
-
-						const timeToWait = targetTime - Date.now()
-						if (timeToWait > 0) {
-							await sleep(timeToWait)
-						}
-
-						measurement?.executeCommand(command)
-						try {
-							await this.sendCommand(command)
-						} catch (e) {
-							this.logger.error('Error while executing command', e as any)
-						} finally {
-							measurement?.finishedCommandExecution(command)
-						}
-					}
-				} catch (_e) {
-					this.logger.error('CommandExecutor', new Error('Error in _executeCommandsSequential'))
-				}
-			})
-		)
-	}
-}
-async function sleep(duration: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, duration))
 }
