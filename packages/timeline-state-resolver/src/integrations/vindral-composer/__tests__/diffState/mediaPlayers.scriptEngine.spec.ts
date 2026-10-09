@@ -54,7 +54,6 @@ describe('diffState — media players — script engine flow', () => {
 				inTime: 0,
 				outTime: 5000,
 				playbackEndCondition: VindralComposerPlaybackEndBehaviour.Loop,
-				autoPlayOnMediaChange: true,
 			}),
 		])
 	})
@@ -71,7 +70,6 @@ describe('diffState — media players — script engine flow', () => {
 				name: 'ClipPlayer1',
 				sourceUrl: 'clip.mp4',
 				playing: false,
-				autoPlayOnMediaChange: true,
 			}),
 		])
 	})
@@ -89,7 +87,6 @@ describe('diffState — media players — script engine flow', () => {
 				sourceUrl: 'clip.mp4',
 				playing: true,
 				inTime: 4000,
-				autoPlayOnMediaChange: true,
 			}),
 		])
 	})
@@ -106,7 +103,6 @@ describe('diffState — media players — script engine flow', () => {
 				name: 'ClipPlayer1',
 				sourceUrl: 'clip-b.mp4',
 				playing: true,
-				autoPlayOnMediaChange: true,
 			}),
 		])
 	})
@@ -123,7 +119,6 @@ describe('diffState — media players — script engine flow', () => {
 				name: 'ClipPlayer1',
 				playing: false,
 				inTime: 2000,
-				autoPlayOnMediaChange: true,
 			}),
 		])
 	})
@@ -139,7 +134,6 @@ describe('diffState — media players — script engine flow', () => {
 			scriptCommand({
 				name: 'ClipPlayer1',
 				playing: true,
-				autoPlayOnMediaChange: true,
 			}),
 		])
 	})
@@ -157,7 +151,6 @@ describe('diffState — media players — script engine flow', () => {
 				name: 'ClipPlayer1',
 				sourceUrl: '',
 				playing: true,
-				autoPlayOnMediaChange: true,
 			}),
 		])
 	})

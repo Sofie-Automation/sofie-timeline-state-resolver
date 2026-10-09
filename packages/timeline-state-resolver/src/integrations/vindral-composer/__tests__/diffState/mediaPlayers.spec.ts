@@ -26,7 +26,7 @@ describe('diffState — media players', () => {
 
 	const SELECTOR = { target: 'player-guid', targetName: 'ClipPlayer1' }
 
-	test('new media player with playing=true → properties then play-video-file-input (atomic load+play)', () => {
+	test('new media player with playing=true → properties then play', () => {
 		// in/out points are not applied by the direct flow (only the script engine can seek), so
 		// no InTime/OutTime commands are emitted here.
 		const commands = diffVindralStates(
@@ -53,20 +53,16 @@ describe('diffState — media players', () => {
 					value: VindralComposerPlaybackEndBehaviour.Loop,
 				},
 			},
+
 			{
 				timelineObjId: 'obj0',
 				context: expect.any(String),
-				command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
-			},
-			{
-				timelineObjId: 'obj0',
-				context: expect.any(String),
-				command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip.mp4' },
+				command: { type: 'update-media', selector: SELECTOR, sourceUri: 'clip.mp4', inTime: 0, playing: true },
 			},
 		])
 	})
 
-	test('new media player with playing=false → setProperty SourceUrl then PauseCommand', () => {
+	test('new media player with playing=false → update-media with playing=false', () => {
 		compareStates(
 			MAPPINGS,
 			{ ...EMPTY_STATE, stateTime: 0 },
@@ -75,34 +71,25 @@ describe('diffState — media players', () => {
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
-					command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
-				},
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip.mp4' },
-				},
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'invoke-command', selector: SELECTOR, command: 'PauseCommand' },
+					command: {
+						type: 'update-media',
+						selector: SELECTOR,
+						sourceUri: 'clip.mp4',
+						inTime: undefined,
+						playing: false,
+					},
 				},
 			]
 		)
 	})
 
-	test('new media player without playing → defaults to playing → properties then play-video-file-input', () => {
-		// playing defaults to true when omitted, so the clip loads and plays via the atomic endpoint.
+	test('new media player without playing → defaults to playing', () => {
+		// Playing defaults to true when omitted.
 		compareStates(MAPPINGS, { ...EMPTY_STATE, stateTime: 0 }, makeState([mpObj({ sourceUrl: 'clip.mp4' })]), [
 			{
 				timelineObjId: 'obj0',
 				context: expect.any(String),
-				command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
-			},
-			{
-				timelineObjId: 'obj0',
-				context: expect.any(String),
-				command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip.mp4' },
+				command: { type: 'update-media', selector: SELECTOR, sourceUri: 'clip.mp4', inTime: undefined, playing: true },
 			},
 		])
 	})
@@ -112,10 +99,7 @@ describe('diffState — media players', () => {
 		compareStates(MAPPINGS, s, s, [])
 	})
 
-	test('playing clip with inTime → inTime ignored (no InTime command)', () => {
-		// The direct flow cannot seek, so a specified inTime produces no InTime command and the clip
-		// loads + plays from its natural start. The unsupported request is surfaced separately via
-		// getDisabledScriptEngineWarnings (covered in scriptEngineWarnings.spec.ts).
+	test('playing clip with inTime → inTime is carried by update-media', () => {
 		const commands = diffVindralStates(
 			{ ...EMPTY_STATE, stateTime: 3000 },
 			makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 3000),
@@ -125,17 +109,12 @@ describe('diffState — media players', () => {
 			{
 				timelineObjId: 'obj0',
 				context: expect.any(String),
-				command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
-			},
-			{
-				timelineObjId: 'obj0',
-				context: expect.any(String),
-				command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip.mp4' },
+				command: { type: 'update-media', selector: SELECTOR, sourceUri: 'clip.mp4', inTime: 1000, playing: true },
 			},
 		])
 	})
 
-	test('paused clip with inTime → inTime ignored (no InTime command)', () => {
+	test('paused clip with inTime → update-media carries inTime and paused state', () => {
 		const commands = diffVindralStates(
 			{ ...EMPTY_STATE, stateTime: 3000 },
 			makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: false })], 3000),
@@ -145,17 +124,7 @@ describe('diffState — media players', () => {
 			{
 				timelineObjId: 'obj0',
 				context: expect.any(String),
-				command: { type: 'set-property', selector: SELECTOR, property: 'AutoPlayOnMediaChange', value: true },
-			},
-			{
-				timelineObjId: 'obj0',
-				context: expect.any(String),
-				command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip.mp4' },
-			},
-			{
-				timelineObjId: 'obj0',
-				context: expect.any(String),
-				command: { type: 'invoke-command', selector: SELECTOR, command: 'PauseCommand' },
+				command: { type: 'update-media', selector: SELECTOR, sourceUri: 'clip.mp4', inTime: 1000, playing: false },
 			},
 		])
 	})
@@ -168,7 +137,7 @@ describe('diffState — media players', () => {
 		compareStates(MAPPINGS, old, next, [])
 	})
 
-	test('sourceUrl changed with playing=true → play-video-file-input (no separate PlayCommand)', () => {
+	test('sourceUrl changed with playing=true → update-media starts playback', () => {
 		compareStates(
 			MAPPINGS,
 			makeState([mpObj({ sourceUrl: 'clip-a.mp4', playing: true })]),
@@ -177,13 +146,19 @@ describe('diffState — media players', () => {
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
-					command: { type: 'play-video-file-input', inputName: 'ClipPlayer1', sourceUri: 'clip-b.mp4' },
+					command: {
+						type: 'update-media',
+						selector: SELECTOR,
+						sourceUri: 'clip-b.mp4',
+						inTime: undefined,
+						playing: true,
+					},
 				},
 			]
 		)
 	})
 
-	test('sourceUrl changed with playing=false → setProperty SourceUrl only', () => {
+	test('sourceUrl changed with playing=false → update-media remains paused', () => {
 		compareStates(
 			MAPPINGS,
 			makeState([mpObj({ sourceUrl: 'clip-a.mp4', playing: false })]),
@@ -192,13 +167,19 @@ describe('diffState — media players', () => {
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
-					command: { type: 'set-property', selector: SELECTOR, property: 'SourceUrl', value: 'clip-b.mp4' },
+					command: {
+						type: 'update-media',
+						selector: SELECTOR,
+						sourceUri: 'clip-b.mp4',
+						inTime: undefined,
+						playing: false,
+					},
 				},
 			]
 		)
 	})
 
-	test('sourceUrl set to empty string → StopCommand then clear-source', () => {
+	test('sourceUrl set to empty string → update-media clears source', () => {
 		compareStates(
 			MAPPINGS,
 			makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]),
@@ -207,18 +188,13 @@ describe('diffState — media players', () => {
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
-					command: { type: 'invoke-command', selector: SELECTOR, command: 'StopCommand' },
-				},
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'clear-source', target: 'player-guid' },
+					command: { type: 'update-media', selector: SELECTOR, sourceUri: '', inTime: undefined, playing: false },
 				},
 			]
 		)
 	})
 
-	test('sourceUrl set to empty string → StopCommand then clear-source, no extra PauseCommand', () => {
+	test('sourceUrl set to empty string while paused → update-media clears source', () => {
 		compareStates(
 			MAPPINGS,
 			makeState([mpObj({ sourceUrl: 'clip.mp4', playing: true })]),
@@ -227,12 +203,7 @@ describe('diffState — media players', () => {
 				{
 					timelineObjId: 'obj0',
 					context: expect.any(String),
-					command: { type: 'invoke-command', selector: SELECTOR, command: 'StopCommand' },
-				},
-				{
-					timelineObjId: 'obj0',
-					context: expect.any(String),
-					command: { type: 'clear-source', target: 'player-guid' },
+					command: { type: 'update-media', selector: SELECTOR, sourceUri: '', inTime: undefined, playing: false },
 				},
 			]
 		)

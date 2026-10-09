@@ -62,8 +62,8 @@ export interface VindralUpdateMediaCommand {
 	type: 'update-media'
 	selector: VindralObjectSelector
 	sourceUri: string
-	playing: boolean | undefined
-	inTime: number | undefined
+	playing?: boolean
+	inTime?: number
 }
 
 export async function sendCommand(connection: VindralComposer, command: VindralCommandAny): Promise<void> {
