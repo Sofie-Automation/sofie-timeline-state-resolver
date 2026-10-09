@@ -28,6 +28,7 @@ import { DeviceType, TSRDeviceTypesMap } from './generated/index.js'
 import { TimelineContentUDPSendAny } from './integrations/udpSend/timeline.js'
 import { TimelineContentOgrafAny } from './integrations/ograf/timeline.js'
 import { TimelineContentVindralComposerAny } from './integrations/vindral-composer/timeline.js'
+import type { TimelineEnvironmentVariableReferencesContent } from './environmentString.js'
 
 export * from './integrations/abstract/timeline.js'
 export * from './integrations/atem/timeline.js'
@@ -62,6 +63,7 @@ export * from './actions.js'
 export * from './datastore.js'
 export * from './device.js'
 export * from './deviceStatusDetail.js'
+export * from './environmentString.js'
 export * from './events.js'
 export * from './expectedPlayoutItems.js'
 export * from './mapping.js'
@@ -100,7 +102,12 @@ export type TSRTimeline = TSRTimelineObj<TSRTimelineContent>[]
 
 export interface TSRTimelineObj<TContent extends { deviceType: DeviceTypeExt }>
 	extends
-		Omit<Timeline.TimelineObject<TContent & TimelineDatastoreReferencesContent>, 'children'>,
+		Omit<
+			Timeline.TimelineObject<
+				TContent & TimelineDatastoreReferencesContent & TimelineEnvironmentVariableReferencesContent
+			>,
+			'children'
+		>,
 		TSRTimelineObjProps {
 	children?: TSRTimelineObj<TSRTimelineContent>[]
 }
