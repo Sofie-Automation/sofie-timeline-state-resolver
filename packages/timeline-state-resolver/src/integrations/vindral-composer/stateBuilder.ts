@@ -34,7 +34,6 @@ export interface VindralComposerDeviceState {
 
 export interface VindralMediaPlayerState {
 	selector: { target?: string; targetName?: string }
-	autoPlayOnMediaChange?: boolean
 	sourceUrl?: string
 	/** The in-point to seek to when the clip goes live (lookahead offset already folded in). */
 	inTime?: number
@@ -117,7 +116,12 @@ export function buildVindralState(
 
 	for (const obj of [...timelineState.objects].sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))) {
 		const layerId = String(obj.layer)
-		const mapping = mappings[layerId]
+		let mapping = mappings[layerId]
+
+		if (!mapping && obj.isLookahead && obj.lookaheadForLayer) {
+			mapping = mappings[obj.lookaheadForLayer]
+		}
+
 		if (!mapping || mapping.device !== DeviceType.VINDRAL_COMPOSER) continue
 		const content = obj.content
 		if (content.deviceType !== DeviceType.VINDRAL_COMPOSER) continue
@@ -254,21 +258,23 @@ function applyMediaPlayer(
 ): void {
 	if (content.type !== TimelineContentTypeVindralComposer.MEDIA_PLAYER) return
 
-	// When inserted by lookahead, seek the preloaded clip forward so it is at the
-	// position it should be once it goes live (lookaheadOffset = amount already played).
-	const inTimeWithLookaheadOffset =
-		content.mediaPlayer.inTime !== undefined && obj.lookaheadOffset !== undefined
-			? content.mediaPlayer.inTime + obj.lookaheadOffset
-			: (content.mediaPlayer.inTime ?? obj.lookaheadOffset)
+	let playing = content.mediaPlayer.playing ?? true
+	let inTime = content.mediaPlayer.inTime
+	if (obj.isLookahead) {
+		playing = false
+
+		// When inserted by lookahead, seek the preloaded clip forward so it is at the
+		// position it should be once it goes live (lookaheadOffset = amount already played).
+		inTime = (content.mediaPlayer.inTime ?? 0) + (obj.lookaheadOffset ?? 0)
+	}
 
 	state.mediaPlayers[layerId] = {
 		selector: { target: options.mediaPlayerId, targetName: options.mediaPlayerName },
-		autoPlayOnMediaChange: options.autoPlayOnMediaChange,
 		sourceUrl: content.mediaPlayer.sourceUrl,
-		inTime: !obj.isLookahead ? content.mediaPlayer.inTime : inTimeWithLookaheadOffset,
+		inTime,
 		outTime: content.mediaPlayer.outTime,
 		endBehaviour: content.mediaPlayer.endBehaviour,
-		playing: content.mediaPlayer.playing ?? true,
+		playing,
 		instanceStartTime: obj.instance.start,
 		timelineObjIds: [obj.id],
 	} satisfies Complete<VindralMediaPlayerState>

@@ -45,7 +45,6 @@ export const MAPPINGS: Mappings<SomeMappingVindralComposer> = {
 			mappingType: MappingVindralComposerType.MediaPlayer,
 			mediaPlayerId: 'player-guid',
 			mediaPlayerName: 'ClipPlayer1',
-			autoPlayOnMediaChange: true,
 		},
 	},
 	htmlLayer: {

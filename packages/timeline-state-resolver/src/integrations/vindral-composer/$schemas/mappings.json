@@ -26,7 +26,10 @@
 					"default": "Background"
 				}
 			},
-			"required": ["scene", "layer"],
+			"required": [
+				"scene",
+				"layer"
+			],
 			"additionalProperties": false
 		},
 		"script-engine": {
@@ -40,7 +43,9 @@
 					"default": ""
 				}
 			},
-			"required": ["functionName"],
+			"required": [
+				"functionName"
+			],
 			"additionalProperties": false
 		},
 		"switcher": {
@@ -75,14 +80,12 @@
 					"ui:title": "Media Player Name",
 					"ui:description": "The name of the Video File Input as configured in Composer. Required alongside Media Player ID — see its description.",
 					"ui:summaryTitle": "Player Name"
-				},
-				"autoPlayOnMediaChange": {
-					"type": "boolean",
-					"ui:title": "Auto Play On Media Change",
-					"ui:description": "Sets the AutoPlayOnMediaChange property on the device. When true, the player automatically begins playing when the source changes."
 				}
 			},
-			"required": ["mediaPlayerId", "mediaPlayerName"],
+			"required": [
+				"mediaPlayerId",
+				"mediaPlayerName"
+			],
 			"additionalProperties": false
 		},
 		"html": {
@@ -145,7 +148,9 @@
 					"ui:summaryTitle": "Overlay"
 				}
 			},
-			"required": ["overlay"],
+			"required": [
+				"overlay"
+			],
 			"additionalProperties": false
 		}
 	}

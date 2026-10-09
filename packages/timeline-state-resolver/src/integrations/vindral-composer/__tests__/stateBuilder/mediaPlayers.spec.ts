@@ -35,7 +35,6 @@ describe('stateBuilder — media players', () => {
 		)
 		expect(result.mediaPlayers['mpLayer']).toStrictEqual({
 			selector: { target: 'player-guid', targetName: 'ClipPlayer1' },
-			autoPlayOnMediaChange: true,
 			sourceUrl: 'http://cdn.example.com/clip.mp4',
 			inTime: 1000,
 			outTime: 5000,
@@ -69,7 +68,6 @@ describe('stateBuilder — media players', () => {
 		)
 		expect(result.mediaPlayers['mpLayer']).toMatchObject({
 			selector: { target: 'player-guid', targetName: 'ClipPlayer1' },
-			autoPlayOnMediaChange: true,
 			sourceUrl: 'http://cdn.example.com/other.mp4',
 			// playing defaults to true when omitted
 			playing: true,

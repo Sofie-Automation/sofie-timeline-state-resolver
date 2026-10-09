@@ -54,7 +54,6 @@ export interface MappingVindralComposerSwitcher {
 export interface MappingVindralComposerMediaPlayer {
 	mediaPlayerId: string
 	mediaPlayerName: string
-	autoPlayOnMediaChange?: boolean
 	mappingType: MappingVindralComposerType.MediaPlayer
 }
 

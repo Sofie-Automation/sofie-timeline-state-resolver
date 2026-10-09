@@ -1,7 +1,7 @@
 import type { SomeMappingVindralComposer, Mappings } from 'timeline-state-resolver-types'
 import { isEqual } from 'underscore'
 import { buildVindralState, type VindralComposerDeviceState, type VindralMediaPlayerState } from './stateBuilder.js'
-import type { VindralCommandWithContext, VindralObjectSelector } from './commands.js'
+import type { VindralCommandAny, VindralCommandWithContext, VindralObjectSelector } from './commands.js'
 import { TSR_SCRIPT_FN_MEDIA_PLAYER } from './constants.js'
 
 export function diffVindralStates(
@@ -21,7 +21,12 @@ export function diffVindralStates(
 			commands.push({
 				timelineObjId: next.timelineObjIds.join(' & '),
 				context: `connector layer=${key}`,
-				command: { type: 'trigger-connector', name: next.name, value: next.value, params: next.params },
+				command: {
+					type: 'trigger-connector',
+					name: next.name,
+					value: next.value,
+					params: next.params,
+				} satisfies VindralCommandAny,
 			})
 		}
 	}
@@ -34,7 +39,12 @@ export function diffVindralStates(
 			commands.push({
 				timelineObjId: next.timelineObjIds.join(' & '),
 				context: `scene-layer key=${key}`,
-				command: { type: 'set-layer-source', scene: next.scene, layer: next.layer, source: next.source },
+				command: {
+					type: 'set-layer-source',
+					scene: next.scene,
+					layer: next.layer,
+					source: next.source,
+				} satisfies VindralCommandAny,
 			})
 		}
 	}
@@ -47,7 +57,11 @@ export function diffVindralStates(
 			commands.push({
 				timelineObjId: next.timelineObjIds.join(' & '),
 				context: `script-engine function=${key}`,
-				command: { type: 'execute-script', functionName: next.functionName, parameter: next.parameter },
+				command: {
+					type: 'execute-script',
+					functionName: next.functionName,
+					parameter: next.parameter,
+				} satisfies VindralCommandAny,
 			})
 		}
 	}
@@ -213,7 +227,6 @@ function diffMediaPlayers(
 				inTimeAnchorChanged ||
 				old?.outTime !== next.outTime ||
 				old?.endBehaviour !== next.endBehaviour ||
-				old?.autoPlayOnMediaChange !== next.autoPlayOnMediaChange ||
 				old?.playing !== next.playing
 
 			if (changed) {
@@ -227,11 +240,15 @@ function diffMediaPlayers(
 				if (scriptInTime !== undefined && (sourceChanged || inTimeAnchorChanged)) parameter.inTime = scriptInTime
 				if (next.outTime !== undefined) parameter.outTime = next.outTime
 				if (next.endBehaviour !== undefined) parameter.playbackEndCondition = next.endBehaviour
-				if (next.autoPlayOnMediaChange !== undefined) parameter.autoPlayOnMediaChange = next.autoPlayOnMediaChange
+
 				commands.push({
 					timelineObjId,
 					context,
-					command: { type: 'execute-script', functionName: TSR_SCRIPT_FN_MEDIA_PLAYER, parameter },
+					command: {
+						type: 'execute-script',
+						functionName: TSR_SCRIPT_FN_MEDIA_PLAYER,
+						parameter,
+					} satisfies VindralCommandAny,
 				})
 			}
 			continue
@@ -244,47 +261,63 @@ function diffMediaPlayers(
 		if (next.endBehaviour !== undefined && old?.endBehaviour !== next.endBehaviour) {
 			commands.push(createSetPropertyCommand(next, context, next.selector, 'PlayBackEndCondition', next.endBehaviour))
 		}
-		if (next.autoPlayOnMediaChange !== undefined && old?.autoPlayOnMediaChange !== next.autoPlayOnMediaChange) {
-			commands.push(
-				createSetPropertyCommand(next, context, next.selector, 'AutoPlayOnMediaChange', next.autoPlayOnMediaChange)
-			)
-		}
+
 		const nextSourceUrl = next.sourceUrl
 		const sourceChanged = nextSourceUrl !== undefined && old?.sourceUrl !== nextSourceUrl
-		let usedPlayVideoFileInput = false
 
 		if (sourceChanged) {
 			if (nextSourceUrl === '') {
-				// Empty string signals "stop and clear the player". Issue StopCommand first to
-				// halt playback, then clear-source to fully clear the player via the dedicated
-				// HTTP endpoint. The playing field is intentionally ignored here.
-				commands.push(createInvokeCommand(next, context, next.selector, 'StopCommand'))
-				if (next.selector.target) {
-					commands.push({
-						timelineObjId,
-						context,
-						command: { type: 'clear-source', target: next.selector.target },
+				// Clear the media player
+				commands.push(
+					createUpdateMediaCommand(next, context, next.selector, '', {
+						playing: false,
+						inTime: next.inTime,
 					})
-				}
-			} else if (next.playing === true) {
-				// Both mediaPlayerId and mediaPlayerName are required on the mapping, so
-				// targetName is always available here. Use the atomic load-and-play endpoint
-				// so the device handles clip-load timing before starting playback.
-				commands.push({
-					timelineObjId,
-					context,
-					command: { type: 'play-video-file-input', inputName: next.selector.targetName!, sourceUri: nextSourceUrl },
-				})
-				usedPlayVideoFileInput = true
+				)
 			} else {
-				commands.push(createSetPropertyCommand(next, context, next.selector, 'SourceUrl', nextSourceUrl))
+				commands.push(
+					createUpdateMediaCommand(next, context, next.selector, nextSourceUrl, {
+						playing: next.playing ?? false,
+						inTime: next.inTime,
+					})
+				)
 			}
-		}
+		} else {
+			// Source hasn't changed (or is undefined - meaning unchanged)
 
-		// Skip play/pause when StopCommand or play-video-file-input already covers it.
-		if (!usedPlayVideoFileInput && (nextSourceUrl !== '' || !sourceChanged)) {
-			if (next.playing !== undefined && old?.playing !== next.playing) {
-				commands.push(createInvokeCommand(next, context, next.selector, next.playing ? 'PlayCommand' : 'PauseCommand'))
+			if (nextSourceUrl !== '') {
+				if (
+					// playing state has changed:
+					next.playing !== undefined &&
+					old?.playing !== next.playing
+				) {
+					if (next.inTime !== undefined && nextSourceUrl !== undefined) {
+						// Update play & inTime:
+						commands.push(
+							createUpdateMediaCommand(next, context, next.selector, nextSourceUrl, {
+								playing: next.playing,
+								inTime: next.inTime,
+							})
+						)
+					} else {
+						commands.push(
+							createInvokeCommand(next, context, next.selector, next.playing ? 'PlayCommand' : 'PauseCommand')
+						)
+					}
+				} else if (
+					// only inTime has changed:
+					next.inTime !== undefined &&
+					old?.inTime !== next.inTime &&
+					nextSourceUrl !== undefined &&
+					!next.playing // we only change the seek when not playing
+				) {
+					commands.push(
+						createUpdateMediaCommand(next, context, next.selector, nextSourceUrl, {
+							playing: false,
+							inTime: next.inTime,
+						})
+					)
+				}
 			}
 		}
 	}
@@ -379,25 +412,6 @@ function allKeys<V>(a: Record<string, V | undefined>, b: Record<string, V | unde
 	return [...new Set([...Object.keys(a), ...Object.keys(b)])]
 }
 
-// Single source of truth for features that only the Script Engine flow can honour. When
-// useScriptEngine is disabled but a desired state still asks for them, the device cannot apply them.
-// The device drives BOTH its per-change log lines and its persistent status warning from this, so a
-// new Script Engine feature only needs adding here. It reflects the current desired state (not
-// deltas), so the status stays accurate while the offending object persists.
-export function getDisabledScriptEngineWarnings(state: VindralComposerDeviceState): string[] {
-	const warnings: string[] = []
-	for (const key of Object.keys(state.mediaPlayers)) {
-		const mp = state.mediaPlayers[key]
-		if (!mp) continue
-		if (mp.inTime !== undefined || mp.outTime !== undefined) {
-			warnings.push(
-				`media-player layer=${key}: in/out points require the Script Engine flow (useScriptEngine), which is disabled`
-			)
-		}
-	}
-	return warnings
-}
-
 function createSetPropertyCommand<T extends { timelineObjIds: string[] }>(
 	state: T,
 	context: string,
@@ -413,7 +427,29 @@ function createSetPropertyCommand<T extends { timelineObjIds: string[] }>(
 			selector,
 			property,
 			value,
-		},
+		} satisfies VindralCommandAny,
+	}
+}
+function createUpdateMediaCommand<T extends { timelineObjIds: string[] }>(
+	state: T,
+	context: string,
+	selector: VindralObjectSelector,
+	sourceUri: string,
+	props: {
+		playing: boolean | undefined
+		inTime: number | undefined
+	}
+): VindralCommandWithContext {
+	return {
+		timelineObjId: state.timelineObjIds.join(' & '),
+		context,
+		command: {
+			type: 'update-media',
+			selector: selector,
+			sourceUri: sourceUri,
+			playing: props.playing,
+			inTime: props.inTime,
+		} satisfies VindralCommandAny,
 	}
 }
 
@@ -430,6 +466,6 @@ function createInvokeCommand<T extends { timelineObjIds: string[] }>(
 			type: 'invoke-command',
 			selector,
 			command,
-		},
+		} satisfies VindralCommandAny,
 	}
 }

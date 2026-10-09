@@ -13,9 +13,8 @@ import {
 	type VindralComposerOptions as VindralComposerConnectionOptions,
 } from 'vindral-composer-connection'
 import type { Device, DeviceContextAPI, DeviceTimelineState } from 'timeline-state-resolver-api'
-import { isEqual } from 'underscore'
 import { buildVindralState, type VindralComposerDeviceState } from './stateBuilder.js'
-import { diffVindralStates, getDisabledScriptEngineWarnings } from './diffState.js'
+import { diffVindralStates } from './diffState.js'
 import { type VindralCommandWithContext, sendCommand } from './commands.js'
 import { getActions } from './actions.js'
 
@@ -102,20 +101,6 @@ export class VindralComposerDevice implements Device<
 		_time: number
 	): VindralCommandWithContext[] {
 		if (!this._connected) return []
-
-		// Single source of truth for "features the disabled Script Engine flow cannot honour":
-		// getDisabledScriptEngineWarnings. Drive both the per-change log lines (gated on newly-appeared
-		// warnings to avoid spam) and the persistent device status from it, so a future Script Engine
-		// feature only has to be added to the detector to get both behaviours.
-		const warnings = this._useScriptEngine ? [] : getDisabledScriptEngineWarnings(newState)
-		const previousWarnings = this._useScriptEngine || !oldState ? [] : getDisabledScriptEngineWarnings(oldState)
-		for (const warning of warnings) {
-			if (!previousWarnings.includes(warning)) this.context.logger.warning(warning)
-		}
-		if (!isEqual(warnings, this._stateWarnings)) {
-			this._stateWarnings = warnings
-			this._connectionChanged()
-		}
 
 		return diffVindralStates(oldState, newState, mappings, this._useScriptEngine)
 	}
