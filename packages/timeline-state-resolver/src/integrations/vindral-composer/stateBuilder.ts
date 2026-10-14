@@ -12,7 +12,7 @@ import {
 	type MappingVindralComposerMediaPlayer,
 	type MappingVindralComposerAudioSource,
 	type MappingVindralComposerHtml,
-	VindralComposerPlaybackEndBehaviour,
+	TimelineContentVindralComposerMediaPlayer,
 } from 'timeline-state-resolver-types'
 import { assertNever, Complete } from '../../lib.js'
 import type { DeviceTimelineState } from 'timeline-state-resolver-api'
@@ -32,16 +32,15 @@ export interface VindralComposerDeviceState {
 	audioSources: Record<string, VindralAudioSourceState | undefined>
 }
 
-export interface VindralMediaPlayerState {
+export interface VindralMediaPlayerState extends Pick<
+	TimelineContentVindralComposerMediaPlayer['mediaPlayer'],
+	'inTime' | 'outTime' | 'endBehaviour' | 'playing' | 'sourceUrl'
+> {
 	selector: { target?: string; targetName?: string }
-	sourceUrl?: string
-	/** The in-point to seek to when the clip goes live (lookahead offset already folded in). */
-	inTime?: number
-	outTime?: number
-	endBehaviour?: VindralComposerPlaybackEndBehaviour
-	playing?: boolean
+
 	/** Wall-clock start of the timeline object instance. Used to catch a playing clip up to "now". */
 	instanceStartTime: number
+
 	timelineObjIds: string[]
 }
 
@@ -114,7 +113,13 @@ export function buildVindralState(
 		audioSources: {},
 	}
 
-	for (const obj of [...timelineState.objects].sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))) {
+	for (const obj of [...timelineState.objects].sort((a, b) => {
+		// lookaheads have lowest prio:
+		if (a.isLookahead && !b.isLookahead) return 1
+		if (!a.isLookahead && b.isLookahead) return -1
+
+		return (a.priority ?? 0) - (b.priority ?? 0)
+	})) {
 		const layerId = String(obj.layer)
 		let mapping = mappings[layerId]
 
@@ -275,7 +280,8 @@ function applyMediaPlayer(
 		outTime: content.mediaPlayer.outTime,
 		endBehaviour: content.mediaPlayer.endBehaviour,
 		playing,
-		instanceStartTime: obj.instance.start,
+		instanceStartTime: obj.instance.originalStart || obj.instance.start,
+
 		timelineObjIds: [obj.id],
 	} satisfies Complete<VindralMediaPlayerState>
 }

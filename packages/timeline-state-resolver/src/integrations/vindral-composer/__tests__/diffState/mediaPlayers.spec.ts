@@ -5,16 +5,20 @@ import {
 } from 'timeline-state-resolver-types'
 import { EMPTY_STATE, MAPPINGS } from '../lib.js'
 import { compareStates, diffVindralStates, makeState } from './helpers.js'
+import { VindralComposerDeviceState } from '../../stateBuilder.js'
 
 describe('diffState — media players', () => {
-	const mpObj = (mediaPlayer: {
-		sourceUrl?: string
-		inTime?: number
-		outTime?: number
-		endBehaviour?: VindralComposerPlaybackEndBehaviour
-		playing?: boolean
-	}) => ({
-		enable: { start: 0 },
+	const mpObj = (
+		mediaPlayer: {
+			sourceUrl?: string
+			inTime?: number
+			outTime?: number
+			endBehaviour?: VindralComposerPlaybackEndBehaviour
+			playing?: boolean
+		},
+		startTime: number = 0
+	) => ({
+		enable: { start: startTime },
 		id: 'obj0',
 		layer: 'mpLayer',
 		content: {
@@ -102,7 +106,7 @@ describe('diffState — media players', () => {
 	test('playing clip with inTime → inTime is carried by update-media', () => {
 		const commands = diffVindralStates(
 			{ ...EMPTY_STATE, stateTime: 3000 },
-			makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true })], 3000),
+			makeState([mpObj({ sourceUrl: 'clip.mp4', inTime: 1000, playing: true }, 3000)], 3000),
 			MAPPINGS
 		)
 		expect(commands).toStrictEqual([
@@ -112,6 +116,77 @@ describe('diffState — media players', () => {
 				command: { type: 'update-media', selector: SELECTOR, sourceUri: 'clip.mp4', inTime: 1000, playing: true },
 			},
 		])
+	})
+	test('playing clip with inTime late', () => {
+		/** point in time the clip started playing */
+		let clipStartTime = 5000
+		/** Current time */
+		let stateTime = 10000
+
+		let prevState: VindralComposerDeviceState = { ...EMPTY_STATE, stateTime: 0 }
+		let currentState: VindralComposerDeviceState
+
+		{
+			// We start playing a clip "now":
+			clipStartTime = 100000
+			stateTime = 100000
+			currentState = makeState(
+				[mpObj({ sourceUrl: 'clip.mp4', inTime: 60000, playing: true }, clipStartTime)],
+				stateTime
+			)
+			const commands = diffVindralStates(prevState, currentState, MAPPINGS)
+			expect(commands).toHaveLength(1)
+			expect(commands[0].command).toEqual({
+				type: 'update-media',
+				selector: SELECTOR,
+				sourceUri: 'clip.mp4',
+				inTime: 60000,
+				playing: true,
+			})
+			prevState = currentState
+		}
+		{
+			// Some time has passed since the clip started playing:
+			stateTime = 200000
+			currentState = makeState(
+				[mpObj({ sourceUrl: 'clip.mp4', inTime: 60000, playing: true }, clipStartTime)],
+				stateTime
+			)
+			const commands = diffVindralStates(prevState, currentState, MAPPINGS)
+			expect(commands).toHaveLength(0) // only time has passed, so the the media player is still in sync with us.
+			prevState = currentState
+		}
+		{
+			// Recover from an empty previous state:
+			prevState = { ...EMPTY_STATE, stateTime: 0 }
+			const commands = diffVindralStates(prevState, currentState, MAPPINGS)
+			expect(commands).toHaveLength(1)
+			expect(commands[0].command).toEqual({
+				type: 'update-media',
+				selector: SELECTOR,
+				sourceUri: 'clip.mp4',
+				inTime: 160000,
+				playing: true,
+			})
+			prevState = currentState
+		}
+		{
+			// The inTime is modified:
+			currentState = makeState(
+				[mpObj({ sourceUrl: 'clip.mp4', inTime: 70000, playing: true }, clipStartTime)],
+				stateTime
+			)
+			const commands = diffVindralStates(prevState, currentState, MAPPINGS)
+			expect(commands).toHaveLength(1)
+			expect(commands[0].command).toEqual({
+				type: 'update-media',
+				selector: SELECTOR,
+				sourceUri: 'clip.mp4',
+				inTime: 170000,
+				playing: true,
+			})
+			prevState = currentState
+		}
 	})
 
 	test('paused clip with inTime → update-media carries inTime and paused state', () => {

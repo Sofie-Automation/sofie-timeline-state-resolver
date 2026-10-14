@@ -108,9 +108,9 @@ export interface TimelineContentVindralComposerMediaPlayer {
 	deviceType: DeviceType.VINDRAL_COMPOSER
 	type: TimelineContentTypeVindralComposer.MEDIA_PLAYER
 	mediaPlayer: {
-		/** URL or path of the media file to load into the player */
+		/** URL or path of the media file to load into the player. undefined indicates no change. empty string means clear player. */
 		sourceUrl?: string
-		/** In-point within the media, in milliseconds */
+		/** In-point within the media, in milliseconds. If undefined, indicates that seeking of the media is not relevant/important. */
 		inTime?: number
 		/** Out-point within the media, in milliseconds */
 		outTime?: number

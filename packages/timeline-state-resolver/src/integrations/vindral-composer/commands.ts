@@ -117,12 +117,8 @@ export async function sendCommand(connection: VindralComposer, command: VindralC
 					trackedMediaPlayerState = 'Stopped'
 					return true
 				} catch (err) {
-					if (`${err}`.includes('state of the target does not permit it')) {
-						// ignore
-						return false
-					} else {
-						throw err
-					}
+					if (`${err}`.includes('state of the target does not permit it')) return false
+					else throw err
 				}
 			}
 			let trackedMediaLoaded: boolean | undefined = undefined
@@ -137,11 +133,7 @@ export async function sendCommand(connection: VindralComposer, command: VindralC
 
 					await doWaitForMessage(connection, command.selector, 'Source cleared', undefined, 1000)
 				} catch (err) {
-					if (`${err}`.includes('state of the target does not permit it')) {
-						// ignore
-					} else {
-						throw err
-					}
+					if (!`${err}`.includes('state of the target does not permit it')) throw err
 				}
 			}
 
@@ -188,7 +180,7 @@ export async function sendCommand(connection: VindralComposer, command: VindralC
 				await ensureStopped() // Ensure it is stopped, to be able to change the media url
 
 				// await ensureCleared() // Clear before loading new, so we can set inTime before loading a new
-				if (command.inTime !== undefined) {
+				if (command.inTime !== undefined && command.inTime > 0) {
 					await connection.setProperty({ ...command.selector, property: 'InTimeMs', value: command.inTime })
 				}
 

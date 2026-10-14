@@ -1,8 +1,12 @@
 import type { SomeMappingVindralComposer, Mappings } from 'timeline-state-resolver-types'
 import { isEqual } from 'underscore'
-import { buildVindralState, type VindralComposerDeviceState, type VindralMediaPlayerState } from './stateBuilder.js'
+import { buildVindralState, type VindralComposerDeviceState } from './stateBuilder.js'
 import type { VindralCommandAny, VindralCommandWithContext, VindralObjectSelector } from './commands.js'
 import { TSR_SCRIPT_FN_MEDIA_PLAYER } from './constants.js'
+import { resolveSeekTime } from './lib.js'
+
+/** Don't change a seek time if the difference is less than this  */
+const SEEK_FUDGE_TIME = 500
 
 export function diffVindralStates(
 	oldState: VindralComposerDeviceState | undefined,
@@ -211,6 +215,13 @@ function diffMediaPlayers(
 		const timelineObjId = next.timelineObjIds.join(' & ')
 		const context = `media-player layer=${key}`
 
+		const stateTime = newState.stateTime
+
+		/** The next seek time, from the viewpoint (in time) of the current state time */
+		const nextResolvedSeekTime = resolveSeekTime(stateTime, next.instanceStartTime, next)
+		/** The old seek time, from the viewpoint (in time) of the current state time */
+		const oldResolvedSeekTime = old ? resolveSeekTime(stateTime, old.instanceStartTime, old) : undefined
+
 		// Script-engine flow: route the entire media-player control surface through a single
 		// tsrMediaPlayer call carrying the full desired play-state. The helper reconciles it
 		// atomically inside Composer — (re)loading the clip, deferring the seek/play until it has
@@ -219,12 +230,13 @@ function diffMediaPlayers(
 		if (useScriptEngine) {
 			// Gate emission on the in-point anchor (raw inTime + instance start), not the computed
 			// value, so a continuing clip is not re-sent on every re-resolve.
-			const scriptInTime = resolveInTime(next, newState.stateTime)
-			const inTimeAnchorChanged = old?.inTime !== next.inTime || old?.instanceStartTime !== next.instanceStartTime
+
+			const seekTimeChanged = nextResolvedSeekTime !== undefined && oldResolvedSeekTime !== nextResolvedSeekTime
+
 			const sourceChanged = next.sourceUrl !== undefined && old?.sourceUrl !== next.sourceUrl
 			const changed =
 				sourceChanged ||
-				inTimeAnchorChanged ||
+				seekTimeChanged ||
 				old?.outTime !== next.outTime ||
 				old?.endBehaviour !== next.endBehaviour ||
 				old?.playing !== next.playing
@@ -237,7 +249,8 @@ function diffMediaPlayers(
 				if (next.playing !== undefined) parameter.playing = next.playing
 				// Send the resolved in-point (catch-up + lookahead folded in) on a (re)load or when the
 				// anchor moved.
-				if (scriptInTime !== undefined && (sourceChanged || inTimeAnchorChanged)) parameter.inTime = scriptInTime
+				if (nextResolvedSeekTime !== undefined && (sourceChanged || seekTimeChanged))
+					parameter.inTime = nextResolvedSeekTime
 				if (next.outTime !== undefined) parameter.outTime = next.outTime
 				if (next.endBehaviour !== undefined) parameter.playbackEndCondition = next.endBehaviour
 
@@ -264,76 +277,66 @@ function diffMediaPlayers(
 
 		const nextSourceUrl = next.sourceUrl
 		const sourceChanged = nextSourceUrl !== undefined && old?.sourceUrl !== nextSourceUrl
+		const seekTimeChanged =
+			nextResolvedSeekTime === undefined
+				? false // we don't care
+				: oldResolvedSeekTime === undefined
+					? true // it must have changed
+					: Math.abs(oldResolvedSeekTime - nextResolvedSeekTime) > SEEK_FUDGE_TIME
 
 		if (sourceChanged) {
-			if (nextSourceUrl === '') {
-				// Clear the media player
+			let isPlaying = next.playing ?? false
+			if (nextSourceUrl === '') isPlaying = false
+
+			commands.push(
+				createUpdateMediaCommand(next, context, next.selector, nextSourceUrl, {
+					playing: isPlaying,
+					inTime: nextResolvedSeekTime,
+				})
+			)
+			continue
+		}
+		// Source hasn't changed (or is undefined - meaning unchanged)
+		if (nextSourceUrl === '') continue // If nothing is playing, we don't have to do anything
+
+		if (
+			// playing state has changed:
+			next.playing !== undefined &&
+			old?.playing !== next.playing
+		) {
+			if (next.inTime !== undefined && nextSourceUrl !== undefined) {
+				// Update play & inTime:
 				commands.push(
-					createUpdateMediaCommand(next, context, next.selector, '', {
-						playing: false,
-						inTime: next.inTime,
+					createUpdateMediaCommand(next, context, next.selector, nextSourceUrl, {
+						playing: next.playing,
+						inTime: nextResolvedSeekTime,
 					})
 				)
 			} else {
-				commands.push(
-					createUpdateMediaCommand(next, context, next.selector, nextSourceUrl, {
-						playing: next.playing ?? false,
-						inTime: next.inTime,
-					})
-				)
+				// only do a pause/play:
+				commands.push(createInvokeCommand(next, context, next.selector, next.playing ? 'PlayCommand' : 'PauseCommand'))
 			}
-		} else {
-			// Source hasn't changed (or is undefined - meaning unchanged)
 
-			if (nextSourceUrl !== '') {
-				if (
-					// playing state has changed:
-					next.playing !== undefined &&
-					old?.playing !== next.playing
-				) {
-					if (next.inTime !== undefined && nextSourceUrl !== undefined) {
-						// Update play & inTime:
-						commands.push(
-							createUpdateMediaCommand(next, context, next.selector, nextSourceUrl, {
-								playing: next.playing,
-								inTime: next.inTime,
-							})
-						)
-					} else {
-						commands.push(
-							createInvokeCommand(next, context, next.selector, next.playing ? 'PlayCommand' : 'PauseCommand')
-						)
-					}
-				} else if (
-					// only inTime has changed:
-					next.inTime !== undefined &&
-					old?.inTime !== next.inTime &&
-					nextSourceUrl !== undefined &&
-					!next.playing // we only change the seek when not playing
-				) {
-					commands.push(
-						createUpdateMediaCommand(next, context, next.selector, nextSourceUrl, {
-							playing: false,
-							inTime: next.inTime,
-						})
-					)
-				}
-			}
+			continue
+		}
+
+		if (
+			// only the seek-time has changed:
+			seekTimeChanged &&
+			nextSourceUrl !== undefined
+			//  &&!next.playing // we only change the seek when not playing
+		) {
+			commands.push(
+				createUpdateMediaCommand(next, context, next.selector, nextSourceUrl, {
+					playing: next.playing,
+					inTime: nextResolvedSeekTime,
+				})
+			)
+			continue
 		}
 	}
 
 	return commands
-}
-
-// Resolve the InTime to send for a media player. A clip that is playing is advanced by how
-// long its timeline object has already been live (now - instance start), so a clip started
-// partway through resumes from the correct position rather than restarting at its in-point.
-// A paused/loading clip sits at its raw in-point. Lookahead objects have a future start, so
-// the elapsed term is 0 and only the (already folded in) lookahead offset applies.
-function resolveInTime(mp: VindralMediaPlayerState, stateTime: number): number | undefined {
-	const elapsed = mp.playing === true ? Math.max(0, stateTime - mp.instanceStartTime) : 0
-	if (mp.inTime === undefined) return elapsed > 0 ? elapsed : undefined
-	return mp.inTime + elapsed
 }
 
 // HTML renderers: set property before invoking commands so the URL is applied before
