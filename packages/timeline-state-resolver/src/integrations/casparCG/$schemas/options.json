@@ -42,8 +42,17 @@
 			"ui:title": "Media retry interval",
 			"ui:description": "Time between retries for media that could not be loaded on first try. Set to -1 to disable.",
 			"default": 0
+		},
+		"checkChannels": {
+			"type": "boolean",
+			"description": "When set, will check the status of each CasparCG channel.",
+			"ui:title": "Check Channels",
+			"ui:description": "When set, will check the status of each CasparCG channel.",
+			"default": false
 		}
 	},
-	"required": ["host"],
+	"required": [
+		"host"
+	],
 	"additionalProperties": false
 }
