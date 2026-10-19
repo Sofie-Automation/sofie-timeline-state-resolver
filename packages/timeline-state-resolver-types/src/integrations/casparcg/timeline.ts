@@ -7,6 +7,7 @@ import { DeviceStatusDetail } from '../../deviceStatusDetail.js'
  */
 export const CasparCGStatusCode = {
 	DISCONNECTED: 'DEVICE_CASPARCG_DISCONNECTED',
+	CHANNELS: 'DEVICE_CASPARCG_CHANNELS',
 	QUEUE_OVERFLOW: 'DEVICE_CASPARCG_QUEUE_OVERFLOW',
 } as const
 
@@ -27,6 +28,12 @@ export interface CasparCGStatusContextMap {
 		host: string
 		port: number
 	}
+	[CasparCGStatusCode.CHANNELS]: {
+		deviceName: string
+		host: string
+		port: number
+		channels: number[]
+	}
 }
 
 export type CasparCGStatusDetail<T extends CasparCGStatusCode = CasparCGStatusCode> = DeviceStatusDetail<
@@ -40,6 +47,7 @@ export type CasparCGStatusDetail<T extends CasparCGStatusCode = CasparCGStatusCo
  */
 export const CasparCGStatusMessages: Record<CasparCGStatusCode, string> = {
 	[CasparCGStatusCode.DISCONNECTED]: 'CasparCG disconnected',
+	[CasparCGStatusCode.CHANNELS]: 'Issue with a CasparCG channel',
 	[CasparCGStatusCode.QUEUE_OVERFLOW]: 'CasparCG command queue overflow',
 }
 

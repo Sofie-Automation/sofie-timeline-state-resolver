@@ -56,6 +56,7 @@ import {
 	Transition as StateTransition,
 	Mixer,
 	InternalState,
+	Channel,
 } from 'casparcg-state'
 import { DoOnTime, SendMode } from '../../devices/doOnTime.js'
 import got from 'got'
@@ -69,6 +70,7 @@ import { convertScaleModeToConnection } from './util.js'
 const debug = Debug('timeline-state-resolver:casparcg')
 
 const MEDIA_RETRY_INTERVAL = 10 * 1000 // default time in ms between checking whether a file needs to be retried loading
+const CHECK_CHANNELS_INTERVAL = 60 * 1000 // time in ms between checking the status of each CasparCG channel
 
 export interface DeviceOptionsCasparCGInternal extends DeviceOptionsCasparCG {
 	commandReceiver?: CommandReceiver
@@ -95,6 +97,9 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 	private _retryTime: number | null = null
 	private _currentState: InternalState = { channels: {} }
 
+	private _checkChannelsStatusTimeout: NodeJS.Timeout | undefined
+	private _checkChannelsBadChannels: number[] = []
+
 	constructor(deviceId: string, deviceOptions: DeviceOptionsCasparCGInternal, getCurrentTime: () => Promise<number>) {
 		super(deviceId, deviceOptions, getCurrentTime)
 
@@ -110,6 +115,8 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 			this._deviceOptions
 		)
 		this.handleDoOnTime(this._doOnTime, 'CasparCG')
+
+		this._triggerCheckChannelsStatus()
 	}
 
 	/**
@@ -226,6 +233,8 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 		this._doOnTime.dispose()
 		this._transitionHandler.terminate()
 		clearTimeout(this._retryTimeout)
+		clearTimeout(this._checkChannelsStatusTimeout)
+
 		return new Promise<void>((resolve) => {
 			if (!this._ccg) {
 				resolve()
@@ -722,7 +731,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				result: ActionExecutionResultCode.Error,
 				code: CasparCGActionErrorCode.RESTART_LAUNCHER_HOST_NOT_SET,
 				context: {},
-				response: t('Cannot restart CasparCG: launcher host not configured'),
+				response: t('Cannot restart CasparCG: optinos.launcherHost not configured'),
 			}
 		}
 		if (!this.initOptions.launcherPort) {
@@ -730,7 +739,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				result: ActionExecutionResultCode.Error,
 				code: CasparCGActionErrorCode.RESTART_LAUNCHER_PORT_NOT_SET,
 				context: {},
-				response: t('Cannot restart CasparCG: launcher port not configured'),
+				response: t('Cannot restart CasparCG: opions.launcherPort not configured'),
 			}
 		}
 		if (!this.initOptions.launcherProcess) {
@@ -738,7 +747,7 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 				result: ActionExecutionResultCode.Error,
 				code: CasparCGActionErrorCode.RESTART_LAUNCHER_PROCESS_NOT_SET,
 				context: {},
-				response: t('Cannot restart CasparCG: launcher process not configured'),
+				response: t('Cannot restart CasparCG: options.launcherProcess not configured'),
 			}
 		}
 
@@ -835,6 +844,20 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 						deviceName: this.deviceName,
 						host,
 						port,
+					})
+				)
+			}
+		}
+
+		if (statusCode === StatusCode.GOOD) {
+			if (this._checkChannelsBadChannels.length > 0) {
+				statusCode = StatusCode.BAD
+				statusDetails.push(
+					createCasparCGStatusDetail(CasparCGStatusCode.CHANNELS, {
+						deviceName: this.deviceName,
+						host,
+						port,
+						channels: this._checkChannelsBadChannels,
 					})
 				)
 			}
@@ -1073,5 +1096,96 @@ export class CasparCGDevice extends DeviceWithState<State, CasparCGDeviceTypes, 
 
 	private getVideMode(info: InfoEntry): string {
 		return `${info.format}${info.interlaced ? 'I' : 'P'}${info.frameRate}`
+	}
+
+	private _triggerCheckChannelsStatus() {
+		if (this._checkChannelsStatusTimeout !== undefined) {
+			clearTimeout(this._checkChannelsStatusTimeout)
+		}
+
+		this._checkChannelsStatusTimeout = setTimeout(() => {
+			this._triggerCheckChannelsStatus() // run again later
+
+			Promise.resolve()
+				.then(async () => {
+					if (!this.initOptions?.checkChannels) return // Only run this if checkChannels is true
+
+					if (!this._ccg) return
+					if (!this._ccg.connected) return
+
+					const state = this.getState()
+
+					if (state === null) return
+
+					const channels = new Set<number>()
+					for (const channel of Object.values<Channel>(state.state.channels)) {
+						channels.add(channel.channelNo)
+					}
+
+					const channelErrors: number[] = []
+
+					for (const channelNo of channels.values()) {
+						const ccg = this._ccg
+
+						await new Promise<void>((resolve, reject) => {
+							let timedOut = false
+							const timer = setTimeout(() => {
+								// Timeout
+								timedOut = true
+								reject(new Error(`Timeout while checking channel ${channelNo}`))
+							}, CHECK_CHANNELS_INTERVAL * 0.5)
+
+							ccg
+								.executeCommand({
+									command: Commands.InfoChannel,
+									params: {
+										channel: channelNo,
+									},
+								})
+								.then((result) => {
+									if (timedOut) return
+
+									if (result.request) {
+										result.request
+											.then((req) => {
+												if (timedOut) return
+
+												clearTimeout(timer)
+												if (req.data) {
+													// At this point we consider the channel to be OK
+
+													resolve()
+												} else {
+													reject(new Error(`ChannelInfo returned no data for channel ${channelNo}`))
+												}
+											})
+											.catch((e: Error) => {
+												clearTimeout(timer)
+												reject(e)
+											})
+									} else {
+										clearTimeout(timer)
+										reject(new Error(`ChannelInfo returned no request for channel ${channelNo}`))
+									}
+								})
+								.catch((err: Error) => {
+									clearTimeout(timer)
+									reject(err)
+								})
+						}).catch((e) => {
+							channelErrors.push(channelNo)
+							this.emit('error', 'Error thrown in CheckChannelsStatus for channel ' + channelNo, e)
+						})
+					}
+
+					if (!_.isEqual(this._checkChannelsBadChannels, channelErrors)) {
+						this._checkChannelsBadChannels = channelErrors
+						this.emit('connectionChanged', this.getStatus())
+					}
+				})
+				.catch((e) => {
+					this.emit('error', 'Error thrown in CheckChannelsStatus', e)
+				})
+		}, CHECK_CHANNELS_INTERVAL)
 	}
 }
