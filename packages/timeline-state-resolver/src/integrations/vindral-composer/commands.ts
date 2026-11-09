@@ -2,6 +2,7 @@ import type { VindralComposer } from 'vindral-composer-connection'
 import type { CommandWithContext } from 'timeline-state-resolver-api'
 import { assertNever } from '../../lib.js'
 import path from 'path'
+import { SEEK_FUDGE_TIME } from './constants.js'
 
 export type VindralCommandWithContext = CommandWithContext<VindralCommandAny, string>
 
@@ -104,56 +105,62 @@ export async function sendCommand(connection: VindralComposer, command: VindralC
 			if (!command.selector.target)
 				throw new Error(`update-media-command: Missing target in selector (${JSON.stringify(command.selector)})`)
 
-			let trackedMediaPlayerState: 'Stopped' | 'Playing' | 'Paused' | undefined = undefined
+			let trackedState: Partial<VSObjectProperties> = {}
+			let trackedStateTime: number = Date.now()
 
 			const ensureStopped = async (): Promise<boolean> => {
-				if (trackedMediaPlayerState === 'Stopped') return false // no need to stop again
+				if (trackedState.MediaPlayerState === 'Stopped') return false // no need to stop again
 
 				try {
 					await connection.invokeCommand(command.selector, 'StopCommand')
 
-					await doWaitForMessage(connection, command.selector, 'Stopped', undefined, 1000)
-
-					trackedMediaPlayerState = 'Stopped'
+					// await doWaitForMessage(connection, command.selector, 'Stopped', undefined, 1000)
+					await doWaitForState(connection, command.selector, 1000, (state) => {
+						if (state.MediaPlayerState !== 'Stopped')
+							throw new Error(`MediaPlayerState is not 'Stopped' (is ${state.MediaPlayerState})`)
+					})
+					trackedState.MediaPlayerState = 'Stopped'
 					return true
 				} catch (err) {
 					if (`${err}`.includes('state of the target does not permit it')) return false
 					else throw err
 				}
 			}
-			let trackedMediaLoaded: boolean | undefined = undefined
+
 			const ensureCleared = async () => {
-				if (trackedMediaLoaded === false) return // no need to clear again
+				if (trackedState.MediaPlayerState === 'NoMedia') return // no need to clear again
 
 				try {
 					if (!command.selector.target)
 						throw new Error(`update-media-command: Missing target in selector (${JSON.stringify(command.selector)})`)
 					await connection.clearSource(command.selector.target)
-					trackedMediaLoaded = false
 
-					await doWaitForMessage(connection, command.selector, 'Source cleared', undefined, 1000)
+					// await doWaitForMessage(connection, command.selector, 'Source cleared', undefined, 1000)
+					await doWaitForState(connection, command.selector, 1000, (state) => {
+						if (state.MediaPlayerState !== 'NoMedia')
+							throw new Error(`MediaPlayerState is not 'NoMedia' (is ${state.MediaPlayerState})`)
+					})
+					trackedState.MediaPlayerState = 'NoMedia'
 				} catch (err) {
 					if (!`${err}`.includes('state of the target does not permit it')) throw err
 				}
 			}
 
 			if (command.sourceUri === '') {
-				// Simple / fast-path case, clear right away:
+				// Fast-path; clear right away:
 				await ensureStopped()
 				await connection.clearSource(command.selector.target)
 				return
 			}
 
 			// First, check if the value is already set
-			const trackedProperties = await connection.getObjectProperties({
+			trackedState = (await connection.getObjectProperties({
 				target: command.selector.target,
-			})
+			})) as unknown as VSObjectProperties
+			trackedStateTime = Date.now()
 
-			const trackedSourceUrl = trackedProperties.SourceUrl as string | undefined
-			// const trackedInTimeMs = trackedProperties.InTimeMs as number | undefined // Can't use this, it's not true
-			trackedMediaPlayerState = trackedProperties.MediaPlayerState as 'Stopped' | 'Playing' | 'Paused'
-
-			const trackedSourceUrlNormalized = typeof trackedSourceUrl === 'string' ? path.normalize(trackedSourceUrl) : ''
+			const trackedSourceUrlNormalized =
+				typeof trackedState.SourceUrl === 'string' ? path.normalize(trackedState.SourceUrl) : ''
 			const sourceUriNormalized = path.normalize(command.sourceUri)
 			let mediaNeedsChange = !trackedSourceUrlNormalized.endsWith(sourceUriNormalized)
 
@@ -165,12 +172,13 @@ export async function sendCommand(connection: VindralComposer, command: VindralC
 				return
 			}
 
-			// There seems to be a bug in Composer, where we can only change the InTimeMs when we have a freshly loaded video.
 			if (
 				command.inTime !== undefined &&
 				// we only do this if the video is NOT playing
 				command.playing == false
 			) {
+				// There is a limitation in Composer, we can only change the InTimeMs when we have a freshly loaded video.
+
 				await ensureStopped() // Ensure it is stopped, to be able to change the media url
 				await ensureCleared()
 				mediaNeedsChange = true
@@ -179,37 +187,63 @@ export async function sendCommand(connection: VindralComposer, command: VindralC
 			if (mediaNeedsChange) {
 				await ensureStopped() // Ensure it is stopped, to be able to change the media url
 
-				// await ensureCleared() // Clear before loading new, so we can set inTime before loading a new
 				if (command.inTime !== undefined && command.inTime > 0) {
 					await connection.setProperty({ ...command.selector, property: 'InTimeMs', value: command.inTime })
 				}
 
 				// Ensure settings are as we expect:
-				if (trackedProperties.AutoPlay !== false)
+				if (trackedState.AutoPlay !== false) {
 					await connection.setProperty({ ...command.selector, property: 'AutoPlay', value: false })
-				if (trackedProperties.AutoPlayOnMediaChange !== false)
+					trackedState.AutoPlay = false
+				}
+				if (trackedState.AutoPlayOnMediaChange !== false) {
 					await connection.setProperty({ ...command.selector, property: 'AutoPlayOnMediaChange', value: false })
-				if (trackedProperties.ShowFirstFrameWhenLoaded !== true)
+					trackedState.AutoPlayOnMediaChange = false
+				}
+				if (trackedState.ShowFirstFrameWhenLoaded !== true) {
 					await connection.setProperty({ ...command.selector, property: 'ShowFirstFrameWhenLoaded', value: true })
+					trackedState.ShowFirstFrameWhenLoaded = true
+				}
 
 				// Load the Video
 				await connection.setProperty({ ...command.selector, property: 'SourceUrl', value: command.sourceUri })
 
 				// Wait for the video to have loaded, so that other commands will work:
-				await doWaitForMessage(connection, command.selector, 'Source set to', 'Media loaded', 1000)
-				trackedMediaLoaded = true
+				// await doWaitForMessage(connection, command.selector, 'Source set to', 'Media loaded', 1000)
+				await doWaitForState(connection, command.selector, 1000, (state) => {
+					if (state.MediaPlayerState !== 'Stopped')
+						throw new Error(`MediaPlayerState is not 'Stopped' (is ${state.MediaPlayerState})`)
+				})
+				trackedState.SourceUrl = command.sourceUri
+				trackedState.MediaPlayerState = 'Stopped'
 			}
 			if (command.inTime !== undefined) {
 				// Ensure we seek to the correct frame:
 
-				await ensureStopped() // Ensure it is stopped before seeking
+				let doSeek = false
 
-				await connection.setProperty({ ...command.selector, property: 'InTimeMs', value: command.inTime })
+				if (command.playing && trackedState.MediaPlayerState === 'Playing') {
+					// We'll only interrupt a playing media to SEEK if the playhead is very off:
+					const currentTime = getCurrentTime(trackedState, trackedStateTime)
+					if (Math.abs(command.inTime - currentTime) > SEEK_FUDGE_TIME) {
+						doSeek = true
+					}
+				} else {
+					doSeek = true
+				}
+				if (doSeek) {
+					const didStop = await ensureStopped() // Ensure it is stopped before seeking
+
+					const currentTime = getCurrentTime(trackedState, trackedStateTime)
+					if (didStop || currentTime !== command.inTime || trackedState.InTimeMs !== command.inTime) {
+						await connection.setProperty({ ...command.selector, property: 'InTimeMs', value: command.inTime })
+					}
+				}
 			}
 			if (command.playing === true) {
 				// Start playing
 				await doPlayCommand(connection, command.selector, 3)
-				trackedMediaPlayerState = 'Playing'
+				trackedState.MediaPlayerState = 'Playing'
 			}
 
 			return
@@ -236,63 +270,43 @@ async function doPlayCommand(connection: VindralComposer, selector: VindralObjec
 		}
 	}
 }
-async function doWaitForMessage(
+async function doWaitForState(
 	connection: VindralComposer,
 	selector: VindralObjectSelector,
-	startMessage: string,
-	afterMessage: string | undefined,
-	maxWaitTime: number
+	maxWaitTime: number,
+	/** Throws if the state does not satisfy the condition */
+	fn: (state: VSObjectProperties) => void
 ): Promise<boolean> {
-	let componentLog:
-		| {
-				LogCache: { Message: string; DateTime: string; FormattedMessageType: string }[]
-		  }
-		| undefined = undefined
 	const ttl = Date.now() + maxWaitTime
+	let lastError: Error | undefined = undefined
 	while (Date.now() < ttl) {
 		// Check if the media is loaded
-		const reply = await connection.getObjectProperties({
-			target: selector.target,
-		})
+		const state = (await connection.getObjectProperties(selector)) as unknown as VSObjectProperties
 
-		if (typeof reply === 'object' && reply !== null && !Array.isArray(reply)) {
-			componentLog = reply.ComponentLog as any
-
-			if (componentLog === undefined || !Array.isArray(componentLog.LogCache))
-				throw new Error(`Invalid ComponentLog format for componentLog: ${JSON.stringify(componentLog)}`)
-
-			// First, we find a "Source set to" log entry:
-			let startIndex = -1
-			for (let i = componentLog.LogCache.length - 1; i >= 0; i--) {
-				const entry = componentLog.LogCache[i]
-				if (!entry) break
-				if (entry.Message.startsWith(startMessage)) {
-					startIndex = i
-					break
-				}
-				if (entry.Message.startsWith('Source cleared')) {
-					// Should not look further
-					break
-				}
-			}
-
-			if (startIndex !== -1) {
-				if (afterMessage === undefined) return true
-
-				// Now, we're looking for an entry with 'Media loaded and buffered'
-				for (let i = startIndex; i < componentLog.LogCache.length; i++) {
-					const entry = componentLog.LogCache[i]
-
-					if (entry.Message.startsWith(afterMessage)) {
-						return true
-					}
-				}
+		if (typeof state === 'object' && state !== null && !Array.isArray(state)) {
+			try {
+				fn(state)
+				return true
+			} catch (e) {
+				lastError = e as Error
 			}
 		}
 		// wait and try again:
 		await sleep(100)
 	}
-	throw new Error(
-		`Timeout waiting for "${startMessage}", "${afterMessage}" for componentLog: ${JSON.stringify(componentLog)}`
-	)
+	throw new Error(`Timeout waiting for state to satisfy condition: ${lastError?.message ?? 'unknown error'}`)
+}
+
+interface VSObjectProperties {
+	MediaPlayerState: 'Stopped' | 'Playing' | 'Paused' | 'NoMedia'
+	SourceUrl: string
+	CurrentTimeMs: number
+	InTimeMs: number
+	AutoPlayOnMediaChange: boolean
+	ShowFirstFrameWhenLoaded: boolean
+	AutoPlay: boolean
+}
+function getCurrentTime(trackedState: Partial<VSObjectProperties>, trackedStateTime: number): number {
+	const elapsed = trackedState.MediaPlayerState === 'Playing' ? Date.now() - trackedStateTime : 0
+	return (trackedState.CurrentTimeMs ?? 0) + elapsed
 }

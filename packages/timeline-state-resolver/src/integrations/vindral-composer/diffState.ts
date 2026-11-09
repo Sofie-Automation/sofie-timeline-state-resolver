@@ -2,11 +2,8 @@ import type { SomeMappingVindralComposer, Mappings } from 'timeline-state-resolv
 import { isEqual } from 'underscore'
 import { buildVindralState, type VindralComposerDeviceState } from './stateBuilder.js'
 import type { VindralCommandAny, VindralCommandWithContext, VindralObjectSelector } from './commands.js'
-import { TSR_SCRIPT_FN_MEDIA_PLAYER } from './constants.js'
+import { SEEK_FUDGE_TIME, TSR_SCRIPT_FN_MEDIA_PLAYER } from './constants.js'
 import { resolveSeekTime } from './lib.js'
-
-/** Don't change a seek time if the difference is less than this  */
-const SEEK_FUDGE_TIME = 500
 
 export function diffVindralStates(
 	oldState: VindralComposerDeviceState | undefined,

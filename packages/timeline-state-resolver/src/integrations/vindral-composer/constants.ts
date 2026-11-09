@@ -6,3 +6,6 @@
  * own script functions.
  */
 export const TSR_SCRIPT_FN_MEDIA_PLAYER = 'tsrMediaPlayer'
+
+/** Don't change a seek time if the difference is less than this  */
+export const SEEK_FUDGE_TIME = 500
