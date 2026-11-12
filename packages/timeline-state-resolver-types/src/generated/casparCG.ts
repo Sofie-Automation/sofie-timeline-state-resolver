@@ -27,6 +27,10 @@ export interface CasparCGOptions {
 	 * Interval (ms) for retrying to load media that previously failed. (-1 disables, 0 uses the default interval)
 	 */
 	retryInterval?: number
+	/**
+	 * When set, will check the status of each CasparCG channel.
+	 */
+	checkChannels?: boolean
 }
 
 export interface MappingCasparCGLayer {
