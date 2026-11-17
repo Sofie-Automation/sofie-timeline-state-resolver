@@ -4,6 +4,7 @@ import { Mappings, TSRTimelineContent } from 'timeline-state-resolver-types'
 import { Measurement, StateChangeReport } from './measure.js'
 import { CommandExecutor } from './commandExecutor.js'
 import { StateTracker } from './stateTracker.js'
+import { createExecutionStrategy } from './executor/factory.js'
 
 interface StateChange<DeviceState, Command extends CommandWithContext<any, any>, AddressState> {
 	commands?: Command[]
@@ -36,7 +37,7 @@ export class StateHandler<
 	private pendingState: StateChange<DeviceState, Command, AddressState> | undefined // the state that is becoming current, while commands are being sent out
 	/** Semaphore, to ensure that .executeNextStateChange() is only executed one at a time */
 	private _executingStateChange = false
-	private _commandExecutor: CommandExecutor<DeviceState, Command>
+	private _commandExecutor: CommandExecutor<Command>
 
 	private clock: NodeJS.Timeout
 
@@ -52,8 +53,8 @@ export class StateHandler<
 
 		this.setCurrentState(undefined)
 
-		this._commandExecutor = new CommandExecutor(context.logger, this.config.executionType, async (c) =>
-			this.device.sendCommand(c)
+		this._commandExecutor = new CommandExecutor(
+			createExecutionStrategy(context.logger, this.config.executionType, async (c) => this.device.sendCommand(c))
 		)
 
 		this.clock = setInterval(() => {
@@ -301,7 +302,13 @@ export class StateHandler<
 }
 
 export interface StateHandlerConfig {
-	executionType: 'salvo' | 'sequential'
+	/**
+	 * - 'salvo': all commands fired concurrently
+	 * - 'sequential': commands within a batch are serialised per queueId, but batches can overlap
+	 * - 'sequential-persistent': like 'sequential', but queue chains persist across state-change
+	 *   batches — commands with the same queueId from consecutive states are never interleaved
+	 */
+	executionType: 'salvo' | 'sequential' | 'sequential-persistent'
 }
 
 export interface StateHandlerContext {
