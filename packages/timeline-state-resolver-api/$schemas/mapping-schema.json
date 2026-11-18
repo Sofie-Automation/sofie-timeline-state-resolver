@@ -3,6 +3,10 @@
 	"description": "This is a meta-schema that defines the schemas for *device*/$schemas/mappings.json",
 	"type": "object",
 	"properties": {
+		"$schema": {
+			"description": "The $schema property is the schema that this file adheres to",
+			"type": "string"
+		},
 		"default": {
 			"description": "The default mapping to use when creating a new mapping for this device",
 			"type": "string"
